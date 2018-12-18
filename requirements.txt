@@ -1,0 +1,38 @@
+-e git+https://github.com/OpenDataServices/flatten-tool.git@4c13ef0b32a59e810919a3de09bc8f64ce8f9392#egg=flattentool
+-e git+https://github.com/open-contracting/lib-cove-ocds.git@2487c7160bb102559d34039a14bdeea38e25d5b6#egg=libcoveocds
+Flask==1.0.2
+alembic==1.0.5
+pgpasslib==1.1.0
+psycopg2==2.7.6.1
+## The following requirements were added by pip freeze:
+bleach==3.0.2
+cached-property==1.5.1
+certifi==2018.11.29
+chardet==3.0.4
+Click==7.0
+commonmark==0.8.1
+Django==2.1.4
+et-xmlfile==1.0.1
+future==0.17.1
+idna==2.8
+itsdangerous==1.1.0
+jdcal==1.4
+Jinja2==2.10
+json-merge-patch==0.2
+jsonref==0.2
+jsonschema==2.6.0
+lxml==4.2.5
+Mako==1.0.7
+MarkupSafe==1.1.0
+openpyxl==2.5.12
+python-dateutil==2.7.5
+python-editor==1.0.3
+pytz==2018.7
+requests==2.21.0
+schema==0.6.8
+six==1.12.0
+SQLAlchemy==1.2.15
+urllib3==1.24.1
+webencodings==0.5.1
+Werkzeug==0.14.1
+xmltodict==0.11.0
