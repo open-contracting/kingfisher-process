@@ -4,6 +4,19 @@ from ocdskingfisherprocess.database import DatabaseStore
 
 class Store:
 
+    ALLOWED_DATA_TYPES = [
+        'record',
+        'release',
+        'record_package',
+        'release_package',
+        'record_package_list',
+        'release_package_list',
+        'record_package_list_in_results',
+        'release_package_list_in_results',
+        'release_package_json_lines',
+        'record_package_json_lines',
+    ]
+
     def __init__(self, config, database):
         self.config = config
         self.collection_id = None
@@ -11,6 +24,9 @@ class Store:
 
     def load_collection(self, collection_source, collection_data_version, collection_sample):
         self.collection_id = self.database.get_or_create_collection_id(collection_source, collection_data_version, collection_sample)
+
+    def set_collection(self, collection):
+        self.collection_id = collection.database_id
 
     def store_file_from_local(self, filename, url, data_type, encoding, local_filename):
 
