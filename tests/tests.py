@@ -4,8 +4,20 @@ from tests.base import BaseTest
 
 class TestDataBase(BaseTest):
 
-    def test_create_tables(self):
+    def test_get_collection_id_and_get_or_create_collection_id(self):
         self.setup_main_database()
+
+        id = self.database.get_collection_id("test-source", "2019-01-20 10:00:12", False)
+        # Doesn't exist, so ...
+        assert not id
+
+        create_id = self.database.get_or_create_collection_id("test-source", "2019-01-20 10:00:12", False)
+        # Now it exists ...
+        assert create_id
+
+        get_id = self.database.get_collection_id("test-source", "2019-01-20 10:00:12", False)
+        # And we can load it!
+        assert get_id == create_id
 
 
 class TestUtil(BaseTest):

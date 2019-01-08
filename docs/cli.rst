@@ -14,6 +14,7 @@ You can pass the `verbose` flag to all sub commands, to get more output printed 
 
 
    cli-upgrade-database.rst
+   cli-new-collection.rst
    cli-list-collections.rst
    cli-check-collection.rst
 
