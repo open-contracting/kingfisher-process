@@ -19,6 +19,6 @@ class ListCollections(ocdskingfisherprocess.cli.commands.base.CLICommand):
             print("{:5} {:40} {:20} {:5}".format(
                     collection.database_id,
                     collection.source_id[:40],
-                    collection.data_version,
+                    collection.data_version.strftime("%Y-%m-%d %H:%M:%S"),
                     ("Sample" if collection.sample else "Full")
                 ))

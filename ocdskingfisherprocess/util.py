@@ -2,6 +2,7 @@ import time
 import requests
 import json
 import hashlib
+import datetime
 
 RETRY_TIME = 10
 
@@ -129,3 +130,12 @@ class SaveContentResult:
 #        return content, []
 #    except Exception as e:
 #        error_msg = 'Unable to decode content: %s' % e
+
+
+def parse_string_to_date_time(date_time_string):
+    if " " in date_time_string:
+        # The docs define this format
+        return datetime.datetime.strptime(date_time_string, "%Y-%m-%d %H:%M:%S")
+    else:
+        # But some of our test code uses this format so we'll allow that too.
+        return datetime.datetime.strptime(date_time_string, "%Y-%m-%d-%H-%M-%S")
