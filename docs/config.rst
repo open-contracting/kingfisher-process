@@ -34,6 +34,18 @@ Web Configuration
 
 TODO write up the API Key - notes: KINGFISHER_PROCESS_WEB_API_KEYS env var or [WEB] API_KEYS= in ini. Comma seperated.
 
+Collection Defaults Configuration
+---------------------------------
+
+When you create a new collection, certain flags are set on it automatically. You can configure what the default values for them are:
+
+.. code-block:: ini
+
+    [COLLECTION_DEFAULT]
+    CHECK_DATA = true
+    CHECK_OLDER_DATA_WITH_SCHEMA_1_1 = false
+
+
 Logging Configuration
 ---------------------
 

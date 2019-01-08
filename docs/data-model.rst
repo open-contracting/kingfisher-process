@@ -14,6 +14,14 @@ A collection is defined uniquely by a combination of all the variables listed be
 
 A collection is also given a numeric ID.
 
+Collections have a set of flags on them that describe what operations to do on them. These are:
+
+* `check_data`. Should data in this collection be checked?
+* `check_older_data_with_schema_version_1_1`. If the data is less than schema version 1.1, then should it be also checked with the version forced to 1.1?
+
+Default values for these can be configured - see :doc:`config`.
+
+
 Files
 -----
 
