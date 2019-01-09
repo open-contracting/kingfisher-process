@@ -172,7 +172,7 @@ class DataBase:
         ]
         alembic.config.main(argv=alembicargs)
 
-    def get_or_create_collection_id(self, source_id, data_version, sample):
+    def get_collection_id(self, source_id, data_version, sample):
 
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
@@ -184,6 +184,13 @@ class DataBase:
             if collection:
                 return collection['id']
 
+    def get_or_create_collection_id(self, source_id, data_version, sample):
+
+        collection = self.get_collection_id(source_id, data_version, sample)
+        if collection:
+            return collection['id']
+
+        with self.get_engine().begin() as connection:
             value = connection.execute(self.collection_table.insert(), {
                 'source_id': source_id,
                 'data_version': data_version,
