@@ -43,6 +43,8 @@ class Store:
                 raise e
                 # TODO Store error in database and make nice HTTP response!
 
+            self.database.mark_collection_file_store_done(self.collection_id, filename)
+
         else:
             try:
                 with open(local_filename, encoding=encoding) as f:
@@ -52,26 +54,30 @@ class Store:
                 raise e
                 # TODO Store error in database and make nice HTTP response!
 
-            objects_list = []
-            if data_type == 'record_package_list_in_results':
-                objects_list.extend(data['results'])
-            elif data_type == 'release_package_list_in_results':
-                objects_list.extend(data['results'])
-            elif data_type == 'record_package_list' or data_type == 'release_package_list':
-                objects_list.extend(data)
-            else:
-                objects_list.append(data)
+            self.store_file_from_data(filename, url, data_type, data)
 
-            number = 0
-            for item_data in objects_list:
+    def store_file_from_data(self, filename, url, data_type, data):
 
-                try:
-                    self.store_file_item(filename, url, data_type, item_data, number)
-                    number += 1
+        objects_list = []
+        if data_type == 'record_package_list_in_results':
+            objects_list.extend(data['results'])
+        elif data_type == 'release_package_list_in_results':
+            objects_list.extend(data['results'])
+        elif data_type == 'record_package_list' or data_type == 'release_package_list':
+            objects_list.extend(data)
+        else:
+            objects_list.append(data)
 
-                except Exception as e:
-                    raise e
-                    # TODO Store error in database and make nice HTTP response!
+        number = 0
+        for item_data in objects_list:
+
+            try:
+                self.store_file_item(filename, url, data_type, item_data, number)
+                number += 1
+
+            except Exception as e:
+                raise e
+                # TODO Store error in database and make nice HTTP response!
 
         self.database.mark_collection_file_store_done(self.collection_id, filename)
 

@@ -4,9 +4,9 @@ Web API Version 1
 Authentication
 --------------
 
-All calls to this must pass as an API_KEY as a GET parameter only.
+All calls to this must pass an API_KEY as an Authorization HTTP header of type ApiKey
 
-eg  http://....../?API_KEY=KEY_GOES_HERE
+eg `Authorization: ApiKey API_KEY_GOES_HERE`
 
 To set the key, see :doc:`config`.
 
@@ -21,42 +21,46 @@ Store File
 
 The end point is /api/v1/submit/file/
 
-You must pass details as POST parameters.
+You must pass all the data as one JSON object in the body of a post request.
+
+The JSON object needs to contain a number of keys.
 
 Firstly, you must pass details of the collection.
 
-*  collection_source - String.
-*  collection_data_version - String. In format YYYY-MM-DD HH:MM:SS
-*  collection_sample - Boolean. Pass 1 for true and 0 for false.
+*  `collection_source` - String.
+*  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
+*  `collection_sample` - Boolean. Pass 1 for true and 0 for false.
 
 Secondly, you must pass details of the file.
 
-* file_name - String.
-* file_url - String.
-* file_data_type -  String. See section on file data types in :doc:`data-model`.
-* file_encoding - String.
+* `file_name` - String.
+* `file_url` - String.
+* `file_data_type` -  String. See section on file data types in :doc:`data-model`.
 
-Finally, pass the actual file as a file upload named "file".
+Finally, pass the actual file loaded as JSON data in the `data` key.
 
 Store Item
 ----------
 
 The end point is /api/v1/submit/item/
 
-You must pass details as POST parameters.
+You must pass all the data as one JSON object in the body of a post request.
 
 Firstly, you must pass details of the collection.
 
-*  collection_source - String.
-*  collection_data_version - String. In format YYYY-MM-DD HH:MM:SS
-*  collection_sample - Boolean. Pass 1 for true and 0 for false.
+*  `collection_source` - String.
+*  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
+*  `collection_sample` - Boolean. Pass 1 for true and 0 for false.
 
 Secondly, you must pass details of the file.
 
-* file_name - String.
-* file_url - String.
-* file_data_type -  String. See section on file data types in :doc:`data-model`. But when passing an item, only some data types can be used.
-* file_encoding - String.
-* number - Integer.
+* `file_name` - String.
+* `file_url` - String.
+* `file_data_type` -  String. See section on file data types in :doc:`data-model`.
 
-Finally, pass the actual item as a file upload named "file".
+Thirdly, you must pass details of the item in the file.
+
+* `number` - Integer.
+
+Finally, pass the actual file loaded as JSON data in the `data` key.
+
