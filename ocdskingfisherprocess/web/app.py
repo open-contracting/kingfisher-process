@@ -4,6 +4,7 @@ from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.database import DataBase
 import tempfile
 import os
+from ocdskingfisherprocess.util import parse_string_to_date_time
 
 config = Config()
 config.load_user_config()
@@ -43,9 +44,11 @@ def api_v1_submit_file():
     database = DataBase(config=config)
     store = Store(config=config, database=database)
 
+    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+
     store.load_collection(
         request.form.get('collection_source'),
-        request.form.get('collection_data_version'),
+        collection_data_version,
         True if request.form.get('collection_sample', '0') in ['1'] else False,
     )
 
@@ -79,9 +82,11 @@ def api_v1_submit_item():
     database = DataBase(config=config)
     store = Store(config=config, database=database)
 
+    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+
     store.load_collection(
         request.form.get('collection_source'),
-        request.form.get('collection_data_version'),
+        collection_data_version,
         True if request.form.get('collection_sample', '0') in ['1'] else False,
     )
 

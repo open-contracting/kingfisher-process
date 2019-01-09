@@ -26,14 +26,13 @@ class DataBase:
         self.collection_table = sa.Table('collection', self.metadata,
                                          sa.Column('id', sa.Integer, primary_key=True),
                                          sa.Column('source_id', sa.Text, nullable=False),
-                                         sa.Column('data_version', sa.Text, nullable=False),
+                                         sa.Column('data_version', sa.DateTime(timezone=False), nullable=False),
                                          sa.Column('store_start_at', sa.DateTime(timezone=False), nullable=False),
                                          sa.Column('store_end_at', sa.DateTime(timezone=False), nullable=True),
                                          sa.Column('sample', sa.Boolean, nullable=False, default=False),
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample'),
                                          )
 
-        # Should be named collection_file but left for backwards compatibility!
         self.collection_file_table = sa.Table('collection_file', self.metadata,
                                               sa.Column('id', sa.Integer, primary_key=True),
                                               sa.Column('collection_id', sa.Integer,
