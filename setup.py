@@ -20,13 +20,13 @@ setup(name='ocdskingfisher',
       url='https://open-contracting.org',
       license='BSD',
       packages=[
-            'ocdskingfisher',
-            'ocdskingfisher.maindatabase',
-            'ocdskingfisher.maindatabase.migrations',
-            'ocdskingfisher.maindatabase.migrations.versions',
-            'ocdskingfisher.cli',
-            'ocdskingfisher.cli.commands',
-            'ocdskingfisher.web'
+            'ocdskingfisherprocess',
+            'ocdskingfisherprocess.cli',
+            'ocdskingfisherprocess.cli.commands',
+            'ocdskingfisherprocess.maindatabase',
+            'ocdskingfisherprocess.maindatabase.migrations',
+            'ocdskingfisherprocess.maindatabase.migrations.versions',
+            'ocdskingfisherprocess.web'
       ],
       scripts=['ocdskingfisher-process-cli'],
       package_data={'ocdskingfisher': [
