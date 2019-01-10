@@ -15,9 +15,13 @@ class TestDataBase(BaseTest):
         # Now it exists ...
         assert create_id
 
-        get_id = self.database.get_collection_id("test-source", "2019-01-20 10:00:12", False)
-        # And we can load it!
-        assert get_id == create_id
+        get1_id = self.database.get_collection_id("test-source", "2019-01-20 10:00:12", False)
+        # And we can load it using get!
+        assert get1_id == create_id
+
+        get2_id = self.database.get_or_create_collection_id("test-source", "2019-01-20 10:00:12", False)
+        # And we can load it using get or create!
+        assert get2_id == create_id
 
 
 class TestUtil(BaseTest):
