@@ -30,6 +30,8 @@ class DataBase:
                                          sa.Column('store_start_at', sa.DateTime(timezone=False), nullable=False),
                                          sa.Column('store_end_at', sa.DateTime(timezone=False), nullable=True),
                                          sa.Column('sample', sa.Boolean, nullable=False, default=False),
+                                         sa.Column('check_data', sa.Boolean, nullable=False, default=False),
+                                         sa.Column('check_older_data_with_schema_version_1_1', sa.Boolean, nullable=False, default=False),
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample',
                                                              name='unique_collection_identifiers'),
                                          )
@@ -212,6 +214,8 @@ class DataBase:
                 'data_version': data_version,
                 'sample': sample,
                 'store_start_at': datetime.datetime.utcnow(),
+                'check_data': self.config.default_value_collection_check_data,
+                'check_older_data_with_schema_version_1_1': self.config.default_value_collection_check_older_data_with_schema_version_1_1,
             })
             return value.inserted_primary_key[0]
 
@@ -225,6 +229,8 @@ class DataBase:
                     source_id=result['source_id'],
                     data_version=result['data_version'],
                     sample=result['sample'],
+                    check_data=result['check_data'],
+                    check_older_data_with_schema_version_1_1=result['check_older_data_with_schema_version_1_1'],
                 ))
         return out
 
@@ -240,6 +246,8 @@ class DataBase:
                     source_id=collection['source_id'],
                     data_version=collection['data_version'],
                     sample=collection['sample'],
+                    check_data=collection['check_data'],
+                    check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
                 )
 
     def get_all_files_in_collection(self, collection_id):
