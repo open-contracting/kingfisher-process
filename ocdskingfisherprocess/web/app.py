@@ -2,8 +2,6 @@ from flask import Flask, request
 from ocdskingfisherprocess.config import Config
 from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.database import DataBase
-import tempfile
-import os
 from ocdskingfisherprocess.util import parse_string_to_date_time
 
 config = Config()
@@ -34,8 +32,7 @@ def api_v1():
 
 @app.route("/api/v1/submit/file/", methods=['POST'])
 def api_v1_submit_file():
-    # TODO this allows GET API_KEY values only, allow POST and header too!
-    api_key = request.args.get('API_KEY')
+    api_key = request.headers.get('Authorization')[len('ApiKey '):]
     if not api_key or api_key not in config.web_api_keys:
         return "ACCESS DENIED"  # TODO proper error
 
@@ -44,36 +41,30 @@ def api_v1_submit_file():
     database = DataBase(config=config)
     store = Store(config=config, database=database)
 
-    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+    data = request.get_json()
+
+    collection_source = data.get('collection_source')
+    collection_data_version = parse_string_to_date_time(data.get('collection_data_version'))
+    collection_sample = data.get('collection_sample', False)
 
     store.load_collection(
-        request.form.get('collection_source'),
+        collection_source,
         collection_data_version,
-        True if request.form.get('collection_sample', '0') in ['1'] else False,
+        collection_sample,
     )
 
-    (tmp_file, tmp_filename) = tempfile.mkstemp(prefix="ocdskf-")
-    os.close(tmp_file)
+    file_filename = data.get('file_name')
+    file_url = data.get('url')
+    file_data_type = data.get('data_type')
 
-    request.files['file'].save(tmp_filename)
-
-    store.store_file_from_local(
-        request.form.get('file_name'),
-        request.form.get('file_url'),
-        request.form.get('file_data_type'),
-        request.form.get('file_encoding'),
-        tmp_filename
-    )
-
-    os.remove(tmp_filename)
+    store.store_file_from_data(file_filename, file_url, file_data_type, data.get('data'))
 
     return "OCDS Kingfisher APIs V1 Submit"
 
 
 @app.route("/api/v1/submit/item/", methods=['POST'])
 def api_v1_submit_item():
-    # TODO this allows GET API_KEY values only, allow POST and header too!
-    api_key = request.args.get('API_KEY')
+    api_key = request.headers.get('Authorization')[len('ApiKey '):]
     if not api_key or api_key not in config.web_api_keys:
         return "ACCESS DENIED"  # TODO proper error
 
@@ -82,28 +73,29 @@ def api_v1_submit_item():
     database = DataBase(config=config)
     store = Store(config=config, database=database)
 
-    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+    data = request.get_json()
+
+    collection_source = data.get('collection_source')
+    collection_data_version = parse_string_to_date_time(data.get('collection_data_version'))
+    collection_sample = data.get('collection_sample', False)
 
     store.load_collection(
-        request.form.get('collection_source'),
+        collection_source,
         collection_data_version,
-        True if request.form.get('collection_sample', '0') in ['1'] else False,
+        collection_sample,
     )
 
-    (tmp_file, tmp_filename) = tempfile.mkstemp(prefix="ocdskf-")
-    os.close(tmp_file)
+    file_filename = data.get('file_name')
+    file_url = data.get('url')
+    file_data_type = data.get('data_type')
+    item_number = int(data.get('number'))
 
-    request.files['file'].save(tmp_filename)
-
-    store.store_file_item_from_local(
-        request.form.get('file_name'),
-        request.form.get('file_url'),
-        request.form.get('file_data_type'),
-        request.form.get('file_encoding'),
-        int(request.form.get('number')),
-        tmp_filename
+    store.store_file_item(
+        file_filename,
+        file_url,
+        file_data_type,
+        data.get('data'),
+        item_number,
     )
-
-    os.remove(tmp_filename)
 
     return "OCDS Kingfisher APIs V1 Submit"

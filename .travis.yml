@@ -21,4 +21,4 @@ install:
     - "pip install flake8"
 script:
     - "flake8 ocdskingfisherprocess/ ocdskingfisher-process-cli tests setup.py"
-    - "py.test"
+    - "KINGFISHER_PROCESS_WEB_API_KEYS=1234 py.test"
