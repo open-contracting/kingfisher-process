@@ -186,9 +186,9 @@ class DataBase:
 
     def get_or_create_collection_id(self, source_id, data_version, sample):
 
-        collection = self.get_collection_id(source_id, data_version, sample)
-        if collection:
-            return collection['id']
+        collection_id = self.get_collection_id(source_id, data_version, sample)
+        if collection_id:
+            return collection_id
 
         with self.get_engine().begin() as connection:
             value = connection.execute(self.collection_table.insert(), {
