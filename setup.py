@@ -26,6 +26,7 @@ setup(name='ocdskingfisher',
             'ocdskingfisherprocess.maindatabase',
             'ocdskingfisherprocess.maindatabase.migrations',
             'ocdskingfisherprocess.maindatabase.migrations.versions',
+            'ocdskingfisherprocess.transform'
             'ocdskingfisherprocess.web'
       ],
       scripts=['ocdskingfisher-process-cli'],

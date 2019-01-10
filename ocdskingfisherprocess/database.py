@@ -32,7 +32,11 @@ class DataBase:
                                          sa.Column('sample', sa.Boolean, nullable=False, default=False),
                                          sa.Column('check_data', sa.Boolean, nullable=False, default=False),
                                          sa.Column('check_older_data_with_schema_version_1_1', sa.Boolean, nullable=False, default=False),
+                                         sa.Column('transform_from_collection_id', sa.Integer,
+                                                   sa.ForeignKey("collection.id"), nullable=True),
+                                         sa.Column('transform_type', sa.Text, nullable=True),
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample',
+                                                             'transform_from_collection_id', 'transform_type',
                                                              name='unique_collection_identifiers'),
                                          )
 
@@ -109,6 +113,18 @@ class DataBase:
                                                nullable=False),
                                      )
 
+        self.compiled_release_table = sa.Table('compiled_release', self.metadata,
+                                               sa.Column('id', sa.Integer, primary_key=True),
+                                               sa.Column('collection_file_item_id', sa.Integer,
+                                                         sa.ForeignKey("collection_file_item.id",
+                                                                       name="fk_complied_release_collection_file_item_id"),
+                                                         nullable=False),
+                                               sa.Column('ocid', sa.Text, nullable=True),
+                                               sa.Column('data_id', sa.Integer,
+                                                         sa.ForeignKey("data.id", name="fk_complied_release_data_id"),
+                                                         nullable=False),
+                                               )
+
         self.release_check_table = sa.Table('release_check', self.metadata,
                                             sa.Column('id', sa.Integer, primary_key=True),
                                             sa.Column('release_id', sa.Integer,
@@ -169,6 +185,7 @@ class DataBase:
         engine.execute("drop table if exists release_check_error cascade")
         engine.execute("drop table if exists record cascade")
         engine.execute("drop table if exists release cascade")
+        engine.execute("drop table if exists compiled_release cascade")
         engine.execute("drop table if exists package_data cascade")
         engine.execute("drop table if exists data cascade")
         engine.execute("drop table if exists collection_file_item")
@@ -190,21 +207,24 @@ class DataBase:
         ]
         alembic.config.main(argv=alembicargs)
 
-    def get_collection_id(self, source_id, data_version, sample):
+    def get_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None, transform_type=None):
 
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
                 .where((self.collection_table.c.source_id == source_id) &
                        (self.collection_table.c.data_version == data_version) &
-                       (self.collection_table.c.sample == sample))
+                       (self.collection_table.c.sample == sample) &
+                       (self.collection_table.c.transform_from_collection_id == transform_from_collection_id) &
+                       (self.collection_table.c.transform_type == transform_type))
             result = connection.execute(s)
             collection = result.fetchone()
             if collection:
                 return collection['id']
 
-    def get_or_create_collection_id(self, source_id, data_version, sample):
+    def get_or_create_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None, transform_type=None):
 
-        collection_id = self.get_collection_id(source_id, data_version, sample)
+        collection_id = self.get_collection_id(source_id, data_version, sample,
+                                               transform_from_collection_id=transform_from_collection_id, transform_type=transform_type)
         if collection_id:
             return collection_id
 
@@ -213,6 +233,8 @@ class DataBase:
                 'source_id': source_id,
                 'data_version': data_version,
                 'sample': sample,
+                'transform_type': transform_type,
+                'transform_from_collection_id': transform_from_collection_id,
                 'store_start_at': datetime.datetime.utcnow(),
                 'check_data': self.config.default_value_collection_check_data,
                 'check_older_data_with_schema_version_1_1': self.config.default_value_collection_check_older_data_with_schema_version_1_1,
@@ -229,6 +251,8 @@ class DataBase:
                     source_id=result['source_id'],
                     data_version=result['data_version'],
                     sample=result['sample'],
+                    transform_type=result['transform_type'],
+                    transform_from_collection_id=result['transform_from_collection_id'],
                     check_data=result['check_data'],
                     check_older_data_with_schema_version_1_1=result['check_older_data_with_schema_version_1_1'],
                 ))
@@ -246,6 +270,8 @@ class DataBase:
                     source_id=collection['source_id'],
                     data_version=collection['data_version'],
                     sample=collection['sample'],
+                    transform_type=collection['transform_type'],
+                    transform_from_collection_id=collection['transform_from_collection_id'],
                     check_data=collection['check_data'],
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
                 )
@@ -317,6 +343,22 @@ class DataBase:
                            (self.collection_file_table.c.filename == filename))
                     .values(store_end_at=datetime.datetime.utcnow())
             )
+
+    def get_package_data(self, package_data_id):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.package_data_table]) \
+                .where(self.package_data_table.c.id == package_data_id)
+            result = connection.execute(s)
+            data_row = result.fetchone()
+            return data_row['data']
+
+    def get_data(self, data_id):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.data_table]) \
+                .where(self.data_table.c.id == data_id)
+            result = connection.execute(s)
+            data_row = result.fetchone()
+            return data_row['data']
 
 
 class DatabaseStore:
@@ -409,6 +451,15 @@ class DatabaseStore:
             'ocid': ocid,
             'data_id': data_id,
             'package_data_id': package_data_id,
+        })
+
+    def insert_compiled_release(self, row):
+        ocid = row.get('ocid')
+        data_id = self.get_id_for_data(row)
+        self.connection.execute(self.database.compiled_release_table.insert(), {
+            'collection_file_item_id': self.collection_file_item_id,
+            'ocid': ocid,
+            'data_id': data_id,
         })
 
     def get_id_for_package_data(self, package_data):

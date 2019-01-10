@@ -18,4 +18,7 @@ You can pass the `verbose` flag to all sub commands, to get more output printed 
    cli-list-collections.rst
    cli-local-load.rst
    cli-check-collection.rst
+   cli-new-transform-compiled-releases.rst
+   cli-transform-collection.rst
+
 

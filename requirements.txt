@@ -4,14 +4,15 @@ Flask==1.0.2
 alembic==1.0.5
 pgpasslib==1.1.0
 psycopg2==2.7.6.1
+ocdsmerge==0.5.1
 ## The following requirements were added by pip freeze:
-bleach==3.0.2
+bleach==3.1.0
 cached-property==1.5.1
 certifi==2018.11.29
 chardet==3.0.4
 Click==7.0
 commonmark==0.8.1
-Django==2.1.4
+Django==2.1.5
 et-xmlfile==1.0.1
 future==0.17.1
 idna==2.8
@@ -21,13 +22,13 @@ Jinja2==2.10
 json-merge-patch==0.2
 jsonref==0.2
 jsonschema==2.6.0
-lxml==4.2.5
+lxml==4.3.0
 Mako==1.0.7
 MarkupSafe==1.1.0
 openpyxl==2.5.12
 python-dateutil==2.7.5
 python-editor==1.0.3
-pytz==2018.7
+pytz==2018.9
 requests==2.21.0
 schema==0.6.8
 six==1.12.0

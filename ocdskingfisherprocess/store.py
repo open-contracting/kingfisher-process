@@ -7,6 +7,7 @@ class Store:
     ALLOWED_DATA_TYPES = [
         'record',
         'release',
+        'compiled_release',
         'record_package',
         'release_package',
         'record_package_list',
@@ -105,7 +106,7 @@ class Store:
 
         with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number) as store:
 
-            if data_type == 'release' or data_type == 'record':
+            if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release':
                 data_list = [json_data]
             elif data_type == 'release_package' or \
                     data_type == 'release_package_json_lines' or \
@@ -132,7 +133,7 @@ class Store:
                 raise Exception("data_type not a known type")
 
             package_data = {}
-            if not data_type == 'release':
+            if not data_type == 'release' and not data_type == 'compiled_release':
                 for key, value in json_data.items():
                     if key not in ('releases', 'records'):
                         package_data[key] = value
@@ -141,7 +142,9 @@ class Store:
                 if not isinstance(row, dict):
                     raise Exception("Row in data is not a object")
 
-                if data_type == 'record' or \
+                if data_type == 'compiled_release':
+                    store.insert_compiled_release(row)
+                elif data_type == 'record' or \
                         data_type == 'record_package' or \
                         data_type == 'record_package_json_lines' or \
                         data_type == 'record_package_list_in_results' or \
