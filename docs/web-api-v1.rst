@@ -34,8 +34,8 @@ Firstly, you must pass details of the collection.
 Secondly, you must pass details of the file.
 
 * `file_name` - String.
-* `file_url` - String.
-* `file_data_type` -  String. See section on file data types in :doc:`data-model`.
+* `url` - String.
+* `data_type` -  String. See section on file data types in :doc:`data-model`.
 
 Finally, pass the actual file loaded as JSON data in the `data` key.
 
@@ -55,8 +55,8 @@ Firstly, you must pass details of the collection.
 Secondly, you must pass details of the file.
 
 * `file_name` - String.
-* `file_url` - String.
-* `file_data_type` -  String. See section on file data types in :doc:`data-model`.
+* `url` - String.
+* `data_type` -  String. See section on file data types in :doc:`data-model`.
 
 Thirdly, you must pass details of the item in the file.
 
