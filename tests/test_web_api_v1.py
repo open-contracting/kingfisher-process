@@ -10,7 +10,7 @@ class TestWebAPIV1(BaseWebTest):
         data = {
             'collection_source': 'test',
             'collection_data_version': '2018-10-10 00:12:23',
-            'collection_sample': '1',
+            'collection_sample': True,
             'file_name': 'test.json',
             'url': 'http://example.com',
             'data_type': 'record',

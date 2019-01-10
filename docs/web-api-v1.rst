@@ -29,7 +29,7 @@ Firstly, you must pass details of the collection.
 
 *  `collection_source` - String.
 *  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
-*  `collection_sample` - Boolean. Pass 1 for true and 0 for false.
+*  `collection_sample` - Boolean.
 
 Secondly, you must pass details of the file.
 
@@ -50,7 +50,7 @@ Firstly, you must pass details of the collection.
 
 *  `collection_source` - String.
 *  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
-*  `collection_sample` - Boolean. Pass 1 for true and 0 for false.
+*  `collection_sample` - Boolean.
 
 Secondly, you must pass details of the file.
 

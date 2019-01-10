@@ -45,7 +45,7 @@ def api_v1_submit_file():
 
     collection_source = data.get('collection_source')
     collection_data_version = parse_string_to_date_time(data.get('collection_data_version'))
-    collection_sample = True if data.get('collection_sample', '0') in ['1'] else False
+    collection_sample = data.get('collection_sample', False)
 
     store.load_collection(
         collection_source,
@@ -77,7 +77,7 @@ def api_v1_submit_item():
 
     collection_source = data.get('collection_source')
     collection_data_version = parse_string_to_date_time(data.get('collection_data_version'))
-    collection_sample = True if data.get('collection_sample', '0') in ['1'] else False
+    collection_sample = data.get('collection_sample', False)
 
     store.load_collection(
         collection_source,
