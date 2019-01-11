@@ -1,5 +1,4 @@
 from libcoveocds.api import ocds_json_output, APIException
-import sqlalchemy as sa
 import tempfile
 import shutil
 
@@ -58,32 +57,16 @@ class Checks:
         finally:
             shutil.rmtree(cove_temp_folder)
 
-    def get_package_data(self, package_data_id):
-        with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.package_data_table]) \
-                .where(self.database.package_data_table.c.id == package_data_id)
-            result = connection.execute(s)
-            data_row = result.fetchone()
-            return data_row['data']
-
-    def get_data(self, data_id):
-        with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.data_table]) \
-                .where(self.database.data_table.c.id == data_id)
-            result = connection.execute(s)
-            data_row = result.fetchone()
-            return data_row['data']
-
     def is_schema_version_less_than_1_1(self, package_data_id):
         # Performance wise, this is a bit dumb. We are basically calling get_package_data twice in a row!
         # We trust the database server will cache the result.
         # Later, maybe we'll want to see if improving this makes a big difference.
-        data = self.get_package_data(package_data_id)
+        data = self.database.get_package_data(package_data_id)
         return 'version' not in data or data['version'] == "1.0"
 
     def check_release_row(self, release_row, override_schema_version=None):
-        package = self.get_package_data(release_row.package_data_id)
-        package['releases'] = [self.get_data(release_row.data_id)]
+        package = self.database.get_package_data(release_row.package_data_id)
+        package['releases'] = [self.database.get_data(release_row.data_id)]
         if override_schema_version:
             package['version'] = override_schema_version
         try:
@@ -105,8 +88,8 @@ class Checks:
                 connection.execute(self.database.release_check_error_table.insert(), checks)
 
     def check_record_row(self, record_row, override_schema_version=None):
-        package = self.get_package_data(record_row.package_data_id)
-        package['records'] = [self.get_data(record_row.data_id)]
+        package = self.database.get_package_data(record_row.package_data_id)
+        package['records'] = [self.database.get_data(record_row.data_id)]
         if override_schema_version:
             package['version'] = override_schema_version
         try:

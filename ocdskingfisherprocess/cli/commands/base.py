@@ -5,7 +5,7 @@ class CLICommand:
     command = ''
 
     def __init__(self, config=None):
-        self.collection_instance = None
+        self.collection = None
         self.config = config
         self.database = DataBase(config=config)
 
