@@ -3,6 +3,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 import datetime
 import json
 import os
+from functools import partial
+import collections
 from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel
 import alembic.config
 from ocdskingfisherprocess.util import get_hash_md5_for_data
@@ -169,16 +171,54 @@ class DataBase:
                                                                      name='unique_record_check_error_record_id_and_more')
                                                  )
 
+        self.transform_upgrade_1_0_to_1_1_status_release_table = sa.Table(
+            'transform_upgrade_1_0_to_1_1_status_release',
+            self.metadata,
+            sa.Column(
+                'source_release_id',
+                sa.Integer,
+                sa.ForeignKey(
+                    "release.id",
+                    name="fk_transform_upgrade_1_0_to_1_1_status_release_source_release_id"
+                ),
+                nullable=False,
+                primary_key=True
+            )
+        )
+
+        self.transform_upgrade_1_0_to_1_1_status_record_table = sa.Table(
+            'transform_upgrade_1_0_to_1_1_status_record',
+            self.metadata,
+            sa.Column(
+                'source_record_id',
+                sa.Integer,
+                sa.ForeignKey(
+                    "record.id",
+                    name="fk_transform_upgrade_1_0_to_1_1_status_record_source_record_id"
+                ),
+                nullable=False,
+                primary_key=True
+            )
+        )
+
     def get_engine(self):
         # We only create a connection if actually needed; sometimes people do operations that don't need a database
         # and in that case no need to connect.
         # But this side of kingfisher now always requires a DB, so there should not be a problem opening a connection!
         if not self._engine:
-            self._engine = sa.create_engine(self.config.database_uri, json_serializer=SetEncoder().encode)
+            self._engine = sa.create_engine(
+                self.config.database_uri,
+                json_serializer=SetEncoder().encode,
+                json_deserializer=partial(
+                    json.loads,
+                    object_pairs_hook=collections.OrderedDict),
+            )
         return self._engine
 
     def delete_tables(self):
         engine = self.get_engine()
+        engine.execute("drop table if exists transform_upgrade_1_0_to_1_1_status_record cascade")
+        engine.execute("drop table if exists transform_upgrade_1_0_to_1_1_status_release cascade")
         engine.execute("drop table if exists record_check cascade")
         engine.execute("drop table if exists record_check_error cascade")
         engine.execute("drop table if exists release_check cascade")
@@ -285,6 +325,7 @@ class DataBase:
                 out.append(FileModel(
                     database_id=result['id'],
                     filename=result['filename'],
+
                 ))
         return out
 
@@ -296,6 +337,7 @@ class DataBase:
             for result in connection.execute(s):
                 out.append(FileItemModel(
                     database_id=result['id'],
+                    number=result['number'],
                 ))
         return out
 

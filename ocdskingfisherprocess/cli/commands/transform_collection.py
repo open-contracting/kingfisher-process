@@ -1,6 +1,6 @@
 import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.transform.compile_releases import CompileReleasesTransform
+from ocdskingfisherprocess.transform.util import get_transform_instance
 
 
 class TransformCollectionCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -17,5 +17,5 @@ class TransformCollectionCLICommand(ocdskingfisherprocess.cli.commands.base.CLIC
             print("That collection does not have any transforms!")
             quit(-1)
 
-        transform = CompileReleasesTransform(self.config, self.database, self.collection)
+        transform = get_transform_instance(self.collection.transform_type, self.config, self.database, self.collection)
         transform.process()
