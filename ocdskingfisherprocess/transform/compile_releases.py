@@ -4,7 +4,7 @@ import ocdsmerge
 
 
 class CompileReleasesTransform(BaseTransform):
-    type = 'COMPILED-RELEASES'
+    type = 'compile-releases'
 
     def process(self):
         for ocid in self.get_ocids():

@@ -3,8 +3,8 @@ import ocdskingfisherprocess.cli.commands.base
 from ocdskingfisherprocess.transform.compile_releases import CompileReleasesTransform
 
 
-class NewTransformCompiledReleasesCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
-    command = 'new-transform-compiled-releases'
+class NewTransformCompileReleasesCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
+    command = 'new-transform-compile-releases'
 
     def configure_subparser(self, subparser):
         self.configure_subparser_for_selecting_existing_collection(subparser)

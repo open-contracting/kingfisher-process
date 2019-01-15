@@ -4,7 +4,7 @@ import sqlalchemy as sa
 
 
 class Upgrade10To11Transform(BaseTransform):
-    type = 'UPGRADE-1-0-TO-1-1'
+    type = 'upgrade-1-0-to-1-1'
 
     def process(self):
         for file_model in self.database.get_all_files_in_collection(self.source_collection.database_id):
