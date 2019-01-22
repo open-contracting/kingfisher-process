@@ -1,0 +1,35 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Collections{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Source</th>
+            <th>Data Version</th>
+            <th>Sample</th>
+            <th>Transform Type</th>
+            <th>Transform From</th>
+            <th>&nbsp;</th>
+        </tr>
+        {% for collection in collections %}
+            <tr>
+                <td>{{ collection.database_id }}</td>
+                <td>{{ collection.source_id }}</td>
+                <td>{{ collection.data_version }}</td>
+                <td>{% if collection.sample %}Yes{% else %}No{% endif %}</td>
+                <td>{% if collection.transform_type %}{{ collection.transform_type }}{% endif %}</td>
+                <td>{% if collection.transform_type %}{{ collection.transform_from_collection_id }}{% endif %}</td>
+                <td>
+                    <a href="/app/collection/{{ collection.database_id }}" class="btn btn-primary">View</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
