@@ -1,5 +1,9 @@
 import ocdskingfisherprocess.util
 from tests.base import BaseTest
+import datetime
+import os
+from ocdskingfisherprocess.store import Store
+import sqlalchemy as sa
 
 
 class TestDataBase(BaseTest):
@@ -40,3 +44,27 @@ class TestControlCodes(BaseTest):
             # This test just calls it and make sure it runs without crashing
             # (some code was crashing, so wanted test to check all future values of control_codes_to_filter_out)
             print(ocdskingfisherprocess.util.control_code_to_filter_out_to_human_readable(control_code_to_filter_out))
+
+    def test_bad_data_with_control_codes(self):
+        self.setup_main_database()
+
+        # Make source collection
+        source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        source_collection = self.database.get_collection(source_collection_id)
+
+        # Load some data
+        store = Store(self.config, self.database)
+        store.set_collection(source_collection)
+        json_filename = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_0_record_with_control_codes.json'
+        )
+        store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
+
+        # Check Warnings
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.collection_file_table])
+            result = connection.execute(s)
+            assert 1 == result.rowcount
+            data = result.first()
+            assert 1 == len(data['warnings'])
+            assert 'We had to replace control codes: chr(16)' == data['warnings'][0]

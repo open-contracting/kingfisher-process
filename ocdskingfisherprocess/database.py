@@ -377,13 +377,15 @@ class DataBase:
 
         return False
 
-    def mark_collection_file_store_done(self, collection_id, filename):
+    def mark_collection_file_store_done(self, collection_id, filename, warnings=None):
         with self.get_engine().begin() as connection:
             connection.execute(
                 self.collection_file_table.update()
                     .where((self.collection_file_table.c.collection_id == collection_id) &
                            (self.collection_file_table.c.filename == filename))
-                    .values(store_end_at=datetime.datetime.utcnow())
+                    .values(store_end_at=datetime.datetime.utcnow(),
+                            warnings=warnings if warnings and len(warnings) > 0 else None,
+                            )
             )
 
     def get_package_data(self, package_data_id):
