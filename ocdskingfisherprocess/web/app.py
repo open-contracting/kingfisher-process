@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from ocdskingfisherprocess.config import Config
 from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.database import DataBase
@@ -18,6 +18,24 @@ def hello():
 @app.route("/robots.txt")
 def robots_txt():
     return "User-agent: *\nDisallow: /"
+
+
+@app.route("/app")
+def app_index():
+    return render_template("app/index.html")
+
+
+@app.route("/app/collection")
+def app_collections():
+    database = DataBase(config=config)
+    return render_template("app/collections.html", collections=database.get_all_collections())
+
+
+@app.route("/app/collection/<collection_id>")
+def app_collection_index(collection_id):
+    database = DataBase(config=config)
+    collection = database.get_collection(collection_id)
+    return render_template("app/collection/index.html", collection=collection)
 
 
 @app.route("/api/")
