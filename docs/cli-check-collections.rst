@@ -14,11 +14,14 @@ You should only run one of these at once, as if two are run at once they may try
 Running from cron
 -----------------
 
-You can also pass a maximum number of seconds that the process should run for. Soon after that number of seconds has passed, the command will exit.
+You can also pass a maximum number of seconds that the process should run for.
 
 .. code-block:: shell-session
 
     python ocdskingfisher-process-cli check-collections --runforseconds 60
+
+Soon after that number of seconds has passed, the command will exit.
+(The command will finish the check it's currently doing before stopping, so it may run slightly longer than specified. Allow a minute extra to be safe.)
 
 You can use this option with a cron entry; set a cron entry for this command to run every hour and pass runforseconds as 3540 (60 seconds/minute * 59 minutes).
 

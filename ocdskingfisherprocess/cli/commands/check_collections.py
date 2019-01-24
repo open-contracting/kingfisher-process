@@ -2,6 +2,8 @@ import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
 from ocdskingfisherprocess.checks import Checks
 import datetime
+from threading import Timer
+import os
 
 
 class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -16,6 +18,12 @@ class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
         run_for_seconds = int(args.runforseconds) if args.runforseconds else 0
         if run_for_seconds > 0:
             run_until_timestamp = datetime.datetime.utcnow().timestamp() + run_for_seconds
+
+            # This is a safeguard - the process should stop itself but this will kill it if it does not.
+            def exitfunc():
+                os._exit(0)
+
+            Timer(run_for_seconds + 60, exitfunc).start()
 
         for collection in self.database.get_all_collections():
             checks = Checks(self.database, collection, run_until_timestamp=run_until_timestamp)
