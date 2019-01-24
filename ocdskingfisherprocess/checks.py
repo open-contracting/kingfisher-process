@@ -1,21 +1,31 @@
 from libcoveocds.api import ocds_json_output, APIException
 import tempfile
 import shutil
+import datetime
 
 
 class Checks:
 
-    def __init__(self, database, collection):
+    def __init__(self, database, collection, run_until_timestamp=None):
         self.database = database
         self.collection = collection
+        self.run_until_timestamp = run_until_timestamp
 
     def process_all_files(self):
+        if not self.collection.check_data and not self.collection.check_older_data_with_schema_version_1_1:
+            # nothing to do here, so ...
+            return
+
         for file_model in self.database.get_all_files_in_collection(self.collection.database_id):
             self.process_file(file_model=file_model)
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def process_file(self, file_model):
         for file_item_model in self.database.get_all_files_items_in_file(file_model):
             self.process_file_item(file_item_model=file_item_model)
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def process_file_item(self, file_item_model):
         with self.database.get_engine().begin() as connection:
@@ -32,6 +42,9 @@ class Checks:
                 and self.is_schema_version_less_than_1_1(release_row['package_data_id']) \
                     and not self.database.is_release_check_done(release_row['id'], override_schema_version="1.1"):
                         self.check_release_row(release_row, override_schema_version="1.1")
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
         del release_rows
 
@@ -49,6 +62,9 @@ class Checks:
                 and self.is_schema_version_less_than_1_1(record_row['package_data_id']) \
                     and not self.database.is_record_check_done(record_row['id'], override_schema_version="1.1"):
                         self.check_record_row(record_row, override_schema_version="1.1")
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def handle_package(self, package):
         cove_temp_folder = tempfile.mkdtemp(prefix='ocdskingfisher-cove-', dir=tempfile.gettempdir())
