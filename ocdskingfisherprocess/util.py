@@ -3,6 +3,8 @@ import requests
 import json
 import hashlib
 import datetime
+import tempfile
+import os
 
 RETRY_TIME = 10
 
@@ -57,7 +59,6 @@ control_codes_to_filter_out = [
     b'\x07',
     b'\x08',
     b'\x09',
-    b'\x0A',
     b'\x0B',
     b'\x0C',
     b'\x0D',
@@ -87,6 +88,62 @@ def control_code_to_filter_out_to_human_readable(control_code_to_filter_out):
         return 'chr('+str(ord(control_code_to_filter_out))+')'
     else:
         return control_code_to_filter_out
+
+
+class FileToStore:
+
+    def __init__(self, source_filename, encoding='utf-8'):
+        self.source_filename = source_filename
+        self.processed_filename = None
+        self.warnings = []
+        # We don't actually do anything with encoding yet, but we might need to later ...
+        self.encoding = encoding
+
+    def __enter__(self):
+        if self._have_to_process_file():
+            (fp_write, fn_write) = tempfile.mkstemp(prefix='tmp_kingfisher_process_')
+
+            with open(self.source_filename, 'rb') as fp_read:
+                while True:
+                    chunk = fp_read.read(1024 ^ 2)
+                    if not chunk:
+                        break
+                    for control_code_to_filter_out in control_codes_to_filter_out:
+                        if control_code_to_filter_out in chunk:
+                            chunk = chunk.replace(control_code_to_filter_out, b'')
+                            warning = 'We had to replace control codes: ' \
+                                      + control_code_to_filter_out_to_human_readable(control_code_to_filter_out)
+                            if warning not in self.warnings:
+                                self.warnings.append(warning)
+                    os.write(fp_write, chunk)
+
+            os.close(fp_write)
+            self.processed_filename = fn_write
+
+        return self
+
+    def _have_to_process_file(self):
+        with open(self.source_filename, 'rb') as fp_read:
+            while True:
+                chunk = fp_read.read(1024 ^ 2)
+                if not chunk:
+                    break
+                for control_code_to_filter_out in control_codes_to_filter_out:
+                    if control_code_to_filter_out in chunk:
+                        return True
+        return False
+
+    def get_filename(self):
+        if self.processed_filename:
+            return self.processed_filename
+        else:
+            return self.source_filename
+
+    def get_warnings(self):
+        return self.warnings
+
+    def __exit__(self, type, value, traceback):
+        pass
 
 
 def save_content(url, filepath, headers=None, verify_ssl=True, replace_control_codes=True):

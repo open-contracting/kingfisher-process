@@ -1,5 +1,6 @@
 import json
 from ocdskingfisherprocess.database import DatabaseStore
+from ocdskingfisherprocess.util import FileToStore
 
 
 class Store:
@@ -31,33 +32,36 @@ class Store:
 
     def store_file_from_local(self, filename, url, data_type, encoding, local_filename):
 
-        if data_type == 'release_package_json_lines' or data_type == 'record_package_json_lines':
-            try:
-                with open(local_filename, encoding=encoding) as f:
-                    number = 0
-                    raw_data = f.readline()
-                    while raw_data:
-                        self.store_file_item(filename, url, data_type, json.loads(raw_data), number)
+        with FileToStore(local_filename, encoding=encoding) as file_to_store:
+
+            if data_type == 'release_package_json_lines' or data_type == 'record_package_json_lines':
+                try:
+                    with open(file_to_store.get_filename(), encoding=encoding) as f:
+                        number = 0
                         raw_data = f.readline()
-                        number += 1
-            except Exception as e:
-                raise e
-                # TODO Store error in database and make nice HTTP response!
+                        while raw_data:
+                            self.store_file_item(filename, url, data_type, json.loads(raw_data), number)
+                            raw_data = f.readline()
+                            number += 1
+                except Exception as e:
+                    raise e
+                    # TODO Store error in database and make nice HTTP response!
 
-            self.database.mark_collection_file_store_done(self.collection_id, filename)
+                self.database.mark_collection_file_store_done(self.collection_id, filename,
+                                                              warnings=file_to_store.get_warnings())
 
-        else:
-            try:
-                with open(local_filename, encoding=encoding) as f:
-                    data = json.load(f)
+            else:
+                try:
+                    with open(file_to_store.get_filename(), encoding=encoding) as f:
+                        data = json.load(f)
 
-            except Exception as e:
-                raise e
-                # TODO Store error in database and make nice HTTP response!
+                except Exception as e:
+                    raise e
+                    # TODO Store error in database and make nice HTTP response!
 
-            self.store_file_from_data(filename, url, data_type, data)
+                self.store_file_from_data(filename, url, data_type, data, file_warnings=file_to_store.get_warnings())
 
-    def store_file_from_data(self, filename, url, data_type, data):
+    def store_file_from_data(self, filename, url, data_type, data, file_warnings=None):
 
         objects_list = []
         if data_type == 'record_package_list_in_results':
@@ -80,7 +84,7 @@ class Store:
                 raise e
                 # TODO Store error in database and make nice HTTP response!
 
-        self.database.mark_collection_file_store_done(self.collection_id, filename)
+        self.database.mark_collection_file_store_done(self.collection_id, filename, warnings=file_warnings)
 
     def store_file_item_from_local(self, filename, url, data_type, encoding, number, local_filename):
 
