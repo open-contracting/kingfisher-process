@@ -18,12 +18,14 @@ class Checks:
 
         for file_model in self.database.get_all_files_in_collection(self.collection.database_id):
             self.process_file(file_model=file_model)
+            # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
     def process_file(self, file_model):
         for file_item_model in self.database.get_all_files_items_in_file(file_model):
             self.process_file_item(file_item_model=file_item_model)
+            # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 

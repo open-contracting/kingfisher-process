@@ -22,5 +22,6 @@ You can pass the `verbose` flag to all sub commands, to get more output printed 
    cli-new-transform-compile-releases.rst
    cli-new-transform-upgrade-1-0-to-1-1.rst
    cli-transform-collection.rst
+   cli-transform-collections.rst
 
 

@@ -1,6 +1,7 @@
 from ocdskingfisherprocess.transform.base import BaseTransform
 from ocdskit.upgrade import upgrade_10_11
 import sqlalchemy as sa
+import datetime
 
 
 class Upgrade10To11Transform(BaseTransform):
@@ -9,10 +10,16 @@ class Upgrade10To11Transform(BaseTransform):
     def process(self):
         for file_model in self.database.get_all_files_in_collection(self.source_collection.database_id):
             self.process_file(file_model)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def process_file(self, file_model):
         for file_item_model in self.database.get_all_files_items_in_file(file_model):
             self.process_file_item(file_model, file_item_model)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def process_file_item(self, file_model, file_item_model):
         with self.database.get_engine().begin() as connection:
@@ -24,6 +31,9 @@ class Upgrade10To11Transform(BaseTransform):
         for release_row in release_rows:
             if not self.has_release_id_been_done(release_row['id']):
                 self.process_release_row(file_model, file_item_model, release_row)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
         del release_rows
 
@@ -36,6 +46,9 @@ class Upgrade10To11Transform(BaseTransform):
         for record_row in record_rows:
             if not self.has_record_id_been_done(record_row['id']):
                 self.process_record_row(file_model, file_item_model, record_row)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def process_release_row(self, file_model, file_item_model, release_row):
         package = self.database.get_package_data(release_row.package_data_id)
