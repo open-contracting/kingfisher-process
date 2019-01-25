@@ -43,13 +43,13 @@ Store Item
 
 The end point is /api/v1/submit/item/
 
-You must pass all the data as one JSON object in the body of a post request.
+Pass data as POST variables.
 
 Firstly, you must pass details of the collection.
 
 *  `collection_source` - String.
 *  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
-*  `collection_sample` - Boolean.
+*  `collection_sample` - String. Pass "true" for True.
 
 Secondly, you must pass details of the file.
 
@@ -61,5 +61,5 @@ Thirdly, you must pass details of the item in the file.
 
 * `number` - Integer.
 
-Finally, pass the actual file loaded as JSON data in the `data` key.
+Finally, pass the data as a string in the `data` key.
 
