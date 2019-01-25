@@ -5,6 +5,7 @@ from ocdskingfisherprocess.database import DataBase
 from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean
 import tempfile
 import os
+import json
 
 config = Config()
 config.load_user_config()
@@ -99,11 +100,9 @@ def api_v1_submit_item():
     database = DataBase(config=config)
     store = Store(config=config, database=database)
 
-    data = request.get_json()
-
-    collection_source = data.get('collection_source')
-    collection_data_version = parse_string_to_date_time(data.get('collection_data_version'))
-    collection_sample = data.get('collection_sample', False)
+    collection_source = request.form.get('collection_source')
+    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
 
     store.load_collection(
         collection_source,
@@ -111,16 +110,18 @@ def api_v1_submit_item():
         collection_sample,
     )
 
-    file_filename = data.get('file_name')
-    file_url = data.get('url')
-    file_data_type = data.get('data_type')
-    item_number = int(data.get('number'))
+    file_filename = request.form.get('file_name')
+    file_url = request.form.get('url')
+    file_data_type = request.form.get('data_type')
+    item_number = int(request.form.get('number'))
+
+    data = json.loads(request.form.get('data'))
 
     store.store_file_item(
         file_filename,
         file_url,
         file_data_type,
-        data.get('data'),
+        data,
         item_number,
     )
 
