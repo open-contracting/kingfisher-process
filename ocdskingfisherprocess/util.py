@@ -196,3 +196,7 @@ def parse_string_to_date_time(date_time_string):
     else:
         # But some of our test code uses this format so we'll allow that too.
         return datetime.datetime.strptime(date_time_string, "%Y-%m-%d-%H-%M-%S")
+
+
+def parse_string_to_boolean(boolean_string):
+    return True if boolean_string and boolean_string in ['1', 'true', 't'] else False

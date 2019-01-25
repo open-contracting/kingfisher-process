@@ -21,23 +21,22 @@ Store File
 
 The end point is /api/v1/submit/file/
 
-You must pass all the data as one JSON object in the body of a post request.
-
-The JSON object needs to contain a number of keys.
+Pass data as POST variables.
 
 Firstly, you must pass details of the collection.
 
 *  `collection_source` - String.
 *  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
-*  `collection_sample` - Boolean.
+*  `collection_sample` - String. Pass "true" for True.
 
 Secondly, you must pass details of the file.
 
 * `file_name` - String.
 * `url` - String.
 * `data_type` -  String. See section on file data types in :doc:`data-model`.
+* `encoding` - String. Defaults to `utf-8`.
 
-Finally, pass the actual file loaded as JSON data in the `data` key.
+Finally, pass the actual file as an attached file in the "file" key.
 
 Store Item
 ----------

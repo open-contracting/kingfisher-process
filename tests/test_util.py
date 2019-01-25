@@ -1,5 +1,25 @@
-from ocdskingfisherprocess.util import parse_string_to_date_time, FileToStore
+from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore
 import os
+
+
+def test_parse_string_to_boolean_1():
+    assert True == parse_string_to_boolean("true") # noqa
+
+
+def test_parse_string_to_boolean_2():
+    assert False == parse_string_to_boolean("false") # noqa
+
+
+def test_parse_string_to_boolean_3():
+    assert True == parse_string_to_boolean("t") # noqa
+
+
+def test_parse_string_to_boolean_4():
+    assert False == parse_string_to_boolean("") # noqa
+
+
+def test_parse_string_to_boolean_5():
+    assert False == parse_string_to_boolean(None) # noqa
 
 
 def test_parse_string_to_date_time_1():

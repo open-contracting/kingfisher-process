@@ -1,5 +1,5 @@
 from tests.base import BaseWebTest
-import json
+import io
 
 
 class TestWebAPIV1(BaseWebTest):
@@ -10,18 +10,16 @@ class TestWebAPIV1(BaseWebTest):
         data = {
             'collection_source': 'test',
             'collection_data_version': '2018-10-10 00:12:23',
-            'collection_sample': True,
+            'collection_sample': 'true',
             'file_name': 'test.json',
             'url': 'http://example.com',
             'data_type': 'record',
-            'data': {
-                'valid_data': 'Totally. It totally is.'
-            }
+            'file': (io.BytesIO(b' {"valid_data": "Totally. It totally is."}'), "data.json")
         }
 
         result = self.flaskclient.post('/api/v1/submit/file/',
-                                       data=json.dumps(data),
-                                       content_type='application/json',
+                                       data=data,
+                                       content_type='multipart/form-data',
                                        headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
 
         assert result.status_code == 200
