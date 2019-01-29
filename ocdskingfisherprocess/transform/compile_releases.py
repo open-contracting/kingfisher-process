@@ -1,6 +1,7 @@
 from ocdskingfisherprocess.transform.base import BaseTransform
 import sqlalchemy as sa
 import ocdsmerge
+import datetime
 
 
 class CompileReleasesTransform(BaseTransform):
@@ -10,6 +11,9 @@ class CompileReleasesTransform(BaseTransform):
         for ocid in self.get_ocids():
             if not self.has_ocid_been_transformed(ocid):
                 self.process_ocid(ocid)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
 
     def get_ocids(self):
         ocids = []

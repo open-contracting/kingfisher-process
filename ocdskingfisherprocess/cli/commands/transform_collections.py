@@ -1,13 +1,13 @@
 import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.checks import Checks
+from ocdskingfisherprocess.transform.util import get_transform_instance
 import datetime
 from threading import Timer
 import os
 
 
-class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
-    command = 'check-collections'
+class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
+    command = 'transform-collections'
 
     def configure_subparser(self, subparser):
         subparser.add_argument("--runforseconds",
@@ -26,8 +26,10 @@ class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
             Timer(run_for_seconds + 60, exitfunc).start()
 
         for collection in self.database.get_all_collections():
-            checks = Checks(self.database, collection, run_until_timestamp=run_until_timestamp)
-            checks.process_all_files()
+            if collection.transform_type:
+                transform = get_transform_instance(collection.transform_type, self.config, self.database,
+                                                   collection, run_until_timestamp=run_until_timestamp)
+                transform.process()
             # Early return?
             if run_until_timestamp and run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 break
