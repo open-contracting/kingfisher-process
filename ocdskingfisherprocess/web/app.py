@@ -77,14 +77,24 @@ def api_v1_submit_file():
     file_data_type = request.form.get('data_type')
     file_encoding = request.form.get('encoding', 'utf-8')
 
-    (tmp_file, tmp_filename) = tempfile.mkstemp(prefix="ocdskf-")
-    os.close(tmp_file)
+    if 'file' in request.files:
 
-    request.files['file'].save(tmp_filename)
+        (tmp_file, tmp_filename) = tempfile.mkstemp(prefix="ocdskf-")
+        os.close(tmp_file)
 
-    store.store_file_from_local(file_filename, file_url, file_data_type, file_encoding, tmp_filename)
+        request.files['file'].save(tmp_filename)
 
-    os.remove(tmp_filename)
+        store.store_file_from_local(file_filename, file_url, file_data_type, file_encoding, tmp_filename)
+
+        os.remove(tmp_filename)
+
+    elif 'local_file_name' in request.form:
+
+        store.store_file_from_local(file_filename, file_url, file_data_type, file_encoding, request.form.get('local_file_name'))
+
+    else:
+
+        raise Exception('Did not send file data')
 
     return "OCDS Kingfisher APIs V1 Submit"
 
