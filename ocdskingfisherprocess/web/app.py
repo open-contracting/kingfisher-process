@@ -51,6 +51,34 @@ def api_v1():
     return "OCDS Kingfisher APIs V1"
 
 
+@app.route("/api/v1/submit/end_collection_store/", methods=['POST'])
+def api_v1_submit_end_collection_store():
+    api_key = request.headers.get('Authorization')[len('ApiKey '):]
+    if not api_key or api_key not in config.web_api_keys:
+        return "ACCESS DENIED"  # TODO proper error
+
+    # TODO check all required fields are there!
+
+    database = DataBase(config=config)
+    store = Store(config=config, database=database)
+
+    collection_source = request.form.get('collection_source')
+    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
+
+    store.load_collection(
+        collection_source,
+        collection_data_version,
+        collection_sample,
+    )
+
+    if store.is_collection_store_ended():
+        return "OCDS Kingfisher APIs V1 Submit - Already Done!"
+    else:
+        store.end_collection_store()
+        return "OCDS Kingfisher APIs V1 Submit"
+
+
 @app.route("/api/v1/submit/file/", methods=['POST'])
 def api_v1_submit_file():
     api_key = request.headers.get('Authorization')[len('ApiKey '):]

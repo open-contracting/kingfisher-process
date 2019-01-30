@@ -286,16 +286,18 @@ class DataBase:
         out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table])
-            for result in connection.execute(s):
+            for collection in connection.execute(s):
                 out.append(CollectionModel(
-                    database_id=result['id'],
-                    source_id=result['source_id'],
-                    data_version=result['data_version'],
-                    sample=result['sample'],
-                    transform_type=result['transform_type'],
-                    transform_from_collection_id=result['transform_from_collection_id'],
-                    check_data=result['check_data'],
-                    check_older_data_with_schema_version_1_1=result['check_older_data_with_schema_version_1_1'],
+                    database_id=collection['id'],
+                    source_id=collection['source_id'],
+                    data_version=collection['data_version'],
+                    sample=collection['sample'],
+                    transform_type=collection['transform_type'],
+                    transform_from_collection_id=collection['transform_from_collection_id'],
+                    check_data=collection['check_data'],
+                    check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
+                    store_start_at=collection['store_start_at'],
+                    store_end_at=collection['store_end_at'],
                 ))
         return out
 
@@ -315,6 +317,8 @@ class DataBase:
                     transform_from_collection_id=collection['transform_from_collection_id'],
                     check_data=collection['check_data'],
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
+                    store_start_at=collection['store_start_at'],
+                    store_end_at=collection['store_end_at'],
                 )
 
     def get_all_files_in_collection(self, collection_id):
@@ -404,6 +408,15 @@ class DataBase:
             result = connection.execute(s)
             data_row = result.fetchone()
             return data_row['data']
+
+    def mark_collection_store_done(self, collection_id):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(store_end_at=datetime.datetime.utcnow())
+            )
+            # TODO Mark store_end_at on all files not yet marked
 
 
 class DatabaseStore:

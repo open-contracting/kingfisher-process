@@ -66,3 +66,18 @@ Thirdly, you must pass details of the item in the file.
 
 Finally, pass the data as a string in the `data` key.
 
+End Collection Store
+--------------------
+
+You can call this to say that a collection's store stage is done, and no more files or items will be sent.
+This is important because some transforms can only run on completely stored collections.
+
+The end point is /api/v1/submit/end_collection_store/
+
+Pass data as POST variables.
+
+You must pass details of the collection.
+
+*  `collection_source` - String.
+*  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
+*  `collection_sample` - String. Pass "true" for True.
