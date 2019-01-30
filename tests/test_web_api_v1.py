@@ -32,6 +32,7 @@ class TestWebAPIV1(BaseWebTest):
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'
 
     def test_api_v1_submit_local_file(self):
         self.setup_main_database()
@@ -63,6 +64,7 @@ class TestWebAPIV1(BaseWebTest):
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'
 
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.record_table])
@@ -102,3 +104,4 @@ class TestWebAPIV1(BaseWebTest):
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'

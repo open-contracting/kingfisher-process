@@ -108,7 +108,8 @@ class Store:
         if not isinstance(json_data, dict):
             raise Exception("Can not process data as JSON is not an object")
 
-        with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number) as store:
+        with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number,
+                           url=url) as store:
 
             if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release':
                 data_list = [json_data]

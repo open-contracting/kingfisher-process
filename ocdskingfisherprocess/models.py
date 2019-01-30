@@ -14,9 +14,10 @@ class CollectionModel:
 
 class FileModel:
 
-    def __init__(self, database_id=None, filename=None):
+    def __init__(self, database_id=None, filename=None, url=None):
         self.database_id = database_id
         self.filename = filename
+        self.url = url
 
 
 class FileItemModel:

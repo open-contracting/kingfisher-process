@@ -49,6 +49,7 @@ class DataBase:
                                                                       name="fk_collection_file_collection_id"),
                                                         nullable=False),
                                               sa.Column('filename', sa.Text, nullable=True),
+                                              sa.Column('url', sa.Text, nullable=True),
                                               sa.Column('store_start_at', sa.DateTime(timezone=False),
                                                         nullable=True),
                                               sa.Column('store_end_at', sa.DateTime(timezone=False),
@@ -325,7 +326,7 @@ class DataBase:
                 out.append(FileModel(
                     database_id=result['id'],
                     filename=result['filename'],
-
+                    url=result['url'],
                 ))
         return out
 
@@ -407,10 +408,11 @@ class DataBase:
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number):
+    def __init__(self, database, collection_id, file_name, number, url=None):
         self.database = database
         self.collection_id = collection_id
         self.file_name = file_name
+        self.url = url
         self.number = number
         self.connection = None
         self.transaction = None
@@ -436,6 +438,7 @@ class DatabaseStore:
                 'collection_id': self.collection_id,
                 'filename': self.file_name,
                 'store_start_at': datetime.datetime.utcnow(),
+                'url': self.url,
                 # TODO store warning?
             })
             # TODO look for unique key clashes, error appropriately!
