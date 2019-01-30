@@ -36,7 +36,10 @@ Secondly, you must pass details of the file.
 * `data_type` -  String. See section on file data types in :doc:`data-model`.
 * `encoding` - String. Defaults to `utf-8`.
 
-Finally, pass the actual file as an attached file in the "file" key.
+Finally, the actual file data must be passed. This can be done in one of several ways:
+
+* Pass the actual file as an attached file in the `file` key.
+* If the file is available in the local file system and the user running the API server can read it, you can pass the full filename as a POST variable with the key `local_file_name`. For large files, this saves transferring the contents over HTTP.
 
 Store Item
 ----------
