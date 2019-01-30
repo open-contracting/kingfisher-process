@@ -55,6 +55,7 @@ class DataBase:
                                               sa.Column('store_end_at', sa.DateTime(timezone=False),
                                                         nullable=True),
                                               sa.Column('warnings', JSONB, nullable=True),
+                                              sa.Column('errors', JSONB, nullable=True),
                                               sa.UniqueConstraint('collection_id', 'filename',
                                                                   name='unique_collection_file_identifiers'),
                                               )
@@ -326,11 +327,15 @@ class DataBase:
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_table]) \
                 .where(self.collection_file_table.c.collection_id == collection_id)
-            for result in connection.execute(s):
+            for collection_file in connection.execute(s):
                 out.append(FileModel(
-                    database_id=result['id'],
-                    filename=result['filename'],
-                    url=result['url'],
+                    database_id=collection_file['id'],
+                    filename=collection_file['filename'],
+                    url=collection_file['url'],
+                    warnings=collection_file['warnings'],
+                    errors=collection_file['errors'],
+                    store_start_at=collection_file['store_start_at'],
+                    store_end_at=collection_file['store_end_at'],
                 ))
         return out
 
@@ -417,6 +422,25 @@ class DataBase:
                     .values(store_end_at=datetime.datetime.utcnow())
             )
             # TODO Mark store_end_at on all files not yet marked
+
+    def store_collection_file_errors(self, collection_id, file_name, url, errors):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.collection_file_table]) \
+                .where((self.collection_file_table.c.collection_id == collection_id) &
+                       (self.collection_file_table.c.filename == file_name))
+            result = connection.execute(s)
+
+            collection_file_table_row = result.fetchone()
+
+            if collection_file_table_row:
+                return
+
+            connection.execute(self.collection_file_table.insert(), {
+                'collection_id': collection_id,
+                'filename': file_name,
+                'url': url,
+                'errors': errors,
+            })
 
 
 class DatabaseStore:

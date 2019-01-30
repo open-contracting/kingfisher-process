@@ -164,3 +164,34 @@ def api_v1_submit_item():
     )
 
     return "OCDS Kingfisher APIs V1 Submit"
+
+
+@app.route("/api/v1/submit/file_errors/", methods=['POST'])
+def api_v1_submit_file_errors():
+    api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
+    if not api_key or api_key not in config.web_api_keys:
+        return "ACCESS DENIED", 401
+
+    # TODO check all required fields are there!
+
+    database = DataBase(config=config)
+    store = Store(config=config, database=database)
+
+    collection_source = request.form.get('collection_source')
+    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
+    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
+
+    store.load_collection(
+        collection_source,
+        collection_data_version,
+        collection_sample,
+    )
+
+    file_filename = request.form.get('file_name')
+    file_errors_raw = request.form.get('errors')
+    file_errors = json.loads(file_errors_raw)
+    file_url = request.form.get('url')
+
+    store.store_file_errors(file_filename, file_url, file_errors)
+
+    return "OCDS Kingfisher APIs V1 Submit"

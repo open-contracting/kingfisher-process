@@ -40,6 +40,9 @@ class Store:
     def end_collection_store(self):
         self.database.mark_collection_store_done(self.collection_id)
 
+    def store_file_errors(self, filename, url, errors):
+        self.database.store_collection_file_errors(self.collection_id, filename, url, errors)
+
     def store_file_from_local(self, filename, url, data_type, encoding, local_filename):
 
         with FileToStore(local_filename, encoding=encoding) as file_to_store:
