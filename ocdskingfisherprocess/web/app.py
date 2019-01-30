@@ -53,9 +53,9 @@ def api_v1():
 
 @app.route("/api/v1/submit/end_collection_store/", methods=['POST'])
 def api_v1_submit_end_collection_store():
-    api_key = request.headers.get('Authorization')[len('ApiKey '):]
+    api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
     if not api_key or api_key not in config.web_api_keys:
-        return "ACCESS DENIED"  # TODO proper error
+        return "ACCESS DENIED", 401
 
     # TODO check all required fields are there!
 
@@ -81,9 +81,9 @@ def api_v1_submit_end_collection_store():
 
 @app.route("/api/v1/submit/file/", methods=['POST'])
 def api_v1_submit_file():
-    api_key = request.headers.get('Authorization')[len('ApiKey '):]
+    api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
     if not api_key or api_key not in config.web_api_keys:
-        return "ACCESS DENIED"  # TODO proper error
+        return "ACCESS DENIED", 401
 
     # TODO check all required fields are there!
 
@@ -129,9 +129,9 @@ def api_v1_submit_file():
 
 @app.route("/api/v1/submit/item/", methods=['POST'])
 def api_v1_submit_item():
-    api_key = request.headers.get('Authorization')[len('ApiKey '):]
+    api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
     if not api_key or api_key not in config.web_api_keys:
-        return "ACCESS DENIED"  # TODO proper error
+        return "ACCESS DENIED", 401
 
     # TODO check all required fields are there!
 
