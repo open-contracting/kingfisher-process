@@ -41,9 +41,9 @@ class Checks:
                 self.check_release_row(release_row)
             # Do 1.1 check?
             if self.collection.check_older_data_with_schema_version_1_1 \
-                and self.is_schema_version_less_than_1_1(release_row['package_data_id']) \
+                    and self.is_schema_version_less_than_1_1(release_row['package_data_id']) \
                     and not self.database.is_release_check_done(release_row['id'], override_schema_version="1.1"):
-                        self.check_release_row(release_row, override_schema_version="1.1")
+                self.check_release_row(release_row, override_schema_version="1.1")
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
@@ -61,9 +61,9 @@ class Checks:
                 self.check_record_row(record_row)
             # Do 1.1 check?
             if self.collection.check_older_data_with_schema_version_1_1 \
-                and self.is_schema_version_less_than_1_1(record_row['package_data_id']) \
+                    and self.is_schema_version_less_than_1_1(record_row['package_data_id']) \
                     and not self.database.is_record_check_done(record_row['id'], override_schema_version="1.1"):
-                        self.check_record_row(record_row, override_schema_version="1.1")
+                self.check_record_row(record_row, override_schema_version="1.1")
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
