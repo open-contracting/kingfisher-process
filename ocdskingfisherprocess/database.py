@@ -49,11 +49,13 @@ class DataBase:
                                                                       name="fk_collection_file_collection_id"),
                                                         nullable=False),
                                               sa.Column('filename', sa.Text, nullable=True),
+                                              sa.Column('url', sa.Text, nullable=True),
                                               sa.Column('store_start_at', sa.DateTime(timezone=False),
                                                         nullable=True),
                                               sa.Column('store_end_at', sa.DateTime(timezone=False),
                                                         nullable=True),
                                               sa.Column('warnings', JSONB, nullable=True),
+                                              sa.Column('errors', JSONB, nullable=True),
                                               sa.UniqueConstraint('collection_id', 'filename',
                                                                   name='unique_collection_file_identifiers'),
                                               )
@@ -285,16 +287,18 @@ class DataBase:
         out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table])
-            for result in connection.execute(s):
+            for collection in connection.execute(s):
                 out.append(CollectionModel(
-                    database_id=result['id'],
-                    source_id=result['source_id'],
-                    data_version=result['data_version'],
-                    sample=result['sample'],
-                    transform_type=result['transform_type'],
-                    transform_from_collection_id=result['transform_from_collection_id'],
-                    check_data=result['check_data'],
-                    check_older_data_with_schema_version_1_1=result['check_older_data_with_schema_version_1_1'],
+                    database_id=collection['id'],
+                    source_id=collection['source_id'],
+                    data_version=collection['data_version'],
+                    sample=collection['sample'],
+                    transform_type=collection['transform_type'],
+                    transform_from_collection_id=collection['transform_from_collection_id'],
+                    check_data=collection['check_data'],
+                    check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
+                    store_start_at=collection['store_start_at'],
+                    store_end_at=collection['store_end_at'],
                 ))
         return out
 
@@ -314,6 +318,8 @@ class DataBase:
                     transform_from_collection_id=collection['transform_from_collection_id'],
                     check_data=collection['check_data'],
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
+                    store_start_at=collection['store_start_at'],
+                    store_end_at=collection['store_end_at'],
                 )
 
     def get_all_files_in_collection(self, collection_id):
@@ -321,11 +327,15 @@ class DataBase:
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_table]) \
                 .where(self.collection_file_table.c.collection_id == collection_id)
-            for result in connection.execute(s):
+            for collection_file in connection.execute(s):
                 out.append(FileModel(
-                    database_id=result['id'],
-                    filename=result['filename'],
-
+                    database_id=collection_file['id'],
+                    filename=collection_file['filename'],
+                    url=collection_file['url'],
+                    warnings=collection_file['warnings'],
+                    errors=collection_file['errors'],
+                    store_start_at=collection_file['store_start_at'],
+                    store_end_at=collection_file['store_end_at'],
                 ))
         return out
 
@@ -404,13 +414,42 @@ class DataBase:
             data_row = result.fetchone()
             return data_row['data']
 
+    def mark_collection_store_done(self, collection_id):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(store_end_at=datetime.datetime.utcnow())
+            )
+            # TODO Mark store_end_at on all files not yet marked
+
+    def store_collection_file_errors(self, collection_id, file_name, url, errors):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.collection_file_table]) \
+                .where((self.collection_file_table.c.collection_id == collection_id) &
+                       (self.collection_file_table.c.filename == file_name))
+            result = connection.execute(s)
+
+            collection_file_table_row = result.fetchone()
+
+            if collection_file_table_row:
+                return
+
+            connection.execute(self.collection_file_table.insert(), {
+                'collection_id': collection_id,
+                'filename': file_name,
+                'url': url,
+                'errors': errors,
+            })
+
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number):
+    def __init__(self, database, collection_id, file_name, number, url=None):
         self.database = database
         self.collection_id = collection_id
         self.file_name = file_name
+        self.url = url
         self.number = number
         self.connection = None
         self.transaction = None
@@ -436,6 +475,7 @@ class DatabaseStore:
                 'collection_id': self.collection_id,
                 'filename': self.file_name,
                 'store_start_at': datetime.datetime.utcnow(),
+                'url': self.url,
                 # TODO store warning?
             })
             # TODO look for unique key clashes, error appropriately!

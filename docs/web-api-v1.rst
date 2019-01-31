@@ -66,3 +66,38 @@ Thirdly, you must pass details of the item in the file.
 
 Finally, pass the data as a string in the `data` key.
 
+End Collection Store
+--------------------
+
+You can call this to say that a collection's store stage is done, and no more files or items will be sent.
+This is important because some transforms can only run on completely stored collections.
+
+The end point is /api/v1/submit/end_collection_store/
+
+Pass data as POST variables.
+
+You must pass details of the collection.
+
+*  `collection_source` - String.
+*  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
+*  `collection_sample` - String. Pass "true" for True.
+
+File Errors
+-----------
+
+You can call this if errors prevented a file from being got from a remote API at all. It will simply store the errors in the database for later analysis.
+
+Pass data as POST variables.
+
+Firstly, you must pass details of the collection.
+
+*  `collection_source` - String.
+*  `collection_data_version` - String. In format YYYY-MM-DD HH:MM:SS
+*  `collection_sample` - String. Pass "true" for True.
+
+Secondly, you must pass details of the file.
+
+* `file_name` - String.
+* `url` - String.
+
+Finally, pass details of the errors in the `errors` key. The data should be a JSON List of strings.

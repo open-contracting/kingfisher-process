@@ -22,13 +22,26 @@ class Store:
     def __init__(self, config, database):
         self.config = config
         self.collection_id = None
+        self.collection = None
         self.database = database
 
     def load_collection(self, collection_source, collection_data_version, collection_sample):
         self.collection_id = self.database.get_or_create_collection_id(collection_source, collection_data_version, collection_sample)
 
     def set_collection(self, collection):
+        self.collection = collection
         self.collection_id = collection.database_id
+
+    def is_collection_store_ended(self):
+        if not self.collection:
+            self.collection = self.database.get_collection(self.collection_id)
+        return self.collection.store_end_at != None # noqa
+
+    def end_collection_store(self):
+        self.database.mark_collection_store_done(self.collection_id)
+
+    def store_file_errors(self, filename, url, errors):
+        self.database.store_collection_file_errors(self.collection_id, filename, url, errors)
 
     def store_file_from_local(self, filename, url, data_type, encoding, local_filename):
 
@@ -108,7 +121,8 @@ class Store:
         if not isinstance(json_data, dict):
             raise Exception("Can not process data as JSON is not an object")
 
-        with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number) as store:
+        with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number,
+                           url=url) as store:
 
             if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release':
                 data_list = [json_data]
