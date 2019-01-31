@@ -1,13 +1,12 @@
 {% extends 'app/base.html' %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Collection {{ collection.database_id }}{% endblock %}
 
-{% block header %}
-{% endblock %}
+{% block header %}Collection {{ collection.database_id }}{% endblock %}
 
 {% block content %}
 
-    <table>
+    <table class="table">
         <tr>
             <th>Id</th>
             <td>{{ collection.database_id }}</td>
@@ -39,6 +38,24 @@
                 {% endif %}
             </td>
         </tr>
+        <tr>
+            <th>Store Start</th>
+            <td>{{ collection.store_start_at }}</td>
+        </tr>
+        <tr>
+            <th>Store End</th>
+            <td>{{ collection.store_end_at }}</td>
+        </tr>
+        <tr>
+            <th>Check Data</th>
+            <td>{% if collection.check_data %}Yes{% else %}No{% endif %}</td>
+        </tr>
+        <tr>
+            <th>Check Older Data With Schema Version 1.1</th>
+            <td>{% if collection.check_older_data_with_schema_version_1_1 %}Yes{% else %}No{% endif %}</td>
+        </tr>
     </table>
+
+    <a href="/app/collection/{{ collection.database_id }}/file" class="btn btn-primary">View Files</a>
 
 {% endblock %}
