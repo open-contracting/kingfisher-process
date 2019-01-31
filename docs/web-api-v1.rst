@@ -87,6 +87,8 @@ File Errors
 
 You can call this if errors prevented a file from being got from a remote API at all. It will simply store the errors in the database for later analysis.
 
+The end point is /api/v1/submit/file_errors/
+
 Pass data as POST variables.
 
 Firstly, you must pass details of the collection.
