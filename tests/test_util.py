@@ -1,4 +1,5 @@
-from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore
+from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore, \
+    control_codes_to_filter_out, control_code_to_filter_out_to_human_readable
 import os
 
 
@@ -55,3 +56,11 @@ def test_file_to_store_sample_1_0_record():
         assert file_to_store.get_filename() == json_filename
 
         assert len(file_to_store.get_warnings()) == 0
+
+
+def test_control_code_to_filter_out_to_human_readable():
+    for control_code_to_filter_out in control_codes_to_filter_out:
+        # This test just calls it and make sure it runs without crashing
+        # (some code was crashing, so wanted test to check all future values of control_codes_to_filter_out)
+        # We add it to a string, as this is what happens in real code. This catches any "must be str, not bytes" errors.
+        print(" " + control_code_to_filter_out_to_human_readable(control_code_to_filter_out))
