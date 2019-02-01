@@ -6,13 +6,17 @@
     </head>
     <body>
         <section class="content">
-          <header>
-            {% block header %}{% endblock %}
+          <header class="bg-light">
+              <h1>Kingfisher Process</h1>
+              <h2>{% block header %}{% endblock %}</h2>
+              <div class="text-right">{% block nav %}{% endblock %}<a href="/app/collection" class="btn btn-primary">All collections</a></div>
           </header>
           {% for message in get_flashed_messages() %}
             <div class="flash">{{ message }}</div>
           {% endfor %}
-          {% block content %}{% endblock %}
+          <div class="py-5">
+            {% block content %}{% endblock %}
+          </div>
         </section>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     </body>

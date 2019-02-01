@@ -1,0 +1,40 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Collection {{ collection.database_id }} Files{% endblock %}
+
+{% block header %}Collection {{ collection.database_id }} Files{% endblock %}
+
+{% block nav %}
+    <a href="/app/collection/{{ collection.database_id }}" class="btn btn-primary">Collection {{ collection.database_id }}</a>
+{% endblock %}
+
+{% block content %}
+
+    <table class="table">
+        <tr>
+            <th>Id</th>
+            <th>Filename</th>
+            <th>URL</th>
+            <th>Warnings</th>
+            <th>Errors</th>
+            <th>Store Start</th>
+            <th>Store End</th>
+            <th>&nbsp;</th>
+        </tr>
+        {% for file in files %}
+            <tr>
+                <td>{{ file.database_id }}</td>
+                <td>{{ file.filename }}</td>
+                <td>{{ file.url }}</td>
+                <td>{{ file.warnings }}</td>
+                <td>{{ file.errors }}</td>
+                <td>{{ file.store_start_at }}</td>
+                <td>{{ file.store_end_at }}</td>
+                <td>
+                    <!-- a href="/app/collection/{{ collection.database_id }}/file/{{ file.database_id }}" class="btn btn-primary">View</a -->
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}

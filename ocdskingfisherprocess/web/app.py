@@ -41,6 +41,14 @@ def app_collection_index(collection_id):
     return render_template("app/collection/index.html", collection=collection)
 
 
+@app.route("/app/collection/<collection_id>/file")
+def app_collection_files(collection_id):
+    database = DataBase(config=config)
+    collection = database.get_collection(collection_id)
+    files = database.get_all_files_in_collection(collection_id)
+    return render_template("app/collection/files.html", collection=collection, files=files)
+
+
 def _api_v1_check_authorization(request):
     api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
     return api_key and api_key in config.web_api_keys
