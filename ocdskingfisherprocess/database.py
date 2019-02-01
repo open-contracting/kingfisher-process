@@ -491,6 +491,10 @@ class DatabaseStore:
         # TODO look for unique key clashes, error appropriately!
         self.collection_file_item_id = value.inserted_primary_key[0]
 
+        # DB queries that will be used repeatably, we pre-build and reuse for speed
+        self.database_get_existing_data = sa.sql.expression.text("SELECT id FROM data WHERE hash_md5 = :hash_md5")
+        self.database_get_existing_package_data = sa.sql.expression.text("SELECT id FROM package_data WHERE hash_md5 = :hash_md5")
+
         return self
 
     def __exit__(self, type, value, traceback):
@@ -549,9 +553,7 @@ class DatabaseStore:
     def get_id_for_package_data(self, package_data):
 
         hash_md5 = get_hash_md5_for_data(package_data)
-
-        s = sa.sql.select([self.database.package_data_table]).where(self.database.package_data_table.c.hash_md5 == hash_md5)
-        result = self.connection.execute(s)
+        result = self.connection.execute(self.database_get_existing_package_data, {'hash_md5': hash_md5})
         existing_table_row = result.fetchone()
         if existing_table_row:
             return existing_table_row.id
@@ -564,9 +566,7 @@ class DatabaseStore:
     def get_id_for_data(self, data):
 
         hash_md5 = get_hash_md5_for_data(data)
-
-        s = sa.sql.select([self.database.data_table]).where(self.database.data_table.c.hash_md5 == hash_md5)
-        result = self.connection.execute(s)
+        result = self.connection.execute(self.database_get_existing_data, {'hash_md5': hash_md5})
         existing_table_row = result.fetchone()
         if existing_table_row:
             return existing_table_row.id
