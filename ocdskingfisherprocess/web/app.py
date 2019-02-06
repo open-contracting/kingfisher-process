@@ -1,11 +1,7 @@
-from flask import Flask, request, render_template
+from flask import Flask, render_template
 from ocdskingfisherprocess.config import Config
-from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.database import DataBase
-from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean
-import tempfile
-import os
-import json
+import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
 
 config = Config()
 config.load_user_config()
@@ -49,158 +45,17 @@ def app_collection_files(collection_id):
     return render_template("app/collection/files.html", collection=collection, files=files)
 
 
-def _api_v1_check_authorization(request):
-    api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
-    return api_key and api_key in config.web_api_keys
-
-
 @app.route("/api/")
 def api():
     return "OCDS Kingfisher APIs"
 
 
-@app.route("/api/v1/")
-def api_v1():
-    return "OCDS Kingfisher APIs V1"
-
-
-@app.route("/api/v1/submit/end_collection_store/", methods=['POST'])
-def api_v1_submit_end_collection_store():
-    if not _api_v1_check_authorization(request):
-        return "ACCESS DENIED", 401
-
-    # TODO check all required fields are there!
-
-    database = DataBase(config=config)
-    store = Store(config=config, database=database)
-
-    collection_source = request.form.get('collection_source')
-    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
-    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
-
-    store.load_collection(
-        collection_source,
-        collection_data_version,
-        collection_sample,
-    )
-
-    if store.is_collection_store_ended():
-        return "OCDS Kingfisher APIs V1 Submit - Already Done!"
-    else:
-        store.end_collection_store()
-        return "OCDS Kingfisher APIs V1 Submit"
-
-
-@app.route("/api/v1/submit/file/", methods=['POST'])
-def api_v1_submit_file():
-    if not _api_v1_check_authorization(request):
-        return "ACCESS DENIED", 401
-
-    # TODO check all required fields are there!
-
-    database = DataBase(config=config)
-    store = Store(config=config, database=database)
-
-    collection_source = request.form.get('collection_source')
-    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
-    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
-
-    store.load_collection(
-        collection_source,
-        collection_data_version,
-        collection_sample,
-    )
-
-    file_filename = request.form.get('file_name')
-    file_url = request.form.get('url')
-    file_data_type = request.form.get('data_type')
-    file_encoding = request.form.get('encoding', 'utf-8')
-
-    if 'file' in request.files:
-
-        (tmp_file, tmp_filename) = tempfile.mkstemp(prefix="ocdskf-")
-        os.close(tmp_file)
-
-        request.files['file'].save(tmp_filename)
-
-        store.store_file_from_local(file_filename, file_url, file_data_type, file_encoding, tmp_filename)
-
-        os.remove(tmp_filename)
-
-    elif 'local_file_name' in request.form:
-
-        store.store_file_from_local(file_filename, file_url, file_data_type, file_encoding, request.form.get('local_file_name'))
-
-    else:
-
-        raise Exception('Did not send file data')
-
-    return "OCDS Kingfisher APIs V1 Submit"
-
-
-@app.route("/api/v1/submit/item/", methods=['POST'])
-def api_v1_submit_item():
-    if not _api_v1_check_authorization(request):
-        return "ACCESS DENIED", 401
-
-    # TODO check all required fields are there!
-
-    database = DataBase(config=config)
-    store = Store(config=config, database=database)
-
-    collection_source = request.form.get('collection_source')
-    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
-    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
-
-    store.load_collection(
-        collection_source,
-        collection_data_version,
-        collection_sample,
-    )
-
-    file_filename = request.form.get('file_name')
-    file_url = request.form.get('url')
-    file_data_type = request.form.get('data_type')
-    item_number = int(request.form.get('number'))
-
-    data = json.loads(request.form.get('data'))
-
-    store.store_file_item(
-        file_filename,
-        file_url,
-        file_data_type,
-        data,
-        item_number,
-    )
-
-    return "OCDS Kingfisher APIs V1 Submit"
-
-
-@app.route("/api/v1/submit/file_errors/", methods=['POST'])
-def api_v1_submit_file_errors():
-    if not _api_v1_check_authorization(request):
-        return "ACCESS DENIED", 401
-
-    # TODO check all required fields are there!
-
-    database = DataBase(config=config)
-    store = Store(config=config, database=database)
-
-    collection_source = request.form.get('collection_source')
-    collection_data_version = parse_string_to_date_time(request.form.get('collection_data_version'))
-    collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
-
-    store.load_collection(
-        collection_source,
-        collection_data_version,
-        collection_sample,
-    )
-
-    file_filename = request.form.get('file_name')
-    file_errors_raw = request.form.get('errors')
-    file_errors = json.loads(file_errors_raw)
-    file_url = request.form.get('url')
-
-    store.store_file_errors(file_filename, file_url, file_errors)
-
-    return "OCDS Kingfisher APIs V1 Submit"
+app.add_url_rule('/api/v1/', view_func=views_api_v1.RootV1View.as_view('api_v1_root'))
+app.add_url_rule('/api/v1/submit/end_collection_store/',
+                 view_func=views_api_v1.SubmitEndCollectionStoreView.as_view('api_v1_submit_end_collection_store'))
+app.add_url_rule('/api/v1/submit/file/',
+                 view_func=views_api_v1.SubmitFileView.as_view('api_v1_submit_file'))
+app.add_url_rule('/api/v1/submit/item/',
+                 view_func=views_api_v1.SubmitItemView.as_view('api_v1_submit_item'))
+app.add_url_rule('/api/v1/submit/file_errors/',
+                 view_func=views_api_v1.SubmitFileErrorsView.as_view('api_v1_submit_file_errors'))

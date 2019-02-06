@@ -110,6 +110,8 @@ class FileToStore:
 
 
 def parse_string_to_date_time(date_time_string):
+    if not date_time_string:
+        return None
     if " " in date_time_string:
         # The docs define this format
         return datetime.datetime.strptime(date_time_string, "%Y-%m-%d %H:%M:%S")

@@ -249,3 +249,16 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].errors[0] == 'The error was ... because reasons.'
         assert files[0].store_start_at == None # noqa
         assert files[0].store_end_at == None # noqa
+
+    def test_api_v1_submit_item_nothing(self):
+        self.setup_main_database()
+
+        # Call
+        data = {
+        }
+
+        result = self.flaskclient.post('/api/v1/submit/item/',
+                                       data=data,
+                                       headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
+
+        assert result.status_code == 400
