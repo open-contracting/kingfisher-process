@@ -9,7 +9,7 @@ You need to create a collection to load the data into - see :doc:`cli-new-collec
 
     python ocdskingfisher-process-cli local-load 1 /data/moldova release_package
 
-- Pass the ID of the collection you want checked. Use :doc:`cli-list-collections` to look up the ID you want.
+- Pass the ID of the collection you want to load the data into. Use :doc:`cli-list-collections` to look up the ID you want.
 - Pass the directory you want to load files from.
 - Pass the type of the files. For possible options, see data types for files in :doc:`data-model`
 
