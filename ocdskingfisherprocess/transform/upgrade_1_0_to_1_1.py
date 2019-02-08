@@ -55,28 +55,26 @@ class Upgrade10To11Transform(BaseTransform):
         package['releases'] = [self.database.get_data(release_row.data_id)]
         upgrade_10_11(package)
 
-        self.store.store_file_item(file_model.filename, None, 'release_package', package, file_item_model.number)
-
-        # Doing it like this isn't the best; it means there are 2 DB transactions when really you want one.
-        # We'll put this in now and take a note to improve that.
-        with self.database.get_engine().begin() as connection:
-            connection.execute(self.database.transform_upgrade_1_0_to_1_1_status_release_table.insert(), {
+        def add_status(database, connection):
+            connection.execute(database.transform_upgrade_1_0_to_1_1_status_release_table.insert(), {
                 'source_release_id': release_row.id,
             })
+
+        self.store.store_file_item(file_model.filename, None, 'release_package', package, file_item_model.number,
+                                   before_db_transaction_ends_callback=add_status)
 
     def process_record_row(self, file_model, file_item_model, record_row):
         package = self.database.get_package_data(record_row.package_data_id)
         package['records'] = [self.database.get_data(record_row.data_id)]
         upgrade_10_11(package)
 
-        self.store.store_file_item(file_model.filename, None, 'record_package', package, file_item_model.number)
-
-        # Doing it like this isn't the best; it means there are 2 DB transactions when really you want one.
-        # We'll put this in now and take a note to improve that.
-        with self.database.get_engine().begin() as connection:
-            connection.execute(self.database.transform_upgrade_1_0_to_1_1_status_record_table.insert(), {
+        def add_status(database, connection):
+            connection.execute(database.transform_upgrade_1_0_to_1_1_status_record_table.insert(), {
                 'source_record_id': record_row.id,
             })
+
+        self.store.store_file_item(file_model.filename, None, 'record_package', package, file_item_model.number,
+                                   before_db_transaction_ends_callback=add_status)
 
     def has_release_id_been_done(self, release_id):
         with self.database.get_engine().begin() as connection:
