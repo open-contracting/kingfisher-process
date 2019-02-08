@@ -442,6 +442,53 @@ class DataBase:
                 'errors': errors,
             })
 
+    def get_releases_to_check(self, collection_id, override_schema_version=None):
+        data = {'collection_id': collection_id}
+        sql = """ SELECT
+                           release_with_collection.id,
+                           release_with_collection.data_id,
+                           release_with_collection.package_data_id
+                           FROM release_with_collection"""
+        if override_schema_version:
+            sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
+                          AND release_check.override_schema_version = :override_schema_version
+                       LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
+                          AND release_check_error.override_schema_version = :override_schema_version """
+            data['override_schema_version'] = override_schema_version
+        else:
+            sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
+                       LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id """
+        sql += """ WHERE release_with_collection.collection_id = :collection_id
+                    AND release_check.id IS NULL AND release_check_error.id IS NULL """
+
+        with self.get_engine().begin() as connection:
+            query = sa.sql.expression.text(sql)
+            return connection.execute(query, data)
+
+    def get_records_to_check(self, collection_id, override_schema_version=None):
+        data = {'collection_id': collection_id}
+        sql = """ SELECT
+                           record_with_collection.id,
+                           record_with_collection.data_id,
+                           record_with_collection.package_data_id
+                           FROM record_with_collection"""
+        if override_schema_version:
+            sql += """     LEFT JOIN record_check ON record_check.record_id = record_with_collection.id
+                              AND record_check.override_schema_version = :override_schema_version
+                           LEFT JOIN record_check_error ON record_check_error.record_id = record_check_error.id
+                              AND record_check_error.override_schema_version = :override_schema_version """
+            data['override_schema_version'] = override_schema_version
+        else:
+            sql += """
+                           LEFT JOIN record_check ON record_check.record_id = record_with_collection.id
+                           LEFT JOIN record_check_error ON record_check_error.record_id = record_check_error.id """
+        sql += """ WHERE record_with_collection.collection_id = :collection_id
+                    AND record_check.id IS NULL AND record_check_error.id IS NULL """
+
+        with self.get_engine().begin() as connection:
+            query = sa.sql.expression.text(sql)
+            return connection.execute(query, data)
+
 
 class DatabaseStore:
 
