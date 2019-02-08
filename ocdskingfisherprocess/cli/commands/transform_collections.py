@@ -27,6 +27,8 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
 
         for collection in self.database.get_all_collections():
             if collection.transform_type:
+                if not args.quiet:
+                    print("Collection " + str(collection.database_id))
                 transform = get_transform_instance(collection.transform_type, self.config, self.database,
                                                    collection, run_until_timestamp=run_until_timestamp)
                 transform.process()
