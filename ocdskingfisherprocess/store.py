@@ -116,13 +116,13 @@ class Store:
             raise e
             # TODO Store error in database and make nice HTTP response!
 
-    def store_file_item(self, filename, url, data_type, json_data, number):
+    def store_file_item(self, filename, url, data_type, json_data, number, before_db_transaction_ends_callback=None):
 
         if not isinstance(json_data, dict):
             raise Exception("Can not process data as JSON is not an object")
 
         with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number,
-                           url=url) as store:
+                           url=url, before_db_transaction_ends_callback=before_db_transaction_ends_callback) as store:
 
             if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release':
                 data_list = [json_data]

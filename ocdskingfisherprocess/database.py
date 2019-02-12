@@ -445,12 +445,13 @@ class DataBase:
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number, url=None):
+    def __init__(self, database, collection_id, file_name, number, url=None, before_db_transaction_ends_callback=None):
         self.database = database
         self.collection_id = collection_id
         self.file_name = file_name
         self.url = url
         self.number = number
+        self.before_db_transaction_ends_callback = before_db_transaction_ends_callback
         self.connection = None
         self.transaction = None
         self.collection_file_id = None
@@ -512,6 +513,9 @@ class DatabaseStore:
                 .where(self.database.collection_file_item_table.c.id == self.collection_file_item_id)
                 .values(store_end_at=datetime.datetime.utcnow())
             )
+
+            if self.before_db_transaction_ends_callback:
+                self.before_db_transaction_ends_callback(database=self.database, connection=self.connection)
 
             self.transaction.commit()
 
