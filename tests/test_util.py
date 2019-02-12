@@ -23,6 +23,10 @@ def test_parse_string_to_boolean_5():
     assert False == parse_string_to_boolean(None) # noqa
 
 
+def test_parse_string_to_boolean_6():
+    assert True == parse_string_to_boolean("True") # noqa
+
+
 def test_parse_string_to_date_time_1():
     date = parse_string_to_date_time("2019-04-01 10:11:12")
     assert "2019-04-01 10-11-12" == date.strftime("%Y-%m-%d %H-%M-%S")
