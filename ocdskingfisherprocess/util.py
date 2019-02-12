@@ -121,4 +121,4 @@ def parse_string_to_date_time(date_time_string):
 
 
 def parse_string_to_boolean(boolean_string):
-    return True if boolean_string and boolean_string in ['1', 'true', 't'] else False
+    return True if boolean_string and boolean_string.lower() in ['1', 'true', 't'] else False
