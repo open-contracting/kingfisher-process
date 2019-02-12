@@ -10,10 +10,10 @@ class UpgradeDataBaseCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComma
     def run_command(self, args):
 
         if args.deletefirst:
-            if args.verbose:
+            if not args.quiet:
                 print("Dropping Database")
             self.database.delete_tables()
 
-        if args.verbose:
+        if not args.quiet:
             print("Upgrading/Creating Database")
         self.database.create_tables()
