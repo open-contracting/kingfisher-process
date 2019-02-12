@@ -4,11 +4,11 @@ Command line tool
 
 You can use the tool with the provided CLI script. There are various sub commands.
 
-You can pass the `verbose` flag to all sub commands, to get more output printed to the terminal.
+You can pass the `quiet` flag to all sub commands, to get less output printed to the terminal.
 
 .. code-block:: shell-session
 
-    python ocdskingfisher-process-cli --verbose run ...
+    python ocdskingfisher-process-cli --quiet run ...
 
 .. toctree::
 

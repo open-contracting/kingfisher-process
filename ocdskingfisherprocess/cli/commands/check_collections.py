@@ -26,6 +26,8 @@ class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
             Timer(run_for_seconds + 60, exitfunc).start()
 
         for collection in self.database.get_all_collections():
+            if not args.quiet:
+                print("Collection " + str(collection.database_id))
             checks = Checks(self.database, collection, run_until_timestamp=run_until_timestamp)
             checks.process_all_files()
             # Early return?
