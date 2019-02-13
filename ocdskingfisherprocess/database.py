@@ -457,7 +457,9 @@ class DataBase:
             data['override_schema_version'] = override_schema_version
         else:
             sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
-                       LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id """
+                          AND release_check.override_schema_version IS NULL
+                       LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
+                          AND release_check_error.override_schema_version IS NULL """
         sql += """ WHERE release_with_collection.collection_id = :collection_id
                     AND release_check.id IS NULL AND release_check_error.id IS NULL """
 
@@ -481,7 +483,9 @@ class DataBase:
         else:
             sql += """
                            LEFT JOIN record_check ON record_check.record_id = record_with_collection.id
-                           LEFT JOIN record_check_error ON record_check_error.record_id = record_check_error.id """
+                              AND record_check.override_schema_version IS NULL
+                           LEFT JOIN record_check_error ON record_check_error.record_id = record_check_error.id
+                              AND record_check_error.override_schema_version IS NULL """
         sql += """ WHERE record_with_collection.collection_id = :collection_id
                     AND record_check.id IS NULL AND record_check_error.id IS NULL """
 
