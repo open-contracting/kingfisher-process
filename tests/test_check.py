@@ -113,6 +113,8 @@ class TestCheckRecord(BaseTest):
             s = sa.sql.select([self.database.record_check_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+            data = result.fetchone()
+            assert not data.override_schema_version
 
             s = sa.sql.select([self.database.release_check_table])
             result = connection.execute(s)
@@ -135,6 +137,8 @@ class TestCheckRecord(BaseTest):
             s = sa.sql.select([self.database.record_check_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+            data = result.fetchone()
+            assert not data.override_schema_version
 
             s = sa.sql.select([self.database.release_check_table])
             result = connection.execute(s)
@@ -341,6 +345,8 @@ class TestCheckRelease(BaseTest):
             s = sa.sql.select([self.database.release_check_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+            data = result.fetchone()
+            assert not data.override_schema_version
 
             s = sa.sql.select([self.database.record_check_error_table])
             result = connection.execute(s)
@@ -363,6 +369,8 @@ class TestCheckRelease(BaseTest):
             s = sa.sql.select([self.database.release_check_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+            data = result.fetchone()
+            assert not data.override_schema_version
 
             s = sa.sql.select([self.database.record_check_error_table])
             result = connection.execute(s)
