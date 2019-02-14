@@ -445,6 +445,25 @@ class DataBase:
                 'errors': errors,
             })
 
+    def check_collection_transform(self):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.collection_table]) \
+                .where(self.collection_table.c.transform_from_collection_id == 1)
+
+            result = connection.execute(s)
+            if result.fetchone():
+                return True
+
+        return False
+
+    def mark_collection_deleted_at(self, collection_id):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where((self.collection_table.c.id == collection_id) & (self.collection_table.c.deleted_at == None)) # noqa
+                    .values(deleted_at=datetime.datetime.utcnow())
+            )
+
 
 class DatabaseStore:
 
