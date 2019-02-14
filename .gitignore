@@ -13,3 +13,6 @@ docs/_build
 .hypothesis/*
 .pytest_cache
 venv/
+/debug.log
+/info.log
+/error.log
