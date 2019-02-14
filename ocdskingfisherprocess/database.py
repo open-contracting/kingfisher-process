@@ -286,7 +286,7 @@ class DataBase:
     def get_all_collections(self):
         out = []
         with self.get_engine().begin() as connection:
-            s = sa.sql.select([self.collection_table])
+            s = sa.sql.select([self.collection_table]).order_by(self.collection_table.c.id.asc())
             for collection in connection.execute(s):
                 out.append(CollectionModel(
                     database_id=collection['id'],
@@ -326,7 +326,8 @@ class DataBase:
         out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_table]) \
-                .where(self.collection_file_table.c.collection_id == collection_id)
+                .where(self.collection_file_table.c.collection_id == collection_id) \
+                .order_by(self.collection_file_table.c.id.asc())
             for collection_file in connection.execute(s):
                 out.append(FileModel(
                     database_id=collection_file['id'],
