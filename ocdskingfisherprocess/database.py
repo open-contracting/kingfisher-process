@@ -418,7 +418,7 @@ class DataBase:
         with self.get_engine().begin() as connection:
             connection.execute(
                 self.collection_table.update()
-                    .where(self.collection_table.c.id == collection_id)
+                    .where((self.collection_table.c.id == collection_id) & (self.collection_table.c.store_end_at == None)) # noqa
                     .values(store_end_at=datetime.datetime.utcnow())
             )
             # TODO Mark store_end_at on all files not yet marked
