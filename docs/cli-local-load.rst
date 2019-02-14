@@ -19,3 +19,5 @@ It will load files with a default encoding of `utf-8`. You can change it with th
 .. code-block:: shell-session
 
     python ocdskingfisher-process-cli local-load 2 /data/uk_contracts_finder release_package --encoding ISO-8859-1
+
+After loading, you should mark the collection storage as ended - see :doc:`cli-end-collection-store`.
