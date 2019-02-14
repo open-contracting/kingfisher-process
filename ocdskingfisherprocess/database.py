@@ -1,12 +1,14 @@
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB
+import collections
 import datetime
 import json
 import os
 from functools import partial
-import collections
-from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel
+
 import alembic.config
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import JSONB
+
+from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel
 from ocdskingfisherprocess.util import get_hash_md5_for_data
 
 
@@ -37,6 +39,7 @@ class DataBase:
                                          sa.Column('transform_from_collection_id', sa.Integer,
                                                    sa.ForeignKey("collection.id"), nullable=True),
                                          sa.Column('transform_type', sa.Text, nullable=True),
+                                         sa.Column('deleted_at', sa.DateTime(timezone=False), nullable=True),
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample',
                                                              'transform_from_collection_id', 'transform_type',
                                                              name='unique_collection_identifiers'),
