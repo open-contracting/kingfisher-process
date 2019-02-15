@@ -8,16 +8,20 @@ class Upgrade10To11Transform(BaseTransform):
     type = 'upgrade-1-0-to-1-1'
 
     def process(self):
+        # Have we already marked this transform as finished?
         if self.destination_collection.store_end_at:
             return
 
+        # Do the work ...
         for file_model in self.database.get_all_files_in_collection(self.source_collection.database_id):
             self.process_file(file_model)
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-        self.database.mark_collection_store_done(self.destination_collection.database_id)
+        # If the source collection is finished, then we can mark the transform as finished
+        if self.source_collection.store_end_at:
+            self.database.mark_collection_store_done(self.destination_collection.database_id)
 
     def process_file(self, file_model):
         for file_item_model in self.database.get_all_files_items_in_file(file_model):

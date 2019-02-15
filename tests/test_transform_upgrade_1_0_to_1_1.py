@@ -76,6 +76,17 @@ class TestTransformUpgrade10To11(BaseTest):
             result = connection.execute(s)
             assert 0 == result.rowcount
 
+        # destination collection will not be closed (because source is still open!)
+        destination_collection = self.database.get_collection(destination_collection_id)
+        assert destination_collection.store_end_at == None # noqa
+
+        # Mark source collection as finished
+        self.database.mark_collection_store_done(source_collection_id)
+
+        # transform again! This should be fine
+        transform = Upgrade10To11Transform(self.config, self.database, destination_collection)
+        transform.process()
+
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
         assert destination_collection.store_end_at != None # noqa
@@ -147,6 +158,17 @@ class TestTransformUpgrade10To11(BaseTest):
             s = sa.sql.select([self.database.transform_upgrade_1_0_to_1_1_status_release_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+
+        # destination collection will not be closed (because source is still open!)
+        destination_collection = self.database.get_collection(destination_collection_id)
+        assert destination_collection.store_end_at == None # noqa
+
+        # Mark source collection as finished
+        self.database.mark_collection_store_done(source_collection_id)
+
+        # transform!
+        transform = Upgrade10To11Transform(self.config, self.database, destination_collection)
+        transform.process()
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)

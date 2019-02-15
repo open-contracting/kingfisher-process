@@ -8,9 +8,15 @@ class CompileReleasesTransform(BaseTransform):
     type = 'compile-releases'
 
     def process(self):
+        # This transform can only run when the source collection is fully stored!
+        if not self.source_collection.store_end_at:
+            return
+
+        # Have we already marked this transform as finished?
         if self.destination_collection.store_end_at:
             return
 
+        # Do the work ...
         for ocid in self.get_ocids():
             if not self.has_ocid_been_transformed(ocid):
                 self.process_ocid(ocid)
@@ -18,6 +24,7 @@ class CompileReleasesTransform(BaseTransform):
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
+        # Mark Transform as finished
         self.database.mark_collection_store_done(self.destination_collection.database_id)
 
     def get_ocids(self):
