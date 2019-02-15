@@ -32,7 +32,20 @@ class TestTransformCompileReleases(BaseTest):
             transform_type=CompileReleasesTransform.type)
         destination_collection = self.database.get_collection(destination_collection_id)
 
-        # transform!
+        # transform! Nothing should happen because source is not finished
+        transform = CompileReleasesTransform(self.config, self.database, destination_collection)
+        transform.process()
+
+        # check
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.compiled_release_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+        # Mark source collection as finished
+        self.database.mark_collection_store_done(source_collection_id)
+
+        # transform! This should do the work.
         transform = CompileReleasesTransform(self.config, self.database, destination_collection)
         transform.process()
 
@@ -51,3 +64,7 @@ class TestTransformCompileReleases(BaseTest):
             s = sa.sql.select([self.database.compiled_release_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+
+        # destination collection should be closed
+        destination_collection = self.database.get_collection(destination_collection_id)
+        assert destination_collection.store_end_at != None # noqa
