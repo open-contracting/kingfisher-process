@@ -445,10 +445,10 @@ class DataBase:
                 'errors': errors,
             })
 
-    def check_collection_transform(self):
+    def is_collection_source_for_a_transform(self, collection_id):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
-                .where(self.collection_table.c.transform_from_collection_id == 1)
+                .where(self.collection_table.c.transform_from_collection_id == collection_id)
 
             result = connection.execute(s)
             if result.fetchone():

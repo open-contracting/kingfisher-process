@@ -1,7 +1,4 @@
-from datetime import datetime
-
 import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.util import parse_string_to_date_time
 
 
 class DeleteCollectionCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -13,8 +10,10 @@ class DeleteCollectionCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
     def run_command(self, args):
         self.run_command_for_selecting_existing_collection(args)
 
-        if self.database.check_collection_transform():
+        collection_id = self.collection.database_id
+
+        if self.database.is_collection_source_for_a_transform(collection_id):
             print("Collection has a transform. It can't be deleted.")
             return
 
-        self.collection.deleted_at = parse_string_to_date_time(datetime.utcnow())
+        self.database.mark_collection_deleted_at(collection_id)

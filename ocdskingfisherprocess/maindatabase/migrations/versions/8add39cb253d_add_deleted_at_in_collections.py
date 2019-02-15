@@ -19,10 +19,6 @@ depends_on = None
 def upgrade():
     op.add_column('collection', sa.Column('deleted_at', sa.DateTime, nullable=True))
 
-    op.execute(""" UPDATE collection SET deleted_at = NULL """)
-    op.execute(""" ALTER TABLE collection ALTER COLUMN check_data SET DEFAULT NULL """)
-    op.alter_column('collection', 'deleted_at', nullable=False)
-
 
 def downgrade():
     op.drop_column('collection', 'deleted_at')
