@@ -3,6 +3,7 @@ from flask import Flask, render_template, current_app
 from ocdskingfisherprocess.config import Config
 from ocdskingfisherprocess.database import DataBase
 import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
+import ocdskingfisherprocess.signals.signals
 
 
 def create_app(config=None):
@@ -11,6 +12,8 @@ def create_app(config=None):
         config.load_user_config()
 
     database = DataBase(config=config)
+
+    ocdskingfisherprocess.signals.signals.setup_signals(config, database)
 
     app = Flask(__name__)
     app.kingfisher_config = config

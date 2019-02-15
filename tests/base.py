@@ -1,6 +1,12 @@
 from ocdskingfisherprocess.database import DataBase
 from ocdskingfisherprocess.config import Config
 from ocdskingfisherprocess.web.app import create_app
+from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
+from ocdskingfisherprocess.signals.signals import setup_signals
+
+
+def _reset_signals():
+    KINGFISHER_SIGNALS.signal('new_collection_created')._clear_state()
 
 
 class BaseTest:
@@ -29,6 +35,9 @@ class BaseDataBaseTest:
         self.database = DataBase(config=self.config)
         self.database.delete_tables()
         self.database.create_tables()
+        # signals
+        _reset_signals()
+        setup_signals(self.config, self.database)
 
 
 class BaseWebTest:
@@ -45,6 +54,9 @@ class BaseWebTest:
         self.database = DataBase(config=self.config)
         self.database.delete_tables()
         self.database.create_tables()
+        # signals
+        _reset_signals()
+        # don't call - setup_signals(self.config, self.database) - create_app will
         # flask app
         self.webapp = create_app(config=self.config)
         self.webapp.config['TESTING'] = True

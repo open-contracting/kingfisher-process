@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel
 from ocdskingfisherprocess.util import get_hash_md5_for_data
+from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
 
 
 class SetEncoder(json.JSONEncoder):
@@ -284,7 +285,10 @@ class DataBase:
                 'check_data': self.config.default_value_collection_check_data,
                 'check_older_data_with_schema_version_1_1': self.config.default_value_collection_check_older_data_with_schema_version_1_1,
             })
-            return value.inserted_primary_key[0]
+            collection_id = value.inserted_primary_key[0]
+
+        KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection_id)
+        return collection_id
 
     def get_all_collections(self):
         out = []

@@ -1,13 +1,12 @@
-from ocdskingfisherprocess.database import DataBase
 
 
 class CLICommand:
     command = ''
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, database=None):
         self.collection = None
         self.config = config
-        self.database = DataBase(config=config)
+        self.database = database
 
     def configure_subparser(self, subparser):
         pass

@@ -69,3 +69,12 @@ namespace.
 When using the command line tool, it can be configured by setting a `~/.config/ocdskingfisher-process/logging.json` file.
 Sample ones are included in the main directory (one without debugging messages, and one with debugging messages).
 
+Standard Pipeline
+-----------------
+
+This can be turned on in the `~/.config/ocdskingfisher-process/config.ini` file.
+
+.. code-block:: ini
+
+    [STANDARD_PIPELINE]
+    RUN = true
