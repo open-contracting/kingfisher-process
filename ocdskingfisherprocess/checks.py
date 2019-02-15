@@ -12,56 +12,67 @@ class Checks:
         self.run_until_timestamp = run_until_timestamp
 
     def process_all_files(self):
-        if not self.collection.check_data and not self.collection.check_older_data_with_schema_version_1_1:
-            # nothing to do here, so ...
-            return
 
-        for file_model in self.database.get_all_files_in_collection(self.collection.database_id):
-            self.process_file(file_model=file_model)
+        if self.collection.check_data:
+
+            self.process_all_files_releases()
+
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-    def process_file(self, file_model):
-        for file_item_model in self.database.get_all_files_items_in_file(file_model):
-            self.process_file_item(file_item_model=file_item_model)
+            self.process_all_files_records()
+
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-    def process_file_item(self, file_item_model):
-        with self.database.get_engine().begin() as connection:
-            release_rows = connection.execute(
-                self.database.release_table.select().where(self.database.release_table.c.collection_file_item_id == file_item_model.database_id)
-            )
+        if self.collection.check_older_data_with_schema_version_1_1:
 
-        for release_row in release_rows:
+            self.process_all_files_releases_with_override_schema_version_1_1()
+
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
+
+            self.process_all_files_records_with_override_schema_version_1_1()
+
+    def process_all_files_releases(self):
+        results = self.database.get_releases_to_check(self.collection.database_id)
+        for release_row in results:
             # Do Normal Check?
-            if self.collection.check_data and not self.database.is_release_check_done(release_row['id']):
+            if not self.database.is_release_check_done(release_row['id']):
                 self.check_release_row(release_row)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
+
+    def process_all_files_records(self):
+        results = self.database.get_records_to_check(self.collection.database_id)
+        for record_row in results:
+            # Do Normal Check?
+            if not self.database.is_record_check_done(record_row['id']):
+                self.check_record_row(record_row)
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
+
+    def process_all_files_releases_with_override_schema_version_1_1(self):
+        results = self.database.get_releases_to_check(self.collection.database_id, override_schema_version="1.1")
+        for release_row in results:
             # Do 1.1 check?
-            if self.collection.check_older_data_with_schema_version_1_1 \
-                    and self.is_schema_version_less_than_1_1(release_row['package_data_id']) \
+            if self.is_schema_version_less_than_1_1(release_row['package_data_id']) \
                     and not self.database.is_release_check_done(release_row['id'], override_schema_version="1.1"):
                 self.check_release_row(release_row, override_schema_version="1.1")
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-        del release_rows
-
-        with self.database.get_engine().begin() as connection:
-            record_rows = connection.execute(
-                self.database.record_table.select().where(self.database.record_table.c.collection_file_item_id == file_item_model.database_id)
-            )
-
-        for record_row in record_rows:
-            # Do Normal Check?
-            if self.collection.check_data and not self.database.is_record_check_done(record_row['id']):
-                self.check_record_row(record_row)
+    def process_all_files_records_with_override_schema_version_1_1(self):
+        results = self.database.get_records_to_check(self.collection.database_id, override_schema_version="1.1")
+        for record_row in results:
             # Do 1.1 check?
-            if self.collection.check_older_data_with_schema_version_1_1 \
-                    and self.is_schema_version_less_than_1_1(record_row['package_data_id']) \
+            if self.is_schema_version_less_than_1_1(record_row['package_data_id']) \
                     and not self.database.is_record_check_done(record_row['id'], override_schema_version="1.1"):
                 self.check_record_row(record_row, override_schema_version="1.1")
             # Early return?

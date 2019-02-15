@@ -23,6 +23,5 @@ You can pass the `quiet` flag to all sub commands, to get less output printed to
    cli-new-transform-upgrade-1-0-to-1-1.rst
    cli-transform-collection.rst
    cli-transform-collections.rst
+   cli-end-collection-store.rst
    cli-delete-collection.rst
-
-
