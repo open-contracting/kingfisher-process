@@ -51,3 +51,7 @@ class TestTransformCompileReleases(BaseTest):
             s = sa.sql.select([self.database.compiled_release_table])
             result = connection.execute(s)
             assert 1 == result.rowcount
+
+        # destination collection should be closed
+        destination_collection = self.database.get_collection(destination_collection_id)
+        assert destination_collection.store_end_at != None # noqa
