@@ -466,7 +466,7 @@ class DataBase:
 
     def delete_collection(self, collection_id):
         data = {'collection_id': collection_id}
-        sql = """ 
+        sql = """
             DELETE FROM record_check_error
                 WHERE record_id IN
                     (
