@@ -467,59 +467,59 @@ class DataBase:
     def delete_collection(self, collection_id):
         data = {'collection_id': collection_id}
         sql = """ 
-            DELETE FROM record_check_error 
-                WHERE record_id IN 
+            DELETE FROM record_check_error
+                WHERE record_id IN
                     (
-                        SELECT id FROM record_with_collection 
+                        SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM release_check_error 
-                WHERE release_id IN 
+            DELETE FROM release_check_error
+                WHERE release_id IN
                     (
-                        SELECT id FROM release_with_collection 
+                        SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM record_check 
-                WHERE record_id IN 
+            DELETE FROM record_check
+                WHERE record_id IN
                     (
-                        SELECT id FROM record_with_collection 
+                        SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM release_check 
-                WHERE release_id IN 
+            DELETE FROM release_check
+                WHERE release_id IN
                     (
-                        SELECT id FROM release_with_collection 
+                        SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM compiled_release 
-                WHERE release_id IN 
+            DELETE FROM compiled_release
+                WHERE release_id IN
                     (
-                        SELECT id FROM release_with_collection 
+                        SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM record 
-                WHERE id IN 
+            DELETE FROM record
+                WHERE id IN
                     (
-                        SELECT id FROM record_with_collection 
+                        SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM release 
-                WHERE id IN 
+            DELETE FROM release
+                WHERE id IN
                     (
-                        SELECT id FROM release_with_collection 
+                        SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );
-            DELETE FROM data 
-                WHERE id NOT IN 
+            DELETE FROM data
+                WHERE id NOT IN
                     (
-                        SELECT data_id FROM release UNION 
-                        SELECT data_id FROM record UNION 
+                        SELECT data_id FROM release UNION
+                        SELECT data_id FROM record UNION
                         SELECT data_id FROM compiled_release
                     );
-            DELETE FROM package_data 
-                WHERE id NOT IN 
+            DELETE FROM package_data
+                WHERE id NOT IN
                     (
-                        SELECT package_data_id FROM release union 
+                        SELECT package_data_id FROM release union
                         SELECT package_data_id FROM record
                     );
         """
