@@ -1,7 +1,9 @@
-from libcoveocds.api import ocds_json_output, APIException
 import tempfile
 import shutil
 import datetime
+import logging
+
+from libcoveocds.api import ocds_json_output, APIException
 
 
 class Checks:
@@ -10,8 +12,11 @@ class Checks:
         self.database = database
         self.collection = collection
         self.run_until_timestamp = run_until_timestamp
+        self.logger = logging.getLogger('ocdskingfisher.checks')
 
     def process_all_files(self):
+
+        self.logger.info('process_all_files called for collection ' + str(self.collection.database_id))
 
         if self.collection.check_data:
 
@@ -94,6 +99,7 @@ class Checks:
         return 'version' not in data or data['version'] == "1.0"
 
     def check_release_row(self, release_row, override_schema_version=None):
+        self.logger.debug('check_release_row called for row ' + str(release_row.id) + ' in collection ' + str(self.collection.database_id))
         package = self.database.get_package_data(release_row.package_data_id)
         package['releases'] = [self.database.get_data(release_row.data_id)]
         if override_schema_version:
@@ -117,6 +123,7 @@ class Checks:
                 connection.execute(self.database.release_check_error_table.insert(), checks)
 
     def check_record_row(self, record_row, override_schema_version=None):
+        self.logger.debug('check_record_row called for row ' + str(record_row.id) + ' in collection ' + str(self.collection.database_id))
         package = self.database.get_package_data(record_row.package_data_id)
         package['records'] = [self.database.get_data(record_row.data_id)]
         if override_schema_version:

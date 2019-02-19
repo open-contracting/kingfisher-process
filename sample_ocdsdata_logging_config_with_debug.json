@@ -33,23 +33,33 @@
             "maxBytes": 10485760,
             "backupCount": 20,
             "encoding": "utf8"
+        },
+
+        "debug_file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "filename": "debug.log",
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
         }
     },
 
     "loggers": {
         "ocdskingfisher": {
             "level": "DEBUG",
-            "handlers": ["console","info_file_handler","error_file_handler"],
+            "handlers": ["console","info_file_handler","error_file_handler", "debug_file_handler"],
             "propagate": false
         },
         "sqlalchemy": {
             "level": "WARN",
-            "handlers": ["console","info_file_handler","error_file_handler"],
+            "handlers": ["console","info_file_handler","error_file_handler", "debug_file_handler"],
             "propagate": false
         },
         "alembic": {
             "level": "INFO",
-            "handlers": ["console","info_file_handler","error_file_handler"],
+            "handlers": ["console","info_file_handler","error_file_handler", "debug_file_handler"],
             "propagate": false
         }
     },

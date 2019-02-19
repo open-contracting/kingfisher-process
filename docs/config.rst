@@ -67,5 +67,5 @@ This tool will provide additional logging information using the standard Python 
 namespace.
 
 When using the command line tool, it can be configured by setting a `~/.config/ocdskingfisher-process/logging.json` file.
-A sample one is included in the main directory.
+Sample ones are included in the main directory (one without debugging messages, and one with debugging messages).
 
