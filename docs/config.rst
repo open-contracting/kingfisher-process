@@ -32,7 +32,21 @@ The order of precedence is (from least-important to most-important):
 Web Configuration
 -----------------
 
-TODO write up the API Key - notes: KINGFISHER_PROCESS_WEB_API_KEYS env var or [WEB] API_KEYS= in ini. Comma seperated.
+Version 1 of the Web API requires a key to access. Multiple keys can be set, seperated by a comma.
+
+The key can be set in the `~/.config/ocdskingfisher-process/config.ini` file:
+
+
+.. code-block:: ini
+
+
+    [WEB]
+    API_KEYS = 1234,5678
+
+
+`1234` and `5678` will both be valid keys.
+
+They can also be set in the `KINGFISHER_PROCESS_WEB_API_KEYS` environmental variable.
 
 Collection Defaults Configuration
 ---------------------------------
