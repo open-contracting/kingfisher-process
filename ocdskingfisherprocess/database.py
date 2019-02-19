@@ -302,6 +302,7 @@ class DataBase:
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
+                    deleted_at=collection['deleted_at'],
                 ))
         return out
 
@@ -323,6 +324,7 @@ class DataBase:
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
+                    deleted_at=collection['deleted_at'],
                 )
 
     def get_all_files_in_collection(self, collection_id):
@@ -464,6 +466,77 @@ class DataBase:
                     .where((self.collection_table.c.id == collection_id) & (self.collection_table.c.deleted_at == None)) # noqa
                     .values(deleted_at=datetime.datetime.utcnow())
             )
+
+    def delete_collection(self, collection_id):
+        data = {'collection_id': collection_id}
+        sql = """
+            DELETE FROM record_check_error
+                WHERE record_id IN
+                    (
+                        SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM release_check_error
+                WHERE release_id IN
+                    (
+                        SELECT id FROM release_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM record_check
+                WHERE record_id IN
+                    (
+                        SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM release_check
+                WHERE release_id IN
+                    (
+                        SELECT id FROM release_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM compiled_release
+                WHERE id IN
+                    (
+                        SELECT id FROM compiled_release_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM record
+                WHERE id IN
+                    (
+                        SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM release
+                WHERE id IN
+                    (
+                        SELECT id FROM release_with_collection
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM collection_file_item
+                WHERE collection_file_id IN
+                    (
+                        SELECT id FROM collection_file
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM collection_file
+                WHERE collection_id = :collection_id;
+            DELETE FROM data
+                WHERE id NOT IN
+                    (
+                        SELECT data_id FROM release UNION
+                        SELECT data_id FROM record UNION
+                        SELECT data_id FROM compiled_release
+                    );
+            DELETE FROM package_data
+                WHERE id NOT IN
+                    (
+                        SELECT package_data_id FROM release union
+                        SELECT package_data_id FROM record
+                    );
+        """
+        with self.get_engine().begin() as connection:
+            query = sa.sql.expression.text(sql)
+            return connection.execute(query, data)
 
     def get_releases_to_check(self, collection_id, override_schema_version=None):
         data = {'collection_id': collection_id}
