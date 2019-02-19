@@ -509,6 +509,14 @@ class DataBase:
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );
+            DELETE FROM collection_file_item
+                WHERE collection_file_id IN
+                    (
+                        SELECT id FROM collection_file
+                        WHERE collection_id = :collection_id
+                    );
+            DELETE FROM collection_file
+                WHERE collection_id = :collection_id
             DELETE FROM data
                 WHERE id NOT IN
                     (
