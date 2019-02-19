@@ -1,6 +1,6 @@
 import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.transform.compile_releases import CompileReleasesTransform
+from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES
 
 
 class NewTransformCompileReleasesCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -17,7 +17,7 @@ class NewTransformCompileReleasesCLICommand(ocdskingfisherprocess.cli.commands.b
             self.collection.data_version,
             self.collection.sample,
             transform_from_collection_id=self.collection.database_id,
-            transform_type=CompileReleasesTransform.type)
+            transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
         if id:
             if not args.quiet:
                 print("Already exists! The ID is {}".format(id))
@@ -27,7 +27,7 @@ class NewTransformCompileReleasesCLICommand(ocdskingfisherprocess.cli.commands.b
                                                        self.collection.data_version,
                                                        self.collection.sample,
                                                        transform_from_collection_id=self.collection.database_id,
-                                                       transform_type=CompileReleasesTransform.type)
+                                                       transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
 
         if not args.quiet:
             print("Created! The ID is {}".format(id))
