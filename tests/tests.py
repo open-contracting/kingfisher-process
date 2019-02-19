@@ -1,16 +1,14 @@
 import ocdskingfisherprocess.util
-from tests.base import BaseTest
+from tests.base import BaseTest, BaseDataBaseTest
 import datetime
 import os
 from ocdskingfisherprocess.store import Store
 import sqlalchemy as sa
 
 
-class TestDataBase(BaseTest):
+class TestDataBase(BaseDataBaseTest):
 
     def test_get_collection_id_and_get_or_create_collection_id(self):
-        self.setup_main_database()
-
         id = self.database.get_collection_id("test-source", "2019-01-20 10:00:12", False)
         # Doesn't exist, so ...
         assert not id
@@ -37,7 +35,7 @@ class TestUtil(BaseTest):
         assert ocdskingfisherprocess.util.get_hash_md5_for_data({'cats': 'none'}) == '562c5f4221c75c8f08da103cc10c4e4c'
 
 
-class TestControlCodes(BaseTest):
+class TestControlCodes1(BaseTest):
 
     def test_control_code_to_filter_out_to_human_readable(self):
         for control_code_to_filter_out in ocdskingfisherprocess.util.control_codes_to_filter_out:
@@ -45,9 +43,10 @@ class TestControlCodes(BaseTest):
             # (some code was crashing, so wanted test to check all future values of control_codes_to_filter_out)
             print(ocdskingfisherprocess.util.control_code_to_filter_out_to_human_readable(control_code_to_filter_out))
 
-    def test_bad_data_with_control_codes(self):
-        self.setup_main_database()
 
+class TestControlCodes2(BaseDataBaseTest):
+
+    def test_bad_data_with_control_codes(self):
         # Make source collection
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         source_collection = self.database.get_collection(source_collection_id)
