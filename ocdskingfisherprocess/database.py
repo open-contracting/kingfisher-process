@@ -492,9 +492,9 @@ class DataBase:
                         WHERE collection_id = :collection_id
                     );
             DELETE FROM compiled_release
-                WHERE release_id IN
+                WHERE id IN
                     (
-                        SELECT id FROM release_with_collection
+                        SELECT id FROM compiled_release_with_collection
                         WHERE collection_id = :collection_id
                     );
             DELETE FROM record
