@@ -1,4 +1,4 @@
-from tests.base import BaseTest
+from tests.base import BaseDataBaseTest
 import datetime
 import sqlalchemy as sa
 from ocdskingfisherprocess.store import Store
@@ -7,11 +7,9 @@ from ocdskingfisherprocess.transform import TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
 import os
 
 
-class TestTransformUpgrade10To11(BaseTest):
+class TestTransformUpgrade10To11(BaseDataBaseTest):
 
     def test_record_1(self):
-        self.setup_main_database()
-
         # Make source collection
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         source_collection = self.database.get_collection(source_collection_id)
@@ -93,8 +91,6 @@ class TestTransformUpgrade10To11(BaseTest):
         assert destination_collection.store_end_at != None # noqa
 
     def test_release_1(self):
-        self.setup_main_database()
-
         # Make source collection
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         source_collection = self.database.get_collection(source_collection_id)

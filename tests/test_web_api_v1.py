@@ -9,8 +9,6 @@ import random
 class TestWebAPIV1(BaseWebTest):
 
     def test_api_v1_bad_key(self):
-        self.setup_main_database()
-
         # Call
         data = {
             'collection_source': 'test',
@@ -34,8 +32,6 @@ class TestWebAPIV1(BaseWebTest):
         assert result.status_code == 401
 
     def test_api_v1_no_key(self):
-        self.setup_main_database()
-
         # Call
         data = {
             'collection_source': 'test',
@@ -54,8 +50,6 @@ class TestWebAPIV1(BaseWebTest):
         assert result.status_code == 401
 
     def test_api_v1_submit_file(self):
-        self.setup_main_database()
-
         # Call
         data = {
             'collection_source': 'test',
@@ -88,8 +82,6 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
 
     def test_api_v1_submit_local_file(self):
-        self.setup_main_database()
-
         # Call
         json_filename = os.path.join(os.path.dirname(
             os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
@@ -138,8 +130,6 @@ class TestWebAPIV1(BaseWebTest):
         assert os.path.exists(json_filename)
 
     def test_api_v1_submit_item(self):
-        self.setup_main_database()
-
         # Call
         data = {
             'collection_source': 'test',
@@ -172,8 +162,6 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
 
     def test_api_v1_submit_end_collection_store(self):
-        self.setup_main_database()
-
         # Open collection call
         data = {
             'collection_source': 'test',
@@ -214,8 +202,6 @@ class TestWebAPIV1(BaseWebTest):
         assert collection.store_end_at != None # noqa
 
     def test_api_v1_submit_file_errors(self):
-        self.setup_main_database()
-
         # Call
         data = {
             'collection_source': 'test',
@@ -251,8 +237,6 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].store_end_at == None # noqa
 
     def test_api_v1_submit_item_nothing(self):
-        self.setup_main_database()
-
         # Call
         data = {
         }
