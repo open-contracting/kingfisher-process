@@ -7,4 +7,4 @@ class DeleteCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICom
     def run_command(self, args):
         for collection in self.database.get_all_collections():
             if collection.deleted_at is not None:
-                self.database.delete_collection(collection.id)
+                self.database.delete_collection(collection.database_id)

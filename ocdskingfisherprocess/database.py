@@ -302,6 +302,7 @@ class DataBase:
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
+                    deleted_at=collection['deleted_at'],
                 ))
         return out
 
@@ -323,6 +324,7 @@ class DataBase:
                     check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
+                    deleted_at=collection['deleted_at'],
                 )
 
     def get_all_files_in_collection(self, collection_id):
@@ -516,7 +518,7 @@ class DataBase:
                         WHERE collection_id = :collection_id
                     );
             DELETE FROM collection_file
-                WHERE collection_id = :collection_id
+                WHERE collection_id = :collection_id;
             DELETE FROM data
                 WHERE id NOT IN
                     (
