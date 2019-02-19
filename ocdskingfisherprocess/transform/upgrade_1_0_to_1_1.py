@@ -5,7 +5,6 @@ import datetime
 
 
 class Upgrade10To11Transform(BaseTransform):
-    type = 'upgrade-1-0-to-1-1'
 
     def process(self):
         # Have we already marked this transform as finished?

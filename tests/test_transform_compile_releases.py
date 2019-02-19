@@ -3,6 +3,8 @@ import datetime
 import sqlalchemy as sa
 from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.transform.compile_releases import CompileReleasesTransform
+from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES
+
 import os
 
 
@@ -29,7 +31,7 @@ class TestTransformCompileReleases(BaseTest):
             source_collection.data_version,
             source_collection.sample,
             transform_from_collection_id=source_collection_id,
-            transform_type=CompileReleasesTransform.type)
+            transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
         destination_collection = self.database.get_collection(destination_collection_id)
 
         # transform! Nothing should happen because source is not finished
