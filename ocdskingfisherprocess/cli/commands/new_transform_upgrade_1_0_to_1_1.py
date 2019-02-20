@@ -1,6 +1,6 @@
 import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.transform.upgrade_1_0_to_1_1 import Upgrade10To11Transform
+from ocdskingfisherprocess.transform import TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
 
 
 class NewTransformUpgrade10To11CLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -17,7 +17,7 @@ class NewTransformUpgrade10To11CLICommand(ocdskingfisherprocess.cli.commands.bas
             self.collection.data_version,
             self.collection.sample,
             transform_from_collection_id=self.collection.database_id,
-            transform_type=Upgrade10To11Transform.type)
+            transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
         if id:
             if not args.quiet:
                 print("Already exists! The ID is {}".format(id))
@@ -27,7 +27,7 @@ class NewTransformUpgrade10To11CLICommand(ocdskingfisherprocess.cli.commands.bas
                                                        self.collection.data_version,
                                                        self.collection.sample,
                                                        transform_from_collection_id=self.collection.database_id,
-                                                       transform_type=Upgrade10To11Transform.type)
+                                                       transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
 
         if not args.quiet:
             print("Created! The ID is {}".format(id))

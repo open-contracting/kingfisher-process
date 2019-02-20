@@ -1,16 +1,16 @@
-from tests.base import BaseTest
+from tests.base import BaseDataBaseTest
 import datetime
 import sqlalchemy as sa
 from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.transform.compile_releases import CompileReleasesTransform
+from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES
+
 import os
 
 
-class TestTransformCompileReleases(BaseTest):
+class TestTransformCompileReleases(BaseDataBaseTest):
 
     def test_1(self):
-        self.setup_main_database()
-
         # Make source collection
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         source_collection = self.database.get_collection(source_collection_id)
@@ -29,7 +29,7 @@ class TestTransformCompileReleases(BaseTest):
             source_collection.data_version,
             source_collection.sample,
             transform_from_collection_id=source_collection_id,
-            transform_type=CompileReleasesTransform.type)
+            transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
         destination_collection = self.database.get_collection(destination_collection_id)
 
         # transform! Nothing should happen because source is not finished

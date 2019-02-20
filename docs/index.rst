@@ -8,6 +8,7 @@ OCDS Kingfisher Process is a tool for storing and analysing data from publishers
 .. toctree::
 
    data-model.rst
+   standard-pipeline.rst
    requirements-install.rst
    config.rst
    cli.rst

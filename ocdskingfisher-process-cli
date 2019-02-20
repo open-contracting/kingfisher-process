@@ -7,12 +7,18 @@ import json
 
 import ocdskingfisherprocess.cli.util
 import ocdskingfisherprocess.config
+import ocdskingfisherprocess.signals.signals
+from ocdskingfisherprocess.database import DataBase
 
 
 def main():
 
     config = ocdskingfisherprocess.config.Config()
     config.load_user_config()
+
+    database = DataBase(config)
+
+    ocdskingfisherprocess.signals.signals.setup_signals(config, database)
 
     logging_config_file_full_path = os.path.expanduser('~/.config/ocdskingfisher-process/logging.json')
     if os.path.isfile(logging_config_file_full_path):
@@ -27,7 +33,7 @@ def main():
 
     subparsers = parser.add_subparsers(dest='subcommand')
 
-    commands = ocdskingfisherprocess.cli.util.gather_cli_commands_instances(config=config)
+    commands = ocdskingfisherprocess.cli.util.gather_cli_commands_instances(config=config, database=database)
 
     for command in commands.values():
         command.configure_subparser(subparsers.add_parser(command.command))

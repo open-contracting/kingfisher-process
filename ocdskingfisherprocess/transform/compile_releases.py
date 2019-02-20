@@ -5,7 +5,6 @@ import datetime
 
 
 class CompileReleasesTransform(BaseTransform):
-    type = 'compile-releases'
 
     def process(self):
         # This transform can only run when the source collection is fully stored!

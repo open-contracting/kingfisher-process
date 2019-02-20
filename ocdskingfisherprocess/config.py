@@ -21,6 +21,7 @@ class Config:
         self._database_password = ''
         self.default_value_collection_check_data = False
         self.default_value_collection_check_older_data_with_schema_version_1_1 = False
+        self.run_standard_pipeline = False
 
     def load_user_config(self):
         # First, try and load any config in the ini files
@@ -96,3 +97,6 @@ class Config:
             self._database_port,
             self._database_name
         )
+
+        self.run_standard_pipeline = \
+            config.getboolean('STANDARD_PIPELINE', 'RUN', fallback=False)
