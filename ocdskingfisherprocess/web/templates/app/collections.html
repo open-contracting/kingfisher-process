@@ -14,6 +14,7 @@
             <th>Sample</th>
             <th>Transform Type</th>
             <th>Transform From</th>
+            <th>Deleted</th>
             <th>&nbsp;</th>
         </tr>
         {% for collection in collections %}
@@ -24,6 +25,7 @@
                 <td>{% if collection.sample %}Yes{% else %}No{% endif %}</td>
                 <td>{% if collection.transform_type %}{{ collection.transform_type }}{% endif %}</td>
                 <td>{% if collection.transform_type %}{{ collection.transform_from_collection_id }}{% endif %}</td>
+                <td>{% if collection.deleted_at %}Yes{% else %}No{% endif %}</td>
                 <td>
                     <a href="/app/collection/{{ collection.database_id }}" class="btn btn-primary">View</a>
                 </td>
