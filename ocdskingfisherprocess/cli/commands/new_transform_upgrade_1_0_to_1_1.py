@@ -12,6 +12,10 @@ class NewTransformUpgrade10To11CLICommand(ocdskingfisherprocess.cli.commands.bas
     def run_command(self, args):
         self.run_command_for_selecting_existing_collection(args)
 
+        if self.collection.deleted_at:
+            print("That collection is deleted!")
+            return
+
         id = self.database.get_collection_id(
             self.collection.source_id,
             self.collection.data_version,
