@@ -1,8 +1,8 @@
 Configuration
 =============
 
-Database Configuration
-----------------------
+Postgresql Configuration
+------------------------
 
 Postgresql Database settings can be set using a `~/.config/ocdskingfisher-process/config.ini` file. A sample one is included in the
 main directory.
@@ -78,3 +78,16 @@ This can be turned on in the `~/.config/ocdskingfisher-process/config.ini` file.
 
     [STANDARD_PIPELINE]
     RUN = true
+
+Redis Configuration
+-------------------
+
+You need an Redis server if you want a background que to process items immediately. If you aren't using the background que, you don't need a Redis server.
+
+
+.. code-block:: ini
+
+    [REDIS]
+    HOST = localhost
+    PORT = 6379
+    DATABASE = 0
