@@ -1,7 +1,7 @@
 from ocdskingfisherprocess.checks import Checks
 
 
-class ProcessQueMessage:
+class ProcessQueueMessage:
 
     def __init__(self, database):
         self.database = database

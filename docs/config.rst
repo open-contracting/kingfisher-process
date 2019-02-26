@@ -82,7 +82,7 @@ This can be turned on in the `~/.config/ocdskingfisher-process/config.ini` file.
 Redis Configuration
 -------------------
 
-You need an Redis server if you want a background que to process items immediately. If you aren't using the background que, you don't need a Redis server.
+You need an Redis server if you want a background queue to process items immediately. If you aren't using the background queue, you don't need a Redis server.
 
 
 .. code-block:: ini

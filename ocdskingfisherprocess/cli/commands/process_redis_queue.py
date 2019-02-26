@@ -6,11 +6,11 @@ import logging
 import redis
 
 import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.redis import ProcessQueMessage
+from ocdskingfisherprocess.redis import ProcessQueueMessage
 
 
-class ProcessRedisQueCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
-    command = 'process-redis-que'
+class ProcessRedisQueueCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
+    command = 'process-redis-queue'
 
     def configure_subparser(self, subparser):
         subparser.add_argument("--runforseconds",
@@ -33,8 +33,8 @@ class ProcessRedisQueCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComma
             Timer(run_for_seconds + 60, exitfunc).start()
 
         redis_conn = redis.Redis(host=self.config.redis_host, port=self.config.redis_port, db=self.config.redis_database)
-        process_que_message = ProcessQueMessage(database=self.database)
-        logger = logging.getLogger('ocdskingfisher.process-redis-que')
+        process_que_message = ProcessQueueMessage(database=self.database)
+        logger = logging.getLogger('ocdskingfisher.redis-queue')
 
         run = True
         while run:
