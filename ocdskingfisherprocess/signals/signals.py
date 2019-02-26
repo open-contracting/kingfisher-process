@@ -1,6 +1,8 @@
-from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES, TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
-from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
+import json
 import redis
+
+from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
+from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES, TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
 
 # Doing globals this way is hacky. Look into https://www.mattlayman.com/blog/2015/blinker/ instead.
 our_database = None
@@ -35,4 +37,5 @@ def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, 
 
 def collection_data_store_finished_to_redis(sender, collection_id=None, **kwargs):
     redis_conn = redis.Redis(host=our_config.redis_host, port=our_config.redis_port, db=our_config.redis_database)
-    redis_conn.lpush('kingfisher_work', 'collection-data-store-finished ' + str(collection_id))
+    message = json.dumps({'type': 'collection-data-store-finished', 'collection_id': collection_id})
+    redis_conn.lpush('kingfisher_work', message)
