@@ -26,3 +26,4 @@ You can pass the `quiet` flag to all sub commands, to get less output printed to
    cli-end-collection-store.rst
    cli-delete-collection.rst
    cli-delete-collections.rst
+   cli-process-redis-queue.rst

@@ -7,3 +7,4 @@ pgpasslib
 psycopg2
 ocdsmerge
 blinker
+redis
