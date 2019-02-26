@@ -41,6 +41,10 @@ Finally, the actual file data must be passed. This can be done in one of several
 * Pass the actual file as an attached file in the `file` key.
 * If the file is available in the local file system and the user running the API server can read it, you can pass the full filename as a POST variable with the key `local_file_name`. For large files, this saves transferring the contents over HTTP.
 
+Optionally, you can also pass:
+
+* `collection_note` - A note to save alongside the collection.
+
 Store Item
 ----------
 
@@ -65,6 +69,10 @@ Thirdly, you must pass details of the item in the file.
 * `number` - Integer.
 
 Finally, pass the data as a string in the `data` key.
+
+Optionally, you can also pass:
+
+* `collection_note` - A note to save alongside the collection.
 
 End Collection Store
 --------------------

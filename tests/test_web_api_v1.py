@@ -82,6 +82,9 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
 
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
+
     def test_api_v1_submit_file_that_is_not_even_json(self):
         # Call
         data = {
@@ -115,6 +118,9 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert len(files[0].errors) == 1
         assert files[0].errors[0] == "JSONDecodeError('Expecting value: line 1 column 1 (char 0)',)"
+
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
 
     def test_api_v1_submit_local_file(self):
         # Call
@@ -152,6 +158,9 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
+
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
 
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.record_table])
@@ -198,6 +207,9 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
 
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
+
     def test_api_v1_submit_end_collection_store(self):
         # Open collection call
         data = {
@@ -238,6 +250,9 @@ class TestWebAPIV1(BaseWebTest):
         assert collection.store_start_at != None # noqa
         assert collection.store_end_at != None # noqa
 
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
+
     def test_api_v1_submit_file_errors(self):
         # Call
         data = {
@@ -272,6 +287,9 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].errors[0] == 'The error was ... because reasons.'
         assert files[0].store_start_at == None # noqa
         assert files[0].store_end_at == None # noqa
+
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
 
     def test_api_v1_submit_item_nothing(self):
         # Call
