@@ -80,6 +80,41 @@ class TestWebAPIV1(BaseWebTest):
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
+        assert files[0].errors == None # noqa
+
+    def test_api_v1_submit_file_that_is_not_even_json(self):
+        # Call
+        data = {
+            'collection_source': 'test',
+            'collection_data_version': '2018-10-10 00:12:23',
+            'collection_sample': 'true',
+            'file_name': 'test.json',
+            'url': 'http://example.com',
+            'data_type': 'record',
+            'file': (io.BytesIO(b'CSV,Files,Are,GREATTTTTTTTTTTTTT'), "data.csv")
+        }
+
+        result = self.flaskclient.post('/api/v1/submit/file/',
+                                       data=data,
+                                       content_type='multipart/form-data',
+                                       headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
+
+        assert result.status_code == 200
+
+        # Check
+        collection_id = self.database.get_collection_id('test', '2018-10-10 00:12:23', True)
+        assert collection_id
+
+        collection = self.database.get_collection(collection_id)
+        assert collection.store_start_at != None # noqa
+        assert collection.store_end_at == None # noqa
+
+        files = self.database.get_all_files_in_collection(collection_id)
+        assert len(files) == 1
+        assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'
+        assert len(files[0].errors) == 1
+        assert files[0].errors[0] == "JSONDecodeError('Expecting value: line 1 column 1 (char 0)',)"
 
     def test_api_v1_submit_local_file(self):
         # Call
@@ -116,6 +151,7 @@ class TestWebAPIV1(BaseWebTest):
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
+        assert files[0].errors == None # noqa
 
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.record_table])
@@ -160,6 +196,7 @@ class TestWebAPIV1(BaseWebTest):
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
+        assert files[0].errors == None # noqa
 
     def test_api_v1_submit_end_collection_store(self):
         # Open collection call
