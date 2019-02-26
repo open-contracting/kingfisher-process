@@ -69,8 +69,8 @@ class Store:
                         data = json.load(f)
 
                 except Exception as e:
-                    raise e
-                    # TODO Store error in database and make nice HTTP response!
+                    self.database.store_collection_file_errors(self.collection_id, filename, url, [repr(e)])
+                    return
 
                 self.store_file_from_data(filename, url, data_type, data, file_warnings=file_to_store.get_warnings())
 
