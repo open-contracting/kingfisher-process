@@ -473,74 +473,70 @@ class DataBase:
 
     def delete_collection(self, collection_id):
         data = {'collection_id': collection_id}
-        sql = """
-            DELETE FROM record_check_error
-                WHERE record_id IN
-                    (
-                        SELECT id FROM record_with_collection
-                        WHERE collection_id = :collection_id
-                    );
-            DELETE FROM release_check_error
+        sqls = [
+            """DELETE FROM release_check_error
                 WHERE release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM record_check
+                    );""",
+            """DELETE FROM record_check
                 WHERE record_id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM release_check
+                    );""",
+            """DELETE FROM release_check
                 WHERE release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM compiled_release
+                    );""",
+            """DELETE FROM compiled_release
                 WHERE id IN
                     (
                         SELECT id FROM compiled_release_with_collection
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM record
+                    );""",
+            """DELETE FROM record
                 WHERE id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM release
+                    );""",
+            """DELETE FROM release
                 WHERE id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM collection_file_item
+                    );""",
+            """DELETE FROM collection_file_item
                 WHERE collection_file_id IN
                     (
                         SELECT id FROM collection_file
                         WHERE collection_id = :collection_id
-                    );
-            DELETE FROM collection_file
-                WHERE collection_id = :collection_id;
-            DELETE FROM data
+                    );""",
+            """DELETE FROM collection_file
+                WHERE collection_id = :collection_id;""",
+            """DELETE FROM data
                 WHERE id NOT IN
                     (
                         SELECT data_id FROM release UNION
                         SELECT data_id FROM record UNION
                         SELECT data_id FROM compiled_release
-                    );
-            DELETE FROM package_data
+                    );""",
+            """DELETE FROM package_data
                 WHERE id NOT IN
                     (
                         SELECT package_data_id FROM release union
                         SELECT package_data_id FROM record
-                    );
-        """
-        with self.get_engine().begin() as connection:
-            query = sa.sql.expression.text(sql)
-            return connection.execute(query, data)
+                    );"""]
+
+        # We execute every SQL statement in it's own transaction, to try and keep the size of the transactions small
+        # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
+        for sql in sqls:
+            with self.get_engine().begin() as connection:
+                connection.execute(sa.sql.expression.text(sql), data)
 
     def get_releases_to_check(self, collection_id, override_schema_version=None):
         data = {'collection_id': collection_id}
