@@ -348,11 +348,11 @@ class DataBase:
             s = sa.sql.select([self.collection_note_table]) \
                 .where(self.collection_note_table.c.collection_id == collection_id) \
                 .order_by(self.collection_note_table.c.stored_at.asc())
-            for collection_file in connection.execute(s):
+            for collection_note in connection.execute(s):
                 out.append(CollectionNoteModel(
-                    database_id=collection_file['id'],
-                    note=collection_file['note'],
-                    stored_at=collection_file['stored_at'],
+                    database_id=collection_note['id'],
+                    note=collection_note['note'],
+                    stored_at=collection_note['stored_at'],
                 ))
         return out
 
@@ -621,8 +621,8 @@ class DataBase:
                        (self.collection_note_table.c.note == note))
             result = connection.execute(s)
 
-            collection_file_table_row = result.fetchone()
-            if not collection_file_table_row:
+            collection_note_table_row = result.fetchone()
+            if not collection_note_table_row:
                 connection.execute(self.collection_note_table.insert(), {
                     'collection_id': collection_id,
                     'note': note,
