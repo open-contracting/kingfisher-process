@@ -1,0 +1,4 @@
+-r requirements.in
+flake8
+pytest
+Sphinx
