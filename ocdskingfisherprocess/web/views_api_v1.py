@@ -1,14 +1,11 @@
-from flask import request, views
-from ocdskingfisherprocess.config import Config
-from ocdskingfisherprocess.store import Store
-from ocdskingfisherprocess.database import DataBase
-from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean
-import tempfile
-import os
 import json
+import os
+import tempfile
+from flask import current_app
+from flask import request, views
 
-config = Config()
-config.load_user_config()
+from ocdskingfisherprocess.store import Store
+from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean
 
 
 class RootV1View(views.View):
@@ -21,7 +18,7 @@ class BaseAPIViewAuthAndCollectionNeeded(views.View):
 
     def _check_authorization(self, request):
         api_key = request.headers.get('Authorization', '')[len('ApiKey '):]
-        return api_key and api_key in config.web_api_keys
+        return api_key and api_key in current_app.kingfisher_config.web_api_keys
 
     def _load_collection_variables(self, request):
 
@@ -56,8 +53,7 @@ class SubmitEndCollectionStoreView(BaseAPIViewAuthAndCollectionNeeded):
 
         # TODO check all required fields are there!
 
-        database = DataBase(config=config)
-        store = Store(config=config, database=database)
+        store = Store(config=current_app.kingfisher_config, database=current_app.kingfisher_database)
 
         store.load_collection(
             self.collection_source,
@@ -84,8 +80,7 @@ class SubmitFileView(BaseAPIViewAuthAndCollectionNeeded):
 
         # TODO check all required fields are there!
 
-        database = DataBase(config=config)
-        store = Store(config=config, database=database)
+        store = Store(config=current_app.kingfisher_config, database=current_app.kingfisher_database)
 
         store.load_collection(
             self.collection_source,
@@ -134,8 +129,7 @@ class SubmitItemView(BaseAPIViewAuthAndCollectionNeeded):
 
         # TODO check all required fields are there!
 
-        database = DataBase(config=config)
-        store = Store(config=config, database=database)
+        store = Store(config=current_app.kingfisher_config, database=current_app.kingfisher_database)
 
         store.load_collection(
             self.collection_source,
@@ -175,8 +169,7 @@ class SubmitFileErrorsView(BaseAPIViewAuthAndCollectionNeeded):
 
         # TODO check all required fields are there!
 
-        database = DataBase(config=config)
-        store = Store(config=config, database=database)
+        store = Store(config=current_app.kingfisher_config, database=current_app.kingfisher_database)
 
         store.load_collection(
             self.collection_source,
