@@ -12,3 +12,5 @@ Pass the ID of the collection you want the work done in. Use :doc:`cli-list-coll
 .. code-block:: shell-session
 
     python ocdskingfisher-process-cli delete-collection 17
+
+After marking it as deleted, you should run delete-collections to actually do the work. See :doc:`cli-delete-collections`
