@@ -1,15 +1,24 @@
+import json
+import logging
+import logging.config
+import os
 from flask import Flask, render_template, current_app
 
+import ocdskingfisherprocess.signals.signals
+import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
 from ocdskingfisherprocess.config import Config
 from ocdskingfisherprocess.database import DataBase
-import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
-import ocdskingfisherprocess.signals.signals
 
 
 def create_app(config=None):
     if not config:
         config = Config()
         config.load_user_config()
+
+    logging_config_file_full_path = os.path.expanduser('~/.config/ocdskingfisher-process/logging.json')
+    if os.path.isfile(logging_config_file_full_path):
+        with open(logging_config_file_full_path) as f:
+            logging.config.dictConfig(json.load(f))
 
     database = DataBase(config=config)
 
@@ -18,6 +27,7 @@ def create_app(config=None):
     app = Flask(__name__)
     app.kingfisher_config = config
     app.kingfisher_database = database
+    app.kingfisher_web_logger = logging.getLogger('ocdskingfisher.web')
 
     app.add_url_rule('/', view_func=hello)
     app.add_url_rule('/robots.txt', view_func=robots_txt)
