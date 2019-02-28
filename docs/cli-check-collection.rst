@@ -11,3 +11,9 @@ Pass the ID of the collection you want checked. Use :doc:`cli-list-collections` 
 
     python ocdskingfisher-process-cli check-collection 17
 
+
+Do not use on hosted Kingfisher
+-------------------------------
+
+Do not use this command on Hosted kingfisher - it is run automatically for you.
+

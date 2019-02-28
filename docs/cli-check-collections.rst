@@ -28,3 +28,9 @@ You can use this option with a cron entry; set a cron entry for this command to 
 Then when new data appears in the system, there is no need for someone to run :doc:`cli-check-collection` by hand - the process run by cron will pick up the new data itself eventually.
 
 The runforseconds option will make sure that only one of these cron processes runs at once.
+
+Do not use on hosted Kingfisher
+-------------------------------
+
+Do not use this command on Hosted kingfisher - it is run automatically for you.
+
