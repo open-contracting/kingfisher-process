@@ -62,4 +62,18 @@
 
     <a href="/app/collection/{{ collection.database_id }}/file" class="btn btn-primary">View Files</a>
 
+    <table class="table">
+        <tr>
+            <th>Note</th>
+            <th>At</th>
+        </tr>
+        {% for note in notes %}
+            <tr>
+                <td>{{ note.note }}</td>
+                <td>{{ note.stored_at }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+
 {% endblock %}

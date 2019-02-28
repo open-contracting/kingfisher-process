@@ -34,3 +34,11 @@ class FileItemModel:
     def __init__(self, database_id=None, number=None):
         self.database_id = database_id
         self.number = number
+
+
+class CollectionNoteModel:
+
+    def __init__(self, database_id=None, note=None, stored_at=None):
+        self.database_id = database_id
+        self.note = note
+        self.stored_at = stored_at

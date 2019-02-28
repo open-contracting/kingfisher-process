@@ -59,7 +59,8 @@ def app_collections():
 
 def app_collection_index(collection_id):
     collection = current_app.kingfisher_database.get_collection(collection_id)
-    return render_template("app/collection/index.html", collection=collection)
+    notes = current_app.kingfisher_database.get_all_notes_in_collection(collection_id)
+    return render_template("app/collection/index.html", collection=collection, notes=notes)
 
 
 def app_collection_files(collection_id):

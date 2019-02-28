@@ -37,6 +37,12 @@ class Store:
             self.collection = self.database.get_collection(self.collection_id)
         return self.collection.store_end_at != None # noqa
 
+    def add_collection_note(self, note):
+        if isinstance(note, str):
+            note = note.strip()
+            if note:
+                self.database.add_collection_note(self.collection_id, note)
+
     def end_collection_store(self):
         self.database.mark_collection_store_done(self.collection_id)
 

@@ -93,6 +93,8 @@ class SubmitFileView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_sample,
         )
 
+        store.add_collection_note(request.form.get('collection_note'))
+
         file_filename = request.form.get('file_name')
         file_url = request.form.get('url')
         file_data_type = request.form.get('data_type')
@@ -140,6 +142,8 @@ class SubmitItemView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_data_version,
             self.collection_sample,
         )
+
+        store.add_collection_note(request.form.get('collection_note'))
 
         file_filename = request.form.get('file_name')
         file_url = request.form.get('url')

@@ -8,7 +8,7 @@ import alembic.config
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 
-from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel
+from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel, CollectionNoteModel
 from ocdskingfisherprocess.util import get_hash_md5_for_data
 from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
 
@@ -45,6 +45,16 @@ class DataBase:
                                                              'transform_from_collection_id', 'transform_type',
                                                              name='unique_collection_identifiers'),
                                          )
+
+        self.collection_note_table = sa.Table('collection_note', self.metadata,
+                                              sa.Column('id', sa.Integer, primary_key=True),
+                                              sa.Column('collection_id', sa.Integer,
+                                                        sa.ForeignKey("collection.id",
+                                                                      name="fk_collection_file_collection_id"),
+                                                        nullable=False),
+                                              sa.Column('note', sa.Text, nullable=False),
+                                              sa.Column('stored_at', sa.DateTime(timezone=False), nullable=False),
+                                              )
 
         self.collection_file_table = sa.Table('collection_file', self.metadata,
                                               sa.Column('id', sa.Integer, primary_key=True),
@@ -238,6 +248,7 @@ class DataBase:
         engine.execute("drop table if exists collection_file_status cascade")  # This is the old table name
         engine.execute("drop table if exists collection_file cascade")
         engine.execute("drop table if exists source_session_file_status cascade")  # This is the old table name
+        engine.execute("drop table if exists collection_note cascade")
         engine.execute("drop table if exists collection cascade")
         engine.execute("drop table if exists source_session cascade")  # This is the old table name
         engine.execute("drop table if exists alembic_version cascade")
@@ -330,6 +341,20 @@ class DataBase:
                     store_end_at=collection['store_end_at'],
                     deleted_at=collection['deleted_at'],
                 )
+
+    def get_all_notes_in_collection(self, collection_id):
+        out = []
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.collection_note_table]) \
+                .where(self.collection_note_table.c.collection_id == collection_id) \
+                .order_by(self.collection_note_table.c.stored_at.asc())
+            for collection_note in connection.execute(s):
+                out.append(CollectionNoteModel(
+                    database_id=collection_note['id'],
+                    note=collection_note['note'],
+                    stored_at=collection_note['stored_at'],
+                ))
+        return out
 
     def get_all_files_in_collection(self, collection_id):
         out = []
@@ -588,6 +613,21 @@ class DataBase:
         with self.get_engine().begin() as connection:
             query = sa.sql.expression.text(sql)
             return connection.execute(query, data)
+
+    def add_collection_note(self, collection_id, note):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.collection_note_table]) \
+                .where((self.collection_note_table.c.collection_id == collection_id) &
+                       (self.collection_note_table.c.note == note))
+            result = connection.execute(s)
+
+            collection_note_table_row = result.fetchone()
+            if not collection_note_table_row:
+                connection.execute(self.collection_note_table.insert(), {
+                    'collection_id': collection_id,
+                    'note': note,
+                    'stored_at': datetime.datetime.utcnow(),
+                })
 
 
 class DatabaseStore:
