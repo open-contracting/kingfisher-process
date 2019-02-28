@@ -6,13 +6,11 @@ Collections
 
 Collections are a set of data that are handled separately.
 
-A collection is defined uniquely by a combination of all the variables listed below.
+A collection is defined uniquely by a combination of all the 5 variables listed below.
 
 * Name. A String. Can be anything you want.
 * Date. The date the collection started.
 * Sample. A Boolean flag.
-
-A collection is also given a numeric ID.
 
 Collections have a set of flags on them that describe what operations to do on them. These are:
 
@@ -21,6 +19,7 @@ Collections have a set of flags on them that describe what operations to do on t
 
 Default values for these can be configured - see :doc:`config`.
 
+A collection is also given a numeric ID, which for convenience is normally used to refer to the collection.
 
 Files
 -----
@@ -28,6 +27,11 @@ Files
 Each collection contains one or more files.
 
 Each file is uniquely identified in a collection by it's file name.
+
+Files can have `warnings` and/or `errors`:
+
+*  `errors` indicate the file could not be processed at all for some reason. In this case, you should not expect to find any data in this file.
+*  `warnings` indicate the file could still be processed. In this case, you should still find some data in this file.
 
 Data Types for Files
 --------------------

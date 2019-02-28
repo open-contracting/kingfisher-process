@@ -9,6 +9,7 @@ OCDS Kingfisher Process is a tool for storing and analysing data from publishers
 
    data-model.rst
    standard-pipeline.rst
+   database-structure.rst
    requirements-install.rst
    config.rst
    cli.rst
