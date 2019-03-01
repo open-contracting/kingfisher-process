@@ -11,3 +11,9 @@ Pass the ID of the collection you want the work done in. Use :doc:`cli-list-coll
 
     python ocdskingfisher-process-cli transform-collection 17
 
+
+Do not use on hosted Kingfisher
+-------------------------------
+
+Do not use this command on Hosted kingfisher - it is run automatically for you.
+

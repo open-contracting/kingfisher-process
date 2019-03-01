@@ -20,3 +20,11 @@ Create DB Migrations with Alembic - http://alembic.zzzcomputing.com/en/latest/
 
 Add changes to new migration, and make sure you update database.py table structures and delete_tables to.
 
+
+Database-tables.png file
+------------------------
+
+This is generated with http://schemaspy.org/
+
+The resulting image is edited by hand to remove the row count, as that may confuse people.
+
