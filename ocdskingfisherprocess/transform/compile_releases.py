@@ -7,6 +7,10 @@ import datetime
 class CompileReleasesTransform(BaseTransform):
 
     def process(self):
+        # Is deleted?
+        if self.destination_collection.deleted_at:
+            return
+
         # This transform can only run when the source collection is fully stored!
         if not self.source_collection.store_end_at:
             return

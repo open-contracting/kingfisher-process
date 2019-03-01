@@ -7,6 +7,10 @@ import datetime
 class Upgrade10To11Transform(BaseTransform):
 
     def process(self):
+        # Is deleted?
+        if self.destination_collection.deleted_at:
+            return
+
         # Have we already marked this transform as finished?
         if self.destination_collection.store_end_at:
             return

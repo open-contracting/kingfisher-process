@@ -18,6 +18,11 @@ class Checks:
 
         self.logger.info('process_all_files called for collection ' + str(self.collection.database_id))
 
+        # Is deleted?
+        if self.collection.deleted_at:
+            return
+
+        # Normal Checks
         if self.collection.check_data:
 
             self.process_all_files_releases()
@@ -32,6 +37,7 @@ class Checks:
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
+        # Checks with schema V1.1
         if self.collection.check_older_data_with_schema_version_1_1:
 
             self.process_all_files_releases_with_override_schema_version_1_1()
