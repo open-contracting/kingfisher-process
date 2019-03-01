@@ -29,9 +29,9 @@ jdcal==1.4
 Jinja2==2.10
 json-merge-patch==0.2
 jsonref==0.2
-jsonschema==3.0.0
+jsonschema==3.0.1
 -e git+https://github.com/open-contracting/lib-cove-ocds.git@2487c7160bb102559d34039a14bdeea38e25d5b6#egg=libcoveocds
-lxml==4.3.1
+lxml==4.3.2
 Mako==1.0.7
 MarkupSafe==1.1.1
 mccabe==0.6.1
@@ -45,7 +45,7 @@ pluggy==0.9.0
 psycopg2==2.7.7
 py==1.8.0
 pycodestyle==2.5.0
-pyflakes==2.1.0
+pyflakes==2.1.1
 Pygments==2.3.1
 pyparsing==2.3.1
 pyrsistent==0.14.11
@@ -56,6 +56,7 @@ redis==3.2.0
 requests==2.21.0
 rfc3987==1.3.8
 schema==0.7.0
+sentry-sdk==0.7.4
 six==1.12.0
 snowballstemmer==1.2.1
 sphinxcontrib-websupport==1.1.0
