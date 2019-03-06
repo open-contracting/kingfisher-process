@@ -91,3 +91,14 @@ You need an Redis server if you want a background queue to process items immedia
     HOST = localhost
     PORT = 6379
     DATABASE = 0
+
+Sentry Configuration
+--------------------
+
+This is optional - if you want to track crashes use https://sentry.io/welcome/
+
+.. code-block:: ini
+
+    [SENTRY]
+    DSN = https://xxxxxxxxxxxxxxxxxxxxxxxxxx@sentry.io/xxxxxxx
+

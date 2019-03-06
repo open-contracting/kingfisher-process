@@ -8,6 +8,7 @@ psycopg2==2.7.7
 ocdsmerge==0.5.1
 blinker==1.4
 redis==3.2.0
+sentry-sdk==0.7.4
 ## The following requirements were added by pip freeze:
 attrs==18.2.0
 bleach==3.1.0
@@ -26,8 +27,8 @@ jdcal==1.4
 Jinja2==2.10
 json-merge-patch==0.2
 jsonref==0.2
-jsonschema==3.0.0
-lxml==4.3.1
+jsonschema==3.0.1
+lxml==4.3.2
 Mako==1.0.7
 MarkupSafe==1.1.1
 openpyxl==2.6.0

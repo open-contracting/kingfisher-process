@@ -25,6 +25,7 @@ class Config:
         self.redis_host = None
         self.redis_port = 6379
         self.redis_database = 0
+        self.sentry_dsn = None
 
     def load_user_config(self):
         # First, try and load any config in the ini files
@@ -107,6 +108,8 @@ class Config:
         self.redis_host = config.get('REDIS', 'HOST', fallback=None)
         self.redis_port = config.get('REDIS', 'PORT', fallback=6379)
         self.redis_database = config.get('REDIS', 'DATABASE', fallback=0)
+
+        self.sentry_dsn = config.get('SENTRY', 'DSN', fallback=None)
 
     def is_redis_available(self):
         return self.redis_host and self.redis_port
