@@ -632,7 +632,8 @@ class DataBase:
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number, url=None, before_db_transaction_ends_callback=None):
+    def __init__(self, database, collection_id, file_name, number, url=None, before_db_transaction_ends_callback=None,
+                 allow_existing_collection_file_item_table_row=False):
         self.database = database
         self.collection_id = collection_id
         self.file_name = file_name
@@ -643,6 +644,7 @@ class DatabaseStore:
         self.transaction = None
         self.collection_file_id = None
         self.collection_file_item_id = None
+        self.allow_existing_collection_file_item_table_row = allow_existing_collection_file_item_table_row
 
     def __enter__(self):
         self.connection = self.database.get_engine().connect()
@@ -666,18 +668,29 @@ class DatabaseStore:
                 'url': self.url,
                 # TODO store warning?
             })
-            # TODO look for unique key clashes, error appropriately!
             self.collection_file_id = value.inserted_primary_key[0]
 
         # Collection File Item!
+        s = sa.sql.select([self.database.collection_file_item_table]) \
+            .where((self.database.collection_file_item_table.c.collection_file_id == self.collection_file_id) &
+                   (self.database.collection_file_item_table.c.number == self.number))
+        result = self.connection.execute(s)
 
-        value = self.connection.execute(self.database.collection_file_item_table.insert(), {
-            'collection_file_id': self.collection_file_id,
-            'number': self.number,
-            'store_start_at': datetime.datetime.utcnow(),
-        })
-        # TODO look for unique key clashes, error appropriately!
-        self.collection_file_item_id = value.inserted_primary_key[0]
+        collection_file_item_table_row = result.fetchone()
+
+        if collection_file_item_table_row:
+            self.collection_file_item_id = collection_file_item_table_row['id']
+            if not self.allow_existing_collection_file_item_table_row:
+                raise Exception("DatabaseStore class tried to insert a duplicate collection_file_item row! " +
+                                "collection_file_id = {} number = {} existing row id = {}"
+                                .format(self.collection_file_id, self.number, self.collection_file_item_id))
+        else:
+            value = self.connection.execute(self.database.collection_file_item_table.insert(), {
+                'collection_file_id': self.collection_file_id,
+                'number': self.number,
+                'store_start_at': datetime.datetime.utcnow(),
+            })
+            self.collection_file_item_id = value.inserted_primary_key[0]
 
         # DB queries that will be used repeatably, we pre-build and reuse for speed
         self.database_get_existing_data = sa.sql.expression.text("SELECT id FROM data WHERE hash_md5 = :hash_md5")
