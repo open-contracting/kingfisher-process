@@ -24,6 +24,7 @@ class Store:
         self.collection_id = None
         self.collection = None
         self.database = database
+        self.ignore_release_package_json_lines_missing_releases_error = True
 
     def load_collection(self, collection_source, collection_data_version, collection_sample):
         self.collection_id = self.database.get_or_create_collection_id(collection_source, collection_data_version, collection_sample)
