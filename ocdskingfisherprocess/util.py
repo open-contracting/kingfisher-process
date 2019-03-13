@@ -56,7 +56,9 @@ def control_code_to_filter_out_to_human_readable(control_code_to_filter_out):
 class FileToStore:
 
     def __init__(self, source_filename, encoding='utf-8'):
+        # The original filename
         self.source_filename = source_filename
+        # IF we have to process the file, store the temporary file name here. It must be removed after use.
         self.processed_filename = None
         self.warnings = []
         # We don't actually do anything with encoding yet, but we might need to later ...
@@ -106,7 +108,8 @@ class FileToStore:
         return self.warnings
 
     def __exit__(self, type, value, traceback):
-        pass
+        if self.processed_filename:
+            os.remove(self.processed_filename)
 
 
 def parse_string_to_date_time(date_time_string):
