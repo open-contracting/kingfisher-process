@@ -1,7 +1,9 @@
-from ocdskingfisherprocess.transform.base import BaseTransform
-from ocdskit.upgrade import upgrade_10_11
-import sqlalchemy as sa
 import datetime
+import sqlalchemy as sa
+from ocdskit.upgrade import upgrade_10_11
+
+from ocdskingfisherprocess.database import DatabaseStore
+from ocdskingfisherprocess.transform.base import BaseTransform
 
 
 class Upgrade10To11Transform(BaseTransform):
@@ -72,8 +74,17 @@ class Upgrade10To11Transform(BaseTransform):
                 'source_release_id': release_row.id,
             })
 
-        self.store.store_file_item(file_model.filename, None, 'release_package', package, file_item_model.number,
-                                   before_db_transaction_ends_callback=add_status)
+        package_data = {}
+        for key, value in package.items():
+            if key != 'releases':
+                package_data[key] = value
+
+        with DatabaseStore(database=self.database, collection_id=self.destination_collection.database_id,
+                           file_name=file_model.filename, number=file_item_model.number,
+                           url=file_model.url, before_db_transaction_ends_callback=add_status,
+                           allow_existing_collection_file_item_table_row=True) as store:
+
+            store.insert_release(package['releases'][0], package_data)
 
     def process_record_row(self, file_model, file_item_model, record_row):
         package = self.database.get_package_data(record_row.package_data_id)
@@ -85,8 +96,17 @@ class Upgrade10To11Transform(BaseTransform):
                 'source_record_id': record_row.id,
             })
 
-        self.store.store_file_item(file_model.filename, None, 'record_package', package, file_item_model.number,
-                                   before_db_transaction_ends_callback=add_status)
+        package_data = {}
+        for key, value in package.items():
+            if key != 'records':
+                package_data[key] = value
+
+        with DatabaseStore(database=self.database, collection_id=self.destination_collection.database_id,
+                           file_name=file_model.filename, number=file_item_model.number,
+                           url=file_model.url, before_db_transaction_ends_callback=add_status,
+                           allow_existing_collection_file_item_table_row=True) as store:
+
+            store.insert_record(package['records'][0], package_data)
 
     def has_release_id_been_done(self, release_id):
         with self.database.get_engine().begin() as connection:

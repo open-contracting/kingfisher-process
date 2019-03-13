@@ -99,7 +99,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+            os.path.realpath(__file__)), 'data', 'sample_1_0_releases.json'
         )
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 
@@ -120,7 +120,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.release_table])
             result = connection.execute(s)
-            assert 2 == result.rowcount
+            assert 4 == result.rowcount
 
             s = sa.sql.select([self.database.record_table])
             result = connection.execute(s)
@@ -132,7 +132,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
 
             s = sa.sql.select([self.database.transform_upgrade_1_0_to_1_1_status_release_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
         # transform again! This should be fine
         transform = Upgrade10To11Transform(self.config, self.database, destination_collection)
@@ -142,7 +142,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.release_table])
             result = connection.execute(s)
-            assert 2 == result.rowcount
+            assert 4 == result.rowcount
 
             s = sa.sql.select([self.database.record_table])
             result = connection.execute(s)
@@ -154,7 +154,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
 
             s = sa.sql.select([self.database.transform_upgrade_1_0_to_1_1_status_release_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
         # destination collection will not be closed (because source is still open!)
         destination_collection = self.database.get_collection(destination_collection_id)
