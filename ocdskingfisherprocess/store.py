@@ -137,9 +137,6 @@ class Store:
                     data_type == 'release_package_list_in_results' or \
                     data_type == 'release_package_list':
                 if 'releases' not in json_data:
-                    if data_type == 'release_package_json_lines' and \
-                            self.ignore_release_package_json_lines_missing_releases_error:
-                        return
                     raise Exception("Release list not found")
                 elif not isinstance(json_data['releases'], list):
                     raise Exception("Release list which is not a list found")
