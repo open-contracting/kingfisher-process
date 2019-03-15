@@ -85,6 +85,8 @@ class DataBase:
                                                    sa.Column('store_end_at', sa.DateTime(timezone=False),
                                                              nullable=True),
                                                    sa.Column('number', sa.Integer),
+                                                   sa.Column('warnings', JSONB, nullable=True),
+                                                   sa.Column('errors', JSONB, nullable=True),
                                                    sa.UniqueConstraint('collection_file_id', 'number',
                                                                        name='unique_collection_file_item_identifiers'),
                                                    )
@@ -378,11 +380,14 @@ class DataBase:
         out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_item_table]) \
-                .where(self.collection_file_item_table.c.collection_file_id == file.database_id)
+                .where(self.collection_file_item_table.c.collection_file_id == file.database_id) \
+                .order_by(self.collection_file_item_table.c.number.asc())
             for result in connection.execute(s):
                 out.append(FileItemModel(
                     database_id=result['id'],
                     number=result['number'],
+                    errors=result['errors'],
+                    warnings=result['warnings'],
                 ))
         return out
 
@@ -476,6 +481,47 @@ class DataBase:
                 'url': url,
                 'errors': errors,
             })
+
+    def store_collection_file_item_errors(self, collection_id, file_name, number, url, errors):
+        with self.get_engine().begin() as connection:
+
+            # Collection File Table
+            s = sa.sql.select([self.collection_file_table]) \
+                .where((self.collection_file_table.c.collection_id == collection_id) &
+                       (self.collection_file_table.c.filename == file_name))
+            result = connection.execute(s)
+
+            collection_file_table_row = result.fetchone()
+
+            if collection_file_table_row:
+                collection_file_id = collection_file_table_row['id']
+            else:
+                value = connection.execute(self.collection_file_table.insert(), {
+                    'collection_id': collection_id,
+                    'filename': file_name,
+                    'url': url,
+                    'store_start_at': datetime.datetime.utcnow(),
+                })
+
+                collection_file_id = value.inserted_primary_key[0]
+
+            # Collection File Item
+            s = sa.sql.select([self.collection_file_item_table]) \
+                .where((self.collection_file_item_table.c.collection_file_id == collection_file_id) &
+                       (self.collection_file_item_table.c.number == number))
+            result = connection.execute(s)
+
+            collection_file_item_table_row = result.fetchone()
+
+            if collection_file_item_table_row:
+                raise Exception('That Number is already used!')
+            else:
+                connection.execute(self.collection_file_item_table.insert(), {
+                    'collection_file_id': collection_file_id,
+                    'number': number,
+                    'store_start_at': datetime.datetime.utcnow(),
+                    'errors': errors,
+                })
 
     def is_collection_source_for_a_transform(self, collection_id):
         with self.get_engine().begin() as connection:
