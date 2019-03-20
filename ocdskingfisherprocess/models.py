@@ -31,9 +31,11 @@ class FileModel:
 
 class FileItemModel:
 
-    def __init__(self, database_id=None, number=None):
+    def __init__(self, database_id=None, number=None, warnings=None, errors=None):
         self.database_id = database_id
         self.number = number
+        self.warnings = warnings
+        self.errors = errors
 
 
 class CollectionNoteModel:

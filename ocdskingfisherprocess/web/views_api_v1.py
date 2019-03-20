@@ -152,13 +152,16 @@ class SubmitItemView(BaseAPIViewAuthAndCollectionNeeded):
 
         data = json.loads(request.form.get('data'))
 
-        store.store_file_item(
-            file_filename,
-            file_url,
-            file_data_type,
-            data,
-            item_number,
-        )
+        try:
+            store.store_file_item(
+                file_filename,
+                file_url,
+                file_data_type,
+                data,
+                item_number,
+            )
+        except Exception as e:
+            store.store_file_item_errors(file_filename, item_number, file_url, [str(e)])
 
         return "OCDS Kingfisher APIs V1 Submit"
 

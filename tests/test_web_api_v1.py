@@ -301,3 +301,108 @@ class TestWebAPIV1(BaseWebTest):
                                        headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
 
         assert result.status_code == 400
+
+    def test_api_v1_submit_item_no_release_key(self):
+        # Call
+        data = {
+            'collection_source': 'test',
+            'collection_data_version': '2018-10-10 00:12:23',
+            'collection_sample': 'true',
+            'file_name': 'test.json',
+            'url': 'http://example.com',
+            'data_type': 'release_package',
+            'number': 0,
+            'data': ' {"missing": "A release key. We have seen that in the wild. So we want to make sure we test for that."}',
+        }
+
+        result = self.flaskclient.post('/api/v1/submit/item/',
+                                       data=data,
+                                       headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
+
+        assert result.status_code == 200
+
+        # Check
+        collection_id = self.database.get_collection_id('test', '2018-10-10 00:12:23', True)
+        assert collection_id
+
+        collection = self.database.get_collection(collection_id)
+        assert collection.store_start_at != None # noqa
+        assert collection.store_end_at == None # noqa
+
+        files = self.database.get_all_files_in_collection(collection_id)
+        assert len(files) == 1
+        assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'
+        assert files[0].errors == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 1
+        assert file_items[0].errors == ['Release list not found']
+
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
+
+    def test_api_v1_submit_item_no_release_key_succesfull_call_first(self, ):
+
+        # Call - good data
+        json_filename = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_0_releases.json'
+        )
+
+        with open(json_filename) as f:
+            data = {
+                'collection_source': 'test',
+                'collection_data_version': '2018-10-10 00:12:23',
+                'collection_sample': 'true',
+                'file_name': 'test.json',
+                'url': 'http://example.com',
+                'data_type': 'release_package',
+                'number': 0,
+                'data': f.read(),
+            }
+
+        result = self.flaskclient.post('/api/v1/submit/item/',
+                                       data=data,
+                                       headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
+
+        assert result.status_code == 200
+
+        # Call - bad data
+        data = {
+            'collection_source': 'test',
+            'collection_data_version': '2018-10-10 00:12:23',
+            'collection_sample': 'true',
+            'file_name': 'test.json',
+            'url': 'http://example.com',
+            'data_type': 'release_package',
+            'number': 1,
+            'data': ' {"missing": "A release key. We have seen that in the wild. So we want to make sure we test for that."}',
+        }
+
+        result = self.flaskclient.post('/api/v1/submit/item/',
+                                       data=data,
+                                       headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
+
+        assert result.status_code == 200
+
+        # Check
+        collection_id = self.database.get_collection_id('test', '2018-10-10 00:12:23', True)
+        assert collection_id
+
+        collection = self.database.get_collection(collection_id)
+        assert collection.store_start_at != None # noqa
+        assert collection.store_end_at == None # noqa
+
+        files = self.database.get_all_files_in_collection(collection_id)
+        assert len(files) == 1
+        assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'
+        assert files[0].errors == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 2
+        assert file_items[0].errors == None # noqa
+        assert file_items[1].errors == ['Release list not found']
+
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
