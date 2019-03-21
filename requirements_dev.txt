@@ -30,7 +30,7 @@ Jinja2==2.10
 json-merge-patch==0.2
 jsonref==0.2
 jsonschema==3.0.1
--e git+https://github.com/open-contracting/lib-cove-ocds.git@92e81528f2caf55b3b0a0971191bf3d0789e741b#egg=libcoveocds
+-e git+https://github.com/open-contracting/lib-cove-ocds.git@9cf68780f9e30921e432b12e3e346a057e2bbba5#egg=libcoveocds
 lxml==4.3.2
 Mako==1.0.7
 MarkupSafe==1.1.1
