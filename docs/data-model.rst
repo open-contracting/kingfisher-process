@@ -46,6 +46,8 @@ When giving file to this software to load, you must specify a data type. This ca
 *  release_package_json_lines - see last entry, but release packages.
 *  record_package_list - the file is a list of record packages. eg [  { record-package-1 } , { record-package-2 } ]
 *  release_package_list - see last entry, but release packages.
+*  record_list - the file is a list of records. eg [  { record-1 } , { record-2 } ]
+*  release_list - see last entry, but releases.
 *  record_package_list_in_results - the file is a list of record packages in the results attribute. eg { 'results': [  { record-package-1 } , { record-package-2 } ]  }
 *  release_package_list_in_results - see last entry, but release packages.
 
