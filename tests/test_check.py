@@ -618,3 +618,45 @@ class TestCheckAllOn(BaseDataBaseTest):
             s = sa.sql.select([self.database.release_check_error_table])
             result = connection.execute(s)
             assert 0 == result.rowcount
+
+
+class TestCheck11NotSelected(BaseDataBaseTest):
+
+    def alter_config(self):
+        self.config.default_value_collection_check_data = False
+        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = True
+
+    def test_records(self):
+
+        collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        collection = self.database.get_collection(collection_id)
+
+        store = Store(self.config, self.database)
+        store.set_collection(collection)
+
+        json_filename = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_1_record.json'
+        )
+
+        store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
+
+        assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.1')]) == 0
+        assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.2')]) == 1
+
+    def test_releases(self):
+
+        collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        collection = self.database.get_collection(collection_id)
+
+        store = Store(self.config, self.database)
+        store.set_collection(collection)
+
+        json_filename = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_1_releases_multiple_with_same_ocid.json'
+        )
+
+        store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
+
+        assert len([res for res in self.database.get_releases_to_check(collection_id, override_schema_version='1.1')]) == 0
+        # the file has 6 releases
+        assert len([res for res in self.database.get_releases_to_check(collection_id, override_schema_version='1.2')]) == 6

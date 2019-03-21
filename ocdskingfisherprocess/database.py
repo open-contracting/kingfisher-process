@@ -609,7 +609,7 @@ class DataBase:
             with self.get_engine().begin() as connection:
                 connection.execute(sa.sql.expression.text(sql), data)
 
-    def get_releases_to_check(self, collection_id, override_schema_version=None):
+    def _get_check_query(self, obj_type, collection_id, override_schema_version):
         data = {'collection_id': collection_id}
         sql = """ SELECT
                            release_with_collection.id,
@@ -620,41 +620,31 @@ class DataBase:
             sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
                           AND release_check.override_schema_version = :override_schema_version
                        LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
-                          AND release_check_error.override_schema_version = :override_schema_version """
+                          AND release_check_error.override_schema_version = :override_schema_version
+                       LEFT JOIN package_data on package_data.id = package_data_id
+                       WHERE release_with_collection.collection_id = :collection_id
+                       AND release_check.id IS NULL AND release_check_error.id IS NULL
+                       AND coalesce(data ->> 'version', '1.0') <> :override_schema_version"""
             data['override_schema_version'] = override_schema_version
         else:
             sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
                           AND release_check.override_schema_version IS NULL
                        LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
-                          AND release_check_error.override_schema_version IS NULL """
-        sql += """ WHERE release_with_collection.collection_id = :collection_id
-                    AND release_check.id IS NULL AND release_check_error.id IS NULL """
+                          AND release_check_error.override_schema_version IS NULL
+                        WHERE release_with_collection.collection_id = :collection_id
+                        AND release_check.id IS NULL AND release_check_error.id IS NULL """
+
+        return sql.replace('release', obj_type), data
+
+    def get_releases_to_check(self, collection_id, override_schema_version=None):
+        sql, data = self._get_check_query('release', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
             query = sa.sql.expression.text(sql)
             return connection.execute(query, data)
 
     def get_records_to_check(self, collection_id, override_schema_version=None):
-        data = {'collection_id': collection_id}
-        sql = """ SELECT
-                           record_with_collection.id,
-                           record_with_collection.data_id,
-                           record_with_collection.package_data_id
-                           FROM record_with_collection"""
-        if override_schema_version:
-            sql += """     LEFT JOIN record_check ON record_check.record_id = record_with_collection.id
-                              AND record_check.override_schema_version = :override_schema_version
-                           LEFT JOIN record_check_error ON record_check_error.record_id = record_check_error.id
-                              AND record_check_error.override_schema_version = :override_schema_version """
-            data['override_schema_version'] = override_schema_version
-        else:
-            sql += """
-                           LEFT JOIN record_check ON record_check.record_id = record_with_collection.id
-                              AND record_check.override_schema_version IS NULL
-                           LEFT JOIN record_check_error ON record_check_error.record_id = record_check_error.id
-                              AND record_check_error.override_schema_version IS NULL """
-        sql += """ WHERE record_with_collection.collection_id = :collection_id
-                    AND record_check.id IS NULL AND record_check_error.id IS NULL """
+        sql, data = self._get_check_query('record', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
             query = sa.sql.expression.text(sql)
