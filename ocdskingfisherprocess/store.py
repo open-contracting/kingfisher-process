@@ -8,6 +8,8 @@ class Store:
     ALLOWED_DATA_TYPES = [
         'record',
         'release',
+        'record_list',
+        'release_list',
         'compiled_release',
         'record_package',
         'release_package',
@@ -90,7 +92,8 @@ class Store:
             objects_list.extend(data['results'])
         elif data_type == 'release_package_list_in_results':
             objects_list.extend(data['results'])
-        elif data_type == 'record_package_list' or data_type == 'release_package_list':
+        elif data_type == 'record_package_list' or data_type == 'release_package_list' or data_type == 'release_list' \
+                or data_type == 'record_list':
             objects_list.extend(data)
         else:
             objects_list.append(data)
@@ -133,7 +136,8 @@ class Store:
         with DatabaseStore(database=self.database, collection_id=self.collection_id, file_name=filename, number=number,
                            url=url, before_db_transaction_ends_callback=before_db_transaction_ends_callback) as store:
 
-            if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release':
+            if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release' or \
+                            data_type == 'release_list' or data_type == 'record_list':
                 data_list = [json_data]
             elif data_type == 'release_package' or \
                     data_type == 'release_package_json_lines' or \
@@ -157,7 +161,7 @@ class Store:
                 raise Exception("data_type not a known type")
 
             package_data = {}
-            if not data_type == 'release' and not data_type == 'compiled_release':
+            if not data_type == 'release' and not data_type == 'compiled_release' and not data_type == 'release_list':
                 for key, value in json_data.items():
                     if key not in ('releases', 'records'):
                         package_data[key] = value
@@ -172,7 +176,8 @@ class Store:
                         data_type == 'record_package' or \
                         data_type == 'record_package_json_lines' or \
                         data_type == 'record_package_list_in_results' or \
-                        data_type == 'record_package_list':
+                        data_type == 'record_package_list' or \
+                        data_type == 'record_list':
                     store.insert_record(row, package_data)
                 else:
                     store.insert_release(row, package_data)
