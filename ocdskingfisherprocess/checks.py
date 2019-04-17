@@ -3,6 +3,7 @@ import shutil
 import datetime
 import logging
 
+from libcoveocds.config import LibCoveOCDSConfig
 from libcoveocds.api import ocds_json_output, APIException
 
 
@@ -13,6 +14,8 @@ class Checks:
         self.collection = collection
         self.run_until_timestamp = run_until_timestamp
         self.logger = logging.getLogger('ocdskingfisher.checks')
+        self.libcoveocds_config = LibCoveOCDSConfig()
+        self.libcoveocds_config.config['cache_all_requests'] = True
 
     def process_all_files(self):
 
@@ -93,7 +96,11 @@ class Checks:
     def handle_package(self, package):
         cove_temp_folder = tempfile.mkdtemp(prefix='ocdskingfisher-cove-', dir=tempfile.gettempdir())
         try:
-            return ocds_json_output(cove_temp_folder, None, None, convert=False, cache_schema=True, file_type='json', json_data=package)
+            return ocds_json_output(cove_temp_folder, None, None,
+                                    convert=False,
+                                    lib_cove_ocds_config=self.libcoveocds_config,
+                                    file_type='json',
+                                    json_data=package)
         finally:
             shutil.rmtree(cove_temp_folder)
 
