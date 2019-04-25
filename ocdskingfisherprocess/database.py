@@ -574,10 +574,22 @@ class DataBase:
                         SELECT id FROM compiled_release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
+            """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
+                WHERE source_record_id IN
+                    (
+                        SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );""",
             """DELETE FROM record
                 WHERE id IN
                     (
                         SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );""",
+            """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
+                WHERE source_release_id IN
+                    (
+                        SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
             """DELETE FROM release
