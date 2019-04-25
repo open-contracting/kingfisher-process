@@ -528,16 +528,20 @@ class DataBase:
                     'errors': errors,
                 })
 
-    def is_collection_source_for_a_transform(self, collection_id):
+    def can_mark_collection_deleted(self, collection_id):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
                 .where(self.collection_table.c.transform_from_collection_id == collection_id)
 
             result = connection.execute(s)
-            if result.fetchone():
-                return True
+            destination_collection = result.fetchone()
+            if destination_collection:
+                # This collection is the source collection for something else!
+                # We can't delete it if that transform is still active!
+                if not destination_collection['store_end_at'] and not destination_collection['deleted_at']:
+                    return False
 
-        return False
+        return True
 
     def mark_collection_deleted_at(self, collection_id):
         with self.get_engine().begin() as connection:

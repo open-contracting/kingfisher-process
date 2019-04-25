@@ -12,8 +12,8 @@ class DeleteCollectionCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
 
         collection_id = self.collection.database_id
 
-        if self.database.is_collection_source_for_a_transform(collection_id):
-            print("Collection has a transform. It can't be deleted.")
+        if not self.database.can_mark_collection_deleted(collection_id):
+            print("Collection has an active transform. It can't be deleted.")
             return
 
         self.database.mark_collection_deleted_at(collection_id)
