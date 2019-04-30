@@ -11,3 +11,4 @@ Transforms are created:
   *  from the new collection, a transform is created upgrading the incoming data to 1.1 data
   *  from the upgraded 1.1 data, a transform is created to compile releases
 
+Checks are turned on for the original collection only.

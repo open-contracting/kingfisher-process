@@ -19,8 +19,6 @@ class Config:
         self._database_user = ''
         self._database_name = ''
         self._database_password = ''
-        self.default_value_collection_check_data = False
-        self.default_value_collection_check_older_data_with_schema_version_1_1 = False
         self.run_standard_pipeline = False
         self.redis_host = None
         self.redis_port = 6379
@@ -89,10 +87,6 @@ class Config:
         self._database_user = config.get('DBHOST', 'USERNAME')
         self._database_name = config.get('DBHOST', 'DBNAME')
         self._database_password = config.get('DBHOST', 'PASSWORD', fallback='')
-
-        self.default_value_collection_check_data = config.getboolean('COLLECTION_DEFAULT', 'CHECK_DATA', fallback=False)
-        self.default_value_collection_check_older_data_with_schema_version_1_1 = \
-            config.getboolean('COLLECTION_DEFAULT', 'CHECK_OLDER_DATA_WITH_SCHEMA_1_1', fallback=False)
 
         self.database_uri = 'postgresql://{}:{}@{}:{}/{}'.format(
             self._database_user,

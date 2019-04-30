@@ -48,18 +48,6 @@ The key can be set in the `~/.config/ocdskingfisher-process/config.ini` file:
 
 They can also be set in the `KINGFISHER_PROCESS_WEB_API_KEYS` environmental variable.
 
-Collection Defaults Configuration
----------------------------------
-
-When you create a new collection, certain flags are set on it automatically. You can configure what the default values for them are:
-
-.. code-block:: ini
-
-    [COLLECTION_DEFAULT]
-    CHECK_DATA = true
-    CHECK_OLDER_DATA_WITH_SCHEMA_1_1 = false
-
-
 Logging Configuration
 ---------------------
 

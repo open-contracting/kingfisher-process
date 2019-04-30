@@ -300,8 +300,8 @@ class DataBase:
                 'transform_type': transform_type,
                 'transform_from_collection_id': transform_from_collection_id,
                 'store_start_at': datetime.datetime.utcnow(),
-                'check_data': self.config.default_value_collection_check_data,
-                'check_older_data_with_schema_version_1_1': self.config.default_value_collection_check_older_data_with_schema_version_1_1,
+                'check_data': False,
+                'check_older_data_with_schema_version_1_1': False,
             })
             collection_id = value.inserted_primary_key[0]
 
@@ -669,6 +669,22 @@ class DataBase:
                     'note': note,
                     'stored_at': datetime.datetime.utcnow(),
                 })
+
+    def mark_collection_check_data(self, collection_id, value):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(check_data=value)
+            )
+
+    def mark_collection_check_older_data_with_schema_version_1_1(self, collection_id, value):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(check_older_data_with_schema_version_1_1=value)
+            )
 
 
 class DatabaseStore:
