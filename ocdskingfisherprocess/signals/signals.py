@@ -20,8 +20,10 @@ def setup_signals(config, database):
 
 
 def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, **kwargs):
+    global our_database
     collection = our_database.get_collection(collection_id)
     if not collection.transform_from_collection_id:
+        # Create the transforms we want
         second_collection_id = our_database.get_or_create_collection_id(collection.source_id,
                                                                         collection.data_version,
                                                                         collection.sample,
@@ -33,6 +35,10 @@ def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, 
                                                  collection.sample,
                                                  transform_from_collection_id=second_collection_id,
                                                  transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
+
+        # Turn on the checks we want
+        our_database.mark_collection_check_data(collection_id, True)
+        our_database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
 
 
 def collection_data_store_finished_to_redis(sender, collection_id=None, **kwargs):

@@ -6,11 +6,10 @@ from tests.base import BaseDataBaseTest
 from ocdskingfisherprocess.checks import Checks
 
 
-class TestDefaultsOff(BaseDataBaseTest):
+class TestAllChecksOff(BaseDataBaseTest):
 
     def alter_config(self):
-        self.config.default_value_collection_check_data = False
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = False
+        self.config.run_standard_pipeline = False
 
     def test_records(self):
 
@@ -68,9 +67,6 @@ class TestDefaultsOff(BaseDataBaseTest):
 
     def test_releases(self):
 
-        self.config.default_value_collection_check_data = False
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = False
-
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         collection = self.database.get_collection(collection_id)
 
@@ -127,12 +123,13 @@ class TestDefaultsOff(BaseDataBaseTest):
 class TestCheckOn(BaseDataBaseTest):
 
     def alter_config(self):
-        self.config.default_value_collection_check_data = True
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = False
+        self.config.run_standard_pipeline = False
 
     def test_records(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_data(collection_id, True)
+
         collection = self.database.get_collection(collection_id)
 
         store = Store(self.config, self.database)
@@ -213,6 +210,8 @@ class TestCheckOn(BaseDataBaseTest):
     def test_release(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_data(collection_id, True)
+
         collection = self.database.get_collection(collection_id)
 
         store = Store(self.config, self.database)
@@ -294,12 +293,13 @@ class TestCheckOn(BaseDataBaseTest):
 class TestCheckOlderThan11On(BaseDataBaseTest):
 
     def alter_config(self):
-        self.config.default_value_collection_check_data = False
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = True
+        self.config.run_standard_pipeline = False
 
     def test_records(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
         collection = self.database.get_collection(collection_id)
 
         store = Store(self.config, self.database)
@@ -380,6 +380,8 @@ class TestCheckOlderThan11On(BaseDataBaseTest):
     def test_release(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
         collection = self.database.get_collection(collection_id)
 
         store = Store(self.config, self.database)
@@ -461,12 +463,14 @@ class TestCheckOlderThan11On(BaseDataBaseTest):
 class TestCheckAllOn(BaseDataBaseTest):
 
     def alter_config(self):
-        self.config.default_value_collection_check_data = True
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = True
+        self.config.run_standard_pipeline = False
 
     def test_records(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_data(collection_id, True)
+        self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
         collection = self.database.get_collection(collection_id)
 
         store = Store(self.config, self.database)
@@ -542,10 +546,10 @@ class TestCheckAllOn(BaseDataBaseTest):
 
     def test_releases(self):
 
-        self.config.default_value_collection_check_data = True
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = True
-
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_data(collection_id, True)
+        self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
         collection = self.database.get_collection(collection_id)
 
         store = Store(self.config, self.database)
@@ -623,8 +627,7 @@ class TestCheckAllOn(BaseDataBaseTest):
 class TestCheck11NotSelected(BaseDataBaseTest):
 
     def alter_config(self):
-        self.config.default_value_collection_check_data = False
-        self.config.default_value_collection_check_older_data_with_schema_version_1_1 = True
+        self.config.run_standard_pipeline = False
 
     def test_records(self):
 
