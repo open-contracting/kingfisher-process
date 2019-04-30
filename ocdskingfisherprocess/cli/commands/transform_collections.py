@@ -4,6 +4,8 @@ from ocdskingfisherprocess.transform.util import get_transform_instance
 import datetime
 from threading import Timer
 import os
+import sentry_sdk
+import traceback
 
 
 class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -31,7 +33,14 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
                     print("Collection " + str(collection.database_id))
                 transform = get_transform_instance(collection.transform_type, self.config, self.database,
                                                    collection, run_until_timestamp=run_until_timestamp)
-                transform.process()
+                try:
+                    transform.process()
+                except Exception as e:
+                    traceback.print_tb(e.__traceback__)
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag('transform_collection', collection.database_id)
+                        sentry_sdk.capture_exception(e)
+
             # Early return?
             if run_until_timestamp and run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 break
