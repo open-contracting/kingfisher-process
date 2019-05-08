@@ -1,5 +1,3 @@
-
-
 class CLICommand:
     command = ''
 
@@ -18,8 +16,13 @@ class CLICommand:
         subparser.add_argument("collection", help="Collection ID (Use list-collections command to find the ID)")
 
     def run_command_for_selecting_existing_collection(self, args):
-
         self.collection = self.database.get_collection(args.collection)
         if not self.collection:
             print("We can not find the collection that you requested!")
             quit(-1)
+
+
+class TimeLimitedCLICommand(CLICommand):
+    def configure_subparser(self, subparser):
+        subparser.add_argument('--runforseconds', type=int,
+                               help='Run for this many seconds only.')

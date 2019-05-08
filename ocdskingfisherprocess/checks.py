@@ -1,6 +1,5 @@
 import tempfile
 import shutil
-import datetime
 import logging
 
 from libcoveocds.config import LibCoveOCDSConfig
@@ -8,17 +7,14 @@ from libcoveocds.api import ocds_json_output, APIException
 
 
 class Checks:
-
-    def __init__(self, database, collection, run_until_timestamp=None):
+    def __init__(self, database, collection):
         self.database = database
         self.collection = collection
-        self.run_until_timestamp = run_until_timestamp
         self.logger = logging.getLogger('ocdskingfisher.checks')
         self.libcoveocds_config = LibCoveOCDSConfig()
         self.libcoveocds_config.config['cache_all_requests'] = True
 
     def process_all_files(self):
-
         self.logger.info('process_all_files called for collection ' + str(self.collection.database_id))
 
         # Is deleted?
@@ -27,28 +23,12 @@ class Checks:
 
         # Normal Checks
         if self.collection.check_data:
-
             self.process_all_files_releases()
-
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
-
             self.process_all_files_records()
-
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
 
         # Checks with schema V1.1
         if self.collection.check_older_data_with_schema_version_1_1:
-
             self.process_all_files_releases_with_override_schema_version_1_1()
-
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
-
             self.process_all_files_records_with_override_schema_version_1_1()
 
     def process_all_files_releases(self):
@@ -57,9 +37,6 @@ class Checks:
             # Do Normal Check?
             if not self.database.is_release_check_done(release_row['id']):
                 self.check_release_row(release_row)
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
 
     def process_all_files_records(self):
         results = self.database.get_records_to_check(self.collection.database_id)
@@ -67,9 +44,6 @@ class Checks:
             # Do Normal Check?
             if not self.database.is_record_check_done(record_row['id']):
                 self.check_record_row(record_row)
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
 
     def process_all_files_releases_with_override_schema_version_1_1(self):
         results = self.database.get_releases_to_check(self.collection.database_id, override_schema_version="1.1")
@@ -78,9 +52,6 @@ class Checks:
             if self.is_schema_version_less_than_1_1(release_row['package_data_id']) \
                     and not self.database.is_release_check_done(release_row['id'], override_schema_version="1.1"):
                 self.check_release_row(release_row, override_schema_version="1.1")
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
 
     def process_all_files_records_with_override_schema_version_1_1(self):
         results = self.database.get_records_to_check(self.collection.database_id, override_schema_version="1.1")
@@ -89,9 +60,6 @@ class Checks:
             if self.is_schema_version_less_than_1_1(record_row['package_data_id']) \
                     and not self.database.is_record_check_done(record_row['id'], override_schema_version="1.1"):
                 self.check_record_row(record_row, override_schema_version="1.1")
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
 
     def handle_package(self, package):
         cove_temp_folder = tempfile.mkdtemp(prefix='ocdskingfisher-cove-', dir=tempfile.gettempdir())

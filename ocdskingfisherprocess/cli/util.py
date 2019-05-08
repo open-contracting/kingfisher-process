@@ -1,9 +1,16 @@
-import os
 import glob
-import inspect
 import importlib
+import inspect
+import os
+import threading
+from _thread import interrupt_main
+from contextlib import contextmanager
 
 import ocdskingfisherprocess.cli.commands.base
+
+
+class TimeoutException(Exception):
+    pass
 
 
 def gather_cli_commands_instances(config=None, database=None):
@@ -18,3 +25,18 @@ def gather_cli_commands_instances(config=None, database=None):
                     and value is not ocdskingfisherprocess.cli.commands.base.CLICommand:
                 commands[getattr(value, 'command')] = value(config=config, database=database)
     return commands
+
+
+# From https://stackoverflow.com/a/37648512/244258
+# See https://github.com/glenfant/stopit#comparing-thread-based-and-signal-based-timeout-control
+@contextmanager
+def time_limit(seconds, message):
+    if seconds > 0:
+        timer = threading.Timer(seconds, lambda: interrupt_main())  # raises KeyboardInterrupt
+        timer.start()
+        try:
+            yield
+        except KeyboardInterrupt:
+            raise TimeoutException('Interrupted, or timed out after {:d} seconds: {}'.format(seconds, message))
+        finally:
+            timer.cancel()
