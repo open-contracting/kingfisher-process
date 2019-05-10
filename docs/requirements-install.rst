@@ -1,52 +1,53 @@
-Requirements and Install
-========================
+Installation
+============
 
 Requirements
 ------------
 
-Requirements:
+- Python 3.5 or higher
+- PostgresSQL 10 or higher
 
-- python v3.5 or higher
-- Postgresql v10 or higher
+To run the web app:
 
-Requirements for website
-------------------------
-
-Requirements:
-
-- A Web Server capable of running a WSGI Python app
+- A web server that can run a WSGI Python app
 
 Installation
 ------------
 
-Set up a venv and install requirements:
-
-.. code-block:: shell-session
+Create a virtual environment::
 
     virtualenv -p python3 .ve
+
+Activate the virtual environment::
+
     source .ve/bin/activate
+
+Install the requirements::
+
     pip install -r requirements.txt
     pip install -e .
 
 Database
 --------
 
-You need to create a UTF8 Postgresql database and create a user with write access.
-
-Once you have created the database, you need to configure the tool to connect to the database.
-
-You can see one way of doing that in the example below, but for other options see :doc:`config`.
-
-You also have to run a command to create the tables in database.
-
-You can see the command in the example below, but for more on that see :doc:`cli-upgrade-database`.
-
-Example of creating an database user, database and setting up the schema:
-
-.. code-block:: shell-session
-
+Create a user, for example::
 
     sudo -u postgres createuser ocdskingfisher --pwprompt
-    sudo -u postgres createdb ocdskingfisher -O ocdskingfisher --encoding UTF8 --template template0 --lc-collate en_US.UTF-8 --lc-ctype en_US.UTF-8
-    export KINGFISHER_PROCESS_DB_URI='postgres://ocdskingfisher:PASSWORD YOU CHOSE@localhost/ocdskingfisher'
+
+Create a UTF8-encoded PostgreSQL database and give the user write access, for example::
+
+    sudo -u postgres createdb ocdskingfisher -O ocdskingfisher --template template0 --encoding UTF8 --lc-collate en_US.UTF-8 --lc-ctype en_US.UTF-8
+
+Set the tool's database connection setting, replacing at least ``PASSWORD`` in this example::
+
+    export KINGFISHER_PROCESS_DB_URI='postgres://ocdskingfisher:PASSWORD@localhost/ocdskingfisher'
+
+.. note::
+
+   This configures the tool within your current command-line session only. For longer-term options, see: :doc:`config`
+
+Create the tables in the database (more information at :doc:`cli/upgrade-database`)::
+
     python ocdskingfisher-process-cli upgrade-database
+
+Next: :doc:`config`

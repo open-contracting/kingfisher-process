@@ -13,4 +13,4 @@ You may not need to run this; collections will be created at certain points auto
 For instance, when data is pushed to the Web API.
 
 But you may need to create a collection specially.
-For instance, you may want to create a new collection to load some local files into. See :doc:`cli-local-load`.
+For instance, you may want to create a new collection to load some local files into. See :doc:`cli/local-load`.

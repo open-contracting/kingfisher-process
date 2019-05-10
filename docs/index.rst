@@ -1,17 +1,17 @@
-OCDS Kingfisher Process tool
-============================
+OCDS Kingfisher Process
+=======================
 
-OCDS Kingfisher Process is a tool for storing and analysing data from publishers of the Open Contracting Data Standard.
+Kingfisher Process stores and pre-processes OCDS data.
 
-(It does not download data - for that, see the Scrape part of Kingfisher)
+`Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__ downloads OCDS data from sources, and optionally passes it onto Kingfisher Process.
 
 .. toctree::
 
+   requirements-install.rst
+   config.rst
    data-model.rst
    standard-pipeline.rst
    database-structure.rst
-   requirements-install.rst
-   config.rst
    cli.rst
    web.rst
    development.rst

@@ -5,7 +5,7 @@ This command takes an existing source collection that you give it, and creates a
 
 Note this does not actually do the work of the transform - it simply marks that you want the work to be done, and creates the destination collection ready for the finished work to be put into.
 
-Pass the ID of the source collection. Use :doc:`cli-list-collections` to look up the ID you want.
+Pass the ID of the source collection. Use :doc:`cli/list-collections` to look up the ID you want.
 
 It will create a new destination collection to hold the upgraded data and return the ID of this to you.
 
@@ -13,4 +13,4 @@ It will create a new destination collection to hold the upgraded data and return
 
     python ocdskingfisher-process-cli new-transform-upgrade-1-0-to-1-1 17
 
-After creating it, you should run transform-collection to actually do the work. See :doc:`cli-transform-collection`
+After creating it, you should run transform-collection to actually do the work. See :doc:`cli/transform-collection`
