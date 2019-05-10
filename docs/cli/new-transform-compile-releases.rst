@@ -7,7 +7,7 @@ Note this does not actually do the work of the transform - it simply marks that 
 
 The compile releases transform can only work when it has all the data! You can create the transform at any time, but the source collection must be completely stored before any work will be done on the transform.
 
-Pass the ID of the source collection. Use :doc:`cli/list-collections` to look up the ID you want.
+Pass the ID of the source collection. Use :doc:`list-collections` to look up the ID you want.
 
 It will create a new destination collection to hold the compiled releases and return the ID of this to you.
 
@@ -15,4 +15,4 @@ It will create a new destination collection to hold the compiled releases and re
 
     python ocdskingfisher-process-cli new-transform-compile-releases 17
 
-After creating it, you should run transform-collection to actually do the work. See :doc:`cli/transform-collection`
+After creating it, you should run transform-collection to actually do the work. See :doc:`transform-collection`

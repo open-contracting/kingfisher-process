@@ -1,5 +1,5 @@
 Command line tool - check-collections option
-===========================================
+============================================
 
 This command checks all data so far in all collections.
 
@@ -25,7 +25,7 @@ Soon after that number of seconds has passed, the command will exit.
 
 You can use this option with a cron entry; set a cron entry for this command to run every hour and pass runforseconds as 3540 (60 seconds/minute * 59 minutes).
 
-Then when new data appears in the system, there is no need for someone to run :doc:`cli/check-collection` by hand - the process run by cron will pick up the new data itself eventually.
+Then when new data appears in the system, there is no need for someone to run :doc:`check-collection` by hand - the process run by cron will pick up the new data itself eventually.
 
 The runforseconds option will make sure that only one of these cron processes runs at once.
 

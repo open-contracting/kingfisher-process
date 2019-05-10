@@ -8,7 +8,7 @@ All calls to this must pass an API_KEY as an Authorization HTTP header of type A
 
 eg `Authorization: ApiKey API_KEY_GOES_HERE`
 
-To set the key, see :doc:`config`.
+To set the key, see :doc:`../config`.
 
 
 Creating a collection
@@ -33,7 +33,7 @@ Secondly, you must pass details of the file.
 
 * `file_name` - String.
 * `url` - String.
-* `data_type` -  String. See section on file data types in :doc:`data-model`.
+* `data_type` -  String. See section on file data types in :doc:`../data-model`.
 * `encoding` - String. Defaults to `utf-8`.
 
 Finally, the actual file data must be passed. This can be done in one of several ways:
@@ -62,7 +62,7 @@ Secondly, you must pass details of the file.
 
 * `file_name` - String.
 * `url` - String.
-* `data_type` -  String. See section on file data types in :doc:`data-model`.
+* `data_type` -  String. See section on file data types in :doc:`../data-model`.
 
 Thirdly, you must pass details of the item in the file.
 
