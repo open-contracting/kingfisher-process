@@ -1,4 +1,4 @@
-Database Structure
+Database structure
 ==================
 
 Because Analysts query the data directly in the database, we document the structure here for them.
@@ -9,6 +9,11 @@ Reading :doc:`data-model` before reading this will probably help.
 
 .. image:: _static/database-tables.png
    :target: _static/database-tables.png
+
+..
+   The database-tables.png file is generated with http://schemaspy.org/
+
+   The resulting image is edited by hand to remove the row count, which may confuse users.
 
 collection table
 ----------------
