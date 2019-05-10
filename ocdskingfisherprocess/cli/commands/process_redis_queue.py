@@ -20,7 +20,7 @@ class ProcessRedisQueueCLICommand(TimeLimitedCLICommand):
         redis_conn = redis.Redis(host=self.config.redis_host, port=self.config.redis_port, db=self.config.redis_database)
         process_que_message = ProcessQueueMessage(database=self.database)
 
-        with time_limit(args.runforseconds):
+        with time_limit(args.runforseconds, self.command):
             while True:
                 data = redis_conn.blpop('kingfisher_work', timeout=10)
                 if data:

@@ -11,7 +11,7 @@ class CheckCollectionsCLICommand(TimeLimitedCLICommand):
     command = 'check-collections'
 
     def run_command(self, args):
-        with time_limit(args.runforseconds):
+        with time_limit(args.runforseconds, self.command):
             for collection in self.database.get_all_collections():
                 logger.info('Checking collection: {}'.format(collection.database_id))
                 checks = Checks(self.database, collection)
