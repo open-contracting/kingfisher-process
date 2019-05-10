@@ -30,6 +30,6 @@ Then when new data appears in the system, there is no need for someone to run :d
 
 The runforseconds option will make sure that only one of these cron processes runs at once.
 
-.. note:: OCDS Helpdesk deployment
+.. admonition:: OCDS Helpdesk deployment
 
    Don't use this. A cron job runs this once per hour.

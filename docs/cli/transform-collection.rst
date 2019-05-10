@@ -11,6 +11,6 @@ Pass the ID of the collection you want the work done in. Use :doc:`list-collecti
 
     python ocdskingfisher-process-cli transform-collection 17
 
-.. note:: OCDS Helpdesk deployment
+.. admonition:: OCDS Helpdesk deployment
 
    Don't use this. A cron job runs :doc:`transform-collections` once per hour.

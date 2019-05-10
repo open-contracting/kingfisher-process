@@ -9,6 +9,6 @@ To drop tables (and clear the Redis queue, if used) before upgrading, use the ``
 
     python ocdskingfisher-process-cli upgrade-database --deletefirst
 
-.. note:: OCDS Helpdesk deployment
+.. admonition:: OCDS Helpdesk deployment
 
    Don't use this. It is run by the SaltStack scripts that upgrade the tool.
