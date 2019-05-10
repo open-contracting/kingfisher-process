@@ -66,7 +66,7 @@ To override ``config.ini``, set the ``KINGFISHER_PROCESS_WEB_API_KEYS`` environm
 Collection flags
 ----------------
 
-When a `new collection <../data-model/#collections>`__ is created, `flags <../data-model/#schema-check-flags>`__ are set to indicate what operations to perform on them.
+When a `new collection <data-model/#collections>`__ is created, `flags <data-model/#schema-check-flags>`__ are set to indicate what operations to perform on them.
 
 All flags are off by default. To turn any on:
 

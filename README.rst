@@ -1,8 +1,6 @@
 |Build Status| |Coverage Status|
 
-Kingfisher Process stores and pre-processes OCDS data.
-
-`Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__ downloads OCDS data from sources, and optionally sends it to Kingfisher Process.
+Kingfisher Process stores and pre-processes OCDS data. An accompanying tool, `Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__, downloads OCDS data from sources, and optionally sends it to Kingfisher Process.
 
 If you are viewing this on GitHub or PyPi, open the `full documentation <https://kingfisher-process.readthedocs.io/>`__ for additional details.
 

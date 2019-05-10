@@ -7,10 +7,6 @@ Requirements
 - Python 3.5 or higher
 - PostgresSQL 10 or higher
 
-To run the web app:
-
-- A web server that can run a WSGI Python app
-
 Installation
 ------------
 

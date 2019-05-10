@@ -20,7 +20,7 @@ setup(
     include_package_data=True,
     extras_require={
         'docs': [
-            'Sphinx',
+            'Sphinx<2',
             'sphinx-autobuild',
             'sphinx_rtd_theme',
         ],
