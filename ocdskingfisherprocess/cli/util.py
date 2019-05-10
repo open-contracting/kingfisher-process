@@ -31,7 +31,9 @@ def gather_cli_commands_instances(config=None, database=None):
 # See https://github.com/glenfant/stopit#comparing-thread-based-and-signal-based-timeout-control
 @contextmanager
 def time_limit(seconds, message):
-    if seconds > 0:
+    if seconds is None:
+        yield
+    elif seconds > 0:
         timer = threading.Timer(seconds, lambda: interrupt_main())  # raises KeyboardInterrupt
         timer.start()
         try:
