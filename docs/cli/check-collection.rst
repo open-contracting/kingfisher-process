@@ -11,9 +11,6 @@ Pass the ID of the collection you want checked. Use :doc:`list-collections` to l
 
     python ocdskingfisher-process-cli check-collection 17
 
+.. note:: OCDS Helpdesk deployment
 
-Do not use on hosted Kingfisher
--------------------------------
-
-Do not use this command on Hosted kingfisher - it is run automatically for you.
-
+   Don't use this. A cron job runs :doc:`check-collections` once per hour.

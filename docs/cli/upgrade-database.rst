@@ -1,19 +1,14 @@
 upgrade-database
 ================
 
-This tool will setup from scratch or update to the latest versions the tables and structure in the Postgresql database.
-
-.. code-block:: shell-session
+This creates or upgrades the tables in the PostgreSQL database::
 
     python ocdskingfisher-process-cli upgrade-database
 
-If you want to delete all the existing tables before setting up empty tables, pass the `deletefirst` flag.
-
-.. code-block:: shell-session
+To drop tables (and clear the Redis queue, if used) before upgrading, use the ``--deletefirst`` flag::
 
     python ocdskingfisher-process-cli upgrade-database --deletefirst
 
-Do not use on hosted Kingfisher
--------------------------------
+.. note:: OCDS Helpdesk deployment
 
-Do not use this command on Hosted kingfisher - it is run automatically by the Salt scripts that should be used for upgrades.
+   Don't use this. It is run by the SaltStack scripts that upgrade the tool.

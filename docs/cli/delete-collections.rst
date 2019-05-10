@@ -7,9 +7,6 @@ This command deletes the collections in the system where `deleted_at` column is 
 
     python ocdskingfisher-process-cli delete-collections
 
+.. note:: OCDS Helpdesk deployment
 
-Do not use on hosted Kingfisher
--------------------------------
-
-Do not use this command on Hosted kingfisher - it is run automatically for you.
-
+   Don't use this. A cron job runs this once a month.

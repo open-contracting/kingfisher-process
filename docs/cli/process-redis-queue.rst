@@ -23,9 +23,6 @@ You can also pass a maximum number of seconds that the process should run for.
 Soon after that number of seconds has passed, the command will exit.
 (The command will finish the work it's currently doing before stopping, so it may run slightly longer than specified. Allow a minute extra to be safe.)
 
+.. note:: OCDS Helpdesk deployment
 
-Do not use on hosted Kingfisher
--------------------------------
-
-Do not use this command on Hosted kingfisher - it is run automatically for you.
-
+   Don't use this. A cron job runs this once per hour.
