@@ -300,8 +300,8 @@ class DataBase:
                 'transform_type': transform_type,
                 'transform_from_collection_id': transform_from_collection_id,
                 'store_start_at': datetime.datetime.utcnow(),
-                'check_data': self.config.default_value_collection_check_data,
-                'check_older_data_with_schema_version_1_1': self.config.default_value_collection_check_older_data_with_schema_version_1_1,
+                'check_data': False,
+                'check_older_data_with_schema_version_1_1': False,
             })
             collection_id = value.inserted_primary_key[0]
 
@@ -528,16 +528,20 @@ class DataBase:
                     'errors': errors,
                 })
 
-    def is_collection_source_for_a_transform(self, collection_id):
+    def can_mark_collection_deleted(self, collection_id):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
                 .where(self.collection_table.c.transform_from_collection_id == collection_id)
 
             result = connection.execute(s)
-            if result.fetchone():
-                return True
+            destination_collection = result.fetchone()
+            if destination_collection:
+                # This collection is the source collection for something else!
+                # We can't delete it if that transform is still active!
+                if not destination_collection['store_end_at'] and not destination_collection['deleted_at']:
+                    return False
 
-        return False
+        return True
 
     def mark_collection_deleted_at(self, collection_id):
         with self.get_engine().begin() as connection:
@@ -574,10 +578,22 @@ class DataBase:
                         SELECT id FROM compiled_release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
+            """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
+                WHERE source_record_id IN
+                    (
+                        SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );""",
             """DELETE FROM record
                 WHERE id IN
                     (
                         SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );""",
+            """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
+                WHERE source_release_id IN
+                    (
+                        SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
             """DELETE FROM release
@@ -669,6 +685,22 @@ class DataBase:
                     'note': note,
                     'stored_at': datetime.datetime.utcnow(),
                 })
+
+    def mark_collection_check_data(self, collection_id, value):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(check_data=value)
+            )
+
+    def mark_collection_check_older_data_with_schema_version_1_1(self, collection_id, value):
+        with self.get_engine().begin() as connection:
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(check_older_data_with_schema_version_1_1=value)
+            )
 
 
 class DatabaseStore:

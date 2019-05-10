@@ -79,7 +79,7 @@ All flags are off by default. To turn any on:
 Default pre-processing pipeline
 -------------------------------
 
-To enable the :doc:`default pre-processing pipeline <standard-pipeline>`:
+To enable the :doc:`standard-pipeline`:
 
 .. code-block:: ini
 

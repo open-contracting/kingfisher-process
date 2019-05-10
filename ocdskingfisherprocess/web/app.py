@@ -3,6 +3,8 @@ import logging
 import logging.config
 import os
 from flask import Flask, render_template, current_app
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 import ocdskingfisherprocess.signals.signals
 import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
@@ -14,6 +16,12 @@ def create_app(config=None):
     if not config:
         config = Config()
         config.load_user_config()
+
+    if config.sentry_dsn:
+        sentry_sdk.init(
+            dsn=config.sentry_dsn,
+            integrations=[FlaskIntegration()]
+        )
 
     logging_config_file_full_path = os.path.expanduser('~/.config/ocdskingfisher-process/logging.json')
     if os.path.isfile(logging_config_file_full_path):

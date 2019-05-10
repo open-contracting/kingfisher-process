@@ -20,8 +20,10 @@ def setup_signals(config, database):
 
 
 def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, **kwargs):
+    global our_database
     collection = our_database.get_collection(collection_id)
     if not collection.transform_from_collection_id:
+        # Create the transforms we want
         second_collection_id = our_database.get_or_create_collection_id(collection.source_id,
                                                                         collection.data_version,
                                                                         collection.sample,
@@ -34,8 +36,18 @@ def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, 
                                                  transform_from_collection_id=second_collection_id,
                                                  transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
 
+        # Turn on the checks we want
+        our_database.mark_collection_check_data(collection_id, True)
+        our_database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
 
 def collection_data_store_finished_to_redis(sender, collection_id=None, **kwargs):
     redis_conn = redis.Redis(host=our_config.redis_host, port=our_config.redis_port, db=our_config.redis_database)
     message = json.dumps({'type': 'collection-data-store-finished', 'collection_id': collection_id})
-    redis_conn.lpush('kingfisher_work', message)
+    # We only want one message of a type to be in the que at a time.
+    # So remove any existing messages, and add the message we want again (This is how you do it in Redis).
+    pipe = redis_conn.pipeline()
+    pipe.lrem('kingfisher_work', 0, message)
+    pipe.lpush('kingfisher_work', message)
+    pipe.execute()
+    # There are better solutions possible - discussed in https://github.com/open-contracting/kingfisher-process/issues/151
