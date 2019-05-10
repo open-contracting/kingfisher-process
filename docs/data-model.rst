@@ -50,7 +50,7 @@ Files
 A collection contains one or more files. A file is uniquely identified by its collection and filename. Files can have:
 
 errors
-    The file could not be retrieved. Presently, errors are either reported by Kingfisher Scrape or caught by :doc:`cli/local-load`.
+    The file could not be retrieved. Presently, errors are either reported by Kingfisher Scrape or caught by the :doc:`cli/local-load` command.
 
 warnings
     The file contents had to be modified in order to be stored. Presently, the only warning is about the removal of control characters.
@@ -58,7 +58,7 @@ warnings
 File types
 ~~~~~~~~~~
 
-:doc:`cli/local-load` must be given the type of the file to load:
+The :doc:`cli/local-load` command must be given the type of the file to load:
 
 record
     A single record

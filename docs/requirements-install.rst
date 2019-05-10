@@ -46,7 +46,7 @@ Set the tool's database connection setting, replacing at least ``PASSWORD`` in t
 
    This configures the tool within your current command-line session only. For longer-term options, see :doc:`config`.
 
-Create the tables in the database (more information at :doc:`cli/upgrade-database`)::
+Create the tables in the database (more information on the :doc:`cli/upgrade-database` command)::
 
     python ocdskingfisher-process-cli upgrade-database
 

@@ -1,4 +1,4 @@
-Web Interface
+Web interface
 =============
 
 .. toctree::
