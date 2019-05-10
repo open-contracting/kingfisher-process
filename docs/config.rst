@@ -63,16 +63,10 @@ To allow access to the :doc:`web/api-v1`, set API keys, separated by commas. For
 
 To override ``config.ini``, set the ``KINGFISHER_PROCESS_WEB_API_KEYS`` environment variable.
 
-Collection defaults
--------------------
+Collection flags
+----------------
 
-When a `new collection <../data-model/#collections>`__ is created, flags are set to indicate what operations to perform:
-
-CHECK_DATA
-    Run `CoVE <https://github.com/OpenDataServices/cove>`__ schema checks on the data in the collection
-
-CHECK_OLDER_DATA_WITH_SCHEMA_1_1
-    Force OCDS 1.1 checks to be run on OCDS 1.0 data (instead of OCDS 1.0 checks)
+When a `new collection <../data-model/#collections>`__ is created, `flags <../data-model/#schema-check-flags>`__ are set to indicate what operations to perform on them.
 
 All flags are off by default. To turn any on:
 
@@ -82,8 +76,8 @@ All flags are off by default. To turn any on:
     CHECK_DATA = true
     CHECK_OLDER_DATA_WITH_SCHEMA_1_1 = false
 
-Default pipeline
-----------------
+Default pre-processing pipeline
+-------------------------------
 
 To enable the :doc:`default pre-processing pipeline <standard-pipeline>`:
 
