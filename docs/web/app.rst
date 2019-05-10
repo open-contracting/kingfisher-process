@@ -1,6 +1,10 @@
-Web App
+Web app
 =======
 
-This is accesible at /app
+The web app allows you to view metadata about collections and files.
 
-It provides a read only interface to see the details of data in the system.
+To run the app locally in development mode::
+
+    FLASK_APP=ocdskingfisherprocess.web.app FLASK_ENV=development flask run
+
+Then, open <http://127.0.0.1:5000/>
