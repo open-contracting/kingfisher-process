@@ -1,35 +1,18 @@
-#!/usr/bin/env python
-import io
-import os
-from distutils.core import setup
+from setuptools import setup, find_packages
 
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-# Import the README and use it as the long-description.
-with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = '\n' + f.read()
+with open('README.rst') as f:
+    long_description = f.read()
 
 setup(
     name='ocdskingfisher',
     version='0.0.1',
-    description='Get, extract and process data in the Open Contracting Data Standard format',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    author='Open Contracting Partnership, Open Data Services, Iniciativa Latinoamericana para los Datos Abiertos',
+    author='Open Contracting Partnership, Open Data Services, Iniciativa Latinoamericana por los Datos Abiertos',
     author_email='data@open-contracting.org',
-    url='https://open-contracting.org',
+    url='https://github.com/open-contracting/kingfisher-process',
+    description="Store and pre-process data conforming to the Open Contracting Data Standard",
     license='BSD',
-    packages=[
-          'ocdskingfisherprocess',
-          'ocdskingfisherprocess.cli',
-          'ocdskingfisherprocess.cli.commands',
-          'ocdskingfisherprocess.maindatabase',
-          'ocdskingfisherprocess.maindatabase.migrations',
-          'ocdskingfisherprocess.maindatabase.migrations.versions',
-          'ocdskingfisherprocess.transform',
-          'ocdskingfisherprocess.web'
-    ],
+    packages=find_packages(),
+    long_description=long_description,
     scripts=['ocdskingfisher-process-cli'],
     package_data={'ocdskingfisher': [
             'maindatabase/migrations/script.py.mako'
@@ -42,4 +25,8 @@ setup(
             'sphinx_rtd_theme',
         ],
     },
+    classifiers=[
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python :: 3.6',
+    ],
 )

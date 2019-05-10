@@ -1,9 +1,7 @@
-OCDS Kingfisher Process
-=======================
+OCDS Kingfisher - Process |release|
+===================================
 
-Kingfisher Process stores and pre-processes OCDS data.
-
-`Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__ downloads OCDS data from sources, and optionally sends it to Kingfisher Process.
+.. include:: ../README.rst
 
 Typical usage
 -------------
