@@ -1,7 +1,7 @@
 transform-collections
 =====================
 
-This command does any transform work for all collections.
+This command runs the configured transformers for all collections.
 
 It can be run multiple times on a collection, and data already transformed will not be retransformed.
 
@@ -22,7 +22,7 @@ You can also pass a maximum number of seconds that the process should run for.
     python ocdskingfisher-process-cli transform-collections --runforseconds 60
 
 Soon after that number of seconds has passed, the command will exit.
-(The command will finish the transform it's currently doing before stopping, so it may run slightly longer than specified. Allow a minute extra to be safe.)
+(The command will finish the transforming it's currently doing before stopping, so it may run slightly longer than specified. Allow a minute extra to be safe.)
 
 You can use this option with a cron entry; set a cron entry for this command to run every hour and pass runforseconds as 3540 (60 seconds/minute * 59 minutes).
 

@@ -3,7 +3,7 @@ delete-collection
 
 This command deletes a collection in the system.
 
-A collection can only be deleted if it doesn't have any transform.
+A collection can only be deleted if it doesn't have any transformed collections that refer to it.
 
 Note this does not actually do the work of deleting - it simply marks that you want the deletion to be done.
 

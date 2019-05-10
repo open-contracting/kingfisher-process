@@ -1,7 +1,7 @@
 transform-collection
 ====================
 
-This command does any transform work for a collection.
+This command runs the configured transformer for the collection.
 
 It can be run multiple times on a collection, and data already transformed will not be retransformed.
 
