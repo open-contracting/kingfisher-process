@@ -1,7 +1,7 @@
 Default pre-processing pipeline
 ===============================
 
-The default pre-processing pipeline operates on any new collection that is not a `transformed collection <data-model/#transformed-collections>`__; that is, any collection loaded via the :doc:`web/api-v1` or the :doc:`cli/local-load` command.
+The default pre-processing pipeline operates on any new collection that is not a :ref:`transformed collection <transformed-collections>`; that is, any collection loaded via the :doc:`web/api-v1` or the :doc:`cli/local-load` command.
 
 The pipeline uses transforms to:
 

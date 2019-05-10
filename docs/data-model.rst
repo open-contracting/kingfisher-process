@@ -1,6 +1,8 @@
 Data Model
 ==========
 
+.. _collections:
+
 Collections
 -----------
 
@@ -18,6 +20,8 @@ Each collection is given an integer ID; this is used to refer to the collection 
 
 Collections are created by Kingfisher Scrape, the :doc:`web/api-v1`, or the :doc:`cli/new-collection` command.
 
+.. _schema-check-flags:
+
 Schema check flags
 ~~~~~~~~~~~~~~~~~~
 
@@ -30,6 +34,8 @@ check_older_data_with_schema_version_1_1
     Force OCDS 1.1 checks to be run on OCDS 1.0 data (instead of OCDS 1.0 checks)
 
 To configure the default values for these flags, see :doc:`config`.
+
+.. _transformed-collections:
 
 Transformed collections
 ~~~~~~~~~~~~~~~~~~~~~~~

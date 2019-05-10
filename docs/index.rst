@@ -11,11 +11,11 @@ Kingfisher Process receives OCDS data either via the :doc:`web/api-v1` (used by 
 OCDS data are stored in a PostgreSQL database and organized into "collections", as described in the :doc:`data-model` and specified in the :doc:`database-structure`. Once incoming data are stored:
 
 * If the :doc:`standard-pipeline` is enabled, the data are automatically pre-processed into new collections.
-* If the `schema checks <data-model/#schema-check-flags>`__ are enabled, the data are automatically checked for schema errors.
+* If the :ref:`schema checks <schema-check-flags>` are enabled, the data are automatically checked for schema errors.
 
 Once the data are stored, you can query the PostgreSQL database; refer to the :doc:`data-model` and :doc:`database-structure` for an orientation to the database tables.
 
-A :doc:`cli/index` allows you to list collections, add notes to collections, run schema checks, and `transform collections <data-model/#transformed-collections>`__.
+A :doc:`cli/index` allows you to list collections, add notes to collections, run schema checks, and :ref:`transform collections <transformed-collections>`.
 
 You can run the :doc:`web/app` to view metadata about collections and files.
 

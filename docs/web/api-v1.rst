@@ -1,15 +1,16 @@
 Web API Version 1
 =================
 
+The web API allows other applications (notably `Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__) to submit data to this tool to store.
+
 Authentication
 --------------
 
-All calls to this must pass an API_KEY as an Authorization HTTP header of type ApiKey
+All requests must set an `HTTP Authorization request header` <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization>`__ with an authentication type of ``ApiKey``. For example::
 
-eg `Authorization: ApiKey API_KEY_GOES_HERE`
+    Authorization: ApiKey <key>
 
-To set the key, see :doc:`../config`.
-
+To set the API keys, see :doc:`../config`.
 
 Creating a collection
 ---------------------
