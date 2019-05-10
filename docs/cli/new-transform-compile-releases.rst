@@ -1,5 +1,5 @@
-Command line tool - new-transform-compile-releases option
-==========================================================
+new-transform-compile-releases
+==============================
 
 This command takes an existing source collection that you give it, and creates a new destination collection with a transform that creates compiled releases.
 

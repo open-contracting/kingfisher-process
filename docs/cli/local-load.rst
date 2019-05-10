@@ -1,5 +1,5 @@
-Command line tool - local-load option
-===========================================
+local-load
+==========
 
 This command loads files from disk into an existing collection in the system.
 

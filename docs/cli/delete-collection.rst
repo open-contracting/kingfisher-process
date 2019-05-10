@@ -1,5 +1,5 @@
-Command line tool - delete-collection option
-=============================================
+delete-collection
+=================
 
 This command deletes a collection in the system.
 

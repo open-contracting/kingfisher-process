@@ -1,5 +1,5 @@
-Command line tool - end-collection-store option
-===============================================
+end-collection-store
+====================
 
 This command marks the storage of a collection as ended.
 

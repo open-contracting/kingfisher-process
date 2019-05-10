@@ -1,5 +1,5 @@
-Command line tool - new-transform-upgrade-1-0-to-1-1 option
-===========================================================
+new-transform-upgrade-1-0-to-1-1
+================================
 
 This command takes an existing source collection that you give it, and creates a new destination collection with a transform that upgrades 1.0 data to 1.1.
 

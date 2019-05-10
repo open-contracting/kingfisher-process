@@ -1,5 +1,5 @@
-Command line tool - transform-collection option
-===============================================
+transform-collection
+====================
 
 This command does any transform work for a collection.
 

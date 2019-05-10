@@ -1,5 +1,5 @@
-Command line tool - new-collection option
-===========================================
+new-collection
+==============
 
 This command creates a new collection in the system.
 

@@ -1,5 +1,5 @@
-Command line tool - check-collections option
-============================================
+check-collections
+=================
 
 This command checks all data so far in all collections.
 

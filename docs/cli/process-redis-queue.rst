@@ -1,5 +1,5 @@
-Command line tool - process-redis-queue option
-==============================================
+process-redis-queue
+===================
 
 This commands processes any data in the Redis queue.
 
