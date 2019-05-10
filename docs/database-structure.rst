@@ -7,7 +7,7 @@ This is not a full description as you are expected to use normal tools to explor
 
 Reading :doc:`data-model` before reading this will probably help.
 
-.. image:: database-tables.png
+.. image:: _static/database-tables.png
    :target: _static/database-tables.png
 
 collection table

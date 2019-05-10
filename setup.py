@@ -35,4 +35,11 @@ setup(
             'maindatabase/migrations/script.py.mako'
         ]},
     include_package_data=True,
+    extras_require={
+        'docs': [
+            'Sphinx',
+            'sphinx-autobuild',
+            'sphinx_rtd_theme',
+        ],
+    },
 )

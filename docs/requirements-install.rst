@@ -44,7 +44,7 @@ Set the tool's database connection setting, replacing at least ``PASSWORD`` in t
 
 .. note::
 
-   This configures the tool within your current command-line session only. For longer-term options, see: :doc:`config`
+   This configures the tool within your current command-line session only. For longer-term options, see :doc:`config`.
 
 Create the tables in the database (more information at :doc:`cli/upgrade-database`)::
 

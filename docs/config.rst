@@ -19,20 +19,22 @@ PostgreSQL
 
 .. note::
 
-    This step is required. All other steps are optional.
+   This step is required. All other steps are optional.
 
-Configure the database connection settings:: ini
+Configure the database connection settings:
 
-    [DBHOST]
-    HOSTNAME = localhost
-    PORT = 5432
-    USERNAME = ocdskingfisher
-    PASSWORD = 
-    DBNAME = ocdskingfisher
+.. code-block:: ini
 
-If you prefer not to store the password in ``config.ini``, you can use the `PostgreSQL Password File <https://www.postgresql.org/docs/11/libpq-pgpass.html>`__, ``~/.pgpass``, which overrides any password in ``config.ini``. Otherwise, if you used the same settings as in the examples during :doc:`requirements-install.rst`, you only need to set ``PASSWORD`` above.
+   [DBHOST]
+   HOSTNAME = localhost
+   PORT = 5432
+   USERNAME = ocdskingfisher
+   PASSWORD = 
+   DBNAME = ocdskingfisher
 
-To override ``config.ini`` and/or ``.pgpass``, set the ``KINGFISHER_PROCESS_DB_URI`` environmental variable. This is useful to temporarily use a different database than your default database. For example, in a bash-like shell::
+If you prefer not to store the password in ``config.ini``, you can use the `PostgreSQL Password File <https://www.postgresql.org/docs/11/libpq-pgpass.html>`__, ``~/.pgpass``, which overrides any password in ``config.ini``. Otherwise, if you used the same settings as in the examples during :doc:`requirements-install`, you only need to set ``PASSWORD`` above.
+
+To override ``config.ini`` and/or ``.pgpass``, set the ``KINGFISHER_PROCESS_DB_URI`` environment variable. This is useful to temporarily use a different database than your default database. For example, in a bash-like shell::
 
     export KINGFISHER_PROCESS_DB_URI='postgresql://user:password@localhost:5432/dbname'
 
@@ -41,7 +43,7 @@ Logging
 
 This tool uses the `Python logging module <https://docs.python.org/3/library/logging.html>`__. Loggers are in the ``ocdskingfisher`` namespace.
 
-Logging from the :doc:`cli` can be configured with a ``~/.config/ocdskingfisher-process/logging.json`` file. To download the default configuration::
+Logging from the :doc:`cli/index` can be configured with a ``~/.config/ocdskingfisher-process/logging.json`` file. To download the default configuration::
 
     curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/logging.json -o ~/.config/ocdskingfisher-process/logging.json
 
@@ -52,34 +54,40 @@ To download a different configuration that includes debug messages::
 Web API
 -------
 
-To allow access to the :doc:`web/api-v1`, set API keys, separated by commas. For example, to set ``1234`` and ``5678`` as keys (in practice, you should use `long, random keys <https://www.avast.com/en-us/random-password-generator`__):: ini
+To allow access to the :doc:`web/api-v1`, set API keys, separated by commas. For example, to set ``1234`` and ``5678`` as keys (in practice, you should use `long, random keys <https://www.avast.com/en-us/random-password-generator>`__):
+
+.. code-block:: ini
 
     [WEB]
     API_KEYS = 1234,5678
 
-To override ``config.ini``, set the ``KINGFISHER_PROCESS_WEB_API_KEYS`` environmental variable.
+To override ``config.ini``, set the ``KINGFISHER_PROCESS_WEB_API_KEYS`` environment variable.
 
 Collection defaults
 -------------------
 
-When a :doc:`new collection <data-model#collections>` is created, flags are set to indicate what operations to perform:
+When a `new collection <../data-model/#collections>`__ is created, flags are set to indicate what operations to perform:
 
 CHECK_DATA
-    Run `CoVE <https://github.com/OpenDataServices/cove>`__ schema checks on the collection's OCDS data
+    Run `CoVE <https://github.com/OpenDataServices/cove>`__ schema checks on the data in the collection
 
 CHECK_OLDER_DATA_WITH_SCHEMA_1_1
     Force OCDS 1.1 checks to be run on OCDS 1.0 data (instead of OCDS 1.0 checks)
 
-All flags are off by default. To turn them on:: ini
+All flags are off by default. To turn any on:
+
+.. code-block:: ini
 
     [COLLECTION_DEFAULT]
     CHECK_DATA = true
     CHECK_OLDER_DATA_WITH_SCHEMA_1_1 = false
 
-Standard pipeline
------------------
+Default pipeline
+----------------
 
-To enable the default pre-processing pipeline of upgrading from OCDS 1.0 to OCDS 1.1 and creating compiled releases:: ini
+To enable the :doc:`default pre-processing pipeline <standard-pipeline>`:
+
+.. code-block:: ini
 
     [STANDARD_PIPELINE]
     RUN = true
@@ -95,7 +103,9 @@ or with Homebrew on macOS::
 
         brew install redis
 
-Then, configure the Redis connection settings:: ini
+Then, configure the Redis connection settings:
+
+.. code-block:: ini
 
     [REDIS]
     HOST = localhost
@@ -105,13 +115,13 @@ Then, configure the Redis connection settings:: ini
 Sentry
 ------
 
-To track crashes, `sign up <https://sentry.io/signup/>`__ for `Sentry <https://sentry.io/>`__, and set the DSN:: ini
+To track crashes, `sign up <https://sentry.io/signup/>`__ for `Sentry <https://sentry.io/>`__, and set the DSN:
+
+.. code-block:: ini
 
     [SENTRY]
     DSN = https://<key>@sentry.io/<project>
 
-More information: `Sentry for Python <https://sentry.io/for/python/>`__
-
 .. note::
 
-    Sentry has its own `environment variables <https://docs.sentry.io/error-reporting/configuration/?platform=python>`__.
+    Sentry has its own `environment variables <https://docs.sentry.io/error-reporting/configuration/?platform=python>`__. Further reading: `Sentry for Python <https://sentry.io/for/python/>`__.

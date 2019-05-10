@@ -21,6 +21,9 @@ Default values for these can be configured - see :doc:`config`.
 
 A collection is also given a numeric ID, which for convenience is normally used to refer to the collection.
 
+Transforms
+~~~~~~~~~~
+
 Files
 -----
 
