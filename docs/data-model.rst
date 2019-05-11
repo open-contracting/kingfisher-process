@@ -18,7 +18,7 @@ A collection is uniquely identified by the combination of:
 
 Each collection is given an integer ID; this is used to refer to the collection in the :doc:`cli/index` and the database.
 
-Collections are created by Kingfisher Scrape, the :doc:`web/api-v1`, or the :doc:`cli/new-collection` command.
+Collections are created by Kingfisher Scrape, the :ref:`web API <web-api>`, or the :doc:`cli/new-collection` command.
 
 .. _schema-check-flags:
 

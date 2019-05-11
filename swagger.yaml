@@ -1,0 +1,219 @@
+openapi: 3.0.0
+servers:
+  - description: OCDS Helpdesk deployment
+    url: http://process.ocdskingfisher.opendataservices.coop/api/v1
+info:
+  description: Submit OCDS data to store and pre-process.
+  version: v1
+  title: Kingfisher Process v1
+  contact:
+    email: data@open-contracting.org
+  license:
+    name: BSD
+    url: https://opensource.org/licenses/BSD-3-Clause
+security:
+  - apiKeyAuth: []
+paths:
+  /submit/file/:
+    post:
+      operationId: submitFile
+      summary: Submits a file to store
+      description: A collection will automatically be created for this file.
+      responses:
+        '200':
+          description: file stored
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/File'
+  /submit/item/:
+    post:
+      operationId: submitItem
+      summary: Submits an item in a file to store
+      description: A collection and file will automatically be created for this item.
+      responses:
+        '200':
+          description: item stored
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Item'
+  /submit/file_errors/:
+    post:
+      operationId: submitFileErrors
+      summary: Submit the errors preventing file retrieval
+      description: Errors might include HTTP errors, request timeouts, connection errors, too many redirects, etc.
+      responses:
+        '200':
+          description: file errors stored
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FileErrors'
+  /submit/end_collection_store/:
+    post:
+      operationId: endCollectionStore
+      summary: Indicate that no more files or items will be submitted for the collection.
+      description: A request must be made to this endpoint when data submission is complete.
+      responses:
+        '200':
+          description: collection ended
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CollectionParameters'
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: http
+      scheme: ApiKey
+  responses:
+    BadRequestError:
+      description: missing or invalid parameters
+    UnauthorizedError:
+      description: API key is missing or invalid
+  schemas:
+    File:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CollectionParameters'
+        - $ref: '#/components/schemas/CollectionNoteParameter'
+        - $ref: '#/components/schemas/FileParameters'
+        - $ref: '#/components/schemas/DataTypeParameter'
+      oneOf:
+        - required:
+          - local_file_name
+        - required:
+          - file
+      properties:
+        encoding:
+          description: The encoding of the file on the API server
+          type: string
+          example: 'iso-8859-1'
+          default: 'utf-8'
+        local_file_name:
+          description: Path to the file on the API server
+          type: string
+          example: '/path/to/file.json'
+        file:
+          description: The multipart-encoded contents of the file
+          type: string
+          format: binary
+    Item:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CollectionParameters'
+        - $ref: '#/components/schemas/CollectionNoteParameter'
+        - $ref: '#/components/schemas/FileParameters'
+        - $ref: '#/components/schemas/DataTypeParameter'
+      required:
+        - number
+        - data
+      properties:
+        number:
+          description: The 0-based index of the item in the file
+          type: integer
+          example: 1
+        data:
+          description: The JSON-encoded item
+          type: string
+          example: '{"ocid": …}'
+    FileErrors:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CollectionParameters'
+        - $ref: '#/components/schemas/FileParameters'
+      required:
+        - errors
+      properties:
+        errors:
+          description: A JSON-encoded array of error messages as strings
+          type: string
+          example: '["Too many redirects"]'
+    CollectionParameters:
+      type: object
+      required:
+        - collection_source
+        - collection_data_version
+        - collection_sample
+      properties:
+        collection_source:
+          description: Collection name
+          type: string
+          example: 'canada_buyandsell'
+        collection_data_version:
+          description: Datetime at which the collection was created
+          type: string
+          example: '2016-01-02 01:23:45'
+        collection_sample:
+          description: Whether the collection samples the source
+          type: string
+          example: 'True'
+          enum:
+            - 'True'
+            - 'False'
+          default: 'False'
+    CollectionNoteParameter:
+      type: object
+      properties:
+        collection_note:
+          description: An analyst's note about the collection
+          type: string
+          example: 'For M&E reporting. Morgan'
+    FileParameters:
+      type: object
+      required:
+        - file_name
+        - url
+      properties:
+        file_name:
+          description: The file's name
+          type: string
+          example: '14-15.json'
+        url:
+          description: The file's URL
+          type: string
+          example: 'https://buyandsell.gc.ca/cds/public/ocds/tpsgc-pwgsc_ocds_EF-FY-14-15.json'
+          format: uri
+    DataTypeParameter:
+      type: object
+      required:
+        - data_type
+      properties:
+        data_type:
+          description: The [file's type](https://kingfisher-process.readthedocs.io/en/latest/data-model/#file-types)
+          type: string
+          example: 'release_package'
+          enum:
+            - record
+            - release
+            - record_list
+            - release_list
+            - record_package
+            - release_package
+            - record_package_list
+            - release_package_list
+            - record_package_json_lines
+            - release_package_json_lines
+            - record_package_list_in_results
+            - release_package_list_in_results

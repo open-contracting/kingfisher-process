@@ -54,7 +54,7 @@ To download a different configuration that includes debug messages::
 Web API
 -------
 
-To allow access to the :doc:`web/api-v1`, set API keys, separated by commas. For example, to set ``1234`` and ``5678`` as keys (in practice, you should use `long, random keys <https://www.avast.com/en-us/random-password-generator>`__):
+To allow access to the :ref:`web API <web-api>`, set API keys, separated by commas. For example, to set ``1234`` and ``5678`` as keys (in practice, you should use `long, random keys <https://www.avast.com/en-us/random-password-generator>`__):
 
 .. code-block:: ini
 
