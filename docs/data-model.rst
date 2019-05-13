@@ -1,68 +1,111 @@
 Data Model
 ==========
 
+.. _collections:
+
 Collections
 -----------
 
-Collections are a set of data that are handled separately.
+Collections are distinct sets of OCDS data. They are the largest unit on which this tool operates.
 
-A collection is defined uniquely by a combination of all the 5 variables listed below.
+A collection is uniquely identified by the combination of:
 
-* Name. A String. Can be anything you want.
-* Date. The date the collection started.
-* Sample. A Boolean flag.
+* Name (``source_id``): A string. If the collection was created by Kingfisher Scrape, this is the ``name`` attribute of the `spider <https://github.com/open-contracting/kingfisher-scrape/tree/master/kingfisher_scrapy/spiders>`__.
+* Date (``data_version``): The date and time at which the collection was created. If the collection was created by Kingfisher Scrape, this is the ``start_time`` `statistic <https://docs.scrapy.org/en/latest/topics/stats.html>`__ of the crawl.
+* Sample (``sample``): A boolean. Whether the collection is only a sample of the data from the source.
+* Base collection (``transform_from_collection_id``): An integer. The ID of the collection that was transformed into this collection.
+* Transform type (``transform_type``): A string. The identifier of the transformer that was used to produce this collection.
 
-Collections have a set of flags on them that describe what operations to do on them. These are:
+Each collection is given an integer ID; this is used to refer to the collection in the :doc:`cli/index` and the database.
 
-* `check_data`. Should data in this collection be checked?
-* `check_older_data_with_schema_version_1_1`. If the data is less than schema version 1.1, then should it be also checked with the version forced to 1.1?
+Collections are created by Kingfisher Scrape, the :ref:`web API <web-api>`, or the :doc:`cli/new-collection` command.
 
-Default values for these can be configured - see :doc:`config`.
+.. _schema-check-flags:
 
-A collection is also given a numeric ID, which for convenience is normally used to refer to the collection.
+Schema check flags
+~~~~~~~~~~~~~~~~~~
+
+Collections have flags that indicate what operations to perform on them. These are:
+
+check_data
+    Run `CoVE <https://github.com/OpenDataServices/cove>`__ schema checks on the data in this collection
+
+check_older_data_with_schema_version_1_1
+    Force OCDS 1.1 checks to be run on OCDS 1.0 data (instead of OCDS 1.0 checks)
+
+To configure the default values for these flags, see :doc:`config`.
+
+.. _transformed-collections:
+
+Transformed collections
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Presently, the tool offers two transformers:
+
+upgrade-1-0-to-1-1
+    upgrade a collection's data from OCDS 1.0 to OCDS 1.1
+
+compile-releases
+    merge a collection's releases into compiled releases
+
+To transform a collection, create a new collection that refers to the base collection, with either the :doc:`cli/new-transform-compile-releases` or :doc:`cli/new-transform-upgrade-1-0-to-1-1` command, then run the :doc:`cli/transform-collection` command.
 
 Files
 -----
 
-Each collection contains one or more files.
+A collection contains one or more files. A file is uniquely identified by its collection and filename. Files can have:
 
-Each file is uniquely identified in a collection by it's file name.
+errors
+    The file could not be retrieved. Presently, errors are either reported by Kingfisher Scrape or caught by the :doc:`cli/local-load` command.
 
-Files can have `warnings` and/or `errors`:
+warnings
+    The file contents had to be modified in order to be stored. Presently, the only warning is about the removal of control characters.
 
-*  `errors` indicate the file could not be processed at all for some reason. In this case, you should not expect to find any data in this file.
-*  `warnings` indicate the file could still be processed. In this case, you should still find some data in this file.
+File types
+~~~~~~~~~~
 
-Data Types for Files
---------------------
+The :doc:`cli/local-load` command must be given the type of the file to load:
 
-When giving file to this software to load, you must specify a data type. This can be:
+record
+    A single record
 
-*  record - the file is a record.
-*  release - the file is a release.
-*  record_package - the file is a record package.
-*  release_package - the file is a release package.
-*  record_package_json_lines - the file is JSON lines, and every line is a record package
-*  release_package_json_lines - see last entry, but release packages.
-*  record_package_list - the file is a list of record packages. eg [  { record-package-1 } , { record-package-2 } ]
-*  release_package_list - see last entry, but release packages.
-*  record_list - the file is a list of records. eg [  { record-1 } , { record-2 } ]
-*  release_list - see last entry, but releases.
-*  record_package_list_in_results - the file is a list of record packages in the results attribute. eg { 'results': [  { record-package-1 } , { record-package-2 } ]  }
-*  release_package_list_in_results - see last entry, but release packages.
+release
+    A single release
+
+record_list
+    A JSON array of records, like ``[ { record-1 }, { record-2 } ]``
+
+release_list
+    A JSON array of releases
+
+record_package
+    A single record package
+
+release_package
+    A single release package
+
+record_package_list
+    A JSON array of record packages, like ``[ { record-package-1 }, { record-package-2 } ]``
+
+release_package_list
+    A JSON array of release packages
+
+record_package_json_lines
+    `Line-delimited JSON <https://en.wikipedia.org/wiki/JSON_streaming>`__, in which each line is a record package
+
+release_package_json_lines
+    As above, but release packages
+
+record_package_list_in_results
+    A JSON object with a ``results`` key whose value is a JSON array of record packages, like ``{ "results": [ { record-package-1 }, { record-package-2 } ] }``
+
+release_package_list_in_results
+    As above, but release packages
+
 
 Items
 -----
 
-Each File contains one or more items, where an item as a piece of OCDS data - a release, record, release package or record-package.
+A file contains one or more items. An item is an OCDS resource: a release, record, release package or record package. An item is uniquely identified by its index within the file. Indices are ``0``-based.
 
-Some files only contain one item, and in that case there will only be one item per file.
-
-Some files contain many items. For example;
-
-* JSON Lines files
-* A file downloaded from an API where the file is a JSON object that contains a list of records. eg http://www.contratosabiertos.cdmx.gob.mx/api/contratos/array
-
-Each items has an integer number, which lists the order they appear in.
-
-Each item is uniquely identified in a file by it's number.
+Files of the type ``record``, ``release``, ``record_package``, or ``release_package`` have one item only. Files of other types have one or more items.

@@ -1,9 +1,30 @@
-Web Interface
+Web interface
 =============
 
+.. _web-api:
 
-.. toctree::
+Web API
+-------
 
-   web-app.rst
-   web-api-v1.rst
+The web API allows other applications (notably `Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__) to submit data to this tool to store.
 
+All requests must set an `HTTP Authorization request header` <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization>`__ with an authentication type of ``ApiKey``. For example::
+
+    Authorization: ApiKey <key>
+
+To configure the API keys, see :doc:`../config`.
+
+API endpoints are documented on `SwaggerHub <https://app.swaggerhub.com/apis-docs/jpmckinney/kingfisher-process/v1>`.
+
+.. _web-app:
+
+Web app
+-------
+
+The web app allows you to view metadata about collections and files.
+
+To run the app locally in development mode::
+
+    FLASK_APP=ocdskingfisherprocess.web.app FLASK_ENV=development flask run
+
+Then, open <http://127.0.0.1:5000/>

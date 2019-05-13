@@ -1,77 +1,103 @@
 Configuration
 =============
 
-Postgresql Configuration
-------------------------
+Setup
+-----
 
-Postgresql Database settings can be set using a `~/.config/ocdskingfisher-process/config.ini` file. A sample one is included in the
-main directory.
+Create the tool's configuration directory::
 
+    mkdir ~/.config/ocdskingfisher-process
 
-.. code-block:: ini
+Download the sample main configuration file::
 
-    [DBHOST]
-    HOSTNAME = localhost
-    PORT = 5432
-    USERNAME = ocdsdata
-    PASSWORD = FIXME
-    DBNAME = ocdsdata
+    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/config.ini -o ~/.config/ocdskingfisher-process/config.ini
 
+Open the main configuration file at ``~/.config/ocdskingfisher-process/config.ini``, and follow the instructions below to update it.
 
-It will also attempt to load the password from a `~/.pgpass` file, if one is present.
+PostgreSQL
+----------
 
-You can also set the `KINGFISHER_PROCESS_DB_URI` environmental variable to use a custom PostgreSQL server, for example
-`postgresql://user:password@localhost:5432/dbname`.
+.. note::
 
-The order of precedence is (from least-important to most-important):
+   This step is required. All other steps are optional.
 
-  -  config file
-  -  password from `~/.pgpass`
-  -  environmental variable
-
-Web Configuration
------------------
-
-Version 1 of the Web API requires a key to access. Multiple keys can be set, seperated by a comma.
-
-The key can be set in the `~/.config/ocdskingfisher-process/config.ini` file:
-
+Configure the database connection settings:
 
 .. code-block:: ini
 
+   [DBHOST]
+   HOSTNAME = localhost
+   PORT = 5432
+   USERNAME = ocdskingfisher
+   PASSWORD = 
+   DBNAME = ocdskingfisher
+
+If you prefer not to store the password in ``config.ini``, you can use the `PostgreSQL Password File <https://www.postgresql.org/docs/11/libpq-pgpass.html>`__, ``~/.pgpass``, which overrides any password in ``config.ini``. Otherwise, if you used the same settings as in the examples during :doc:`requirements-install`, you only need to set ``PASSWORD`` above.
+
+To override ``config.ini`` and/or ``.pgpass``, set the ``KINGFISHER_PROCESS_DB_URI`` environment variable. This is useful to temporarily use a different database than your default database. For example, in a bash-like shell::
+
+    export KINGFISHER_PROCESS_DB_URI='postgresql://user:password@localhost:5432/dbname'
+
+Logging
+-------
+
+This tool uses the `Python logging module <https://docs.python.org/3/library/logging.html>`__. Loggers are in the ``ocdskingfisher`` namespace.
+
+Logging from the :doc:`cli/index` can be configured with a ``~/.config/ocdskingfisher-process/logging.json`` file. To download the default configuration::
+
+    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/logging.json -o ~/.config/ocdskingfisher-process/logging.json
+
+To download a different configuration that includes debug messages::
+
+    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/logging-debug.json -o ~/.config/ocdskingfisher-process/logging.json
+
+Web API
+-------
+
+To allow access to the :ref:`web API <web-api>`, set API keys, separated by commas. For example, to set ``1234`` and ``5678`` as keys (in practice, you should use `long, random keys <https://www.avast.com/en-us/random-password-generator>`__):
+
+.. code-block:: ini
 
     [WEB]
     API_KEYS = 1234,5678
 
+To override ``config.ini``, set the ``KINGFISHER_PROCESS_WEB_API_KEYS`` environment variable.
 
-`1234` and `5678` will both be valid keys.
+Collection flags
+----------------
 
-They can also be set in the `KINGFISHER_PROCESS_WEB_API_KEYS` environmental variable.
+When a :ref:`new collection <collections>` is created, :ref:`flags <schema-check-flags>` are set to indicate what operations to perform on them.
 
-Logging Configuration
----------------------
+All flags are off by default. To turn any on:
 
-This tool will provide additional logging information using the standard Python logging module, with loggers in the "ocdskingfisher"
-namespace.
+.. code-block:: ini
 
-When using the command line tool, it can be configured by setting a `~/.config/ocdskingfisher-process/logging.json` file.
-Sample ones are included in the main directory (one without debugging messages, and one with debugging messages).
+    [COLLECTION_DEFAULT]
+    CHECK_DATA = true
+    CHECK_OLDER_DATA_WITH_SCHEMA_1_1 = false
 
-Standard Pipeline
------------------
+Default pre-processing pipeline
+-------------------------------
 
-This can be turned on in the `~/.config/ocdskingfisher-process/config.ini` file.
+To enable the :doc:`standard-pipeline`:
 
 .. code-block:: ini
 
     [STANDARD_PIPELINE]
     RUN = true
 
-Redis Configuration
--------------------
+Redis
+-----
 
-You need an Redis server if you want a background queue to process items immediately. If you aren't using the background queue, you don't need a Redis server.
+To automatically queue newly stored data for `CoVE <https://github.com/OpenDataServices/cove>`__ schema checks, install `Redis <https://redis.io/>`__ with your package manager on Linux, for example::
 
+        sudo apt-get install redis-server
+
+or with Homebrew on macOS::
+
+        brew install redis
+
+Then, configure the Redis connection settings:
 
 .. code-block:: ini
 
@@ -80,13 +106,16 @@ You need an Redis server if you want a background queue to process items immedia
     PORT = 6379
     DATABASE = 0
 
-Sentry Configuration
---------------------
+Sentry
+------
 
-This is optional - if you want to track crashes use https://sentry.io/welcome/
+To track crashes, `sign up <https://sentry.io/signup/>`__ for `Sentry <https://sentry.io/>`__, and set the DSN:
 
 .. code-block:: ini
 
     [SENTRY]
-    DSN = https://xxxxxxxxxxxxxxxxxxxxxxxxxx@sentry.io/xxxxxxx
+    DSN = https://<key>@sentry.io/<project>
 
+.. note::
+
+    Sentry has its own `environment variables <https://docs.sentry.io/error-reporting/configuration/?platform=python>`__. Further reading: `Sentry for Python <https://sentry.io/for/python/>`__.

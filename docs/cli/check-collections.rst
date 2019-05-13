@@ -1,5 +1,5 @@
-Command line tool - check-collections option
-===========================================
+check-collections
+=================
 
 This command checks all data so far in all collections.
 
@@ -25,12 +25,10 @@ Soon after that number of seconds has passed, the command will exit.
 
 You can use this option with a cron entry; set a cron entry for this command to run every hour and pass runforseconds as 3540 (60 seconds/minute * 59 minutes).
 
-Then when new data appears in the system, there is no need for someone to run :doc:`cli-check-collection` by hand - the process run by cron will pick up the new data itself eventually.
+Then when new data appears in the system, there is no need for someone to run :doc:`check-collection` by hand - the process run by cron will pick up the new data itself eventually.
 
 The runforseconds option will make sure that only one of these cron processes runs at once.
 
-Do not use on hosted Kingfisher
--------------------------------
+.. admonition:: OCDS Helpdesk deployment
 
-Do not use this command on Hosted kingfisher - it is run automatically for you.
-
+   Don't use this. A cron job runs this once per hour.

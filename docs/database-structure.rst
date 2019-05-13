@@ -1,4 +1,4 @@
-Database Structure
+Database structure
 ==================
 
 Because Analysts query the data directly in the database, we document the structure here for them.
@@ -7,8 +7,13 @@ This is not a full description as you are expected to use normal tools to explor
 
 Reading :doc:`data-model` before reading this will probably help.
 
-.. image:: database-tables.png
+.. image:: _static/database-tables.png
    :target: _static/database-tables.png
+
+..
+   The database-tables.png file is generated with http://schemaspy.org/
+
+   The resulting image is edited by hand to remove the row count, which may confuse users.
 
 collection table
 ----------------
@@ -29,7 +34,7 @@ This has columns to store what operations should be done to it:
 This has columns to track it's current state:
 
 *  `store_start_at`: the date and time when the store stage begun
-*  `store_end_at`: the data and time when the store stage end. For collections that are a transform, this means the time the transform finished.
+*  `store_end_at`: the data and time when the store stage end. For transformed collections, this means the time the transformer finished.
 *  `deleted_at`: the date and time when the collection was deleted. If this is set, this row will remain in the database but data about this collection may be cleared out of all other tables at any point and should NOT be relied on.
 
 collection_note table

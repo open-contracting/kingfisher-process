@@ -4,27 +4,15 @@ Development
 Run tests
 ---------
 
-Run `py.test` from root directory.
+Run ``py.test`` from the root directory.
 
-The tests will drop and create the database, so you probably want to specify a special testing database with a environmental variable - see :doc:`config`.
+**The tests will drop and re-create the database**; you should specify a testing database with an environment variable. See :doc:`config`.
 
+Create migrations
+-----------------
 
-Main Database - Postgresql
---------------------------
-
-Create DB Migrations with Alembic - http://alembic.zzzcomputing.com/en/latest/
-
-.. code-block:: shell-session
+Create database migrations with `Alembic <https://alembic.sqlalchemy.org/>`__, for example::
 
     alembic --config=mainalembic.ini revision -m "message"
 
-Add changes to new migration, and make sure you update database.py table structures and delete_tables to.
-
-
-Database-tables.png file
-------------------------
-
-This is generated with http://schemaspy.org/
-
-The resulting image is edited by hand to remove the row count, as that may confuse people.
-
+Add changes to the new migration, and update ``database.py`` table definitions and the ``delete_tables`` method.

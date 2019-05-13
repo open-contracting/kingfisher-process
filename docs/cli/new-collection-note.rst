@@ -1,5 +1,5 @@
-Command line tool - new-collection-note option
-==============================================
+new-collection-note
+===================
 
 This command adds a note to a collection in the system.
 

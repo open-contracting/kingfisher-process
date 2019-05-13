@@ -1,5 +1,5 @@
-Command line tool - list-collections option
-===========================================
+list-collections
+================
 
 This command lists all the collections this install of the app knows about.
 

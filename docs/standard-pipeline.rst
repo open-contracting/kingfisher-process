@@ -1,14 +1,11 @@
-Standard Pipeline
-=================
+Default pre-processing pipeline
+===============================
 
-You can choose to have a standard pipeline run over all incoming data.
+The default pre-processing pipeline operates on any new collection that is not a :ref:`transformed collection <transformed-collections>`; that is, any collection loaded via the :ref:`web API <web-api>` or the :doc:`cli/local-load` command.
 
-This is off by default and must be turned on - see :doc:`config`.
+The pipeline uses transforms to:
 
-When on, any new collections that are not a Transform are assumed to be new data and processed. So this includes new collections created via the HTTP API, or via Local Load.
+* upgrade the collection's incoming data from OCDS 1.0 to OCDS 1.1
+* merge the collection's upgraded releases into compiled releases
 
-Transforms are created:
-  *  from the new collection, a transform is created upgrading the incoming data to 1.1 data
-  *  from the upgraded 1.1 data, a transform is created to compile releases
-
-Checks are turned on for the original collection only.
+The pipeline is off by default. To turn it on, see :doc:`config`.
