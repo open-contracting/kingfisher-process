@@ -8,13 +8,13 @@ Web API
 
 The web API allows other applications (notably `Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io>`__) to submit data to this tool to store.
 
-All requests must set an `HTTP Authorization request header` <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization>`__ with an authentication type of ``ApiKey``. For example::
+All requests must set an `HTTP Authorization request header <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization>`__ with an authentication type of ``ApiKey``. For example::
 
     Authorization: ApiKey <key>
 
 To configure the API keys, see :doc:`../config`.
 
-API endpoints are documented on `SwaggerHub <https://app.swaggerhub.com/apis-docs/jpmckinney/kingfisher-process/v1>`.
+API endpoints are documented on `SwaggerHub <https://app.swaggerhub.com/apis-docs/jpmckinney/kingfisher-process/v1>`__.
 
 .. _web-app:
 

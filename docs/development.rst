@@ -4,9 +4,11 @@ Development
 Run tests
 ---------
 
-Run ``py.test`` from the root directory.
+**The tests drop and re-create the database**; you should specify a testing database with an environment variable. See :doc:`config`.
 
-**The tests will drop and re-create the database**; you should specify a testing database with an environment variable. See :doc:`config`.
+Run the tests with, for example:
+
+    KINGFISHER_PROCESS_DB_URI='postgres:///ocdskingfisher-test' pytest
 
 Create migrations
 -----------------
