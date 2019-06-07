@@ -794,7 +794,12 @@ class DatabaseStore:
 
             self.connection.close()
 
-            KINGFISHER_SIGNALS.signal('collection-data-store-finished').send('anonymous', collection_id=self.collection_id)
+            KINGFISHER_SIGNALS\
+                .signal('collection-data-store-finished')\
+                .send('anonymous',
+                      collection_id=self.collection_id,
+                      collection_file_item_id=self.collection_file_item_id
+                      )
 
     def insert_record(self, row, package_data):
         ocid = row.get('ocid')

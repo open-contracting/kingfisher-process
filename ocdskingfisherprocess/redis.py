@@ -14,4 +14,8 @@ class ProcessQueueMessage:
             collection = self.database.get_collection(message_as_data['collection_id'])
             if collection:
                 checks = Checks(self.database, collection, run_until_timestamp=run_until_timestamp)
-                checks.process_all_files()
+                # Older messages might not have the extra data in, so we need to check for this.
+                if 'collection_file_item_id' in message_as_data and message_as_data['collection_file_item_id']:
+                    checks.process_file_item_id(message_as_data['collection_file_item_id'])
+                else:
+                    checks.process_all_files()

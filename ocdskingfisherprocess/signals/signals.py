@@ -41,13 +41,14 @@ def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, 
         our_database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
 
 
-def collection_data_store_finished_to_redis(sender, collection_id=None, **kwargs):
+def collection_data_store_finished_to_redis(sender,
+                                            collection_id=None,
+                                            collection_file_item_id=None,
+                                            **kwargs):
     redis_conn = redis.Redis(host=our_config.redis_host, port=our_config.redis_port, db=our_config.redis_database)
-    message = json.dumps({'type': 'collection-data-store-finished', 'collection_id': collection_id})
-    # We only want one message of a type to be in the que at a time.
-    # So remove any existing messages, and add the message we want again (This is how you do it in Redis).
-    pipe = redis_conn.pipeline()
-    pipe.lrem('kingfisher_work', 0, message)
-    pipe.lpush('kingfisher_work', message)
-    pipe.execute()
-    # There are better solutions possible - discussed in https://github.com/open-contracting/kingfisher-process/issues/151
+    message = json.dumps({
+        'type': 'collection-data-store-finished',
+        'collection_id': collection_id,
+        'collection_file_item_id': collection_file_item_id,
+    })
+    redis_conn.rpush('kingfisher_work', message)
