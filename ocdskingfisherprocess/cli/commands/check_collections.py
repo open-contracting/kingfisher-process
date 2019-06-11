@@ -4,6 +4,7 @@ from ocdskingfisherprocess.checks import Checks
 import datetime
 from threading import Timer
 import os
+import logging
 
 
 class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -14,6 +15,8 @@ class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
                                help="Run for this many seconds only.")
 
     def run_command(self, args):
+        logger = logging.getLogger('ocdskingfisher.cli.check-collections')
+        logger.info("Starting command")
         run_until_timestamp = None
         run_for_seconds = int(args.runforseconds) if args.runforseconds else 0
         if run_for_seconds > 0:
@@ -28,6 +31,7 @@ class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
         for collection in self.database.get_all_collections():
             if not args.quiet:
                 print("Collection " + str(collection.database_id))
+            logger.info("Starting to check collection " + str(collection.database_id))
             checks = Checks(self.database, collection, run_until_timestamp=run_until_timestamp)
             checks.process_all_files()
             # Early return?
@@ -36,4 +40,5 @@ class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComm
 
         # If the code above took less than 60 seconds the process will stay open, waiting for the Timer to execute.
         # So just kill it to make sure.
+        logger.info("Finishing command")
         os._exit(0)
