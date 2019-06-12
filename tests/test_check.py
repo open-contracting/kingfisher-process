@@ -11,7 +11,7 @@ class TestAllChecksOff(BaseDataBaseTest):
     def alter_config(self):
         self.config.run_standard_pipeline = False
 
-    def test_records(self):
+    def test_records_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         collection = self.database.get_collection(collection_id)
@@ -65,7 +65,7 @@ class TestAllChecksOff(BaseDataBaseTest):
             result = connection.execute(s)
             assert 0 == result.rowcount
 
-    def test_releases(self):
+    def test_releases_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         collection = self.database.get_collection(collection_id)
@@ -125,7 +125,7 @@ class TestCheckOn(BaseDataBaseTest):
     def alter_config(self):
         self.config.run_standard_pipeline = False
 
-    def test_records(self):
+    def test_records_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         self.database.mark_collection_check_data(collection_id, True)
@@ -207,7 +207,7 @@ class TestCheckOn(BaseDataBaseTest):
             result = connection.execute(s)
             assert 0 == result.rowcount
 
-    def test_release(self):
+    def test_release_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         self.database.mark_collection_check_data(collection_id, True)
@@ -295,7 +295,7 @@ class TestCheckOlderThan11On(BaseDataBaseTest):
     def alter_config(self):
         self.config.run_standard_pipeline = False
 
-    def test_records(self):
+    def test_records_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
@@ -377,7 +377,7 @@ class TestCheckOlderThan11On(BaseDataBaseTest):
             result = connection.execute(s)
             assert 0 == result.rowcount
 
-    def test_release(self):
+    def test_release_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
@@ -465,7 +465,7 @@ class TestCheckAllOn(BaseDataBaseTest):
     def alter_config(self):
         self.config.run_standard_pipeline = False
 
-    def test_records(self):
+    def test_records_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         self.database.mark_collection_check_data(collection_id, True)
@@ -544,7 +544,7 @@ class TestCheckAllOn(BaseDataBaseTest):
             result = connection.execute(s)
             assert 0 == result.rowcount
 
-    def test_releases(self):
+    def test_releases_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         self.database.mark_collection_check_data(collection_id, True)
@@ -623,13 +623,179 @@ class TestCheckAllOn(BaseDataBaseTest):
             result = connection.execute(s)
             assert 0 == result.rowcount
 
+    def test_records_via_process_file_item_id_method(self):
+
+        collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_data(collection_id, True)
+        self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
+        collection = self.database.get_collection(collection_id)
+
+        store = Store(self.config, self.database)
+        store.set_collection(collection)
+
+        json_filename = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+        )
+
+        store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
+
+        file_item = self.database.get_all_files_items_in_file(
+            self.database.get_all_files_in_collection(collection_id)[0]
+        )[0]
+
+        # Check Number of check results
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.record_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+        # Call Checks
+        checks = Checks(self.database, collection)
+        checks.process_file_item_id(file_item.database_id)
+
+        # Check Number of check results
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_check_table])
+            result = connection.execute(s)
+            assert 2 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.record_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+        # Call Checks Again - that should be fine
+        checks = Checks(self.database, collection)
+        checks.process_file_item_id(file_item.database_id)
+
+        # Check Number of check results
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_check_table])
+            result = connection.execute(s)
+            assert 2 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.record_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+    def test_releases_via_process_file_item_id_method(self):
+
+        collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+        self.database.mark_collection_check_data(collection_id, True)
+        self.database.mark_collection_check_older_data_with_schema_version_1_1(collection_id, True)
+
+        collection = self.database.get_collection(collection_id)
+
+        store = Store(self.config, self.database)
+        store.set_collection(collection)
+
+        json_filename = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+        )
+
+        store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
+
+        file_item = self.database.get_all_files_items_in_file(
+            self.database.get_all_files_in_collection(collection_id)[0]
+        )[0]
+
+        # Check Number of check results
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.record_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+        # Call Checks
+        checks = Checks(self.database, collection)
+        checks.process_file_item_id(file_item.database_id)
+
+        # Check Number of check results
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_table])
+            result = connection.execute(s)
+            assert 2 == result.rowcount
+
+            s = sa.sql.select([self.database.record_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+        # Call Checks Again - that should be fine
+        checks = Checks(self.database, collection)
+        checks.process_file_item_id(file_item.database_id)
+
+        # Check Number of check results
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_check_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_table])
+            result = connection.execute(s)
+            assert 2 == result.rowcount
+
+            s = sa.sql.select([self.database.record_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+            s = sa.sql.select([self.database.release_check_error_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
 
 class TestCheck11NotSelected(BaseDataBaseTest):
 
     def alter_config(self):
         self.config.run_standard_pipeline = False
 
-    def test_records(self):
+    def test_records_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         collection = self.database.get_collection(collection_id)
@@ -646,7 +812,7 @@ class TestCheck11NotSelected(BaseDataBaseTest):
         assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.1')]) == 0
         assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.2')]) == 1
 
-    def test_releases(self):
+    def test_releases_via_process_all_files_method(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         collection = self.database.get_collection(collection_id)
