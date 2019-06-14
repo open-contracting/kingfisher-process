@@ -69,6 +69,23 @@ release, record and compiled_release tables
 
 Each row is linked to `collection_file_item` and thus to Collections. Each row is also linked to the `data` and `package_data` tables that actually hold the data.
 
+release, record and compiled_release views with added collection information
+-----------------------------------------------------------------------------
+
+If you want to get all the records, releases or compiled releases in a collection, it is actually difficult!
+
+You need to join `release`/`record`/`compiled_release` to `collection_file_item`, which needs to be joined to `collection_file`, which then has a `collection_id` column you can search on!
+
+To make this easier, three views are provided.
+
+* `release_with_collection`
+* `record_with_collection`
+* `compiled_release_with_collection`
+
+These contain the normal columns each table has, but also have the additional column `collection_id`.
+
+You should use these views where possible to avoid having to write several joins yourself.
+
 release_check, record_check, release_check_error and record_check_error tables
 ------------------------------------------------------------------------------
 
