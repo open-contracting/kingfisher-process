@@ -72,9 +72,9 @@ Each row is linked to `collection_file_item` and thus to Collections. Each row i
 release, record and compiled_release views with added collection information
 -----------------------------------------------------------------------------
 
-If you want to get all the records, releases or compiled releases in a collection, it is actually difficult!
+Filtering records, releases or compiled releases on a specific collection involves several joins.
 
-You need to join `release`/`record`/`compiled_release` to `collection_file_item`, which needs to be joined to `collection_file`, which then has a `collection_id` column you can search on!
+You need to join `release`/`record`/`compiled_release` to `collection_file_item`, which needs to be joined to `collection_file`, which then has a `collection_id` column you can filter on.
 
 To make this easier, three views are provided.
 
