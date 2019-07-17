@@ -6,6 +6,7 @@ from threading import Timer
 import os
 import sentry_sdk
 import traceback
+import logging
 
 
 class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -16,6 +17,8 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
                                help="Run for this many seconds only.")
 
     def run_command(self, args):
+        logger = logging.getLogger('ocdskingfisher.cli.transform-collections')
+        logger.info("Starting command")
         run_until_timestamp = None
         run_for_seconds = int(args.runforseconds) if args.runforseconds else 0
         if run_for_seconds > 0:
@@ -31,6 +34,7 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
             if collection.transform_type:
                 if not args.quiet:
                     print("Collection " + str(collection.database_id))
+                logger.info("Starting to transform collection " + str(collection.database_id))
                 transform = get_transform_instance(collection.transform_type, self.config, self.database,
                                                    collection, run_until_timestamp=run_until_timestamp)
                 try:
@@ -47,4 +51,5 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
 
         # If the code above took less than 60 seconds the process will stay open, waiting for the Timer to execute.
         # So just kill it to make sure.
+        logger.info("Finishing command")
         os._exit(0)
