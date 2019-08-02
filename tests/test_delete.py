@@ -9,6 +9,9 @@ from tests.base import BaseDataBaseTest
 
 class TestDelete(BaseDataBaseTest):
 
+    def alter_config(self):
+        self.config.run_standard_pipeline = False
+
     def test_a_single_collection(self):
 
         collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
