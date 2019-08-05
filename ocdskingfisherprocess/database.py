@@ -706,7 +706,7 @@ class DataBase:
 class DatabaseStore:
 
     def __init__(self, database, collection_id, file_name, number, url=None, before_db_transaction_ends_callback=None,
-                 allow_existing_collection_file_item_table_row=False):
+                 allow_existing_collection_file_item_table_row=False, warnings=None):
         self.database = database
         self.collection_id = collection_id
         self.file_name = file_name
@@ -718,6 +718,7 @@ class DatabaseStore:
         self.collection_file_id = None
         self.collection_file_item_id = None
         self.allow_existing_collection_file_item_table_row = allow_existing_collection_file_item_table_row
+        self.warnings = warnings
 
     def __enter__(self):
         self.connection = self.database.get_engine().connect()
@@ -739,7 +740,6 @@ class DatabaseStore:
                 'filename': self.file_name,
                 'store_start_at': datetime.datetime.utcnow(),
                 'url': self.url,
-                # TODO store warning?
             })
             self.collection_file_id = value.inserted_primary_key[0]
 
@@ -762,6 +762,7 @@ class DatabaseStore:
                 'collection_file_id': self.collection_file_id,
                 'number': self.number,
                 'store_start_at': datetime.datetime.utcnow(),
+                'warnings': (self.warnings if isinstance(self.warnings, list) and len(self.warnings) > 0 else None),
             })
             self.collection_file_item_id = value.inserted_primary_key[0]
 
