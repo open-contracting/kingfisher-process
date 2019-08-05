@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 from functools import partial
+import logging
 
 import alembic.config
 import sqlalchemy as sa
@@ -553,80 +554,82 @@ class DataBase:
 
     def delete_collection(self, collection_id):
         data = {'collection_id': collection_id}
-        sqls = [
-            """DELETE FROM release_check_error
+        sqls = {
+            "release_check_error": """DELETE FROM release_check_error
                 WHERE release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM record_check
+            "record_check": """DELETE FROM record_check
                 WHERE record_id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM release_check
+            "release_check": """DELETE FROM release_check
                 WHERE release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM compiled_release
+            "compiled_release": """DELETE FROM compiled_release
                 WHERE id IN
                     (
                         SELECT id FROM compiled_release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
+            "transform_upgrade_1_0_to_1_1_status_record": """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
                 WHERE source_record_id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM record
+            "record": """DELETE FROM record
                 WHERE id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
+            "transform_upgrade_1_0_to_1_1_status_release": """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
                 WHERE source_release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM release
+            "release": """DELETE FROM release
                 WHERE id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM collection_file_item
+            "collection_file_item": """DELETE FROM collection_file_item
                 WHERE collection_file_id IN
                     (
                         SELECT id FROM collection_file
                         WHERE collection_id = :collection_id
                     );""",
-            """DELETE FROM collection_file
+            "collection_file": """DELETE FROM collection_file
                 WHERE collection_id = :collection_id;""",
-            """DELETE FROM data
+            "data": """DELETE FROM data
                 WHERE id NOT IN
                     (
                         SELECT data_id FROM release UNION
                         SELECT data_id FROM record UNION
                         SELECT data_id FROM compiled_release
                     );""",
-            """DELETE FROM package_data
+            "package_data": """DELETE FROM package_data
                 WHERE id NOT IN
                     (
                         SELECT package_data_id FROM release union
                         SELECT package_data_id FROM record
-                    );"""]
+                    );"""}
 
         # We execute every SQL statement in it's own transaction, to try and keep the size of the transactions small
         # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
-        for sql in sqls:
+        logger = logging.getLogger('ocdskingfisher.database.delete-collection')
+        for label, sql in sqls.items():
+            logger.debug("Deleting " + label + " for collection " + str(collection_id))
             with self.get_engine().begin() as connection:
                 connection.execute(sa.sql.expression.text(sql), data)
 
