@@ -13,6 +13,10 @@ class CheckCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
         subparser.add_argument("directory", help="Directory to load from")
         subparser.add_argument("filetype", help="Types of file in the directory")
         subparser.add_argument("--encoding", help="File encoding", default="utf-8")
+        subparser.add_argument("--keep-collection-store-open",
+                               help="Keep collection store open (default is to end it straight after)",
+                               default=False,
+                               action='store_true')
 
     def run_command(self, args):
 
@@ -46,3 +50,9 @@ class CheckCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
             )
 
         print("Done")
+
+        if args.keep_collection_store_open:
+            print("Not ending collection store as requested; you may want to use the end-collection-store command")
+        else:
+            self.database.mark_collection_store_done(self.collection.database_id)
+            print("And collection store ended!")
