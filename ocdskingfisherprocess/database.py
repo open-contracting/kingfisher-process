@@ -616,7 +616,19 @@ class DataBase:
                         WHERE collection_id = :collection_id
                     );""",
             "collection_file": """DELETE FROM collection_file
-                WHERE collection_id = :collection_id;""",
+                WHERE collection_id = :collection_id;"""}
+
+        # We execute every SQL statement in it's own transaction, to try and keep the size of the transactions small
+        # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
+        logger = logging.getLogger('ocdskingfisher.database.delete-collection')
+        for label, sql in sqls.items():
+            logger.debug("Deleting " + label + " for collection " + str(collection_id))
+            with self.get_engine().begin() as connection:
+                connection.execute(sa.sql.expression.text(sql), data)
+
+    def delete_orphan_data(self):
+        data = {}
+        sqls = {
             "data": """DELETE FROM data
                 WHERE id NOT IN
                     (
@@ -635,7 +647,7 @@ class DataBase:
         # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
         for label, sql in sqls.items():
-            logger.debug("Deleting " + label + " for collection " + str(collection_id))
+            logger.debug("Deleting " + label)
             with self.get_engine().begin() as connection:
                 connection.execute(sa.sql.expression.text(sql), data)
 

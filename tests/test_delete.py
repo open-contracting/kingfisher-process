@@ -55,6 +55,7 @@ class TestDelete(BaseDataBaseTest):
         # Delete
         self.database.mark_collection_deleted_at(collection_id)
         self.database.delete_collection(collection_id)
+        self.database.delete_orphan_data()
 
         # Check Number of rows in various tables
         with self.database.get_engine().begin() as connection:
@@ -142,9 +143,11 @@ class TestDelete(BaseDataBaseTest):
         # Delete
         self.database.mark_collection_deleted_at(source_collection_id)
         self.database.delete_collection(source_collection_id)
+        self.database.delete_orphan_data()
 
         self.database.mark_collection_deleted_at(destination_collection_id)
         self.database.delete_collection(destination_collection_id)
+        self.database.delete_orphan_data()
 
         # Check Number of rows in various tables
         with self.database.get_engine().begin() as connection:
