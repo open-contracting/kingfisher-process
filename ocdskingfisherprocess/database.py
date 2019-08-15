@@ -561,6 +561,12 @@ class DataBase:
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""",
+            "record_check_error": """DELETE FROM record_check_error
+                WHERE record_id IN
+                    (
+                        SELECT id FROM record_with_collection
+                        WHERE collection_id = :collection_id
+                    );""",
             "record_check": """DELETE FROM record_check
                 WHERE record_id IN
                     (
