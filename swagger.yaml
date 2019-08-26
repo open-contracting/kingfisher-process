@@ -201,7 +201,7 @@ components:
         - data_type
       properties:
         data_type:
-          description: The [file's type](https://kingfisher-process.readthedocs.io/en/latest/data-model/#file-types)
+          description: The [file's type](https://kingfisher-process.readthedocs.io/en/latest/data-model.html#file-types)
           type: string
           example: 'release_package'
           enum:
