@@ -20,11 +20,16 @@ class TestDelete(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(collection)
 
-        json_filename = os.path.join(os.path.dirname(
+        # Load several records to test data delete
+        json_filename1 = os.path.join(os.path.dirname(
             os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
         )
+        store.store_file_from_local("test1.json", "http://example.com", "record", "utf-8", json_filename1)
 
-        store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
+        json_filename2 = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'data', 'sample_1_1_record.json'
+        )
+        store.store_file_from_local("test2.json", "http://example.com", "record", "utf-8", json_filename2)
 
         # Check Number of rows in various tables
         with self.database.get_engine().begin() as connection:
@@ -34,23 +39,23 @@ class TestDelete(BaseDataBaseTest):
 
             s = sa.sql.select([self.database.collection_file_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
             s = sa.sql.select([self.database.collection_file_item_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
             s = sa.sql.select([self.database.record_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
             s = sa.sql.select([self.database.data_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
             s = sa.sql.select([self.database.package_data_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 2 == result.rowcount
 
         # Delete
         self.database.mark_collection_deleted_at(collection_id)
