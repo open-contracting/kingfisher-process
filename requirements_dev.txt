@@ -1,6 +1,6 @@
 flattentool==0.8.0
 libcove==0.10.0
-libcoveocds==0.7.1
+libcoveocds==0.7.2
 ocdskit==0.0.5
 Flask==1.0.3
 alembic==1.0.11
