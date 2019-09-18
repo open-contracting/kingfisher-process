@@ -22,6 +22,7 @@ setup(
         'alembic',
         'blinker',
         'Flask',
+        'flattentool',
         'libcoveocds',
         'ocdskit',
         'ocdsmerge',
