@@ -18,7 +18,26 @@ setup(
             'maindatabase/migrations/script.py.mako'
         ]},
     include_package_data=True,
+    install_requires=[
+        'alembic',
+        'blinker',
+        'Flask',
+        'ocdskit',
+        'ocdsmerge',
+        'pgpasslib',
+        'psycopg2',
+        'redis',
+        'sentry-sdk',
+        'SQLAlchemy<1.3',  # 1.3 has issues with an identifier being too long
+    ],
     extras_require={
+        'test': [
+            'coveralls',
+            'flake8',
+            'pytest',
+            'pytest-cov',
+            'Sphinx',
+        ],
         'docs': [
             'Sphinx<2',
             'sphinx-autobuild',
