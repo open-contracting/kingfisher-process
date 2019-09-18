@@ -22,6 +22,7 @@ setup(
         'alembic',
         'blinker',
         'Flask',
+        'libcoveocds',
         'ocdskit',
         'ocdsmerge',
         'pgpasslib',
