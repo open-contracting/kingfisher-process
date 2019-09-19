@@ -627,29 +627,43 @@ class DataBase:
                 connection.execute(sa.sql.expression.text(sql), data)
 
     def delete_orphan_data(self):
+        self._delete_orphan_data_data()
+        self._delete_orphan_data_package_data()
+
+    def _delete_orphan_data_data(self):
+        data_get = {}
+        sql_get = """SELECT data.id FROM data
+                LEFT JOIN release ON release.data_id = data.id
+                LEFT JOIN record ON record.data_id = data.id
+                LEFT JOIN compiled_release ON compiled_release.data_id = data.id
+                WHERE release.data_id IS NULL AND record.data_id IS NULL AND compiled_release.data_id IS NULL
+                LIMIT 10000;"""
+        logger = logging.getLogger('ocdskingfisher.database.delete-collection')
+        logger.debug("Deleting data")
+        while True:
+            with self.get_engine().begin() as connection:
+                ids_to_delete = []
+                for row in connection.execute(sa.sql.expression.text(sql_get), data_get):
+                    ids_to_delete.append(str(row['id']))
+                if len(ids_to_delete) == 0:
+                    return
+                connection.execute(
+                    sa.sql.expression.text("DELETE FROM data WHERE id IN (" + ",".join(ids_to_delete) + ")"),
+                    {}
+                )
+
+    def _delete_orphan_data_package_data(self):
         data = {}
-        sqls = {
-            "data": """DELETE FROM data
-                WHERE id NOT IN
-                    (
-                        SELECT data_id FROM release UNION
-                        SELECT data_id FROM record UNION
-                        SELECT data_id FROM compiled_release
-                    );""",
-            "package_data": """DELETE FROM package_data
+        sql = """DELETE FROM package_data
                 WHERE id NOT IN
                     (
                         SELECT package_data_id FROM release union
                         SELECT package_data_id FROM record
-                    );"""}
-
-        # We execute every SQL statement in it's own transaction, to try and keep the size of the transactions small
-        # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
+                    );"""
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
-        for label, sql in sqls.items():
-            logger.debug("Deleting " + label)
-            with self.get_engine().begin() as connection:
-                connection.execute(sa.sql.expression.text(sql), data)
+        logger.debug("Deleting package_data")
+        with self.get_engine().begin() as connection:
+            connection.execute(sa.sql.expression.text(sql), data)
 
     def _get_check_query(self, obj_type, collection_id, override_schema_version):
         data = {'collection_id': collection_id}
