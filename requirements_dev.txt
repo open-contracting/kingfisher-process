@@ -41,10 +41,9 @@ MarkupSafe==1.1.1
 mccabe==0.6.1
 more-itertools==7.2.0
 ocdsextensionregistry==0.0.14
--e git+git@github.com:open-contracting/kingfisher-process.git@cd1d383bce6f21c156d52c1044c254719cf57d5a#egg=ocdskingfisher
 ocdskit==0.1.1
 ocdsmerge==0.5.7
-openpyxl==2.6.4
+openpyxl==3.0.0
 packaging==19.2
 pgpasslib==1.1.0
 pluggy==0.13.0

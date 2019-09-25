@@ -1,5 +1,3 @@
-Skipping line in requirement file [requirements.in] because it's not clear what it would install: .
-  (add #egg=PackageName to the URL to avoid this warning)
 ## The following requirements were added by pip freeze:
 alembic==1.2.1
 attrs==19.1.0
@@ -30,10 +28,9 @@ lxml==4.4.1
 Mako==1.1.0
 MarkupSafe==1.1.1
 ocdsextensionregistry==0.0.14
--e git+git@github.com:open-contracting/kingfisher-process.git@cd1d383bce6f21c156d52c1044c254719cf57d5a#egg=ocdskingfisher
 ocdskit==0.1.1
 ocdsmerge==0.5.7
-openpyxl==2.6.4
+openpyxl==3.0.0
 pgpasslib==1.1.0
 psycopg2==2.8.3
 pyrsistent==0.15.4
