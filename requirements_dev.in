@@ -1,2 +1,6 @@
 -r requirements.in
--e .[test]
+coveralls
+flake8
+pytest
+pytest-cov
+Sphinx

@@ -1,1 +1,14 @@
--e .
+flattentool
+libcove
+libcoveocds
+ocdskit
+Flask
+alembic
+pgpasslib
+psycopg2
+ocdsmerge
+blinker
+redis
+sentry-sdk
+# Lock to 1.2 branch (1.3 branch has issues with an identifier being too long)
+SQLAlchemy==1.2.19

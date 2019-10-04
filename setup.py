@@ -3,6 +3,19 @@ from setuptools import setup, find_packages
 with open('README.rst') as f:
     long_description = f.read()
 
+install_requires = []
+
+with open('./requirements.in') as requirements_txt:
+    requirements = requirements_txt.read().strip().splitlines()
+    for requirement in requirements:
+        if requirement.startswith('#'):
+            continue
+        elif requirement.startswith('-e '):
+            install_requires.append(requirement.split('=')[1])
+        else:
+            install_requires.append(requirement)
+
+
 setup(
     name='ocdskingfisher',
     version='0.0.1',
@@ -18,20 +31,7 @@ setup(
             'maindatabase/migrations/script.py.mako'
         ]},
     include_package_data=True,
-    install_requires=[
-        'alembic',
-        'blinker',
-        'Flask',
-        'flattentool',
-        'libcoveocds',
-        'ocdskit',
-        'ocdsmerge',
-        'pgpasslib',
-        'psycopg2',
-        'redis',
-        'sentry-sdk',
-        'SQLAlchemy<1.3',  # 1.3 has issues with an identifier being too long
-    ],
+    install_requires=install_requires,
     extras_require={
         'test': [
             'coveralls',
