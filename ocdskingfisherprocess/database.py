@@ -37,7 +37,8 @@ class DataBase:
                                          sa.Column('store_end_at', sa.DateTime(timezone=False), nullable=True),
                                          sa.Column('sample', sa.Boolean, nullable=False, default=False),
                                          sa.Column('check_data', sa.Boolean, nullable=False, default=False),
-                                         sa.Column('check_older_data_with_schema_version_1_1', sa.Boolean, nullable=False, default=False),
+                                         sa.Column('check_older_data_with_schema_version_1_1', sa.Boolean,
+                                                   nullable=False, default=False),
                                          sa.Column('transform_from_collection_id', sa.Integer,
                                                    sa.ForeignKey("collection.id"), nullable=True),
                                          sa.Column('transform_type', sa.Text, nullable=True),
@@ -77,10 +78,15 @@ class DataBase:
 
         self.collection_file_item_table = sa.Table('collection_file_item', self.metadata,
                                                    sa.Column('id', sa.Integer, primary_key=True),
-                                                   sa.Column('collection_file_id', sa.Integer,
-                                                             sa.ForeignKey("collection_file.id",
-                                                                           name="fk_collection_file_item_collection_file_id"),
-                                                             nullable=False),
+                                                   sa.Column(
+                                                       'collection_file_id',
+                                                       sa.Integer,
+                                                       sa.ForeignKey(
+                                                           "collection_file.id",
+                                                           name="fk_collection_file_item_collection_file_id"
+                                                       ),
+                                                       nullable=False
+                                                   ),
                                                    sa.Column('store_start_at', sa.DateTime(timezone=False),
                                                              nullable=True),
                                                    sa.Column('store_end_at', sa.DateTime(timezone=False),
@@ -125,9 +131,15 @@ class DataBase:
 
         self.record_table = sa.Table('record', self.metadata,
                                      sa.Column('id', sa.Integer, primary_key=True),
-                                     sa.Column('collection_file_item_id', sa.Integer,
-                                               sa.ForeignKey("collection_file_item.id",
-                                                             name="fk_record_collection_file_item_id"), nullable=False),
+                                     sa.Column(
+                                         'collection_file_item_id',
+                                         sa.Integer,
+                                         sa.ForeignKey(
+                                             "collection_file_item.id",
+                                             name="fk_record_collection_file_item_id"
+                                         ),
+                                         nullable=False
+                                     ),
                                      sa.Column('ocid', sa.Text, nullable=True),
                                      sa.Column('data_id', sa.Integer,
                                                sa.ForeignKey("data.id", name="fk_record_data_id"), nullable=False),
@@ -140,10 +152,13 @@ class DataBase:
 
         self.compiled_release_table = sa.Table('compiled_release', self.metadata,
                                                sa.Column('id', sa.Integer, primary_key=True),
-                                               sa.Column('collection_file_item_id', sa.Integer,
-                                                         sa.ForeignKey("collection_file_item.id",
-                                                                       name="fk_complied_release_collection_file_item_id"),
-                                                         nullable=False),
+                                               sa.Column(
+                                                   'collection_file_item_id',
+                                                   sa.Integer,
+                                                   sa.ForeignKey("collection_file_item.id",
+                                                                 name="fk_complied_release_collection_file_item_id"),
+                                                   nullable=False
+                                               ),
                                                sa.Column('ocid', sa.Text, nullable=True),
                                                sa.Column('data_id', sa.Integer,
                                                          sa.ForeignKey("data.id", name="fk_complied_release_data_id"),
@@ -175,24 +190,36 @@ class DataBase:
 
         self.release_check_error_table = sa.Table('release_check_error', self.metadata,
                                                   sa.Column('id', sa.Integer, primary_key=True),
-                                                  sa.Column('release_id', sa.Integer, sa.ForeignKey("release.id",
-                                                                                                    name="fk_release_check_error_release_id"),
-                                                            nullable=False),
+                                                  sa.Column(
+                                                      'release_id',
+                                                      sa.Integer,
+                                                      sa.ForeignKey("release.id",
+                                                                    name="fk_release_check_error_release_id"),
+                                                      nullable=False
+                                                  ),
                                                   sa.Column('override_schema_version', sa.Text, nullable=True),
                                                   sa.Column('error', sa.Text, nullable=False),
-                                                  sa.UniqueConstraint('release_id', 'override_schema_version',
-                                                                      name='unique_release_check_error_release_id_and_more')
+                                                  sa.UniqueConstraint(
+                                                      'release_id',
+                                                      'override_schema_version',
+                                                      name='unique_release_check_error_release_id_and_more')
                                                   )
 
         self.record_check_error_table = sa.Table('record_check_error', self.metadata,
                                                  sa.Column('id', sa.Integer, primary_key=True),
-                                                 sa.Column('record_id', sa.Integer, sa.ForeignKey("record.id",
-                                                                                                  name="fk_record_check_error_record_id"),
-                                                           nullable=False),
+                                                 sa.Column(
+                                                     'record_id',
+                                                     sa.Integer,
+                                                     sa.ForeignKey("record.id",
+                                                                   name="fk_record_check_error_record_id"),
+                                                     nullable=False
+                                                 ),
                                                  sa.Column('override_schema_version', sa.Text, nullable=True),
                                                  sa.Column('error', sa.Text, nullable=False),
-                                                 sa.UniqueConstraint('record_id', 'override_schema_version',
-                                                                     name='unique_record_check_error_record_id_and_more')
+                                                 sa.UniqueConstraint(
+                                                     'record_id',
+                                                     'override_schema_version',
+                                                     name='unique_record_check_error_record_id_and_more')
                                                  )
 
         self.transform_upgrade_1_0_to_1_1_status_release_table = sa.Table(
@@ -272,7 +299,8 @@ class DataBase:
         ]
         alembic.config.main(argv=alembicargs)
 
-    def get_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None, transform_type=None):
+    def get_collection_id(self, source_id, data_version, sample,
+                          transform_from_collection_id=None, transform_type=None):
 
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
@@ -286,10 +314,15 @@ class DataBase:
             if collection:
                 return collection['id']
 
-    def get_or_create_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None, transform_type=None):
+    def get_or_create_collection_id(self, source_id, data_version, sample,
+                                    transform_from_collection_id=None, transform_type=None):
 
-        collection_id = self.get_collection_id(source_id, data_version, sample,
-                                               transform_from_collection_id=transform_from_collection_id, transform_type=transform_type)
+        collection_id = self.get_collection_id(
+            source_id,
+            data_version,
+            sample,
+            transform_from_collection_id=transform_from_collection_id,
+            transform_type=transform_type)
         if collection_id:
             return collection_id
 
@@ -802,8 +835,10 @@ class DatabaseStore:
             self.collection_file_item_id = value.inserted_primary_key[0]
 
         # DB queries that will be used repeatably, we pre-build and reuse for speed
-        self.database_get_existing_data = sa.sql.expression.text("SELECT id FROM data WHERE hash_md5 = :hash_md5")
-        self.database_get_existing_package_data = sa.sql.expression.text("SELECT id FROM package_data WHERE hash_md5 = :hash_md5")
+        self.database_get_existing_data = \
+            sa.sql.expression.text("SELECT id FROM data WHERE hash_md5 = :hash_md5")
+        self.database_get_existing_package_data = \
+            sa.sql.expression.text("SELECT id FROM package_data WHERE hash_md5 = :hash_md5")
 
         return self
 

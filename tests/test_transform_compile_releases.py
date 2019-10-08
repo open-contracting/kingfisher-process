@@ -105,7 +105,9 @@ class TestTransformCompileReleases(BaseDataBaseTest):
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 1
         assert len(file_items[0].warnings) == 1
-        assert 'This already has one compiled release in the source! We have passed it through this transform unchanged.' == file_items[0].warnings[0]
+        assert 'This already has one compiled release in the source! ' + \
+               'We have passed it through this transform unchanged.' \
+               == file_items[0].warnings[0]
 
     def test_two_compiled_with_same_ocid(self):
 

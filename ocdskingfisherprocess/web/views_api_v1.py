@@ -61,7 +61,8 @@ class SubmitEndCollectionStoreView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_sample,
         )
 
-        current_app.kingfisher_web_logger.info("End Collection API V1 Store called for collection " + str(store.collection_id))
+        current_app.kingfisher_web_logger.info("End Collection API V1 Store called for collection " +
+                                               str(store.collection_id))
 
         if store.is_collection_store_ended():
             return "OCDS Kingfisher APIs V1 Submit - Already Done!"
@@ -112,7 +113,13 @@ class SubmitFileView(BaseAPIViewAuthAndCollectionNeeded):
 
         elif 'local_file_name' in request.form:
 
-            store.store_file_from_local(file_filename, file_url, file_data_type, file_encoding, request.form.get('local_file_name'))
+            store.store_file_from_local(
+                file_filename,
+                file_url,
+                file_data_type,
+                file_encoding,
+                request.form.get('local_file_name')
+            )
 
         else:
 
@@ -186,7 +193,8 @@ class SubmitFileErrorsView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_sample,
         )
 
-        current_app.kingfisher_web_logger.info("Submit File Error API V1 called for collection " + str(store.collection_id))
+        current_app.kingfisher_web_logger.info("Submit File Error API V1 called for collection " +
+                                               str(store.collection_id))
 
         file_filename = request.form.get('file_name')
         file_errors_raw = request.form.get('errors')

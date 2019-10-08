@@ -111,7 +111,9 @@ class Upgrade10To11Transform(BaseTransform):
     def has_release_id_been_done(self, release_id):
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.transform_upgrade_1_0_to_1_1_status_release_table]) \
-                .where(self.database.transform_upgrade_1_0_to_1_1_status_release_table.c.source_release_id == release_id)
+                .where(
+                    self.database.transform_upgrade_1_0_to_1_1_status_release_table.c.source_release_id == release_id
+                )
             result = connection.execute(s)
             return result.rowcount == 1
 

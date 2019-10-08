@@ -809,8 +809,10 @@ class TestCheck11NotSelected(BaseDataBaseTest):
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
 
-        assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.1')]) == 0
-        assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.2')]) == 1
+        assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.1')]) \
+            == 0
+        assert len([res for res in self.database.get_records_to_check(collection_id, override_schema_version='1.2')]) \
+            == 1
 
     def test_releases_via_process_all_files_method(self):
 
@@ -826,6 +828,10 @@ class TestCheck11NotSelected(BaseDataBaseTest):
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 
-        assert len([res for res in self.database.get_releases_to_check(collection_id, override_schema_version='1.1')]) == 0
+        assert \
+            len([res for res in self.database.get_releases_to_check(collection_id, override_schema_version='1.1')]) \
+            == 0
         # the file has 6 releases
-        assert len([res for res in self.database.get_releases_to_check(collection_id, override_schema_version='1.2')]) == 6
+        assert \
+            len([res for res in self.database.get_releases_to_check(collection_id, override_schema_version='1.2')]) \
+            == 6

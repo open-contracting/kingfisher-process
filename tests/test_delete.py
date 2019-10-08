@@ -107,9 +107,12 @@ class TestDelete(BaseDataBaseTest):
         self.database.mark_collection_store_done(source_collection_id)
 
         # Destination Collection
-        destination_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False,
-                                                                              transform_from_collection_id=source_collection_id,
-                                                                              transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
+        destination_collection_id = self.database.get_or_create_collection_id(
+            "test",
+            datetime.datetime.now(),
+            False,
+            transform_from_collection_id=source_collection_id,
+            transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
         destination_collection = self.database.get_collection(destination_collection_id)
 
         transform = Upgrade10To11Transform(self.config, self.database, destination_collection)

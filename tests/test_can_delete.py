@@ -19,9 +19,12 @@ class TestDelete(BaseDataBaseTest):
 
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
 
-        destination_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False,
-                                                                              transform_from_collection_id=source_collection_id,
-                                                                              transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
+        destination_collection_id = self.database.get_or_create_collection_id(
+            "test",
+            datetime.datetime.now(),
+            False,
+            transform_from_collection_id=source_collection_id,
+            transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
 
         # they are both finished - just do what would happen in that case
         self.database.mark_collection_store_done(source_collection_id)
@@ -37,9 +40,12 @@ class TestDelete(BaseDataBaseTest):
 
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
 
-        destination_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False,
-                                                                              transform_from_collection_id=source_collection_id,
-                                                                              transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
+        destination_collection_id = self.database.get_or_create_collection_id(
+            "test",
+            datetime.datetime.now(),
+            False,
+            transform_from_collection_id=source_collection_id,
+            transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
 
         self.database.mark_collection_deleted_at(destination_collection_id)
 
