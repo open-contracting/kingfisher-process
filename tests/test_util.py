@@ -66,5 +66,6 @@ def test_control_code_to_filter_out_to_human_readable():
     for control_code_to_filter_out in control_codes_to_filter_out:
         # This test just calls it and make sure it runs without crashing
         # (some code was crashing, so wanted test to check all future values of control_codes_to_filter_out)
-        # We add it to a string, as this is what happens in real code. This catches any "must be str, not bytes" errors.
+        # We add it to a string, as this is what happens in real code.
+        # This catches any "must be str, not bytes" errors.
         print(" " + control_code_to_filter_out_to_human_readable(control_code_to_filter_out))

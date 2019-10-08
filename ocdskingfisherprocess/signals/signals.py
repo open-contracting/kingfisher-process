@@ -24,11 +24,13 @@ def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, 
     collection = our_database.get_collection(collection_id)
     if not collection.transform_from_collection_id:
         # Create the transforms we want
-        second_collection_id = our_database.get_or_create_collection_id(collection.source_id,
-                                                                        collection.data_version,
-                                                                        collection.sample,
-                                                                        transform_from_collection_id=collection.database_id,
-                                                                        transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
+        second_collection_id = our_database.get_or_create_collection_id(
+            collection.source_id,
+            collection.data_version,
+            collection.sample,
+            transform_from_collection_id=collection.database_id,
+            transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
+        )
 
         our_database.get_or_create_collection_id(collection.source_id,
                                                  collection.data_version,

@@ -18,7 +18,11 @@ class UpgradeDataBaseCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComma
             if self.config.is_redis_available():
                 if not args.quiet:
                     print("Dropping Redis")
-                redis_conn = redis.Redis(host=self.config.redis_host, port=self.config.redis_port, db=self.config.redis_database)
+                redis_conn = redis.Redis(
+                    host=self.config.redis_host,
+                    port=self.config.redis_port,
+                    db=self.config.redis_database
+                )
                 redis_conn.delete('kingfisher_work')
 
         if not args.quiet:

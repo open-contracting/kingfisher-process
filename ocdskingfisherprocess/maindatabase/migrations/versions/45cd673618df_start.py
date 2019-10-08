@@ -50,7 +50,11 @@ def upgrade():
                     sa.Column('store_end_at', sa.DateTime(timezone=False),
                               nullable=True),
                     sa.Column('number', sa.Integer),
-                    sa.UniqueConstraint('collection_file_id', 'number', name='unique_collection_file_item_identifiers'),
+                    sa.UniqueConstraint(
+                        'collection_file_id',
+                        'number',
+                        name='unique_collection_file_item_identifiers'
+                    ),
                     )
 
     op.create_table('data',
@@ -69,29 +73,73 @@ def upgrade():
 
     op.create_table('release',
                     sa.Column('id', sa.Integer, primary_key=True),
-                    sa.Column('collection_file_item_id', sa.Integer,
-                              sa.ForeignKey("collection_file_item.id", name="fk_release_collection_file_item_id"), nullable=False),
+                    sa.Column(
+                        'collection_file_item_id',
+                        sa.Integer,
+                        sa.ForeignKey(
+                            "collection_file_item.id",
+                            name="fk_release_collection_file_item_id"
+                        ),
+                        nullable=False
+                    ),
                     sa.Column('release_id', sa.Text, nullable=True),
                     sa.Column('ocid', sa.Text, nullable=True),
-                    sa.Column('data_id', sa.Integer, sa.ForeignKey("data.id", name="fk_release_data_id"), nullable=False),
-                    sa.Column('package_data_id', sa.Integer, sa.ForeignKey("package_data.id", name="fk_release_package_data_id"),
-                              nullable=False),
+                    sa.Column(
+                        'data_id',
+                        sa.Integer,
+                        sa.ForeignKey(
+                            "data.id",
+                            name="fk_release_data_id"
+                        ),
+                        nullable=False
+                    ),
+                    sa.Column(
+                        'package_data_id',
+                        sa.Integer,
+                        sa.ForeignKey("package_data.id", name="fk_release_package_data_id"),
+                        nullable=False
+                    ),
                     )
 
     op.create_table('record',
                     sa.Column('id', sa.Integer, primary_key=True),
-                    sa.Column('collection_file_item_id', sa.Integer,
-                              sa.ForeignKey("collection_file_item.id", name="fk_record_collection_file_item_id"), nullable=False),
+                    sa.Column(
+                        'collection_file_item_id',
+                        sa.Integer,
+                        sa.ForeignKey(
+                            "collection_file_item.id",
+                            name="fk_record_collection_file_item_id"
+                        ),
+                        nullable=False
+                    ),
                     sa.Column('ocid', sa.Text, nullable=True),
-                    sa.Column('data_id', sa.Integer, sa.ForeignKey("data.id", name="fk_record_data_id"), nullable=False),
-                    sa.Column('package_data_id', sa.Integer, sa.ForeignKey("package_data.id", name="fk_record_package_data_id"),
-                              nullable=False),
+                    sa.Column(
+                        'data_id',
+                        sa.Integer,
+                        sa.ForeignKey(
+                            "data.id",
+                            name="fk_record_data_id"
+                        ),
+                        nullable=False
+                    ),
+                    sa.Column(
+                        'package_data_id',
+                        sa.Integer,
+                        sa.ForeignKey(
+                            "package_data.id",
+                            name="fk_record_package_data_id"),
+                        nullable=False
+                    ),
                     )
 
     op.create_table('release_check',
                     sa.Column('id', sa.Integer, primary_key=True),
-                    sa.Column('release_id', sa.Integer, sa.ForeignKey("release.id", name="fk_release_check_release_id"),
-                              nullable=False),
+                    sa.Column(
+                        'release_id',
+                        sa.Integer,
+                        sa.ForeignKey("release.id", name="fk_release_check_release_id"),
+                        nullable=False
+                    ),
                     sa.Column('override_schema_version', sa.Text, nullable=True),
                     sa.Column('cove_output', JSONB, nullable=False),
                     sa.UniqueConstraint('release_id', 'override_schema_version',
@@ -110,8 +158,14 @@ def upgrade():
 
     op.create_table('release_check_error',
                     sa.Column('id', sa.Integer, primary_key=True),
-                    sa.Column('release_id', sa.Integer, sa.ForeignKey("release.id", name="fk_release_check_error_release_id"),
-                              nullable=False),
+                    sa.Column(
+                        'release_id',
+                        sa.Integer,
+                        sa.ForeignKey(
+                            "release.id",
+                            name="fk_release_check_error_release_id"),
+                        nullable=False
+                    ),
                     sa.Column('override_schema_version', sa.Text, nullable=True),
                     sa.Column('error', sa.Text, nullable=False),
                     sa.UniqueConstraint('release_id', 'override_schema_version',
@@ -120,8 +174,12 @@ def upgrade():
 
     op.create_table('record_check_error',
                     sa.Column('id', sa.Integer, primary_key=True),
-                    sa.Column('record_id', sa.Integer, sa.ForeignKey("record.id", name="fk_record_check_error_record_id"),
-                              nullable=False),
+                    sa.Column(
+                        'record_id',
+                        sa.Integer,
+                        sa.ForeignKey("record.id", name="fk_record_check_error_record_id"),
+                        nullable=False
+                    ),
                     sa.Column('override_schema_version', sa.Text, nullable=True),
                     sa.Column('error', sa.Text, nullable=False),
                     sa.UniqueConstraint('record_id', 'override_schema_version',

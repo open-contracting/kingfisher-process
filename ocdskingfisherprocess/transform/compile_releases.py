@@ -34,12 +34,17 @@ class CompileReleasesTransform(BaseTransform):
         ocids = []
 
         with self.database.get_engine().begin() as engine:
-            query = engine.execute(sa.text(
-                " SELECT r.ocid FROM release_with_collection AS r" +
-                " LEFT JOIN compiled_release_with_collection AS cr on cr.ocid = r.ocid and cr.collection_id = :destination_collection_id" +
-                " WHERE r.collection_id = :collection_id and cr.ocid is NULL" +
-                " GROUP BY r.ocid "
-            ), collection_id=self.source_collection.database_id, destination_collection_id=self.destination_collection.database_id)
+            query = engine.execute(
+                sa.text(
+                    " SELECT r.ocid FROM release_with_collection AS r" +
+                    " LEFT JOIN compiled_release_with_collection AS cr ON " +
+                    " cr.ocid = r.ocid and cr.collection_id = :destination_collection_id" +
+                    " WHERE r.collection_id = :collection_id and cr.ocid is NULL" +
+                    " GROUP BY r.ocid "
+                ),
+                collection_id=self.source_collection.database_id,
+                destination_collection_id=self.destination_collection.database_id
+            )
 
             for row in query:
                 ocids.append(row['ocid'])
@@ -62,21 +67,36 @@ class CompileReleasesTransform(BaseTransform):
                 releases.append(self.database.get_data(row['data_id']))
 
         # Are any releases already compiled? https://github.com/open-contracting/kingfisher-process/issues/147
-        releases_compiled = [x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']]
+        releases_compiled = \
+            [x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']]
 
         if len(releases_compiled) > 1:
             # If more than one, pick one at random. and log that.
-            warning = 'This already has multiple compiled releases in the source! We have picked one at random and passed it through this transform unchanged.'
-            self.store.store_file_item(ocid + '.json', None, 'compiled_release', releases_compiled[0], 1, warnings=[warning])
+            warning = 'This already has multiple compiled releases in the source! ' +\
+                      'We have picked one at random and passed it through this transform unchanged.'
+            self.store.store_file_item(
+                ocid + '.json',
+                None,
+                'compiled_release',
+                releases_compiled[0],
+                1,
+                warnings=[warning])
         elif len(releases_compiled) == 1:
             # There is just one compiled release - pass it through unchanged, and log that.
-            warning = 'This already has one compiled release in the source! We have passed it through this transform unchanged.'
-            self.store.store_file_item(ocid + '.json', None, 'compiled_release', releases_compiled[0], 1, warnings=[warning])
+            warning = 'This already has one compiled release in the source! ' +\
+                      'We have passed it through this transform unchanged.'
+            self.store.store_file_item(
+                ocid + '.json',
+                None,
+                'compiled_release',
+                releases_compiled[0],
+                1,
+                warnings=[warning])
         else:
             # There is no compiled release - we will do it ourselves.
             out = ocdsmerge.merge(releases)
 
             # In the occurrence of a race condition where two concurrent transforms have run the same ocid
-            # we rely on the fact that collection_id and filename are unique in the file_item table. Therefore this will
-            # error with a violation of unique key contraint and not cause duplicate entries.
+            # we rely on the fact that collection_id and filename are unique in the file_item table.
+            # Therefore this will error with a violation of unique key contraint and not cause duplicate entries.
             self.store.store_file_item(ocid+'.json', None, 'compiled_release', out, 1)

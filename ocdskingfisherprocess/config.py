@@ -59,7 +59,8 @@ class Config:
             return
         except pgpasslib.InvalidPermissions:
             print(
-                "Your pgpass file has the wrong permissions, for your safety this file will be ignored. Please fix the permissions and try again.")
+                "Your pgpass file has the wrong permissions, for your safety this file will be ignored. " +
+                "Please fix the permissions and try again.")
             return
         except pgpasslib.PgPassException:
             print("Unexpected error:", sys.exc_info()[0])

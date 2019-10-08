@@ -28,7 +28,10 @@ class Store:
         self.database = database
 
     def load_collection(self, collection_source, collection_data_version, collection_sample):
-        self.collection_id = self.database.get_or_create_collection_id(collection_source, collection_data_version, collection_sample)
+        self.collection_id = self.database.get_or_create_collection_id(
+            collection_source,
+            collection_data_version,
+            collection_sample)
 
     def set_collection(self, collection):
         self.collection = collection
@@ -128,7 +131,8 @@ class Store:
             raise e
             # TODO Store error in database and make nice HTTP response!
 
-    def store_file_item(self, filename, url, data_type, json_data, number, before_db_transaction_ends_callback=None, warnings=None):
+    def store_file_item(self, filename, url, data_type, json_data, number,
+                        before_db_transaction_ends_callback=None, warnings=None):
 
         if not isinstance(json_data, dict):
             raise Exception("Can not process data as JSON is not an object")

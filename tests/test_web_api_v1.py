@@ -312,7 +312,7 @@ class TestWebAPIV1(BaseWebTest):
             'url': 'http://example.com',
             'data_type': 'release_package',
             'number': 0,
-            'data': ' {"missing": "A release key. We have seen that in the wild. So we want to make sure we test for that."}',
+            'data': ' {"missing": "A release key. Seen in real data. So we want to make sure we test for that."}',
         }
 
         result = self.flaskclient.post('/api/v1/submit/item/',
@@ -376,7 +376,7 @@ class TestWebAPIV1(BaseWebTest):
             'url': 'http://example.com',
             'data_type': 'release_package',
             'number': 1,
-            'data': ' {"missing": "A release key. We have seen that in the wild. So we want to make sure we test for that."}',
+            'data': ' {"missing": "A release key. Seen in real data. So we want to make sure we test for that."}',
         }
 
         result = self.flaskclient.post('/api/v1/submit/item/',
