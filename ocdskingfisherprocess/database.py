@@ -586,78 +586,96 @@ class DataBase:
             )
 
     def delete_collection(self, collection_id):
-        data = {'collection_id': collection_id}
-        sqls = {
-            "release_check_error": """DELETE FROM release_check_error
+        self._delete_collection_run_sql("release_check_error", """DELETE FROM release_check_error
                 WHERE release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "record_check_error": """DELETE FROM record_check_error
+                    );""", collection_id)
+        self._delete_collection_run_sql("record_check_error", """DELETE FROM record_check_error
+                        WHERE record_id IN
+                            (
+                                SELECT id FROM record_with_collection
+                                WHERE collection_id = :collection_id
+                            );""", collection_id)
+        self._delete_collection_run_sql("record_check", """DELETE FROM record_check
                 WHERE record_id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "record_check": """DELETE FROM record_check
-                WHERE record_id IN
-                    (
-                        SELECT id FROM record_with_collection
-                        WHERE collection_id = :collection_id
-                    );""",
-            "release_check": """DELETE FROM release_check
+                    );""", collection_id)
+        self._delete_collection_run_sql("release_check", """DELETE FROM release_check
                 WHERE release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "compiled_release": """DELETE FROM compiled_release
+                    );""", collection_id)
+        self._delete_collection_run_sql("compiled_release", """DELETE FROM compiled_release
                 WHERE id IN
                     (
                         SELECT id FROM compiled_release_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "transform_upgrade_1_0_to_1_1_status_record": """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
+                    );""", collection_id)
+        self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_record", """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
                 WHERE source_record_id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "record": """DELETE FROM record
+                    );""", collection_id)
+        self._delete_collection_run_sql("record", """DELETE FROM record
                 WHERE id IN
                     (
                         SELECT id FROM record_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "transform_upgrade_1_0_to_1_1_status_release": """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
+                    );""", collection_id)
+        self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_release", """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
                 WHERE source_release_id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "release": """DELETE FROM release
+                    );""", collection_id)
+        self._delete_collection_run_sql("release", """DELETE FROM release
                 WHERE id IN
                     (
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
-                    );""",
-            "collection_file_item": """DELETE FROM collection_file_item
-                WHERE collection_file_id IN
-                    (
-                        SELECT id FROM collection_file
-                        WHERE collection_id = :collection_id
-                    );""",
-            "collection_file": """DELETE FROM collection_file
-                WHERE collection_id = :collection_id;"""}
+                    );""", collection_id)
+        self._delete_collection_run_sql_in_blocks(
+            "collection_file_item",
+            """SELECT collection_file_item.id FROM collection_file_item
+            JOIN collection_file ON collection_file_item.collection_file_id = collection_file.id
+            WHERE collection_file.collection_id = :collection_id LIMIT 10000""",
+            collection_id,
+            "collection_file_item"
+        )
+        self._delete_collection_run_sql("collection_file", """DELETE FROM collection_file
+                WHERE collection_id = :collection_id;""", collection_id)
 
+    def _delete_collection_run_sql(self, label, sql, collection_id):
+        logger = logging.getLogger('ocdskingfisher.database.delete-collection')
+        logger.debug("Deleting " + label + " for collection " + str(collection_id))
+        data = {'collection_id': collection_id}
         # We execute every SQL statement in it's own transaction, to try and keep the size of the transactions small
         # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
+        with self.get_engine().begin() as connection:
+            connection.execute(sa.sql.expression.text(sql), data)
+
+    def _delete_collection_run_sql_in_blocks(self, label, select_sql, collection_id, delete_from_table):
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
-        for label, sql in sqls.items():
-            logger.debug("Deleting " + label + " for collection " + str(collection_id))
+        logger.debug("Deleting " + label + " for collection " + str(collection_id))
+        data_get = {'collection_id': collection_id}
+        while True:
             with self.get_engine().begin() as connection:
-                connection.execute(sa.sql.expression.text(sql), data)
+                ids_to_delete = []
+                for row in connection.execute(sa.sql.expression.text(select_sql), data_get):
+                    ids_to_delete.append(str(row['id']))
+                if len(ids_to_delete) == 0:
+                    return
+                connection.execute(
+                    sa.sql.expression.text(
+                        "DELETE FROM " + delete_from_table + " WHERE id IN (" + ",".join(ids_to_delete) + ")"),
+                    {}
+                )
 
     def delete_orphan_data(self):
         self._delete_orphan_data_data()
