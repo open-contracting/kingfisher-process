@@ -102,6 +102,9 @@ record_package_list_in_results
 release_package_list_in_results
     As above, but release packages
 
+release_package_in_ocdsReleasePackage_in_list_in_results
+    A JSON object has a ``results`` key whose value is a list. Every item in that list is a JSON object. The object has a ``ocdsReleasePackage`` key who's value is a release package
+
 
 Items
 -----
