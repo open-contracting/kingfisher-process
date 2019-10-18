@@ -640,12 +640,14 @@ class DataBase:
                         SELECT id FROM release_with_collection
                         WHERE collection_id = :collection_id
                     );""", collection_id)
-        self._delete_collection_run_sql("collection_file_item", """DELETE FROM collection_file_item
-                WHERE collection_file_id IN
-                    (
-                        SELECT id FROM collection_file
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
+        self._delete_collection_run_sql_in_blocks(
+            "collection_file_item",
+            """SELECT collection_file_item.id FROM collection_file_item
+            JOIN collection_file ON collection_file_item.collection_file_id = collection_file.id
+            WHERE collection_file.collection_id = :collection_id LIMIT 10000""",
+            collection_id,
+            "collection_file_item"
+        )
         self._delete_collection_run_sql("collection_file", """DELETE FROM collection_file
                 WHERE collection_id = :collection_id;""", collection_id)
 
@@ -657,6 +659,23 @@ class DataBase:
         # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
         with self.get_engine().begin() as connection:
             connection.execute(sa.sql.expression.text(sql), data)
+
+    def _delete_collection_run_sql_in_blocks(self, label, select_sql, collection_id, delete_from_table):
+        logger = logging.getLogger('ocdskingfisher.database.delete-collection')
+        logger.debug("Deleting " + label + " for collection " + str(collection_id))
+        data_get = {'collection_id': collection_id}
+        while True:
+            with self.get_engine().begin() as connection:
+                ids_to_delete = []
+                for row in connection.execute(sa.sql.expression.text(select_sql), data_get):
+                    ids_to_delete.append(str(row['id']))
+                if len(ids_to_delete) == 0:
+                    return
+                connection.execute(
+                    sa.sql.expression.text(
+                        "DELETE FROM " + delete_from_table + " WHERE id IN (" + ",".join(ids_to_delete) + ")"),
+                    {}
+                )
 
     def delete_orphan_data(self):
         self._delete_orphan_data_data()
