@@ -98,6 +98,9 @@ class Store:
         elif data_type == 'record_package_list' or data_type == 'release_package_list' or data_type == 'release_list' \
                 or data_type == 'record_list':
             objects_list.extend(data)
+        elif data_type == 'release_package_in_ocdsReleasePackage_in_list_in_results':
+            for obj in data['results']:
+                objects_list.append(obj['ocdsReleasePackage'])
         else:
             objects_list.append(data)
 
@@ -147,6 +150,7 @@ class Store:
             elif data_type == 'release_package' or \
                     data_type == 'release_package_json_lines' or \
                     data_type == 'release_package_list_in_results' or \
+                    data_type == 'release_package_in_ocdsReleasePackage_in_list_in_results' or \
                     data_type == 'release_package_list':
                 if 'releases' not in json_data:
                     raise Exception("Release list not found")
