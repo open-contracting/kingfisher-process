@@ -163,6 +163,10 @@ class DataBase:
                                                sa.Column('data_id', sa.Integer,
                                                          sa.ForeignKey("data.id", name="fk_complied_release_data_id"),
                                                          nullable=False),
+                                               sa.Index(
+                                                   'compiled_release_collection_file_item_id_idx',
+                                                   'collection_file_item_id'
+                                               ),
                                                sa.Index('compiled_release_ocid_idx', 'ocid')
                                                )
 
