@@ -1,6 +1,6 @@
 flattentool==0.9.0
 libcoveocds==0.7.3
-ocdskit==0.0.5
+ocdskit==0.1.3
 Flask==1.1.1
 alembic==1.2.1
 pgpasslib==1.1.0
@@ -31,6 +31,7 @@ docopt==0.6.2
 entrypoints==0.3
 et-xmlfile==1.0.1
 idna==2.8
+ijson==2.5.1
 importlib-metadata==0.23
 itsdangerous==1.1.0
 jdcal==1.4.1
@@ -44,6 +45,7 @@ Mako==1.1.0
 MarkupSafe==1.1.1
 mccabe==0.6.1
 more-itertools==7.2.0
+ocdsextensionregistry==0.0.15
 openpyxl==3.0.0
 packaging==19.2
 pluggy==0.13.0
@@ -56,6 +58,7 @@ python-dateutil==2.8.0
 python-editor==1.0.4
 pytz==2019.3
 requests==2.22.0
+requests-cache==0.5.2
 rfc3987==1.3.8
 schema==0.7.1
 six==1.12.0

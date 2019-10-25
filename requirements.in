@@ -1,6 +1,6 @@
 flattentool
 libcoveocds
-ocdskit<0.1.0 # Locked until non-backwards-compatible changes are fixed
+ocdskit
 Flask
 alembic
 pgpasslib

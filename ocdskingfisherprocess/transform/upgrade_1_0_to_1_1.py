@@ -67,7 +67,7 @@ class Upgrade10To11Transform(BaseTransform):
     def process_release_row(self, file_model, file_item_model, release_row):
         package = self.database.get_package_data(release_row.package_data_id)
         package['releases'] = [self.database.get_data(release_row.data_id)]
-        upgrade_10_11(package)
+        package = upgrade_10_11(package)
 
         def add_status(database, connection):
             connection.execute(database.transform_upgrade_1_0_to_1_1_status_release_table.insert(), {
@@ -89,7 +89,7 @@ class Upgrade10To11Transform(BaseTransform):
     def process_record_row(self, file_model, file_item_model, record_row):
         package = self.database.get_package_data(record_row.package_data_id)
         package['records'] = [self.database.get_data(record_row.data_id)]
-        upgrade_10_11(package)
+        package = upgrade_10_11(package)
 
         def add_status(database, connection):
             connection.execute(database.transform_upgrade_1_0_to_1_1_status_record_table.insert(), {
