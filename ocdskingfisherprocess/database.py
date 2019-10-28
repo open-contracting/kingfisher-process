@@ -43,6 +43,9 @@ class DataBase:
                                                    sa.ForeignKey("collection.id"), nullable=True),
                                          sa.Column('transform_type', sa.Text, nullable=True),
                                          sa.Column('deleted_at', sa.DateTime(timezone=False), nullable=True),
+                                         sa.Column('cached_releases_count', sa.Integer, nullable=True),
+                                         sa.Column('cached_records_count', sa.Integer, nullable=True),
+                                         sa.Column('cached_compiled_releases_count', sa.Integer, nullable=True),
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample',
                                                              'transform_from_collection_id', 'transform_type',
                                                              name='unique_collection_identifiers'),
@@ -506,6 +509,9 @@ class DataBase:
             )
             # TODO Mark store_end_at on all files not yet marked
 
+        KINGFISHER_SIGNALS.signal('collection-store-finished').send('anonymous', collection_id=collection_id)
+        return collection_id
+
     def store_collection_file_errors(self, collection_id, file_name, url, errors):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_table]) \
@@ -790,6 +796,44 @@ class DataBase:
                 self.collection_table.update()
                     .where(self.collection_table.c.id == collection_id)
                     .values(check_older_data_with_schema_version_1_1=value)
+            )
+
+    def update_collection_cached_columns(self, collection_id):
+        with self.get_engine().begin() as connection:
+            s = sa.sql.expression.text(
+                "SELECT count(*) as release_count FROM release_with_collection WHERE collection_id = :collection_id")
+            result = connection.execute(s, {"collection_id": collection_id})
+            data = result.fetchone()
+
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(cached_releases_count=data['release_count'])
+            )
+
+        with self.get_engine().begin() as connection:
+            s = sa.sql.expression.text(
+                "SELECT count(*) as record_count FROM record_with_collection WHERE collection_id = :collection_id")
+            result = connection.execute(s, {"collection_id": collection_id})
+            data = result.fetchone()
+
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(cached_records_count=data['record_count'])
+            )
+
+        with self.get_engine().begin() as connection:
+            s = sa.sql.expression.text(
+                "SELECT count(*) as compiled_release_count FROM compiled_release_with_collection " +
+                "WHERE collection_id = :collection_id")
+            result = connection.execute(s, {"collection_id": collection_id})
+            data = result.fetchone()
+
+            connection.execute(
+                self.collection_table.update()
+                    .where(self.collection_table.c.id == collection_id)
+                    .values(cached_compiled_releases_count=data['compiled_release_count'])
             )
 
 

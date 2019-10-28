@@ -17,6 +17,7 @@ def setup_signals(config, database):
         KINGFISHER_SIGNALS.signal('new_collection_created').connect(run_standard_pipeline_on_new_collection_created)
     if config.is_redis_available():
         KINGFISHER_SIGNALS.signal('collection-data-store-finished').connect(collection_data_store_finished_to_redis)
+        KINGFISHER_SIGNALS.signal('collection-store-finished').connect(collection_store_finished_to_redis)
 
 
 def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, **kwargs):
@@ -54,3 +55,13 @@ def collection_data_store_finished_to_redis(sender,
         'collection_file_item_id': collection_file_item_id,
     })
     redis_conn.rpush('kingfisher_work', message)
+
+
+def collection_store_finished_to_redis(sender,
+                                       collection_id=None,
+                                       **kwargs):
+    redis_conn = redis.Redis(host=our_config.redis_host, port=our_config.redis_port, db=our_config.redis_database)
+    message = json.dumps({
+        'collection_id': collection_id,
+    })
+    redis_conn.rpush('kingfisher_work_collection_store_finished', message)

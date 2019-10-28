@@ -37,6 +37,12 @@ This has columns to track it's current state:
 *  `store_end_at`: the data and time when the store stage end. For transformed collections, this means the time the transformer finished.
 *  `deleted_at`: the date and time when the collection was deleted. If this is set, this row will remain in the database but data about this collection may be cleared out of all other tables at any point and should NOT be relied on.
 
+It also has some columns with cached values, for ease of use:
+
+* `cached_releases_count`: Number of releases. Currently only calculated when store has finished.
+* `cached_records_count`: Number of records. Currently only calculated when store has finished.
+* `cached_compiled_releases_count`: Number of compiled releases. Currently only calculated when store has finished.
+
 collection_note table
 ---------------------
 
