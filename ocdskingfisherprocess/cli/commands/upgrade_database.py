@@ -24,6 +24,7 @@ class UpgradeDataBaseCLICommand(ocdskingfisherprocess.cli.commands.base.CLIComma
                     db=self.config.redis_database
                 )
                 redis_conn.delete('kingfisher_work')
+                redis_conn.delete('kingfisher_work_collection_store_finished')
 
         if not args.quiet:
             print("Upgrading/Creating Database")

@@ -37,4 +37,11 @@ Processing actions that have been requested:
    transform-collection.rst
    transform-collections.rst
    delete-collections.rst
+   update-collection-caches.rst
+
+Processing work from the Redis queues - there are several workers to process different types of work:
+
+.. toctree::
+
    process-redis-queue.rst
+   process-redis-queue-collection-store-finished.rst
