@@ -1,4 +1,5 @@
--r requirements.in
+-r requirements.txt
+pip-tools
 coveralls
 flake8
 pytest
