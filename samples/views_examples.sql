@@ -1,6 +1,6 @@
 -- Example queries: Analysing summary OCDS data in Kingfisher views
   -- Review the Kingfisher documentation before beginning: https://ocdskingfisher.readthedocs.io/en/latest/
-  -- Highlight each query below and click 'Execute selected' or hit Ctrl+Enter to run it
+  -- Copy-paste each query into Redash to run it
   -- Export results to CSV by clicking the '...' button at the bottom of the screen, or create a visualization in Redash using the '+New Visualization' button
 
 

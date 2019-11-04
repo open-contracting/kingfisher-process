@@ -1,6 +1,6 @@
 -- Example queries: Analysing raw OCDS data
   -- Review the Kingfisher documentation before beginning: https://ocdskingfisher.readthedocs.io/en/latest/
-  -- Highlight each query below and click 'Execute selected' or hit Ctrl+Enter to run it
+  -- Copy-paste each query into Redash to run it
   -- Export results to CSV by clicking the '...' button at the bottom of the screen, or create a visualization in Redash using the '+New Visualization' button
 
 
@@ -93,4 +93,4 @@ select
 from
     views.field_counts
 where
-    collection_id = 584
+    collection_id = 632
