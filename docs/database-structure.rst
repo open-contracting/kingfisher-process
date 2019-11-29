@@ -7,6 +7,8 @@ This is not a full description as you are expected to use normal tools to explor
 
 Reading :doc:`data-model` before reading this will probably help.
 
+The diagram below excludes the :ref:`release, record and compiled_release views with added collection information<with-collection-views>`.
+
 .. image:: _static/database-tables.png
    :target: _static/database-tables.png
 
@@ -74,6 +76,8 @@ release, record and compiled_release tables
 -------------------------------------------
 
 Each row is linked to `collection_file_item` and thus to Collections. Each row is also linked to the `data` and `package_data` tables that actually hold the data.
+
+.. _with-collection-views:
 
 release, record and compiled_release views with added collection information
 -----------------------------------------------------------------------------
