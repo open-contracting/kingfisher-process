@@ -1,4 +1,5 @@
 sudo: false
+dist: bionic
 language: python
 cache: pip
 python:
@@ -6,6 +7,9 @@ python:
 addons:
   chrome: stable
   postgresql: "11"
+  apt:
+    packages:
+      - postgresql-11
 env:
   global:
     - PGPORT=5433
