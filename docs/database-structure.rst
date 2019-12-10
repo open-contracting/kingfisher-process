@@ -75,7 +75,9 @@ This situation might arise when:
 release, record and compiled_release tables
 -------------------------------------------
 
-Each row is linked to `collection_file_item` and thus to Collections. Each row is also linked to the `data` and `package_data` tables that actually hold the data.
+Each row is linked to `collection_file_item` and thus to collections. Each row is also linked to the `data` and `package_data` tables that actually hold the data.
+
+Note that the ``compiled_release`` table is only populated by the compile-releases transform, and not by loading records from a data source.
 
 .. _with-collection-views:
 
