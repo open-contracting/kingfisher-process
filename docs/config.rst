@@ -89,15 +89,7 @@ To enable the :doc:`standard-pipeline`:
 Redis
 -----
 
-To automatically queue newly stored data for `CoVE <https://github.com/OpenDataServices/cove>`__ schema checks, install `Redis <https://redis.io/>`__ with your package manager on Linux, for example::
-
-        sudo apt-get install redis-server
-
-or with Homebrew on macOS::
-
-        brew install redis
-
-Then, configure the Redis connection settings:
+Configure the Redis connection settings:
 
 .. code-block:: ini
 
