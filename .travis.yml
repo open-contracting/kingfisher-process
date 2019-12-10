@@ -21,6 +21,6 @@ install:
   - "pip install -r requirements_dev.txt"
 script:
   - "flake8 ocdskingfisherprocess/ ocdskingfisher-process-cli tests setup.py"
-  - "KINGFISHER_PROCESS_WEB_API_KEYS=1234 pytest --cov ocdskingfisherprocess"
+  - "pytest --cov ocdskingfisherprocess"
 after_success:
   coveralls

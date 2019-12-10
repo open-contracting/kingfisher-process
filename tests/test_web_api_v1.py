@@ -3,10 +3,11 @@ import sqlalchemy as sa
 import io
 import os
 import json
-import random
 
 
 class TestWebAPIV1(BaseWebTest):
+    def alter_config(self):
+        self.config.web_api_keys = '1234'
 
     def test_api_v1_bad_key(self):
         # Call
@@ -20,14 +21,10 @@ class TestWebAPIV1(BaseWebTest):
             'file': (io.BytesIO(b' {"valid_data": "Totally. It totally is."}'), "data.json")
         }
 
-        not_a_key = str(random.randint(100, 100000000000))
-        while not_a_key in self.config.web_api_keys:
-            not_a_key = str(random.randint(100, 100000000000))
-
         result = self.flaskclient.post('/api/v1/submit/file/',
                                        data=data,
                                        content_type='multipart/form-data',
-                                       headers={'Authorization': 'ApiKey ' + not_a_key})
+                                       headers={'Authorization': 'ApiKey bad-key'})
 
         assert result.status_code == 401
 

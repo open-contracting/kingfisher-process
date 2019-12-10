@@ -4,6 +4,8 @@ from tests.base import BaseWebTest
 
 
 class TestWebAPIV1CollectionNotes(BaseWebTest):
+    def alter_config(self):
+        self.config.web_api_keys = '1234'
 
     def test_api_v1_submit_file(self):
         # Call First Time!
