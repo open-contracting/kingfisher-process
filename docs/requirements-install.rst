@@ -22,7 +22,6 @@ Activate the virtual environment::
 Install the requirements::
 
     pip install -r requirements.txt
-    pip install -e .
 
 Install `Redis <https://redis.io/>`__ with your package manager on Linux, for example::
 
