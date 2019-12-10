@@ -19,6 +19,7 @@ class Store:
         'release_package_list_in_results',
         'release_package_json_lines',
         'record_package_json_lines',
+        'release_package_in_ocdsReleasePackage_in_list_in_results',
     ]
 
     def __init__(self, config, database):
