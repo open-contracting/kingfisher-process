@@ -33,7 +33,7 @@ class BaseTest(BaseDataBaseTest):
         self._process_files(collection, collection_id, table)
 
         # Running another time should have no effect.
-        if getattr(self, 'count', 0):
+        if self.count:
             self._process_files(collection, collection_id, table)
 
     def _process_files(self, collection, collection_id, table):
