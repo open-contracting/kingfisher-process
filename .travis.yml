@@ -14,7 +14,7 @@ addons:
 env:
   global:
     - PGPORT=5433
-    - KINGFISHER_PROCESS_DB_URI='postgres:///travis'
+    - KINGFISHER_PROCESS_DB_URI='postgresql:///travis'
 services:
   - postgresql
 install:

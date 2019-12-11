@@ -8,7 +8,7 @@ Run tests
 
 Run the tests with, for example:
 
-    KINGFISHER_PROCESS_DB_URI='postgres:///ocdskingfisher-test' pytest
+    KINGFISHER_PROCESS_DB_URI='postgresql:///ocdskingfisher-test' pytest
 
 Create migrations
 -----------------

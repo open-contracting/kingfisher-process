@@ -45,7 +45,7 @@ Create a UTF8-encoded PostgreSQL database and give the user write access, for ex
 
 Set the tool's database connection setting, replacing at least ``PASSWORD`` in this example::
 
-    export KINGFISHER_PROCESS_DB_URI='postgres://ocdskingfisher:PASSWORD@localhost/ocdskingfisher'
+    export KINGFISHER_PROCESS_DB_URI='postgresql://ocdskingfisher:PASSWORD@localhost/ocdskingfisher'
 
 .. note::
 
