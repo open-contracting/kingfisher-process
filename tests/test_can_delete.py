@@ -4,7 +4,6 @@ from tests.base import BaseDataBaseTest
 
 
 class TestDelete(BaseDataBaseTest):
-
     def alter_config(self):
         self.config.run_standard_pipeline = False
 

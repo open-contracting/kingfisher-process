@@ -1,40 +1,32 @@
-from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore, \
-    control_codes_to_filter_out, control_code_to_filter_out_to_human_readable
 import os
 
+import pytest
 
-def test_parse_string_to_boolean_1():
-    assert True == parse_string_to_boolean("true") # noqa
-
-
-def test_parse_string_to_boolean_2():
-    assert False == parse_string_to_boolean("false") # noqa
+from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore, \
+    control_codes_to_filter_out, control_code_to_filter_out_to_human_readable
 
 
-def test_parse_string_to_boolean_3():
-    assert True == parse_string_to_boolean("t") # noqa
+@pytest.mark.parametrize('value,expected', [
+    ('', False),
+    ('f', False),
+    ('false', False),
+    ('False', False),
+    ('t', True),
+    ('true', True),
+    ('True', True),
+    (None, False),
+])
+def test_parse_string_to_boolean(value, expected):
+    assert parse_string_to_boolean(value) is expected
 
 
-def test_parse_string_to_boolean_4():
-    assert False == parse_string_to_boolean("") # noqa
-
-
-def test_parse_string_to_boolean_5():
-    assert False == parse_string_to_boolean(None) # noqa
-
-
-def test_parse_string_to_boolean_6():
-    assert True == parse_string_to_boolean("True") # noqa
-
-
-def test_parse_string_to_date_time_1():
-    date = parse_string_to_date_time("2019-04-01 10:11:12")
-    assert "2019-04-01 10-11-12" == date.strftime("%Y-%m-%d %H-%M-%S")
-
-
-def test_parse_string_to_date_time_2():
-    date = parse_string_to_date_time("2019-04-01-10-11-12")
-    assert "2019-04-01 10-11-12" == date.strftime("%Y-%m-%d %H-%M-%S")
+@pytest.mark.parametrize('value,expected', [
+    ("2019-04-01 10:11:12", "2019-04-01 10-11-12"),
+    ("2019-04-01-10-11-12", "2019-04-01 10-11-12"),
+])
+def test_parse_string_to_date_time(value, expected):
+    date = parse_string_to_date_time(value)
+    assert date.strftime("%Y-%m-%d %H-%M-%S") == expected
 
 
 def test_file_to_store_sample_1_0_record_with_control_codes():

@@ -4,7 +4,6 @@ from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES, TRA
 
 
 class TestStandardPipelineOn(BaseDataBaseTest):
-
     def alter_config(self):
         self.config.run_standard_pipeline = True
 
@@ -15,8 +14,8 @@ class TestStandardPipelineOn(BaseDataBaseTest):
         collections = self.database.get_all_collections()
         assert 3 == len(collections)
 
-        assert None == collections[0].transform_type # noqa
-        assert None == collections[0].transform_from_collection_id # noqa
+        assert collections[0].transform_type is None
+        assert collections[0].transform_from_collection_id is None
 
         assert TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1 == collections[1].transform_type
         assert collections[0].database_id == collections[1].transform_from_collection_id
@@ -26,7 +25,6 @@ class TestStandardPipelineOn(BaseDataBaseTest):
 
 
 class TestStandardPipelineOff(BaseDataBaseTest):
-
     def alter_config(self):
         self.config.run_standard_pipeline = False
 

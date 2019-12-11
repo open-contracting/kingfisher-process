@@ -1,8 +1,8 @@
-from tests.base import BaseWebTest
-import sqlalchemy as sa
 import io
-import os
 import json
+import os
+
+from tests.base import BaseWebTest
 
 
 class TestWebAPIV1(BaseWebTest):
@@ -70,14 +70,14 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
-        assert files[0].errors == None # noqa
+        assert files[0].errors is None
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -106,8 +106,8 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
@@ -147,26 +147,23 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
-        assert files[0].errors == None # noqa
+        assert files[0].errors is None
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
 
         with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.record_table])
-            result = connection.execute(s)
-            assert 1 == result.rowcount
-
-            s = sa.sql.select([self.database.release_table])
-            result = connection.execute(s)
-            assert 0 == result.rowcount
+            self.assert_row_counts(connection, {
+                'record': 1,
+                'release': 0,
+            })
 
         # Make sure local file exists and was not removed!
         assert os.path.exists(json_filename)
@@ -195,14 +192,14 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
-        assert files[0].errors == None # noqa
+        assert files[0].errors is None
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -244,8 +241,8 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at != None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is not None
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -273,8 +270,8 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
@@ -282,8 +279,8 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert len(files[0].errors) == 1
         assert files[0].errors[0] == 'The error was ... because reasons.'
-        assert files[0].store_start_at == None # noqa
-        assert files[0].store_end_at == None # noqa
+        assert files[0].store_start_at is None
+        assert files[0].store_end_at is None
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -323,14 +320,14 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
-        assert files[0].errors == None # noqa
+        assert files[0].errors is None
 
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 1
@@ -387,18 +384,18 @@ class TestWebAPIV1(BaseWebTest):
         assert collection_id
 
         collection = self.database.get_collection(collection_id)
-        assert collection.store_start_at != None # noqa
-        assert collection.store_end_at == None # noqa
+        assert collection.store_start_at is not None
+        assert collection.store_end_at is None
 
         files = self.database.get_all_files_in_collection(collection_id)
         assert len(files) == 1
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
-        assert files[0].errors == None # noqa
+        assert files[0].errors is None
 
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 2
-        assert file_items[0].errors == None # noqa
+        assert file_items[0].errors is None
         assert file_items[1].errors == ['Release list not found']
 
         notes = self.database.get_all_notes_in_collection(collection_id)
