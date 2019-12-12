@@ -2,14 +2,17 @@ import json
 import logging
 import logging.config
 import os
-from flask import Flask, render_template, current_app
+
 import sentry_sdk
+from flask import Flask, Response, current_app, render_template
+from prometheus_client.exposition import generate_latest
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 import ocdskingfisherprocess.signals.signals
 import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
 from ocdskingfisherprocess.config import Config
 from ocdskingfisherprocess.database import DataBase
+from ocdskingfisherprocess.prometheus import update_all_prometheus_stats
 
 
 def create_app(config=None):
@@ -40,6 +43,9 @@ def create_app(config=None):
     app.add_url_rule('/', view_func=hello)
     app.add_url_rule('/robots.txt', view_func=robots_txt)
     app.add_url_rule('/api', view_func=api)
+
+    app.add_url_rule('/prometheus', view_func=prometheus_index)
+    app.add_url_rule('/prometheus/metrics', view_func=prometheus_metrics)
 
     app.add_url_rule('/app', view_func=app_index)
     app.add_url_rule('/app/collection', view_func=app_collections)
@@ -89,3 +95,12 @@ def app_collection_files(collection_id):
 
 def api():
     return "OCDS Kingfisher APIs"
+
+
+def prometheus_index():
+    return "OCDS Kingfisher Prometheus"
+
+
+def prometheus_metrics():
+    update_all_prometheus_stats(current_app.kingfisher_config)
+    return Response(generate_latest(), content_type="text/plain")
