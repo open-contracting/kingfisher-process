@@ -123,3 +123,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Customization
+
+# The schema in the older version had index names longer than 30 characters.
+SILENCED_SYSTEM_CHECKS = [
+    'models.E034',
+]

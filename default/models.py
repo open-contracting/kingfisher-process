@@ -1,12 +1,14 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
-# We don't use `unique=True` or `db_index=True`, as they create an additional index for text fields. Instead, we set
-# `Meta.constraints` and `Meta.indexes`.
+# # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version.
 #
-# We don't use `%(class)s` in constraint names and index names, so that the names are identical as those created by
-# SQLAlchemy in an earlier version of this project. We manually create indexes for foreign keys for the same reason,
-# except where these are longer than 30 characters, which is blocked by Django.
+# We don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
+# and `ocid`. Instead, we set `Meta.constraints` and `Meta.indexes`.
+#
+# We don't use default index names (including for foreign key fields) or `%(class)s` in unique constraint names -
+# we are explicit, instead - so that the names are identical to those created by SQLAlchemy in an earlier version.
+# Otherwise, Django will create a migration to change the name of the index or constraint.
 
 class Collection(models.Model):
     """
@@ -22,8 +24,6 @@ class Collection(models.Model):
     # Identification
     source_id = models.TextField()
     data_version = models.DateTimeField()
-    store_start_at = models.DateTimeField()
-    store_end_at = models.DateTimeField(null=True, blank=True)
 
     # Routing slip
     sample = models.BooleanField(default=False)
@@ -35,13 +35,15 @@ class Collection(models.Model):
                                                   db_index=False)
     transform_type = models.TextField(null=True, blank=True)
 
-    # Lifecycle
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
     # Calculated fields
     cached_releases_count = models.IntegerField(null=True, blank=True)
     cached_records_count = models.IntegerField(null=True, blank=True)
     cached_compiled_releases_count = models.IntegerField(null=True, blank=True)
+
+    # Lifecycle
+    store_start_at = models.DateTimeField()
+    store_end_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
 
 class CollectionNote(models.Model):
@@ -70,13 +72,13 @@ class CollectionFile(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
 
     filename = models.TextField(null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+
+    warnings = JSONField(null=True, blank=True)
+    errors = JSONField(null=True, blank=True)
 
     store_start_at = models.DateTimeField(null=True, blank=True)
     store_end_at = models.DateTimeField(null=True, blank=True)
-
-    warnings = JSONField(null=True, blank=True)
-    url = models.TextField(null=True, blank=True)
-    errors = JSONField(null=True, blank=True)
 
 
 class CollectionFileItem(models.Model):
@@ -92,13 +94,13 @@ class CollectionFileItem(models.Model):
 
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
-    store_start_at = models.DateTimeField(null=True, blank=True)
-    store_end_at = models.DateTimeField(null=True, blank=True)
-
     number = models.IntegerField(null=True, blank=True)
 
     warnings = JSONField(null=True, blank=True)
     errors = JSONField(null=True, blank=True)
+
+    store_start_at = models.DateTimeField(null=True, blank=True)
+    store_end_at = models.DateTimeField(null=True, blank=True)
 
 
 class Data(models.Model):
@@ -145,6 +147,7 @@ class Release(models.Model):
 
     release_id = models.TextField(null=True, blank=True)
     ocid = models.TextField(null=True, blank=True)
+
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
 
@@ -164,6 +167,7 @@ class Record(models.Model):
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(null=True, blank=True)
+
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
 
@@ -183,6 +187,7 @@ class CompiledRelease(models.Model):
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(null=True, blank=True)
+
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
 
 
