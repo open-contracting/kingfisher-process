@@ -1,14 +1,24 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-# # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version.
-#
-# We don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
+# # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
+# don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
 # and `ocid`. Instead, we set `Meta.constraints` and `Meta.indexes`.
 #
 # We don't use default index names (including for foreign key fields) or `%(class)s` in unique constraint names -
 # we are explicit, instead - so that the names are identical to those created by SQLAlchemy in an earlier version.
 # Otherwise, Django will create a migration to change the name of the index or constraint.
+
+
+class Default(dict):
+    def __getitem__(self, key):
+        value = dict.__getitem__(self, key)
+        if not value:
+            return '{' + key + '}'
+        return value
+
 
 class Collection(models.Model):
     """
@@ -20,6 +30,10 @@ class Collection(models.Model):
             models.UniqueConstraint(name='unique_collection_identifiers', fields=[
                 'source_id', 'data_version', 'sample', 'transform_from_collection', 'transform_type']),
         ]
+
+    class Transforms(models.TextChoices):
+        COMPILE_RELEASES = 'compile-releases', _('Compile releases')
+        UPGRADE_10_11 = 'upgrade-1-0-to-1-1', _('Upgrade from 1.0 to 1.1 ')
 
     # Identification
     source_id = models.TextField()
@@ -33,7 +47,7 @@ class Collection(models.Model):
     # Provenance
     transform_from_collection = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
                                                   db_index=False)
-    transform_type = models.TextField(null=True, blank=True)
+    transform_type = models.TextField(null=True, blank=True, choices=Transforms.choices)
 
     # Calculated fields
     cached_releases_count = models.IntegerField(null=True, blank=True)
@@ -44,6 +58,17 @@ class Collection(models.Model):
     store_start_at = models.DateTimeField()
     store_end_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return '{source_id}:{data_version}'.format_map(Default(
+            source_id=self.source_id, data_version=self.data_version))
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude=exclude)
+        if bool(self.transform_from_collection_id) ^ bool(self.transform_type):
+            raise ValidationError(
+                _('transform_from_collection_id and transform_type must either be both set or both not set.'))
+
 
 
 class CollectionNote(models.Model):
@@ -56,6 +81,9 @@ class CollectionNote(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
     stored_at = models.DateTimeField()
+
+    def __str__(self):
+        return self.note
 
 
 class CollectionFile(models.Model):
@@ -80,6 +108,9 @@ class CollectionFile(models.Model):
     store_start_at = models.DateTimeField(null=True, blank=True)
     store_end_at = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        return self.filename or self.url or ''
+
 
 class CollectionFileItem(models.Model):
     """
@@ -102,6 +133,11 @@ class CollectionFileItem(models.Model):
     store_start_at = models.DateTimeField(null=True, blank=True)
     store_end_at = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        if self.number is None:
+            return ''
+        return str(self.number)
+
 
 class Data(models.Model):
     """
@@ -116,6 +152,9 @@ class Data(models.Model):
     hash_md5 = models.TextField()
     data = JSONField()
 
+    def __str__(self):
+        return self.hash_md5
+
 
 class PackageData(models.Model):
     """
@@ -129,6 +168,9 @@ class PackageData(models.Model):
 
     hash_md5 = models.TextField()
     data = JSONField()
+
+    def __str__(self):
+        return self.hash_md5
 
 
 class Release(models.Model):
@@ -151,6 +193,9 @@ class Release(models.Model):
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
 
+    def __str__(self):
+        return '{ocid}:{id}'.format_map(Default(ocid=self.ocid, id=self.release_id))
+
 
 class Record(models.Model):
     """
@@ -171,6 +216,9 @@ class Record(models.Model):
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
 
+    def __str__(self):
+        return self.ocid or ''
+
 
 class CompiledRelease(models.Model):
     """
@@ -189,6 +237,9 @@ class CompiledRelease(models.Model):
     ocid = models.TextField(null=True, blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
+
+    def __str__(self):
+        return self.ocid or ''
 
 
 class ReleaseCheck(models.Model):

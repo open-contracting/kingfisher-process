@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('sample', models.BooleanField(default=False)),
                 ('check_data', models.BooleanField(default=False)),
                 ('check_older_data_with_schema_version_1_1', models.BooleanField(default=False)),
-                ('transform_type', models.TextField(blank=True, null=True)),
+                ('transform_type', models.TextField(blank=True, choices=[('compile-releases', 'Compile releases'), ('upgrade-1-0-to-1-1', 'Upgrade from 1.0 to 1.1 ')], null=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('cached_releases_count', models.IntegerField(blank=True, null=True)),
                 ('cached_records_count', models.IntegerField(blank=True, null=True)),
