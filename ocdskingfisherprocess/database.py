@@ -369,6 +369,28 @@ class DataBase:
                 ))
         return out
 
+    def get_collections_that_transform_this_collection(self, collection_id):
+        out = []
+        with self.get_engine().begin() as connection:
+            s = sa.sql.select([self.collection_table]) \
+                .where(self.collection_table.c.transform_from_collection_id == collection_id)
+
+            for collection in connection.execute(s):
+                out.append(CollectionModel(
+                    database_id=collection['id'],
+                    source_id=collection['source_id'],
+                    data_version=collection['data_version'],
+                    sample=collection['sample'],
+                    transform_type=collection['transform_type'],
+                    transform_from_collection_id=collection['transform_from_collection_id'],
+                    check_data=collection['check_data'],
+                    check_older_data_with_schema_version_1_1=collection['check_older_data_with_schema_version_1_1'],
+                    store_start_at=collection['store_start_at'],
+                    store_end_at=collection['store_end_at'],
+                    deleted_at=collection['deleted_at'],
+                ))
+        return out
+
     def get_collection(self, collection_id):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
