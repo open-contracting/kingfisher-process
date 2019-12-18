@@ -49,7 +49,7 @@ class DataBase:
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample',
                                                              'transform_from_collection_id', 'transform_type',
                                                              name='unique_collection_identifiers'),
-                                         db.Index('unique_collection_identifiers',
+                                         sa.Index('unique_collection_identifiers',
                                                   'source_id', 'data_version', 'sample',
                                                   unique=True,
                                                   postgresql_where=sa.text("transform_type = ''")),
