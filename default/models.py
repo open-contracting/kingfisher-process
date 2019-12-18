@@ -272,29 +272,3 @@ class RecordCheck(models.Model):
     record = models.ForeignKey(Record, on_delete=models.CASCADE, db_index=False)
     override_schema_version = models.TextField(null=True, blank=True)
     cove_output = JSONField()
-
-
-class ReleaseCheckError(models.Model):
-    class Meta:
-        db_table = 'release_check_error'
-        constraints = [
-            models.UniqueConstraint(name='unique_release_check_error_release_id_and_more', fields=[
-                'release', 'override_schema_version']),
-        ]
-
-    release = models.ForeignKey(Release, on_delete=models.CASCADE, db_index=False)
-    override_schema_version = models.TextField(null=True, blank=True)
-    error = models.TextField()
-
-
-class RecordCheckError(models.Model):
-    class Meta:
-        db_table = 'record_check_error'
-        constraints = [
-            models.UniqueConstraint(name='unique_record_check_error_record_id_and_more', fields=[
-                'record', 'override_schema_version']),
-        ]
-
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, db_index=False)
-    override_schema_version = models.TextField(null=True, blank=True)
-    error = models.TextField()

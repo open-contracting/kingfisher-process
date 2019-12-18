@@ -134,18 +134,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='ReleaseCheckError',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('override_schema_version', models.TextField(blank=True, null=True)),
-                ('error', models.TextField()),
-                ('release', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Release')),
-            ],
-            options={
-                'db_table': 'release_check_error',
-            },
-        ),
-        migrations.CreateModel(
             name='ReleaseCheck',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -155,18 +143,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'release_check',
-            },
-        ),
-        migrations.CreateModel(
-            name='RecordCheckError',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('override_schema_version', models.TextField(blank=True, null=True)),
-                ('error', models.TextField()),
-                ('record', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Record')),
-            ],
-            options={
-                'db_table': 'record_check_error',
             },
         ),
         migrations.CreateModel(
@@ -220,10 +196,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, db_index=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='default.Collection'),
         ),
         migrations.AddConstraint(
-            model_name='releasecheckerror',
-            constraint=models.UniqueConstraint(fields=('release', 'override_schema_version'), name='unique_release_check_error_release_id_and_more'),
-        ),
-        migrations.AddConstraint(
             model_name='releasecheck',
             constraint=models.UniqueConstraint(fields=('release', 'override_schema_version'), name='unique_release_check_release_id_and_more'),
         ),
@@ -238,10 +210,6 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name='release',
             index=models.Index(fields=['data'], name='release_data_id_idx'),
-        ),
-        migrations.AddConstraint(
-            model_name='recordcheckerror',
-            constraint=models.UniqueConstraint(fields=('record', 'override_schema_version'), name='unique_record_check_error_record_id_and_more'),
         ),
         migrations.AddConstraint(
             model_name='recordcheck',
