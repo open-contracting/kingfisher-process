@@ -285,8 +285,6 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert len(files[0].errors) == 1
         assert files[0].errors[0] == 'The error was ... because reasons.'
-        assert files[0].store_start_at == None # noqa
-        assert files[0].store_end_at == None # noqa
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
