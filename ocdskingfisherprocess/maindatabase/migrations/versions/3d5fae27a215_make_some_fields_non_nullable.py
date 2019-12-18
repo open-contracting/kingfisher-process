@@ -1,7 +1,7 @@
 """Make some fields non-nullable
 
 Revision ID: 3d5fae27a215
-Revises: 53699ddc9872
+Revises: b2ff4e525bcb
 Create Date: 2019-12-17 13:35:21.791027
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '3d5fae27a215'
-down_revision = '53699ddc9872'
+down_revision = 'b2ff4e525bcb'
 branch_labels = None
 depends_on = None
 
@@ -29,6 +29,12 @@ def upgrade():
     # 0 rows
     op.execute("UPDATE collection_file_item SET number = '' WHERE number IS NULL")
     op.alter_column('collection_file_item', 'number', nullable=False)
+
+    # SELECT release_id, COUNT(*) FROM release_check WHERE override_schema_version IS NULL GROUP BY release_id
+    # HAVING COUNT(*) > 1;
+    # 0 rows
+    op.execute("UPDATE release_check SET override_schema_version = '' WHERE override_schema_version IS NULL")
+    op.alter_column('release_check', 'override_schema_version', nullable=False)
 
     # SELECT record_id, COUNT(*) FROM record_check WHERE override_schema_version IS NULL GROUP BY record_id
     # HAVING COUNT(*) > 1;
