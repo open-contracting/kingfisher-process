@@ -1,6 +1,6 @@
 class CollectionModel:
 
-    def __init__(self, database_id=None, source_id=None, data_version=None, sample=None, transform_type=None,
+    def __init__(self, database_id=None, source_id=None, data_version=None, sample=None, transform_type='',
                  transform_from_collection_id=None, check_data=None, check_older_data_with_schema_version_1_1=None,
                  store_start_at=None, store_end_at=None, deleted_at=None):
         self.database_id = database_id
