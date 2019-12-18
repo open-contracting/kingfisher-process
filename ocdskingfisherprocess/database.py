@@ -459,7 +459,7 @@ class DataBase:
                 ))
         return out
 
-    def is_release_check_done(self, release_id, override_schema_version=None):
+    def is_release_check_done(self, release_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.release_check_table]) \
                 .where((self.release_check_table.c.release_id == release_id) &
@@ -477,7 +477,7 @@ class DataBase:
 
         return False
 
-    def is_record_check_done(self, record_id, override_schema_version=None):
+    def is_record_check_done(self, record_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.record_check_table]) \
                 .where((self.record_check_table.c.record_id == record_id) &
@@ -775,14 +775,14 @@ class DataBase:
 
         return sql.replace('release', obj_type), data
 
-    def get_releases_to_check(self, collection_id, override_schema_version=None):
+    def get_releases_to_check(self, collection_id, override_schema_version=''):
         sql, data = self._get_check_query('release', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
             query = sa.sql.expression.text(sql)
             return connection.execute(query, data)
 
-    def get_records_to_check(self, collection_id, override_schema_version=None):
+    def get_records_to_check(self, collection_id, override_schema_version=''):
         sql, data = self._get_check_query('record', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
@@ -861,7 +861,7 @@ class DataBase:
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number, url=None, before_db_transaction_ends_callback=None,
+    def __init__(self, database, collection_id, file_name, number, url='', before_db_transaction_ends_callback=None,
                  allow_existing_collection_file_item_table_row=False, warnings=None):
         self.database = database
         self.collection_id = collection_id
@@ -961,7 +961,7 @@ class DatabaseStore:
                       )
 
     def insert_record(self, row, package_data):
-        ocid = row.get('ocid')
+        ocid = row.get('ocid', '')
         package_data_id = self.get_id_for_package_data(package_data)
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.record_table.insert(), {
@@ -972,8 +972,8 @@ class DatabaseStore:
         })
 
     def insert_release(self, row, package_data):
-        ocid = row.get('ocid')
-        release_id = row.get('id')
+        ocid = row.get('ocid', '')
+        release_id = row.get('id', '')
         package_data_id = self.get_id_for_package_data(package_data)
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.release_table.insert(), {
@@ -985,7 +985,7 @@ class DatabaseStore:
         })
 
     def insert_compiled_release(self, row):
-        ocid = row.get('ocid')
+        ocid = row.get('ocid', '')
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.compiled_release_table.insert(), {
             'collection_file_item_id': self.collection_file_item_id,
