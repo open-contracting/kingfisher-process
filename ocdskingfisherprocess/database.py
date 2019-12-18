@@ -41,7 +41,7 @@ class DataBase:
                                                    nullable=False, default=False),
                                          sa.Column('transform_from_collection_id', sa.Integer,
                                                    sa.ForeignKey("collection.id"), nullable=True),
-                                         sa.Column('transform_type', sa.Text, nullable=True),
+                                         sa.Column('transform_type', sa.Text, nullable=False),
                                          sa.Column('deleted_at', sa.DateTime(timezone=False), nullable=True),
                                          sa.Column('cached_releases_count', sa.Integer, nullable=True),
                                          sa.Column('cached_records_count', sa.Integer, nullable=True),

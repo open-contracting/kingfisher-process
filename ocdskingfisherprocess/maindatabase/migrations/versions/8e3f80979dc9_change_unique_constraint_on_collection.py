@@ -29,6 +29,9 @@ def upgrade():
     op.create_index('unique_collection_identifiers', 'collection', ['source_id', 'data_version', 'sample'],
                     unique=True, postgresql_where=sa.text("transform_type = ''"))
 
+    op.execute("UPDATE collection SET transform_type = '' WHERE transform_type IS NULL")
+    op.alter_column('collection', 'transform_type', nullable=False)
+
 
 def downgrade():
     op.drop_index('unique_collection_identifiers', 'collection')
