@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 # # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
@@ -25,12 +26,26 @@ class Default(dict):
 class Collection(models.Model):
     """
     A collection of data from a source.
+
+    There should be at most one collection of a given source (``source_id``) at a given time (``data_version``) of a
+    given scope (``sample`` or not). A unique constraint therefore covers these fields.
+
+    A collection can be a sample of a source. For example, an analyst can load a sample of a bulk download, run manual
+    queries to check whether it serves their needs, and then load the full file. To avoid the overhead of deleting the
+    sample, we instead make ``sample`` part of the unique constraint, along with ``source_id`` and ``data_version``.
+
+    Furthermore, the present design is for sources to be able to send data to this project without first requesting a
+    collection ID. As such, we need a way to uniquely identify a collection by other means. The present solution is for
+    sources to send ``source_id``, ``data_version`` and ``sample`` values as a composite unique key.
     """
     class Meta:
         db_table = 'collection'
+        indexes = [
+            models.Index(name='collection_transform_from_collection_id_idx', fields=['transform_from_collection_id']),
+        ]
         constraints = [
             models.UniqueConstraint(name='unique_collection_identifiers', fields=[
-                'source_id', 'data_version', 'sample', 'transform_from_collection', 'transform_type']),
+                'source_id', 'data_version', 'sample'], condition=Q(transform_type='')),
         ]
 
     class Transforms(models.TextChoices):
@@ -38,8 +53,8 @@ class Collection(models.Model):
         UPGRADE_10_11 = 'upgrade-1-0-to-1-1', _('Upgrade from 1.0 to 1.1 ')
 
     # Identification
-    source_id = models.TextField()
-    data_version = models.DateTimeField()
+    source_id = models.TextField(help_text=_('If sourced from Scrapy, this should be the name of the spider.'))
+    data_version = models.DateTimeField(help_text=_('The time at which the data was collected (not loaded).'))
 
     # Routing slip
     sample = models.BooleanField(default=False)
@@ -49,7 +64,7 @@ class Collection(models.Model):
     # Provenance
     transform_from_collection = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
                                                   db_index=False)
-    transform_type = models.TextField(null=True, blank=True, choices=Transforms.choices)
+    transform_type = models.TextField(blank=True, choices=Transforms.choices)
 
     # Calculated fields
     cached_releases_count = models.IntegerField(null=True, blank=True)
@@ -79,6 +94,9 @@ class CollectionNote(models.Model):
     """
     class Meta:
         db_table = 'collection_note'
+        indexes = [
+            models.Index(name='collection_note_collection_id_idx', fields=['collection_id']),
+        ]
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
@@ -94,6 +112,9 @@ class CollectionFile(models.Model):
     """
     class Meta:
         db_table = 'collection_file'
+        indexes = [
+            models.Index(name='collection_file_collection_id_idx', fields=['collection_id']),
+        ]
         constraints = [
             models.UniqueConstraint(name='unique_collection_file_identifiers', fields=[
                 'collection', 'filename']),
@@ -101,8 +122,8 @@ class CollectionFile(models.Model):
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
 
-    filename = models.TextField(null=True, blank=True)
-    url = models.TextField(null=True, blank=True)
+    filename = models.TextField(blank=True)
+    url = models.TextField(blank=True)
 
     warnings = JSONField(null=True, blank=True)
     errors = JSONField(null=True, blank=True)
@@ -120,6 +141,9 @@ class CollectionFileItem(models.Model):
     """
     class Meta:
         db_table = 'collection_file_item'
+        indexes = [
+            models.Index(name='collection_file_item_collection_file_id_idx', fields=['collection_file_id']),
+        ]
         constraints = [
             models.UniqueConstraint(name='unique_collection_file_item_identifiers', fields=[
                 'collection_file', 'number']),
@@ -127,7 +151,7 @@ class CollectionFileItem(models.Model):
 
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
-    number = models.IntegerField(null=True, blank=True)
+    number = models.IntegerField(blank=True)
 
     warnings = JSONField(null=True, blank=True)
     errors = JSONField(null=True, blank=True)
@@ -185,12 +209,13 @@ class Release(models.Model):
             models.Index(name='release_collection_file_item_id_idx', fields=['collection_file_item']),
             models.Index(name='release_ocid_idx', fields=['ocid']),
             models.Index(name='release_data_id_idx', fields=['data']),
+            models.Index(name='release_package_data_id_idx', fields=['package_data_id']),
         ]
 
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
-    release_id = models.TextField(null=True, blank=True)
-    ocid = models.TextField(null=True, blank=True)
+    release_id = models.TextField(blank=True)
+    ocid = models.TextField(blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
@@ -209,11 +234,12 @@ class Record(models.Model):
             models.Index(name='record_collection_file_item_id_idx', fields=['collection_file_item']),
             models.Index(name='record_ocid_idx', fields=['ocid']),
             models.Index(name='record_data_id_idx', fields=['data']),
+            models.Index(name='record_package_data_id_idx', fields=['package_data_id']),
         ]
 
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
-    ocid = models.TextField(null=True, blank=True)
+    ocid = models.TextField(blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
@@ -236,7 +262,7 @@ class CompiledRelease(models.Model):
 
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
-    ocid = models.TextField(null=True, blank=True)
+    ocid = models.TextField(blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
 
@@ -250,13 +276,16 @@ class ReleaseCheck(models.Model):
     """
     class Meta:
         db_table = 'release_check'
+        indexes = [
+            models.Index(name='release_check_release_id_idx', fields=['release_id']),
+        ]
         constraints = [
             models.UniqueConstraint(name='unique_release_check_release_id_and_more', fields=[
                 'release', 'override_schema_version']),
         ]
 
     release = models.ForeignKey(Release, on_delete=models.CASCADE, db_index=False)
-    override_schema_version = models.TextField(null=True, blank=True)
+    override_schema_version = models.TextField(blank=True)
     cove_output = JSONField()
 
 
@@ -266,11 +295,14 @@ class RecordCheck(models.Model):
     """
     class Meta:
         db_table = 'record_check'
+        indexes = [
+            models.Index(name='record_check_record_id_idx', fields=['record_id']),
+        ]
         constraints = [
             models.UniqueConstraint(name='unique_record_check_record_id_and_more', fields=[
                 'record', 'override_schema_version']),
         ]
 
     record = models.ForeignKey(Record, on_delete=models.CASCADE, db_index=False)
-    override_schema_version = models.TextField(null=True, blank=True)
+    override_schema_version = models.TextField(blank=True)
     cove_output = JSONField()
