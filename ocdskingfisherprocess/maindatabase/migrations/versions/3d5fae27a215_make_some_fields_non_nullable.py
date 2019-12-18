@@ -27,7 +27,7 @@ def upgrade():
     # SELECT collection_file_id, COUNT(*) FROM collection_file_item WHERE number IS NULL GROUP BY collection_file_id
     # HAVING COUNT(*) > 1;
     # 0 rows
-    op.execute("UPDATE collection_file_item SET number = '' WHERE number IS NULL")
+    # number is an integer, which has no 'no data' representation, besides NULL.
     op.alter_column('collection_file_item', 'number', nullable=False)
 
     # SELECT release_id, COUNT(*) FROM release_check WHERE override_schema_version IS NULL GROUP BY release_id
