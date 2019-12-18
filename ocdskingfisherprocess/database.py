@@ -49,6 +49,8 @@ class DataBase:
                                          sa.UniqueConstraint('source_id', 'data_version', 'sample',
                                                              'transform_from_collection_id', 'transform_type',
                                                              name='unique_collection_identifiers'),
+                                         sa.Index('collection_transform_from_collection_id_idx',
+                                                  'transform_from_collection_id'),
                                          )
 
         self.collection_note_table = sa.Table('collection_note', self.metadata,
@@ -59,6 +61,7 @@ class DataBase:
                                                         nullable=False),
                                               sa.Column('note', sa.Text, nullable=False),
                                               sa.Column('stored_at', sa.DateTime(timezone=False), nullable=False),
+                                              sa.Index('collection_note_collection_id_idx', 'collection_id'),
                                               )
 
         self.collection_file_table = sa.Table('collection_file', self.metadata,
@@ -77,6 +80,7 @@ class DataBase:
                                               sa.Column('errors', JSONB, nullable=True),
                                               sa.UniqueConstraint('collection_id', 'filename',
                                                                   name='unique_collection_file_identifiers'),
+                                              sa.Index('collection_file_collection_id_idx', 'collection_id'),
                                               )
 
         self.collection_file_item_table = sa.Table('collection_file_item', self.metadata,
@@ -99,6 +103,8 @@ class DataBase:
                                                    sa.Column('errors', JSONB, nullable=True),
                                                    sa.UniqueConstraint('collection_file_id', 'number',
                                                                        name='unique_collection_file_item_identifiers'),
+                                                   sa.Index('collection_file_item_collection_file_id_idx',
+                                                            'collection_file_id'),
                                                    )
 
         self.data_table = sa.Table('data', self.metadata,
@@ -129,7 +135,8 @@ class DataBase:
                                                 sa.ForeignKey("package_data.id", name="fk_release_package_data_id"),
                                                 nullable=False),
                                       sa.Index('release_collection_file_item_id_idx', 'collection_file_item_id'),
-                                      sa.Index('release_ocid_idx', 'ocid')
+                                      sa.Index('release_ocid_idx', 'ocid'),
+                                      sa.Index('release_package_data_id_idx', 'package_data_id'),
                                       )
 
         self.record_table = sa.Table('record', self.metadata,
@@ -150,7 +157,8 @@ class DataBase:
                                                sa.ForeignKey("package_data.id", name="fk_record_package_data_id"),
                                                nullable=False),
                                      sa.Index('record_collection_file_item_id_idx', 'collection_file_item_id'),
-                                     sa.Index('record_ocid_idx', 'ocid')
+                                     sa.Index('record_ocid_idx', 'ocid'),
+                                     sa.Index('record_package_data_id_idx', 'package_data_id'),
                                      )
 
         self.compiled_release_table = sa.Table('compiled_release', self.metadata,
@@ -170,7 +178,7 @@ class DataBase:
                                                    'compiled_release_collection_file_item_id_idx',
                                                    'collection_file_item_id'
                                                ),
-                                               sa.Index('compiled_release_ocid_idx', 'ocid')
+                                               sa.Index('compiled_release_ocid_idx', 'ocid'),
                                                )
 
         self.release_check_table = sa.Table('release_check', self.metadata,
@@ -181,7 +189,8 @@ class DataBase:
                                             sa.Column('override_schema_version', sa.Text, nullable=True),
                                             sa.Column('cove_output', JSONB, nullable=False),
                                             sa.UniqueConstraint('release_id', 'override_schema_version',
-                                                                name='unique_release_check_release_id_and_more')
+                                                                name='unique_release_check_release_id_and_more'),
+                                            sa.Index('release_check_release_id_idx', 'release_id'),
                                             )
 
         self.record_check_table = sa.Table('record_check', self.metadata,
@@ -192,7 +201,8 @@ class DataBase:
                                            sa.Column('override_schema_version', sa.Text, nullable=True),
                                            sa.Column('cove_output', JSONB, nullable=False),
                                            sa.UniqueConstraint('record_id', 'override_schema_version',
-                                                               name='unique_record_check_record_id_and_more')
+                                                               name='unique_record_check_record_id_and_more'),
+                                           sa.Index('record_check_record_id_idx', 'record_id'),
                                            )
 
         self.release_check_error_table = sa.Table('release_check_error', self.metadata,
@@ -209,7 +219,8 @@ class DataBase:
                                                   sa.UniqueConstraint(
                                                       'release_id',
                                                       'override_schema_version',
-                                                      name='unique_release_check_error_release_id_and_more')
+                                                      name='unique_release_check_error_release_id_and_more'),
+                                                  sa.Index('release_check_error_release_id_idx', 'release_id'),
                                                   )
 
         self.record_check_error_table = sa.Table('record_check_error', self.metadata,
@@ -226,7 +237,8 @@ class DataBase:
                                                  sa.UniqueConstraint(
                                                      'record_id',
                                                      'override_schema_version',
-                                                     name='unique_record_check_error_record_id_and_more')
+                                                     name='unique_record_check_error_record_id_and_more'),
+                                                 sa.Index('record_check_error_record_id_idx', 'record_id'),
                                                  )
 
         self.transform_upgrade_1_0_to_1_1_status_release_table = sa.Table(
