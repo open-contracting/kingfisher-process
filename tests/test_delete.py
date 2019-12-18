@@ -66,7 +66,7 @@ class TestDelete(BaseDataBaseTest):
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.collection_table])
             result = connection.execute(s)
-            assert 1 == result.rowcount
+            assert 0 == result.rowcount
 
             s = sa.sql.select([self.database.collection_file_table])
             result = connection.execute(s)
@@ -161,7 +161,7 @@ class TestDelete(BaseDataBaseTest):
         with self.database.get_engine().begin() as connection:
             s = sa.sql.select([self.database.collection_table])
             result = connection.execute(s)
-            assert 2 == result.rowcount
+            assert 0 == result.rowcount
 
             s = sa.sql.select([self.database.collection_file_table])
             result = connection.execute(s)
