@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('source_id', models.TextField()),
                 ('data_version', models.DateTimeField()),
-                ('store_start_at', models.DateTimeField()),
+                ('store_start_at', models.DateTimeField(auto_now_add=True)),
                 ('store_end_at', models.DateTimeField(blank=True, null=True)),
                 ('sample', models.BooleanField(default=False)),
                 ('check_data', models.BooleanField(default=False)),

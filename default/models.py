@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -55,7 +57,7 @@ class Collection(models.Model):
     cached_compiled_releases_count = models.IntegerField(null=True, blank=True)
 
     # Lifecycle
-    store_start_at = models.DateTimeField()
+    store_start_at = models.DateTimeField(auto_now_add=True)
     store_end_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
