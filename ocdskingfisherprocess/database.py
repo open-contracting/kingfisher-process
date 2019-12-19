@@ -683,6 +683,8 @@ class DataBase:
                 WHERE collection_id = :collection_id;""", collection_id)
         self._delete_collection_run_sql("collection_note", """DELETE FROM collection_note
                 WHERE collection_id = :collection_id;""", collection_id)
+        self._delete_collection_run_sql("collection", """UPDATE collection SET transform_from_collection_id = NULL
+                 WHERE transform_from_collection_id = :collection_id;""", collection_id)
         self._delete_collection_run_sql("collection", """DELETE FROM collection
                 WHERE id = :collection_id;""", collection_id)
 
