@@ -13,15 +13,15 @@ Run the tests with, for example:
 Create migrations
 -----------------
 
-1. Create a database migration with `Alembic <https://alembic.sqlalchemy.org/>`__, for example:
+#. Create a database migration with `Alembic <https://alembic.sqlalchemy.org/>`__, for example:
 
    .. code-block:: bash
 
       alembic --config=mainalembic.ini revision -m "A short description of what the migration does"
 
-1. Fill in the migration
-1. Add/update tables, indexes and/or constraints in ``database.py`` to match the migration
-1. If a new table is created, update the ``delete_tables`` method
+#. Fill in the migration
+#. Add/update tables, indexes and/or constraints in ``database.py`` to match the migration
+#. If a new table is created, update the ``delete_tables`` method
 
 Note: Do not create simultaneous branches, each with its own migration(s). Instead, merge one branch, then create the next migration, to avoid `multiple heads <https://stackoverflow.com/questions/22342643/alembic-revision-multiple-heads-due-branching-error/>`__.
 
