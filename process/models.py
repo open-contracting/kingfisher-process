@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import transaction, models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -53,9 +53,12 @@ class Collection(models.Model):
     # Identification
     source_id = models.TextField(help_text=_('If sourced from Scrapy, this should be the name of the spider.'))
     data_version = models.DateTimeField(help_text=_('The time at which the data was collected (not loaded).'))
+    sample = models.BooleanField(default=False)
 
     # Routing slip
-    sample = models.BooleanField(default=False)
+    steps = JSONField(blank=True, default=dict)
+    options = JSONField(blank=True, default=dict)
+    # Deprecated
     check_data = models.BooleanField(default=False)
     check_older_data_with_schema_version_1_1 = models.BooleanField(default=False)
 
@@ -78,11 +81,23 @@ class Collection(models.Model):
         return '{source_id}:{data_version}'.format_map(Default(
             source_id=self.source_id, data_version=self.data_version))
 
-    def add_transform(self, transform_type):
-        collection = Collection(source_id=self.source_id, data_version=self.data_version, sample=self.sample,
-                                parent=self, transform_type=transform_type)
-        collection.full_clean()
-        collection.save()
+    @transaction.atomic()
+    def add_step(self, step):
+        """
+        Adds a step to the collection's processing pipeline. If the step is a transformation, creates the transformed
+        collection. If the collection had not yet been saved, this method will save it.
+        """
+        self.steps[step] = True
+        self.clean_save()
+
+        if step in Collection.Transforms.values:
+            collection = Collection(source_id=self.source_id, data_version=self.data_version, sample=self.sample,
+                                    parent=self, transform_type=step)
+            collection.clean_save()
+
+    def clean_save(self):
+        self.full_clean()
+        self.save()
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
@@ -93,24 +108,27 @@ class Collection(models.Model):
 
         if self.parent:
             if self.parent.deleted_at:
-                raise ValidationError({'parent': _('Collection %(id)s is being deleted') % self.parent.__dict__})
+                message = _('Parent collection %(id)s is being deleted')
+                raise ValidationError({'parent': message % self.parent.__dict__})
 
             if self.transform_type == self.parent.transform_type:
-                if self.transform_type == Collection.Transforms.COMPILE_RELEASES:
-                    message = _('Collection %(id)s is itself already a compilation of %(parent_id)s')
-                elif self.transform_type == Collection.Transforms.UPGRADE_10_11:
-                    message = _('Collection %(id)s is itself already an upgrade of %(parent_id)s')
+                if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
+                    message = _('Parent collection %(id)s is itself already a compilation of %(parent_id)s')
+                elif self.parent.transform_type == Collection.Transforms.UPGRADE_10_11:
+                    message = _('Parent collection %(id)s is itself already an upgrade of %(parent_id)s')
                 raise ValidationError({'transform_type': message % self.parent.__dict__})
 
             if self.transform_type == Collection.Transforms.UPGRADE_10_11:
                 if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
-                    message = _("Collection %(id)s is compiled and can't be upgraded")
+                    message = _("Parent collection %(id)s is compiled and can't be upgraded")
                     raise ValidationError({'transform_type': message % self.parent.__dict__})
 
-            destination = self.parent.collection_set.filter(transform_type=self.transform_type)
-            if destination:
-                message = _('Collection %(source_id)s is already transformed into %(destination_id)s')
-                raise ValidationError(message % {'source_id': self.parent.id, 'destination_id': destination[0].id})
+            qs = self.parent.collection_set.filter(transform_type=self.transform_type)
+            if self.pk is not None:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                message = _('Parent collection %(source_id)s is already transformed into %(destination_id)s')
+                raise ValidationError(message % {'source_id': self.parent.id, 'destination_id': qs[0].id})
 
 
 class CollectionNote(models.Model):
