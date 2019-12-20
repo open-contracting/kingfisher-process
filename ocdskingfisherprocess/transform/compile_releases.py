@@ -76,7 +76,7 @@ class CompileReleasesTransform(BaseTransform):
                       'We have picked one at random and passed it through this transform unchanged.'
             self.store.store_file_item(
                 ocid + '.json',
-                None,
+                '',
                 'compiled_release',
                 releases_compiled[0],
                 1,
@@ -87,7 +87,7 @@ class CompileReleasesTransform(BaseTransform):
                       'We have passed it through this transform unchanged.'
             self.store.store_file_item(
                 ocid + '.json',
-                None,
+                '',
                 'compiled_release',
                 releases_compiled[0],
                 1,
@@ -99,4 +99,4 @@ class CompileReleasesTransform(BaseTransform):
             # In the occurrence of a race condition where two concurrent transforms have run the same ocid
             # we rely on the fact that collection_id and filename are unique in the file_item table.
             # Therefore this will error with a violation of unique key contraint and not cause duplicate entries.
-            self.store.store_file_item(ocid+'.json', None, 'compiled_release', out, 1)
+            self.store.store_file_item(ocid+'.json', '', 'compiled_release', out, 1)

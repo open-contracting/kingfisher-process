@@ -18,7 +18,7 @@ class CollectionModel:
 
 class FileModel:
 
-    def __init__(self, database_id=None, filename=None, url=None, warnings=None, errors=None,
+    def __init__(self, database_id=None, filename='', url=None, warnings=None, errors=None,
                  store_start_at=None, store_end_at=None):
         self.database_id = database_id
         self.filename = filename

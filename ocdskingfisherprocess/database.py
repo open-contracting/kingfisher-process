@@ -70,8 +70,8 @@ class DataBase:
                                                         sa.ForeignKey("collection.id",
                                                                       name="fk_collection_file_collection_id"),
                                                         nullable=False),
-                                              sa.Column('filename', sa.Text, nullable=True),
-                                              sa.Column('url', sa.Text, nullable=True),
+                                              sa.Column('filename', sa.Text, nullable=False),
+                                              sa.Column('url', sa.Text, nullable=False),
                                               sa.Column('store_start_at', sa.DateTime(timezone=False),
                                                         nullable=True),
                                               sa.Column('store_end_at', sa.DateTime(timezone=False),
@@ -98,7 +98,7 @@ class DataBase:
                                                              nullable=True),
                                                    sa.Column('store_end_at', sa.DateTime(timezone=False),
                                                              nullable=True),
-                                                   sa.Column('number', sa.Integer),
+                                                   sa.Column('number', sa.Integer, nullable=False),
                                                    sa.Column('warnings', JSONB, nullable=True),
                                                    sa.Column('errors', JSONB, nullable=True),
                                                    sa.UniqueConstraint('collection_file_id', 'number',
@@ -127,8 +127,8 @@ class DataBase:
                                                 sa.ForeignKey("collection_file_item.id",
                                                               name="fk_release_collection_file_item_id"),
                                                 nullable=False),
-                                      sa.Column('release_id', sa.Text, nullable=True),
-                                      sa.Column('ocid', sa.Text, nullable=True),
+                                      sa.Column('release_id', sa.Text, nullable=False),
+                                      sa.Column('ocid', sa.Text, nullable=False),
                                       sa.Column('data_id', sa.Integer,
                                                 sa.ForeignKey("data.id", name="fk_release_data_id"), nullable=False),
                                       sa.Column('package_data_id', sa.Integer,
@@ -150,7 +150,7 @@ class DataBase:
                                          ),
                                          nullable=False
                                      ),
-                                     sa.Column('ocid', sa.Text, nullable=True),
+                                     sa.Column('ocid', sa.Text, nullable=False),
                                      sa.Column('data_id', sa.Integer,
                                                sa.ForeignKey("data.id", name="fk_record_data_id"), nullable=False),
                                      sa.Column('package_data_id', sa.Integer,
@@ -170,7 +170,7 @@ class DataBase:
                                                                  name="fk_complied_release_collection_file_item_id"),
                                                    nullable=False
                                                ),
-                                               sa.Column('ocid', sa.Text, nullable=True),
+                                               sa.Column('ocid', sa.Text, nullable=False),
                                                sa.Column('data_id', sa.Integer,
                                                          sa.ForeignKey("data.id", name="fk_complied_release_data_id"),
                                                          nullable=False),
@@ -186,7 +186,7 @@ class DataBase:
                                             sa.Column('release_id', sa.Integer,
                                                       sa.ForeignKey("release.id", name="fk_release_check_release_id"),
                                                       nullable=False),
-                                            sa.Column('override_schema_version', sa.Text, nullable=True),
+                                            sa.Column('override_schema_version', sa.Text, nullable=False),
                                             sa.Column('cove_output', JSONB, nullable=False),
                                             sa.UniqueConstraint('release_id', 'override_schema_version',
                                                                 name='unique_release_check_release_id_and_more'),
@@ -198,7 +198,7 @@ class DataBase:
                                            sa.Column('record_id', sa.Integer,
                                                      sa.ForeignKey("record.id", name="fk_record_check_record_id"),
                                                      nullable=False),
-                                           sa.Column('override_schema_version', sa.Text, nullable=True),
+                                           sa.Column('override_schema_version', sa.Text, nullable=False),
                                            sa.Column('cove_output', JSONB, nullable=False),
                                            sa.UniqueConstraint('record_id', 'override_schema_version',
                                                                name='unique_record_check_record_id_and_more'),
@@ -214,7 +214,7 @@ class DataBase:
                                                                     name="fk_release_check_error_release_id"),
                                                       nullable=False
                                                   ),
-                                                  sa.Column('override_schema_version', sa.Text, nullable=True),
+                                                  sa.Column('override_schema_version', sa.Text, nullable=False),
                                                   sa.Column('error', sa.Text, nullable=False),
                                                   sa.UniqueConstraint(
                                                       'release_id',
@@ -232,7 +232,7 @@ class DataBase:
                                                                    name="fk_record_check_error_record_id"),
                                                      nullable=False
                                                  ),
-                                                 sa.Column('override_schema_version', sa.Text, nullable=True),
+                                                 sa.Column('override_schema_version', sa.Text, nullable=False),
                                                  sa.Column('error', sa.Text, nullable=False),
                                                  sa.UniqueConstraint(
                                                      'record_id',
@@ -471,7 +471,7 @@ class DataBase:
                 ))
         return out
 
-    def is_release_check_done(self, release_id, override_schema_version=None):
+    def is_release_check_done(self, release_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.release_check_table]) \
                 .where((self.release_check_table.c.release_id == release_id) &
@@ -489,7 +489,7 @@ class DataBase:
 
         return False
 
-    def is_record_check_done(self, record_id, override_schema_version=None):
+    def is_record_check_done(self, record_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.record_check_table]) \
                 .where((self.record_check_table.c.record_id == record_id) &
@@ -787,14 +787,14 @@ class DataBase:
 
         return sql.replace('release', obj_type), data
 
-    def get_releases_to_check(self, collection_id, override_schema_version=None):
+    def get_releases_to_check(self, collection_id, override_schema_version=''):
         sql, data = self._get_check_query('release', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
             query = sa.sql.expression.text(sql)
             return connection.execute(query, data)
 
-    def get_records_to_check(self, collection_id, override_schema_version=None):
+    def get_records_to_check(self, collection_id, override_schema_version=''):
         sql, data = self._get_check_query('record', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
@@ -873,7 +873,7 @@ class DataBase:
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number, url=None, before_db_transaction_ends_callback=None,
+    def __init__(self, database, collection_id, file_name, number, url='', before_db_transaction_ends_callback=None,
                  allow_existing_collection_file_item_table_row=False, warnings=None):
         self.database = database
         self.collection_id = collection_id
@@ -973,7 +973,7 @@ class DatabaseStore:
                       )
 
     def insert_record(self, row, package_data):
-        ocid = row.get('ocid')
+        ocid = row.get('ocid', '')
         package_data_id = self.get_id_for_package_data(package_data)
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.record_table.insert(), {
@@ -984,8 +984,8 @@ class DatabaseStore:
         })
 
     def insert_release(self, row, package_data):
-        ocid = row.get('ocid')
-        release_id = row.get('id')
+        ocid = row.get('ocid', '')
+        release_id = row.get('id', '')
         package_data_id = self.get_id_for_package_data(package_data)
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.release_table.insert(), {
@@ -997,7 +997,7 @@ class DatabaseStore:
         })
 
     def insert_compiled_release(self, row):
-        ocid = row.get('ocid')
+        ocid = row.get('ocid', '')
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.compiled_release_table.insert(), {
             'collection_file_item_id': self.collection_file_item_id,
