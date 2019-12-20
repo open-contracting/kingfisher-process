@@ -41,14 +41,15 @@ class DataBase:
                                                    nullable=False, default=False),
                                          sa.Column('transform_from_collection_id', sa.Integer,
                                                    sa.ForeignKey("collection.id"), nullable=True),
-                                         sa.Column('transform_type', sa.Text, nullable=True),
+                                         sa.Column('transform_type', sa.Text, nullable=False),
                                          sa.Column('deleted_at', sa.DateTime(timezone=False), nullable=True),
                                          sa.Column('cached_releases_count', sa.Integer, nullable=True),
                                          sa.Column('cached_records_count', sa.Integer, nullable=True),
                                          sa.Column('cached_compiled_releases_count', sa.Integer, nullable=True),
-                                         sa.UniqueConstraint('source_id', 'data_version', 'sample',
-                                                             'transform_from_collection_id', 'transform_type',
-                                                             name='unique_collection_identifiers'),
+                                         sa.Index('unique_collection_identifiers',
+                                                  'source_id', 'data_version', 'sample',
+                                                  unique=True,
+                                                  postgresql_where=sa.text("transform_type = ''")),
                                          sa.Index('collection_transform_from_collection_id_idx',
                                                   'transform_from_collection_id'),
                                          )
@@ -319,7 +320,7 @@ class DataBase:
         alembic.config.main(argv=alembicargs)
 
     def get_collection_id(self, source_id, data_version, sample,
-                          transform_from_collection_id=None, transform_type=None):
+                          transform_from_collection_id=None, transform_type=''):
 
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
@@ -334,7 +335,7 @@ class DataBase:
                 return collection['id']
 
     def get_or_create_collection_id(self, source_id, data_version, sample,
-                                    transform_from_collection_id=None, transform_type=None):
+                                    transform_from_collection_id=None, transform_type=''):
 
         collection_id = self.get_collection_id(
             source_id,
