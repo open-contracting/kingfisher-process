@@ -3,14 +3,7 @@ from django.test import TestCase
 
 from default.models import (Collection, CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data,
                             PackageData, Record, Release)
-
-def collection(**kwargs):
-    return Collection(
-        source_id='example',
-        data_version='2001-01-01 00:00:00',
-        store_start_at='2001-01-01 00:00:00',
-        **kwargs
-    )
+from default.tests.fixtures import collection
 
 
 class CollectionTests(TestCase):
@@ -28,16 +21,84 @@ class CollectionTests(TestCase):
         obj = Collection(data_version='2001-01-01 00:00:00')
         self.assertEqual(str(obj), '{source_id}:2001-01-01 00:00:00')
 
-    def test_clean_fields(self):
-        obj = collection()
-        obj.save()
+    def test_clean_fields_conditionally_mandatory(self):
+        source = collection()
+        source.save()
 
-        obj = collection(transform_from_collection_id=obj.id)
+        values = [
+            dict(parent=source),
+            dict(transform_type='compile-releases'),
+        ]
+        for kwargs in values:
+            with self.subTest(kwargs=kwargs):
+                obj = collection(**kwargs)
+                with self.assertRaises(ValidationError) as e:
+                    obj.clean_fields()
+
+                message = 'parent and transform_type must either be both set or both not set.'
+                self.assertEqual(e.exception.message, message)
+
+    def test_clean_fields_deleted_at(self):
+        source = collection(deleted_at='2001-01-01 00:00:00')
+        source.save()
+
+        obj = collection(parent=source, transform_type='compile-releases')
         with self.assertRaises(ValidationError) as e:
             obj.clean_fields()
 
-        self.assertEqual(e.exception.message,
-            'transform_from_collection_id and transform_type must either be both set or both not set.')
+        self.assertEqual(e.exception.message_dict, {
+            'parent': ['Collection {} is being deleted'.format(source.id)],
+        })
+
+    def test_clean_fields_double_transform(self):
+        source = collection()
+        source.save()
+
+        values = {
+            'compile-releases': 'Collection {} is itself already a compilation of {}',
+            'upgrade-1-0-to-1-1': 'Collection {} is itself already an upgrade of {}',
+        }
+        for transform_type, message in values.items():
+            with self.subTest(transform_type=transform_type):
+                upgrade = collection(parent=source, transform_type=transform_type)
+                upgrade.save()
+
+                obj = collection(parent=upgrade, transform_type=transform_type)
+                with self.assertRaises(ValidationError) as e:
+                    obj.clean_fields()
+
+                self.assertEqual(e.exception.message_dict, {
+                    'transform_type': [message.format(upgrade.id, upgrade.parent_id)],
+                })
+
+    def test_clean_fields_disallowed_transition(self):
+        source = collection()
+        source.save()
+
+        compiled = collection(parent=source, transform_type='compile-releases')
+        compiled.save()
+
+        obj = collection(parent=compiled, transform_type='upgrade-1-0-to-1-1')
+        with self.assertRaises(ValidationError) as e:
+            obj.clean_fields()
+
+        self.assertEqual(e.exception.message_dict, {
+            'transform_type': ["Collection {} is compiled and can't be upgraded".format(compiled.id)],
+        })
+
+    def test_duplicate(self):
+        source = collection()
+        source.save()
+
+        destination = collection(parent=source, transform_type='compile-releases')
+        destination.save()
+
+        obj = collection(parent=source, transform_type='compile-releases')
+        with self.assertRaises(ValidationError) as e:
+            obj.clean_fields()
+
+        message = 'Collection {} is already transformed into {}'.format(source.id, destination.id)
+        self.assertEqual(e.exception.message, message)
 
 
 class CollectionNoteTests(TestCase):

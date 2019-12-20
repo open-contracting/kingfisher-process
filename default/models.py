@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -41,7 +39,7 @@ class Collection(models.Model):
     class Meta:
         db_table = 'collection'
         indexes = [
-            models.Index(name='collection_transform_from_collection_id_idx', fields=['transform_from_collection_id']),
+            models.Index(name='collection_transform_from_collection_id_idx', fields=['parent']),
         ]
         constraints = [
             models.UniqueConstraint(name='unique_collection_identifiers', fields=[
@@ -62,8 +60,8 @@ class Collection(models.Model):
     check_older_data_with_schema_version_1_1 = models.BooleanField(default=False)
 
     # Provenance
-    transform_from_collection = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
-                                                  db_index=False)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, db_index=False,
+                               db_column='transform_from_collection_id')
     transform_type = models.TextField(blank=True, choices=Transforms.choices)
 
     # Calculated fields
@@ -80,12 +78,39 @@ class Collection(models.Model):
         return '{source_id}:{data_version}'.format_map(Default(
             source_id=self.source_id, data_version=self.data_version))
 
+    def add_transform(self, transform_type):
+        collection = Collection(source_id=self.source_id, data_version=self.data_version, sample=self.sample,
+                                parent=self, transform_type=transform_type)
+        collection.full_clean()
+        collection.save()
+
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
-        if bool(self.transform_from_collection_id) ^ bool(self.transform_type):
-            raise ValidationError(
-                _('transform_from_collection_id and transform_type must either be both set or both not set.'))
 
+        if bool(self.parent_id) ^ bool(self.transform_type):
+            raise ValidationError(
+                _('parent and transform_type must either be both set or both not set.'))
+
+        if self.parent:
+            if self.parent.deleted_at:
+                raise ValidationError({'parent': _('Collection %(id)s is being deleted') % self.parent.__dict__})
+
+            if self.transform_type == self.parent.transform_type:
+                if self.transform_type == Collection.Transforms.COMPILE_RELEASES:
+                    message = _('Collection %(id)s is itself already a compilation of %(parent_id)s')
+                elif self.transform_type == Collection.Transforms.UPGRADE_10_11:
+                    message = _('Collection %(id)s is itself already an upgrade of %(parent_id)s')
+                raise ValidationError({'transform_type': message % self.parent.__dict__})
+
+            if self.transform_type == Collection.Transforms.UPGRADE_10_11:
+                if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
+                    message = _("Collection %(id)s is compiled and can't be upgraded")
+                    raise ValidationError({'transform_type': message % self.parent.__dict__})
+
+            destination = self.parent.collection_set.filter(transform_type=self.transform_type)
+            if destination:
+                message = _('Collection %(source_id)s is already transformed into %(destination_id)s')
+                raise ValidationError(message % {'source_id': self.parent.id, 'destination_id': destination[0].id})
 
 
 class CollectionNote(models.Model):
@@ -95,7 +120,7 @@ class CollectionNote(models.Model):
     class Meta:
         db_table = 'collection_note'
         indexes = [
-            models.Index(name='collection_note_collection_id_idx', fields=['collection_id']),
+            models.Index(name='collection_note_collection_id_idx', fields=['collection']),
         ]
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
@@ -113,7 +138,7 @@ class CollectionFile(models.Model):
     class Meta:
         db_table = 'collection_file'
         indexes = [
-            models.Index(name='collection_file_collection_id_idx', fields=['collection_id']),
+            models.Index(name='collection_file_collection_id_idx', fields=['collection']),
         ]
         constraints = [
             models.UniqueConstraint(name='unique_collection_file_identifiers', fields=[
@@ -128,11 +153,8 @@ class CollectionFile(models.Model):
     warnings = JSONField(null=True, blank=True)
     errors = JSONField(null=True, blank=True)
 
-    store_start_at = models.DateTimeField(null=True, blank=True)
-    store_end_at = models.DateTimeField(null=True, blank=True)
-
     def __str__(self):
-        return self.filename or self.url or ''
+        return self.filename
 
 
 class CollectionFileItem(models.Model):
@@ -142,7 +164,7 @@ class CollectionFileItem(models.Model):
     class Meta:
         db_table = 'collection_file_item'
         indexes = [
-            models.Index(name='collection_file_item_collection_file_id_idx', fields=['collection_file_id']),
+            models.Index(name='collection_file_item_collection_file_id_idx', fields=['collection_file']),
         ]
         constraints = [
             models.UniqueConstraint(name='unique_collection_file_item_identifiers', fields=[
@@ -155,9 +177,6 @@ class CollectionFileItem(models.Model):
 
     warnings = JSONField(null=True, blank=True)
     errors = JSONField(null=True, blank=True)
-
-    store_start_at = models.DateTimeField(null=True, blank=True)
-    store_end_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         if self.number is None:
@@ -206,12 +225,14 @@ class Release(models.Model):
     class Meta:
         db_table = 'release'
         indexes = [
+            models.Index(name='release_collection_id_idx', fields=['collection_file_item']),
             models.Index(name='release_collection_file_item_id_idx', fields=['collection_file_item']),
             models.Index(name='release_ocid_idx', fields=['ocid']),
             models.Index(name='release_data_id_idx', fields=['data']),
-            models.Index(name='release_package_data_id_idx', fields=['package_data_id']),
+            models.Index(name='release_package_data_id_idx', fields=['package_data']),
         ]
 
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     release_id = models.TextField(blank=True)
@@ -231,12 +252,14 @@ class Record(models.Model):
     class Meta:
         db_table = 'record'
         indexes = [
+            models.Index(name='record_collection_id_idx', fields=['collection']),
             models.Index(name='record_collection_file_item_id_idx', fields=['collection_file_item']),
             models.Index(name='record_ocid_idx', fields=['ocid']),
             models.Index(name='record_data_id_idx', fields=['data']),
-            models.Index(name='record_package_data_id_idx', fields=['package_data_id']),
+            models.Index(name='record_package_data_id_idx', fields=['package_data']),
         ]
 
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
@@ -245,7 +268,7 @@ class Record(models.Model):
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
 
     def __str__(self):
-        return self.ocid or ''
+        return self.ocid
 
 
 class CompiledRelease(models.Model):
@@ -255,11 +278,13 @@ class CompiledRelease(models.Model):
     class Meta:
         db_table = 'compiled_release'
         indexes = [
+            models.Index(name='compiled_release_collection_id_idx', fields=['collection']),
             models.Index(name='compiled_release_collection_file_item_id_idx', fields=['collection_file_item']),
             models.Index(name='compiled_release_ocid_idx', fields=['ocid']),
             models.Index(name='compiled_release_data_id_idx', fields=['data']),
         ]
 
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
@@ -267,7 +292,7 @@ class CompiledRelease(models.Model):
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
 
     def __str__(self):
-        return self.ocid or ''
+        return self.ocid
 
 
 class ReleaseCheck(models.Model):
@@ -277,7 +302,7 @@ class ReleaseCheck(models.Model):
     class Meta:
         db_table = 'release_check'
         indexes = [
-            models.Index(name='release_check_release_id_idx', fields=['release_id']),
+            models.Index(name='release_check_release_id_idx', fields=['release']),
         ]
         constraints = [
             models.UniqueConstraint(name='unique_release_check_release_id_and_more', fields=[
@@ -296,7 +321,7 @@ class RecordCheck(models.Model):
     class Meta:
         db_table = 'record_check'
         indexes = [
-            models.Index(name='record_check_record_id_idx', fields=['record_id']),
+            models.Index(name='record_check_record_id_idx', fields=['record']),
         ]
         constraints = [
             models.UniqueConstraint(name='unique_record_check_record_id_and_more', fields=[
