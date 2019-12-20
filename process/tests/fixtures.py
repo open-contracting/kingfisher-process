@@ -1,4 +1,4 @@
-from default.models import Collection
+from process.models import Collection
 
 
 def collection(**kwargs):

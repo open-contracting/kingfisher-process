@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
-from default.models import Collection
+from process.models import Collection
 
 
 class Command(BaseCommand):

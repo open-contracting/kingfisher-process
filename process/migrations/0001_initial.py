@@ -107,10 +107,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('ocid', models.TextField(blank=True)),
-                ('collection', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Collection')),
-                ('collection_file_item', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.CollectionFileItem')),
-                ('data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Data')),
-                ('package_data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.PackageData')),
+                ('collection', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection')),
+                ('collection_file_item', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFileItem')),
+                ('data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Data')),
+                ('package_data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.PackageData')),
             ],
             options={
                 'db_table': 'record',
@@ -122,10 +122,10 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('release_id', models.TextField(blank=True)),
                 ('ocid', models.TextField(blank=True)),
-                ('collection', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Collection')),
-                ('collection_file_item', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.CollectionFileItem')),
-                ('data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Data')),
-                ('package_data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.PackageData')),
+                ('collection', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection')),
+                ('collection_file_item', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFileItem')),
+                ('data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Data')),
+                ('package_data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.PackageData')),
             ],
             options={
                 'db_table': 'release',
@@ -137,7 +137,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('override_schema_version', models.TextField(blank=True)),
                 ('cove_output', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('release', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Release')),
+                ('release', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Release')),
             ],
             options={
                 'db_table': 'release_check',
@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('override_schema_version', models.TextField(blank=True)),
                 ('cove_output', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('record', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Record')),
+                ('record', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Record')),
             ],
             options={
                 'db_table': 'record_check',
@@ -166,37 +166,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='compiledrelease',
             name='collection',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Collection'),
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
         ),
         migrations.AddField(
             model_name='compiledrelease',
             name='collection_file_item',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.CollectionFileItem'),
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFileItem'),
         ),
         migrations.AddField(
             model_name='compiledrelease',
             name='data',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Data'),
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Data'),
         ),
         migrations.AddField(
             model_name='collectionnote',
             name='collection',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Collection'),
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
         ),
         migrations.AddField(
             model_name='collectionfileitem',
             name='collection_file',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.CollectionFile'),
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFile'),
         ),
         migrations.AddField(
             model_name='collectionfile',
             name='collection',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='default.Collection'),
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
         ),
         migrations.AddField(
             model_name='collection',
             name='parent',
-            field=models.ForeignKey(blank=True, db_column='transform_from_collection_id', db_index=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='default.Collection'),
+            field=models.ForeignKey(blank=True, db_column='transform_from_collection_id', db_index=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
         ),
         migrations.AddIndex(
             model_name='releasecheck',

@@ -1,9 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from default.models import (Collection, CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data,
+from process.models import (Collection, CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data,
                             PackageData, Record, Release)
-from default.tests.fixtures import collection
+from process.tests.fixtures import collection
 
 
 class CollectionTests(TestCase):
@@ -117,10 +117,6 @@ class CollectionFileTests(TestCase):
 
         obj.filename = '/path/to/file.json'
         self.assertEqual(str(obj), '/path/to/file.json')
-
-    def test_str_url(self):
-        obj = CollectionFile(url='http://example.com/file.json')
-        self.assertEqual(str(obj), 'http://example.com/file.json')
 
 
 class CollectionFileItemTests(TestCase):

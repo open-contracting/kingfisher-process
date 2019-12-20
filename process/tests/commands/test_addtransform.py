@@ -2,7 +2,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TransactionTestCase
 
-from default.tests.fixtures import collection
+from process.tests.fixtures import collection
 
 
 class ProcessTests(TransactionTestCase):
