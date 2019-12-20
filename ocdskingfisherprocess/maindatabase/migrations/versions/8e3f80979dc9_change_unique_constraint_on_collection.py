@@ -38,3 +38,6 @@ def downgrade():
     op.create_unique_constraint('unique_collection_identifiers', 'collection', [
         'source_id', 'data_version', 'sample', 'transform_from_collection_id', 'transform_type',
     ])
+
+    op.alter_column('collection', 'transform_type', nullable=True)
+    op.execute("UPDATE collection SET transform_type = NULL WHERE transform_type = ''")
