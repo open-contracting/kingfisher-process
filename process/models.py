@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
-from django.db import transaction, models
+from django.db import models, transaction
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
