@@ -73,10 +73,6 @@ class DataBase:
                                                         nullable=False),
                                               sa.Column('filename', sa.Text, nullable=False),
                                               sa.Column('url', sa.Text, nullable=False),
-                                              sa.Column('store_start_at', sa.DateTime(timezone=False),
-                                                        nullable=True),
-                                              sa.Column('store_end_at', sa.DateTime(timezone=False),
-                                                        nullable=True),
                                               sa.Column('warnings', JSONB, nullable=True),
                                               sa.Column('errors', JSONB, nullable=True),
                                               sa.UniqueConstraint('collection_id', 'filename',
@@ -95,10 +91,6 @@ class DataBase:
                                                        ),
                                                        nullable=False
                                                    ),
-                                                   sa.Column('store_start_at', sa.DateTime(timezone=False),
-                                                             nullable=True),
-                                                   sa.Column('store_end_at', sa.DateTime(timezone=False),
-                                                             nullable=True),
                                                    sa.Column('number', sa.Integer, nullable=False),
                                                    sa.Column('warnings', JSONB, nullable=True),
                                                    sa.Column('errors', JSONB, nullable=True),
@@ -452,8 +444,6 @@ class DataBase:
                     url=collection_file['url'],
                     warnings=collection_file['warnings'],
                     errors=collection_file['errors'],
-                    store_start_at=collection_file['store_start_at'],
-                    store_end_at=collection_file['store_end_at'],
                 ))
         return out
 
@@ -514,8 +504,7 @@ class DataBase:
                 self.collection_file_table.update()
                     .where((self.collection_file_table.c.collection_id == collection_id) &
                            (self.collection_file_table.c.filename == filename))
-                    .values(store_end_at=datetime.datetime.utcnow(),
-                            warnings=warnings if warnings and len(warnings) > 0 else None,
+                    .values(warnings=warnings if warnings and len(warnings) > 0 else None,
                             )
             )
 
@@ -542,7 +531,6 @@ class DataBase:
                     .where((self.collection_table.c.id == collection_id) & (self.collection_table.c.store_end_at == None)) # noqa
                     .values(store_end_at=datetime.datetime.utcnow())
             )
-            # TODO Mark store_end_at on all files not yet marked
 
         KINGFISHER_SIGNALS.signal('collection-store-finished').send('anonymous', collection_id=collection_id)
         return collection_id
@@ -584,7 +572,6 @@ class DataBase:
                     'collection_id': collection_id,
                     'filename': file_name,
                     'url': url,
-                    'store_start_at': datetime.datetime.utcnow(),
                 })
 
                 collection_file_id = value.inserted_primary_key[0]
@@ -603,7 +590,6 @@ class DataBase:
                 connection.execute(self.collection_file_item_table.insert(), {
                     'collection_file_id': collection_file_id,
                     'number': number,
-                    'store_start_at': datetime.datetime.utcnow(),
                     'errors': errors,
                 })
 
@@ -907,7 +893,6 @@ class DatabaseStore:
             value = self.connection.execute(self.database.collection_file_table.insert(), {
                 'collection_id': self.collection_id,
                 'filename': self.file_name,
-                'store_start_at': datetime.datetime.utcnow(),
                 'url': self.url,
             })
             self.collection_file_id = value.inserted_primary_key[0]
@@ -930,7 +915,6 @@ class DatabaseStore:
             value = self.connection.execute(self.database.collection_file_item_table.insert(), {
                 'collection_file_id': self.collection_file_id,
                 'number': self.number,
-                'store_start_at': datetime.datetime.utcnow(),
                 'warnings': (self.warnings if isinstance(self.warnings, list) and len(self.warnings) > 0 else None),
             })
             self.collection_file_item_id = value.inserted_primary_key[0]
@@ -952,13 +936,6 @@ class DatabaseStore:
             self.connection.close()
 
         else:
-
-            self.connection.execute(
-                self.database.collection_file_item_table.update()
-                .where(self.database.collection_file_item_table.c.id == self.collection_file_item_id)
-                .values(store_end_at=datetime.datetime.utcnow())
-            )
-
             if self.before_db_transaction_ends_callback:
                 self.before_db_transaction_ends_callback(database=self.database, connection=self.connection)
 

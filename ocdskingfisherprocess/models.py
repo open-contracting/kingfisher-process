@@ -18,15 +18,12 @@ class CollectionModel:
 
 class FileModel:
 
-    def __init__(self, database_id=None, filename='', url=None, warnings=None, errors=None,
-                 store_start_at=None, store_end_at=None):
+    def __init__(self, database_id=None, filename='', url=None, warnings=None, errors=None):
         self.database_id = database_id
         self.filename = filename
         self.url = url
         self.warnings = warnings
         self.errors = errors
-        self.store_start_at = store_start_at
-        self.store_end_at = store_end_at
 
 
 class FileItemModel:
