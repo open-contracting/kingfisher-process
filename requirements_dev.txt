@@ -8,6 +8,7 @@ appnope==0.1.0            # via ipython
 asgiref==3.2.3
 backcall==0.1.0           # via ipython
 click==7.0                # via pip-tools
+coverage==4.5.4
 decorator==4.4.1          # via ipython, traitlets
 django==3.0.1
 entrypoints==0.3          # via flake8
@@ -23,6 +24,7 @@ pickleshare==0.7.5        # via ipython
 pika==1.1.0
 pip-tools==4.3.0
 prompt-toolkit==3.0.2     # via ipython
+psycopg2==2.8.4
 ptyprocess==0.6.0         # via pexpect
 pycodestyle==2.5.0        # via flake8
 pyflakes==2.1.1           # via flake8
