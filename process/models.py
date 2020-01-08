@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 # don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
 # and `ocid`. Instead, we set `Meta.constraints` and `Meta.indexes`.
 #
+# https://docs.djangoproject.com/en/3.0/ref/databases/#indexes-for-varchar-and-text-columns
+#
 # We don't use default index names (including for foreign key fields) or `%(class)s` in unique constraint names -
 # we are explicit, instead - so that the names are identical to those created by SQLAlchemy in an earlier version.
 # Otherwise, Django will create a migration to change the name of the index or constraint.
