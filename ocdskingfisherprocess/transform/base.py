@@ -7,7 +7,10 @@ class BaseTransform():
         self.config = config
         self.database = database
         self.destination_collection = destination_collection
-        self.source_collection = self.database.get_collection(destination_collection.transform_from_collection_id)
+        if destination_collection.transform_from_collection_id:
+            self.source_collection = self.database.get_collection(destination_collection.transform_from_collection_id)
+        else:
+            self.source_collection = None
         self.store = Store(config, database)
         self.store.set_collection(destination_collection)
         self.run_until_timestamp = run_until_timestamp
