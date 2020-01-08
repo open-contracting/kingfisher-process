@@ -1,3 +1,4 @@
+dj-database-url
 Django<3.1
 pika
 psycopg2

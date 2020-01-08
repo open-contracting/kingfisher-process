@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+import dj_database_url
+
 production = os.getenv('KINGFISHER_PROCESS_ENV') == 'production'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -79,14 +81,8 @@ WSGI_APPLICATION = 'ocdskingfisherprocess.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ocdskingfisherprocess',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    # https://docs.djangoproject.com/en/3.0/ref/databases/#postgresql-connection-settings
+    'default': dj_database_url.config(default='postgresql:///ocdskingfisherprocess'),
 }
 
 
