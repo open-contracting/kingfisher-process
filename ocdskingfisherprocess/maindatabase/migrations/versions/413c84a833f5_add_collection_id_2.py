@@ -16,15 +16,25 @@ depends_on = None
 
 
 def upgrade():
-    op.execute(
-        "UPDATE record SET collection_id = record_with_collection.collection_id "
-        "FROM record_with_collection WHERE record.id = record_with_collection.id")
-    op.execute(
-        "UPDATE release SET collection_id = release_with_collection.collection_id "
-        "FROM release_with_collection WHERE release.id = release_with_collection.id")
-    op.execute(
-        "UPDATE compiled_release SET collection_id = compiled_release_with_collection.collection_id "
-        "FROM compiled_release_with_collection WHERE compiled_release.id = compiled_release_with_collection.id")
+    conn = op.get_bind()
+
+    res = conn.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'record_with_collection'")
+    if res.scalar():
+        op.execute(
+            "UPDATE record SET collection_id = record_with_collection.collection_id "
+            "FROM record_with_collection WHERE record.id = record_with_collection.id")
+
+    res = conn.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'release_with_collection'")
+    if res.scalar():
+        op.execute(
+            "UPDATE release SET collection_id = release_with_collection.collection_id "
+            "FROM release_with_collection WHERE release.id = release_with_collection.id")
+
+    res = conn.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'compiled_release_with_collection'")
+    if res.scalar():
+        op.execute(
+            "UPDATE compiled_release SET collection_id = compiled_release_with_collection.collection_id "
+            "FROM compiled_release_with_collection WHERE compiled_release.id = compiled_release_with_collection.id")
 
     op.alter_column('record', 'collection_id', nullable=False)
     op.alter_column('release', 'collection_id', nullable=False)
