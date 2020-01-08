@@ -1,31 +1,30 @@
 sudo: false
+# https://docs.travis-ci.com/user/reference/bionic/
 dist: bionic
 language: python
 cache: pip
 python:
   - "3.6"
-# https://docs.travis-ci.com/user/database-setup/#using-a-different-postgresql-version
 addons:
+  # https://docs.travis-ci.com/user/database-setup/#using-a-different-postgresql-version
   postgresql: "11"
   apt:
     packages:
       - postgresql-11
       - postgresql-client-11
+      # https://docs.travis-ci.com/user/database-setup/#rabbitmq
+      - rabbitmq-server
 services:
   - postgresql
   - rabbitmq
 env:
   global:
     - BASEDIR="https://raw.githubusercontent.com/open-contracting/standard-maintenance-scripts/master"
-    - DATABASE_URL="postgresql:///travis_ci_test"
     - PGPORT=5433
 install:
   - curl -s -S --retry 3 $BASEDIR/tests/install.sh | bash -
   - pip install -r requirements.txt
   - pip install coveralls
-# https://docs.travis-ci.com/user/database-setup/#using-postgresql-in-your-builds
-before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
 script:
   - curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
   - coverage run --source ocdskingfisherprocess,process,report manage.py test
