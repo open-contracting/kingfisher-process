@@ -9,7 +9,11 @@ from ocdskingfisherprocess.transform.base import BaseTransform
 class Upgrade10To11Transform(BaseTransform):
 
     def process(self):
-        # Is deleted?
+        # Is Source Collection still here and not deleted?
+        if not self.source_collection or self.source_collection.deleted_at:
+            return
+
+        # Is destination deleted?
         if self.destination_collection.deleted_at:
             return
 

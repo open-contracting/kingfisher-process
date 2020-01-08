@@ -681,6 +681,12 @@ class DataBase:
         )
         self._delete_collection_run_sql("collection_file", """DELETE FROM collection_file
                 WHERE collection_id = :collection_id;""", collection_id)
+        self._delete_collection_run_sql("collection_note", """DELETE FROM collection_note
+                WHERE collection_id = :collection_id;""", collection_id)
+        self._delete_collection_run_sql("collection", """UPDATE collection SET transform_from_collection_id = NULL
+                 WHERE transform_from_collection_id = :collection_id;""", collection_id)
+        self._delete_collection_run_sql("collection", """DELETE FROM collection
+                WHERE id = :collection_id;""", collection_id)
 
     def _delete_collection_run_sql(self, label, sql, collection_id):
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
