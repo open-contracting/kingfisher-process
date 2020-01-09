@@ -40,8 +40,8 @@ class CompileReleasesTransform(BaseTransform):
         with self.database.get_engine().begin() as engine:
             query = engine.execute(
                 sa.text(
-                    " SELECT r.ocid FROM release AS r" +
-                    " LEFT JOIN compiled_release AS cr ON " +
+                    " SELECT r.ocid FROM release_with_collection AS r" +
+                    " LEFT JOIN compiled_release_with_collection AS cr ON " +
                     " cr.ocid = r.ocid and cr.collection_id = :destination_collection_id" +
                     " WHERE r.collection_id = :collection_id and cr.ocid is NULL" +
                     " GROUP BY r.ocid "
