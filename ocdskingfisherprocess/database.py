@@ -116,6 +116,8 @@ class DataBase:
 
         self.release_table = sa.Table('release', self.metadata,
                                       sa.Column('id', sa.Integer, primary_key=True),
+                                      sa.Column('collection_id', sa.Integer, sa.ForeignKey('collection.id',
+                                                name='fk_release_collection_id'), nullable=True),
                                       sa.Column('collection_file_item_id', sa.Integer,
                                                 sa.ForeignKey("collection_file_item.id",
                                                               name="fk_release_collection_file_item_id"),
@@ -127,6 +129,7 @@ class DataBase:
                                       sa.Column('package_data_id', sa.Integer,
                                                 sa.ForeignKey("package_data.id", name="fk_release_package_data_id"),
                                                 nullable=False),
+                                      sa.Index('release_collection_id_idx', 'collection_id'),
                                       sa.Index('release_collection_file_item_id_idx', 'collection_file_item_id'),
                                       sa.Index('release_ocid_idx', 'ocid'),
                                       sa.Index('release_package_data_id_idx', 'package_data_id'),
@@ -134,6 +137,12 @@ class DataBase:
 
         self.record_table = sa.Table('record', self.metadata,
                                      sa.Column('id', sa.Integer, primary_key=True),
+                                     sa.Column('collection_id', sa.Integer,
+                                               sa.ForeignKey(
+                                                   'collection.id',
+                                                   name='fk_record_collection_id'
+                                               ),
+                                               nullable=True),
                                      sa.Column(
                                          'collection_file_item_id',
                                          sa.Integer,
@@ -149,6 +158,7 @@ class DataBase:
                                      sa.Column('package_data_id', sa.Integer,
                                                sa.ForeignKey("package_data.id", name="fk_record_package_data_id"),
                                                nullable=False),
+                                     sa.Index('record_collection_id_idx', 'collection_id'),
                                      sa.Index('record_collection_file_item_id_idx', 'collection_file_item_id'),
                                      sa.Index('record_ocid_idx', 'ocid'),
                                      sa.Index('record_package_data_id_idx', 'package_data_id'),
@@ -156,6 +166,12 @@ class DataBase:
 
         self.compiled_release_table = sa.Table('compiled_release', self.metadata,
                                                sa.Column('id', sa.Integer, primary_key=True),
+                                               sa.Column('collection_id', sa.Integer,
+                                                         sa.ForeignKey(
+                                                             'collection.id',
+                                                             name='fk_compiled_release_collection_id'
+                                                         ),
+                                                         nullable=True),
                                                sa.Column(
                                                    'collection_file_item_id',
                                                    sa.Integer,
@@ -167,6 +183,7 @@ class DataBase:
                                                sa.Column('data_id', sa.Integer,
                                                          sa.ForeignKey("data.id", name="fk_complied_release_data_id"),
                                                          nullable=False),
+                                               sa.Index('compiled_release_collection_id_idx', 'collection_id'),
                                                sa.Index(
                                                    'compiled_release_collection_file_item_id_idx',
                                                    'collection_file_item_id'
@@ -961,6 +978,7 @@ class DatabaseStore:
         package_data_id = self.get_id_for_package_data(package_data)
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.record_table.insert(), {
+            'collection_id': self.collection_id,
             'collection_file_item_id': self.collection_file_item_id,
             'ocid': ocid,
             'data_id': data_id,
@@ -973,6 +991,7 @@ class DatabaseStore:
         package_data_id = self.get_id_for_package_data(package_data)
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.release_table.insert(), {
+            'collection_id': self.collection_id,
             'collection_file_item_id': self.collection_file_item_id,
             'release_id': release_id,
             'ocid': ocid,
@@ -984,6 +1003,7 @@ class DatabaseStore:
         ocid = row.get('ocid', '')
         data_id = self.get_id_for_data(row)
         self.connection.execute(self.database.compiled_release_table.insert(), {
+            'collection_id': self.collection_id,
             'collection_file_item_id': self.collection_file_item_id,
             'ocid': ocid,
             'data_id': data_id,
