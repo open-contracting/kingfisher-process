@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
+from process.broker import connect
 from process.models import Collection
 
 
@@ -71,11 +72,17 @@ class Command(BaseCommand):
         # COMMIT;
         #
         # Note: The queries above use the now-deprecated `check_data` field.
-
-        # Note: It's okay to nest `atomic` blocks.
-        # https://docs.djangoproject.com/en/3.0/topics/db/transactions/#django.db.transaction.atomic
         with transaction.atomic():
             try:
-                source.add_step(step)
+                destination = source.add_step(step)
             except ValidationError as e:
                 raise CommandError('\n'.join(e.messages))
+
+            message = {'source_id': source.pk}
+            if destination:
+                message['destination_id'] = destination.pk
+
+            with connect() as client:
+                file_ids = source.collectionfile_set.values_list('id', flat=True)
+                for file_id in file_ids.iterator():
+                    client.publish(step, dict(file_id=file_id, **message))

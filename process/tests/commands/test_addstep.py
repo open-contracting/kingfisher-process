@@ -1,9 +1,11 @@
 import datetime
+from unittest.mock import call, patch
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TransactionTestCase
 
+from process.models import CollectionFile
 from process.tests.fixtures import collection
 
 
@@ -16,19 +18,35 @@ class AddstepTests(TransactionTestCase):
 
     # The following tests mirror those in `test_models.py` for `Collection.add_step()` and `Collection.clean_fields()`.
 
-    def test_check(self):
+    @patch('process.broker.RabbitMQClient.publish')
+    def test_check(self, publish):
         source = collection()
         source.save()
+
+        pks = []
+        for filename in map(str, range(1, 4)):
+            collection_file = CollectionFile(collection=source, filename=filename)
+            collection_file.save()
+            pks.append(collection_file.pk)
 
         call_command('addstep', source.pk, 'check')
 
         source.refresh_from_db()
+        calls = [call('check', {'file_id': pk, 'source_id': source.pk}) for pk in pks]
 
         self.assertTrue(source.steps['check'])
+        publish.assert_has_calls(calls)
 
-    def test_transform(self):
+    @patch('process.broker.RabbitMQClient.publish')
+    def test_transform(self, publish):
         source = collection()
         source.save()
+
+        pks = []
+        for filename in map(str, range(1, 4)):
+            collection_file = CollectionFile(collection=source, filename=filename)
+            collection_file.save()
+            pks.append(collection_file.pk)
 
         for transform_type in ('compile-releases', 'upgrade-1-0-to-1-1'):
             with self.subTest(transform_type=transform_type):
@@ -39,11 +57,18 @@ class AddstepTests(TransactionTestCase):
 
                 self.assertTrue(source.steps[transform_type])
                 self.assertEqual(len(transforms), 1)
-                self.assertEqual(transforms[0].source_id, 'example')
-                self.assertEqual(transforms[0].data_version, datetime.datetime(2001, 1, 1, 0, 0))
-                self.assertFalse(transforms[0].sample)
-                self.assertEqual(transforms[0].parent_id, source.pk)
-                self.assertEqual(transforms[0].transform_type, transform_type)
+
+                destination = transforms[0]
+                calls = [call(transform_type, {'file_id': pk, 'source_id': source.pk,
+                                               'destination_id': destination.pk}) for pk in pks]
+
+                self.assertEqual(destination.source_id, 'example')
+                self.assertEqual(destination.data_version, datetime.datetime(2001, 1, 1, 0, 0))
+                self.assertFalse(destination.sample)
+                self.assertEqual(destination.expected_files_count, None)
+                self.assertEqual(destination.parent_id, source.pk)
+                self.assertEqual(destination.transform_type, transform_type)
+                publish.assert_has_calls(calls)
 
     def test_deleted_at(self):
         source = collection(deleted_at='2001-01-01 00:00:00')
