@@ -130,7 +130,7 @@ class Collection(models.Model):
             qs = self.parent.collection_set.filter(transform_type=self.transform_type).exclude(pk=self.pk)
             if qs.exists():
                 message = _('Parent collection %(source_id)s is already transformed into %(destination_id)s')
-                raise ValidationError(message % {'source_id': self.parent.id, 'destination_id': qs[0].id})
+                raise ValidationError(message % {'source_id': self.parent.pk, 'destination_id': qs[0].pk})
 
 
 class CollectionNote(models.Model):

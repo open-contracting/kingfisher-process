@@ -77,7 +77,7 @@ class CollectionTests(TestCase):
                 self.assertEqual(transforms[0].data_version, datetime.datetime(2001, 1, 1, 0, 0))
                 self.assertFalse(transforms[0].sample)
                 self.assertEqual(transforms[0].expected_files_count, None)
-                self.assertEqual(transforms[0].parent_id, source.id)
+                self.assertEqual(transforms[0].parent_id, source.pk)
                 self.assertEqual(transforms[0].transform_type, transform_type)
                 self.assertEqual(result, transforms[0])
 
@@ -90,7 +90,7 @@ class CollectionTests(TestCase):
             obj.clean_fields()
 
         self.assertEqual(e.exception.message_dict, {
-            'parent': ['Parent collection {} is being deleted'.format(source.id)],
+            'parent': ['Parent collection {} is being deleted'.format(source.pk)],
         })
 
     def test_clean_fields_double_transform(self):
@@ -111,7 +111,7 @@ class CollectionTests(TestCase):
                     obj.clean_fields()
 
                 self.assertEqual(e.exception.message_dict, {
-                    'transform_type': [message.format(original.id, original.parent_id)],
+                    'transform_type': [message.format(original.pk, original.parent_id)],
                 })
 
     def test_clean_fields_disallowed_transition(self):
@@ -126,10 +126,10 @@ class CollectionTests(TestCase):
             obj.clean_fields()
 
         self.assertEqual(e.exception.message_dict, {
-            'transform_type': ["Parent collection {} is compiled and can't be upgraded".format(compiled.id)],
+            'transform_type': ["Parent collection {} is compiled and can't be upgraded".format(compiled.pk)],
         })
 
-    def test_duplicate(self):
+    def test_clean_fields_duplicate(self):
         source = collection()
         source.save()
 
@@ -140,7 +140,7 @@ class CollectionTests(TestCase):
         with self.assertRaises(ValidationError) as e:
             obj.clean_fields()
 
-        message = 'Parent collection {} is already transformed into {}'.format(source.id, destination.id)
+        message = 'Parent collection {} is already transformed into {}'.format(source.pk, destination.pk)
         self.assertEqual(e.exception.message, message)
 
 
