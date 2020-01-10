@@ -27,6 +27,7 @@ install:
   - pip install coveralls
 script:
   - curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
-  - coverage run --source ocdskingfisherprocess,process,report manage.py test
+  # https://github.com/nedbat/coveragepy/issues/862#issuecomment-572318505
+  - python -m coverage run --source ocdskingfisherprocess,process,report manage.py test
 after_success:
   coveralls

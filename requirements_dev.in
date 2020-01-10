@@ -1,6 +1,6 @@
 -r requirements.txt
 # https://github.com/nedbat/coveragepy/issues/862
-coverage<5
+coverage
 flake8
 ipython
 isort
