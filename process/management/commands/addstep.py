@@ -1,29 +1,21 @@
 from django.core.exceptions import ValidationError
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from process.broker import connect
+from process.cli import CollectionCommand
 from process.models import Collection
 
 
-class Command(BaseCommand):
+class Command(CollectionCommand):
     help = _("Adds a step to the collection's processing pipeline")
 
-    def add_arguments(self, parser):
-        parser.add_argument('collection_id',
-                            help=_('the ID of the collection'))
-        parser.add_argument('step', choices=['check'] + Collection.Transforms.values,
-                            help=_('the step to add'))
+    def add_collection_arguments(self, parser):
+        parser.add_argument('step', choices=['check'] + Collection.Transforms.values, help=_('the step to add'))
 
-    def handle(self, *args, **options):
-        collection_id = options['collection_id']
+    def handle_collection(self, collection, *args, **options):
         step = options['step']
-
-        try:
-            source = Collection.objects.get(pk=collection_id)
-        except Collection.DoesNotExist:
-            raise CommandError(_('Collection %(source_id)s does not exist') % {'source_id': collection_id})
 
         # This command updates the source collection's configuration, so that any newly loaded data is transformed.
         #
@@ -74,15 +66,15 @@ class Command(BaseCommand):
         # Note: The queries above use the now-deprecated `check_data` field.
         with transaction.atomic():
             try:
-                destination = source.add_step(step)
+                destination = collection.add_step(step)
             except ValidationError as e:
                 raise CommandError('\n'.join(e.messages))
 
-            message = {'source_id': source.pk}
+            message = {'source_id': collection.pk}
             if destination:
                 message['destination_id'] = destination.pk
 
             with connect() as client:
-                file_ids = source.collectionfile_set.values_list('id', flat=True)
+                file_ids = collection.collectionfile_set.values_list('id', flat=True)
                 for file_id in file_ids.iterator():
                     client.publish(step, dict(file_id=file_id, **message))
