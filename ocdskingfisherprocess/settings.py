@@ -127,6 +127,11 @@ STATIC_URL = '/static/'
 
 # Customization
 
+RABBITMQ = {
+    'host': 'localhost',
+    'exchange': 'ocdskingfisherprocess',
+}
+
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
     'models.E034',
