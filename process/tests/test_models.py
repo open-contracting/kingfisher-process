@@ -54,18 +54,19 @@ class CollectionTests(TestCase):
 
     def test_add_step_check(self):
         source = collection()
-        source.add_step('check')
+        result = source.add_step('check')
 
         source.refresh_from_db()
 
         self.assertTrue(source.steps['check'])
+        self.assertEqual(result, None)
 
     def test_add_step_transform(self):
         source = collection()
 
         for transform_type in ('compile-releases', 'upgrade-1-0-to-1-1'):
             with self.subTest(transform_type=transform_type):
-                source.add_step(transform_type)
+                result = source.add_step(transform_type)
 
                 source.refresh_from_db()
                 transforms = source.collection_set.filter(transform_type=transform_type)
@@ -75,8 +76,10 @@ class CollectionTests(TestCase):
                 self.assertEqual(transforms[0].source_id, 'example')
                 self.assertEqual(transforms[0].data_version, datetime.datetime(2001, 1, 1, 0, 0))
                 self.assertFalse(transforms[0].sample)
+                self.assertEqual(transforms[0].expected_files_count, None)
                 self.assertEqual(transforms[0].parent_id, source.id)
                 self.assertEqual(transforms[0].transform_type, transform_type)
+                self.assertEqual(result, transforms[0])
 
     def test_clean_fields_deleted_at(self):
         source = collection(deleted_at='2001-01-01 00:00:00')

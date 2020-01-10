@@ -60,6 +60,7 @@ class Collection(models.Model):
     # Routing slip
     steps = JSONField(blank=True, default=dict)
     options = JSONField(blank=True, default=dict)
+    expected_files_count = models.IntegerField(null=True, blank=True)
     # Deprecated
     check_data = models.BooleanField(default=False)
     check_older_data_with_schema_version_1_1 = models.BooleanField(default=False)
@@ -86,7 +87,7 @@ class Collection(models.Model):
     @transaction.atomic()
     def add_step(self, step):
         """
-        Adds a step to the collection's processing pipeline. If the step is a transformation, creates the transformed
+        Adds a step to the collection's processing pipeline. If the step is a transformation, returns the transformed
         collection. If the collection had not yet been saved, this method will save it.
         """
         self.steps[step] = True
@@ -94,8 +95,9 @@ class Collection(models.Model):
 
         if step in Collection.Transforms.values:
             collection = Collection(source_id=self.source_id, data_version=self.data_version, sample=self.sample,
-                                    parent=self, transform_type=step)
+                                    expected_files_count=self.expected_files_count, parent=self, transform_type=step)
             collection.clean_save()
+            return collection
 
     def clean_save(self):
         self.full_clean()
@@ -125,9 +127,7 @@ class Collection(models.Model):
                     message = _("Parent collection %(id)s is compiled and can't be upgraded")
                     raise ValidationError({'transform_type': message % self.parent.__dict__})
 
-            qs = self.parent.collection_set.filter(transform_type=self.transform_type)
-            if self.pk is not None:
-                qs = qs.exclude(pk=self.pk)
+            qs = self.parent.collection_set.filter(transform_type=self.transform_type).exclude(pk=self.pk)
             if qs.exists():
                 message = _('Parent collection %(source_id)s is already transformed into %(destination_id)s')
                 raise ValidationError(message % {'source_id': self.parent.id, 'destination_id': qs[0].id})
