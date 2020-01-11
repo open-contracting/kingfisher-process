@@ -49,8 +49,8 @@ class CollectionTests(TestCase):
                 with self.assertRaises(ValidationError) as e:
                     obj.clean_fields()
 
-                message = 'parent and transform_type must either be both set or both not set.'
-                self.assertEqual(e.exception.message, message)
+                message = 'parent and transform_type must either be both set or both not set'
+                self.assertEqual(e.exception.messages, [message])
 
     def test_add_step_check(self):
         source = collection()
@@ -141,7 +141,7 @@ class CollectionTests(TestCase):
             obj.clean_fields()
 
         message = 'Parent collection {} is already transformed into {}'.format(source.pk, destination.pk)
-        self.assertEqual(e.exception.message, message)
+        self.assertEqual(e.exception.messages, [message])
 
 
 class CollectionNoteTests(TestCase):

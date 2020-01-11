@@ -103,34 +103,35 @@ class Collection(models.Model):
         self.full_clean()
         self.save()
 
+    # https://docs.djangoproject.com/en/3.0/ref/forms/validation/#raising-validationerror
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
 
         if bool(self.parent_id) ^ bool(self.transform_type):
             raise ValidationError(
-                _('parent and transform_type must either be both set or both not set.'))
+                _('parent and transform_type must either be both set or both not set'))
 
         if self.parent:
             if self.parent.deleted_at:
                 message = _('Parent collection %(id)s is being deleted')
-                raise ValidationError({'parent': message % self.parent.__dict__})
+                raise ValidationError({'parent': ValidationError(message, params=self.parent.__dict__)})
 
             if self.transform_type == self.parent.transform_type:
                 if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
                     message = _('Parent collection %(id)s is itself already a compilation of %(parent_id)s')
                 elif self.parent.transform_type == Collection.Transforms.UPGRADE_10_11:
                     message = _('Parent collection %(id)s is itself already an upgrade of %(parent_id)s')
-                raise ValidationError({'transform_type': message % self.parent.__dict__})
+                raise ValidationError({'transform_type': ValidationError(message, params=self.parent.__dict__)})
 
             if self.transform_type == Collection.Transforms.UPGRADE_10_11:
                 if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
                     message = _("Parent collection %(id)s is compiled and can't be upgraded")
-                    raise ValidationError({'transform_type': message % self.parent.__dict__})
+                    raise ValidationError({'transform_type': ValidationError(message, params=self.parent.__dict__)})
 
             qs = self.parent.collection_set.filter(transform_type=self.transform_type).exclude(pk=self.pk)
             if qs.exists():
                 message = _('Parent collection %(source_id)s is already transformed into %(destination_id)s')
-                raise ValidationError(message % {'source_id': self.parent.pk, 'destination_id': qs[0].pk})
+                raise ValidationError(message, params={'source_id': self.parent.pk, 'destination_id': qs[0].pk})
 
 
 class CollectionNote(models.Model):
