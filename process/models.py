@@ -91,17 +91,15 @@ class Collection(models.Model):
         collection. If the collection had not yet been saved, this method will save it.
         """
         self.steps[step] = True
-        self.clean_save()
+        self.full_clean()
+        self.save()
 
         if step in Collection.Transforms.values:
             collection = Collection(source_id=self.source_id, data_version=self.data_version, sample=self.sample,
                                     expected_files_count=self.expected_files_count, parent=self, transform_type=step)
-            collection.clean_save()
+            collection.full_clean()
+            collection.save()
             return collection
-
-    def clean_save(self):
-        self.full_clean()
-        self.save()
 
     # https://docs.djangoproject.com/en/3.0/ref/forms/validation/#raising-validationerror
     def clean_fields(self, exclude=None):
