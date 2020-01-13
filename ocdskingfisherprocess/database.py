@@ -637,55 +637,55 @@ class DataBase:
         self._delete_collection_run_sql("release_check_error", """DELETE FROM release_check_error
                 WHERE release_id IN
                     (
-                        SELECT id FROM release_with_collection
+                        SELECT id FROM release
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("record_check_error", """DELETE FROM record_check_error
                         WHERE record_id IN
                             (
-                                SELECT id FROM record_with_collection
+                                SELECT id FROM record
                                 WHERE collection_id = :collection_id
                             );""", collection_id)
         self._delete_collection_run_sql("record_check", """DELETE FROM record_check
                 WHERE record_id IN
                     (
-                        SELECT id FROM record_with_collection
+                        SELECT id FROM record
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("release_check", """DELETE FROM release_check
                 WHERE release_id IN
                     (
-                        SELECT id FROM release_with_collection
+                        SELECT id FROM release
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("compiled_release", """DELETE FROM compiled_release
                 WHERE id IN
                     (
-                        SELECT id FROM compiled_release_with_collection
+                        SELECT id FROM compiled_release
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_record", """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
                 WHERE source_record_id IN
                     (
-                        SELECT id FROM record_with_collection
+                        SELECT id FROM record
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("record", """DELETE FROM record
                 WHERE id IN
                     (
-                        SELECT id FROM record_with_collection
+                        SELECT id FROM record
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_release", """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
                 WHERE source_release_id IN
                     (
-                        SELECT id FROM release_with_collection
+                        SELECT id FROM release
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql("release", """DELETE FROM release
                 WHERE id IN
                     (
-                        SELECT id FROM release_with_collection
+                        SELECT id FROM release
                         WHERE collection_id = :collection_id
                     );""", collection_id)
         self._delete_collection_run_sql_in_blocks(
@@ -773,26 +773,26 @@ class DataBase:
     def _get_check_query(self, obj_type, collection_id, override_schema_version):
         data = {'collection_id': collection_id}
         sql = """ SELECT
-                           release_with_collection.id,
-                           release_with_collection.data_id,
-                           release_with_collection.package_data_id
-                           FROM release_with_collection"""
+                           release.id,
+                           release.data_id,
+                           release.package_data_id
+                           FROM release"""
         if override_schema_version:
-            sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
+            sql += """ LEFT JOIN release_check ON release_check.release_id = release.id
                           AND release_check.override_schema_version = :override_schema_version
                        LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
                           AND release_check_error.override_schema_version = :override_schema_version
                        LEFT JOIN package_data on package_data.id = package_data_id
-                       WHERE release_with_collection.collection_id = :collection_id
+                       WHERE release.collection_id = :collection_id
                        AND release_check.id IS NULL AND release_check_error.id IS NULL
                        AND coalesce(data ->> 'version', '1.0') <> :override_schema_version"""
             data['override_schema_version'] = override_schema_version
         else:
-            sql += """ LEFT JOIN release_check ON release_check.release_id = release_with_collection.id
+            sql += """ LEFT JOIN release_check ON release_check.release_id = release.id
                           AND release_check.override_schema_version IS NULL
                        LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
                           AND release_check_error.override_schema_version IS NULL
-                        WHERE release_with_collection.collection_id = :collection_id
+                        WHERE release.collection_id = :collection_id
                         AND release_check.id IS NULL AND release_check_error.id IS NULL """
 
         return sql.replace('release', obj_type), data
@@ -845,7 +845,7 @@ class DataBase:
     def update_collection_cached_columns(self, collection_id):
         with self.get_engine().begin() as connection:
             s = sa.sql.expression.text(
-                "SELECT count(*) as release_count FROM release_with_collection WHERE collection_id = :collection_id")
+                "SELECT count(*) as release_count FROM release WHERE collection_id = :collection_id")
             result = connection.execute(s, {"collection_id": collection_id})
             data = result.fetchone()
 
@@ -857,7 +857,7 @@ class DataBase:
 
         with self.get_engine().begin() as connection:
             s = sa.sql.expression.text(
-                "SELECT count(*) as record_count FROM record_with_collection WHERE collection_id = :collection_id")
+                "SELECT count(*) as record_count FROM record WHERE collection_id = :collection_id")
             result = connection.execute(s, {"collection_id": collection_id})
             data = result.fetchone()
 
@@ -869,7 +869,7 @@ class DataBase:
 
         with self.get_engine().begin() as connection:
             s = sa.sql.expression.text(
-                "SELECT count(*) as compiled_release_count FROM compiled_release_with_collection " +
+                "SELECT count(*) as compiled_release_count FROM compiled_release " +
                 "WHERE collection_id = :collection_id")
             result = connection.execute(s, {"collection_id": collection_id})
             data = result.fetchone()
