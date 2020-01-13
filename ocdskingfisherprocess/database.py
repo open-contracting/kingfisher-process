@@ -117,7 +117,7 @@ class DataBase:
         self.release_table = sa.Table('release', self.metadata,
                                       sa.Column('id', sa.Integer, primary_key=True),
                                       sa.Column('collection_id', sa.Integer, sa.ForeignKey('collection.id',
-                                                name='fk_release_collection_id'), nullable=True),
+                                                name='fk_release_collection_id'), nullable=False),
                                       sa.Column('collection_file_item_id', sa.Integer,
                                                 sa.ForeignKey("collection_file_item.id",
                                                               name="fk_release_collection_file_item_id"),
@@ -142,7 +142,7 @@ class DataBase:
                                                    'collection.id',
                                                    name='fk_record_collection_id'
                                                ),
-                                               nullable=True),
+                                               nullable=False),
                                      sa.Column(
                                          'collection_file_item_id',
                                          sa.Integer,
@@ -171,7 +171,7 @@ class DataBase:
                                                              'collection.id',
                                                              name='fk_compiled_release_collection_id'
                                                          ),
-                                                         nullable=True),
+                                                         nullable=False),
                                                sa.Column(
                                                    'collection_file_item_id',
                                                    sa.Integer,
