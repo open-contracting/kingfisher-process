@@ -75,28 +75,30 @@ This situation might arise when:
 release, record and compiled_release tables
 -------------------------------------------
 
-Each row is linked to `collection_file_item` and thus to collections. Each row is also linked to the `data` and `package_data` tables that actually hold the data.
+Each row is linked to `collection_file_item` and thus to collections. However, we also include a `collection_id` column so it's easy to select all data in one collection.
+
+Each row is also linked to the `data` and `package_data` tables that actually hold the data.
 
 Note that the ``compiled_release`` table is only populated by the compile-releases transform, and not by loading records from a data source.
 
 .. _with-collection-views:
 
-release, record and compiled_release views with added collection information
------------------------------------------------------------------------------
+release, record and compiled_release views with added collection information [deprecated]
+-----------------------------------------------------------------------------------------
 
-Filtering records, releases or compiled releases on a specific collection involves several joins.
-
-You need to join `release`/`record`/`compiled_release` to `collection_file_item`, which needs to be joined to `collection_file`, which then has a `collection_id` column you can filter on.
-
-To make this easier, three views are provided.
+In the past, three views were provided to make something easier:
 
 * `release_with_collection`
 * `record_with_collection`
 * `compiled_release_with_collection`
 
-These contain the normal columns each table has, but also have the additional column `collection_id`.
+The data in these views is now exactly the same as the normal tables:
 
-You should use these views where possible to avoid having to write several joins yourself.
+* `release`
+* `record`
+* `compiled_release`
+
+If you see any use of these views, please change to using the tables directly - you will get better performance.
 
 release_check, record_check, release_check_error and record_check_error tables
 ------------------------------------------------------------------------------
