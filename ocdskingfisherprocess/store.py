@@ -20,6 +20,7 @@ class Store:
         'release_package_json_lines',
         'record_package_json_lines',
         'release_package_in_ocdsReleasePackage_in_list_in_results',
+        'release_in_Release_json_lines'
     ]
 
     def __init__(self, config, database):
@@ -62,13 +63,17 @@ class Store:
 
         with FileToStore(local_filename, encoding=encoding) as file_to_store:
 
-            if data_type == 'release_package_json_lines' or data_type == 'record_package_json_lines':
+            if data_type == 'release_package_json_lines' or data_type == 'record_package_json_lines'\
+                    or data_type == 'release_in_Release_json_lines':
                 try:
                     with open(file_to_store.get_filename(), encoding=encoding) as f:
                         number = 0
                         raw_data = f.readline()
                         while raw_data:
-                            self.store_file_item(filename, url, data_type, json.loads(raw_data), number)
+                            json_data = json.loads(raw_data)
+                            if data_type == 'release_in_Release_json_lines':
+                                json_data = json_data['Release']
+                            self.store_file_item(filename, url, data_type, json_data, number)
                             raw_data = f.readline()
                             number += 1
                 except Exception as e:
@@ -146,7 +151,8 @@ class Store:
                            warnings=warnings) as store:
 
             if data_type == 'release' or data_type == 'record' or data_type == 'compiled_release' or \
-                            data_type == 'release_list' or data_type == 'record_list':
+                            data_type == 'release_list' or data_type == 'record_list' \
+                    or data_type == 'release_in_Release_json_lines':
                 data_list = [json_data]
             elif data_type == 'release_package' or \
                     data_type == 'release_package_json_lines' or \

@@ -105,6 +105,9 @@ release_package_list_in_results
 release_package_in_ocdsReleasePackage_in_list_in_results
     A JSON object has a ``results`` key whose value is a list. Every item in that list is a JSON object. The object has a ``ocdsReleasePackage`` key who's value is a release package
 
+release_in_Release_json_lines
+    `Line-delimited JSON <https://en.wikipedia.org/wiki/JSON_streaming>`__, in which each line is a JSON object. The object has a ``Release`` key who's value is a release
+
 
 Items
 -----
