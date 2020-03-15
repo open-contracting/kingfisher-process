@@ -12,14 +12,12 @@ addons:
       - postgresql-11
 env:
   global:
-    - PGPORT=5433
     - KINGFISHER_PROCESS_DB_URI='postgres:///travis'
-services:
-  - postgresql
+    - KINGFISHER_PROCESS_WEB_API_KEYS=1234
 install:
-  - "pip install -r requirements_dev.txt"
+  - pip install -r requirements_dev.txt
 script:
-  - "flake8 ocdskingfisherprocess/ ocdskingfisher-process-cli tests setup.py"
-  - "KINGFISHER_PROCESS_WEB_API_KEYS=1234 pytest --cov ocdskingfisherprocess"
+  - flake8 ocdskingfisherprocess tests ocdskingfisher-process-cli setup.py
+  - pytest --cov ocdskingfisherprocess
 after_success:
   coveralls
