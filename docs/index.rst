@@ -28,6 +28,7 @@ And that's it! In short, Kingfisher Process accepts "raw" OCDS data, and then ch
    config.rst
    data-model.rst
    database-structure.rst
+   querying-data.rst
    standard-pipeline.rst
    cli/index.rst
    web.rst
