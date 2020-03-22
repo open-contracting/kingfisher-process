@@ -15,7 +15,7 @@ class TestStandardPipelineOn(BaseDataBaseTest):
         collections = self.database.get_all_collections()
         assert 3 == len(collections)
 
-        assert None == collections[0].transform_type # noqa
+        assert '' == collections[0].transform_type # noqa
         assert None == collections[0].transform_from_collection_id # noqa
 
         assert TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1 == collections[1].transform_type

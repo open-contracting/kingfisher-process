@@ -95,8 +95,8 @@ class SubmitFileView(BaseAPIViewAuthAndCollectionNeeded):
 
         store.add_collection_note(request.form.get('collection_note'))
 
-        file_filename = request.form.get('file_name')
-        file_url = request.form.get('url')
+        file_filename = request.form.get('file_name', '')
+        file_url = request.form.get('url', '')
         file_data_type = request.form.get('data_type')
         file_encoding = request.form.get('encoding', 'utf-8')
 
@@ -152,8 +152,8 @@ class SubmitItemView(BaseAPIViewAuthAndCollectionNeeded):
 
         store.add_collection_note(request.form.get('collection_note'))
 
-        file_filename = request.form.get('file_name')
-        file_url = request.form.get('url')
+        file_filename = request.form.get('file_name', '')
+        file_url = request.form.get('url', '')
         file_data_type = request.form.get('data_type')
         item_number = int(request.form.get('number'))
 
@@ -196,10 +196,10 @@ class SubmitFileErrorsView(BaseAPIViewAuthAndCollectionNeeded):
         current_app.kingfisher_web_logger.info("Submit File Error API V1 called for collection " +
                                                str(store.collection_id))
 
-        file_filename = request.form.get('file_name')
+        file_filename = request.form.get('file_name', '')
         file_errors_raw = request.form.get('errors')
         file_errors = json.loads(file_errors_raw)
-        file_url = request.form.get('url')
+        file_url = request.form.get('url', '')
 
         store.store_file_errors(file_filename, file_url, file_errors)
 

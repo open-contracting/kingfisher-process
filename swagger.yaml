@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: OCDS Helpdesk deployment
-    url: http://process.ocdskingfisher.opendataservices.coop/api/v1
+    url: http://process.kingfisher.open-contracting.org/api/v1
 info:
   description: Submit OCDS data to store and pre-process.
   version: v1

@@ -6,6 +6,7 @@ Requirements
 
 - Python 3.5 or higher
 - PostgresSQL 10 or higher
+- Redis
 
 Installation
 ------------
@@ -21,7 +22,14 @@ Activate the virtual environment::
 Install the requirements::
 
     pip install -r requirements.txt
-    pip install -e .
+
+Install `Redis <https://redis.io/>`__ with your package manager on Linux, for example::
+
+        sudo apt-get install redis-server
+
+or with Homebrew on macOS::
+
+        brew install redis
 
 Database
 --------

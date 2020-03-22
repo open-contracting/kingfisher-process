@@ -1,12 +1,13 @@
 import datetime
-from threading import Timer
-import os
-import logging
 import json
+import logging
+import os
+from threading import Timer
 
 import redis
 
 import ocdskingfisherprocess.cli.commands.base
+from ocdskingfisherprocess.transform.util import get_transform_instance
 
 
 class ProcessRedisQueueCollectionStoreFinishedCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -47,7 +48,14 @@ class ProcessRedisQueueCollectionStoreFinishedCLICommand(ocdskingfisherprocess.c
                 if not args.quiet:
                     print("Got Collection: " + str(message.get('collection_id')))
                 logger.info("Got Collection: " + str(message.get('collection_id')))
+                # Update Cache Columns
                 self.database.update_collection_cached_columns(message.get('collection_id'))
+                # Run any transforms that depend on this collection
+                for collection in \
+                        self.database.get_collections_that_transform_this_collection(message.get('collection_id')):
+                    transform = get_transform_instance(collection.transform_type, self.config, self.database,
+                                                       collection)
+                    transform.process()
                 if not args.quiet:
                     print("Processed!")
             # Early return?

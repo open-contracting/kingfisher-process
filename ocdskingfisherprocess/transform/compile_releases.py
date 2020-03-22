@@ -7,7 +7,11 @@ import datetime
 class CompileReleasesTransform(BaseTransform):
 
     def process(self):
-        # Is deleted?
+        # Is Source Collection still here and not deleted?
+        if not self.source_collection or self.source_collection.deleted_at:
+            return
+
+        # Is destination deleted?
         if self.destination_collection.deleted_at:
             return
 
@@ -36,8 +40,8 @@ class CompileReleasesTransform(BaseTransform):
         with self.database.get_engine().begin() as engine:
             query = engine.execute(
                 sa.text(
-                    " SELECT r.ocid FROM release_with_collection AS r" +
-                    " LEFT JOIN compiled_release_with_collection AS cr ON " +
+                    " SELECT r.ocid FROM release AS r" +
+                    " LEFT JOIN compiled_release AS cr ON " +
                     " cr.ocid = r.ocid and cr.collection_id = :destination_collection_id" +
                     " WHERE r.collection_id = :collection_id and cr.ocid is NULL" +
                     " GROUP BY r.ocid "
@@ -76,7 +80,7 @@ class CompileReleasesTransform(BaseTransform):
                       'We have picked one at random and passed it through this transform unchanged.'
             self.store.store_file_item(
                 ocid + '.json',
-                None,
+                '',
                 'compiled_release',
                 releases_compiled[0],
                 1,
@@ -87,7 +91,7 @@ class CompileReleasesTransform(BaseTransform):
                       'We have passed it through this transform unchanged.'
             self.store.store_file_item(
                 ocid + '.json',
-                None,
+                '',
                 'compiled_release',
                 releases_compiled[0],
                 1,
@@ -99,4 +103,4 @@ class CompileReleasesTransform(BaseTransform):
             # In the occurrence of a race condition where two concurrent transforms have run the same ocid
             # we rely on the fact that collection_id and filename are unique in the file_item table.
             # Therefore this will error with a violation of unique key contraint and not cause duplicate entries.
-            self.store.store_file_item(ocid+'.json', None, 'compiled_release', out, 1)
+            self.store.store_file_item(ocid+'.json', '', 'compiled_release', out, 1)
