@@ -132,6 +132,11 @@ RABBITMQ = {
     'exchange': 'ocdskingfisherprocess',
 }
 
+SCRAPYD = {
+    'url': os.getenv('KINGFISHER_PROCESS_SCRAPYD_URL'),
+    'project': 'kingfisher',
+}
+
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
     'models.E034',
