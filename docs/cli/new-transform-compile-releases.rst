@@ -15,4 +15,20 @@ It will create a new destination collection to hold the compiled releases and re
 
     python ocdskingfisher-process-cli new-transform-compile-releases 17
 
+You can specify 2 modes for this transform.
+
+Use existing - in this mode if there are any existing compiled releases in the data, these will simply be used with no changes.
+
+.. code-block:: shell-session
+
+    python ocdskingfisher-process-cli new-transform-compile-releases --useexisting 17
+
+
+Always compile - in this mode the transform will always compile a release itself, even when there are existing compiled releases in the data.
+
+.. code-block:: shell-session
+
+    python ocdskingfisher-process-cli new-transform-compile-releases --alwayscompile 17
+
+
 After creating it, you should run transform-collection to actually do the work. See :doc:`transform-collection`

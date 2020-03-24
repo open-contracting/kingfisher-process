@@ -52,6 +52,8 @@ class DataBase:
                                                   postgresql_where=sa.text("transform_type = ''")),
                                          sa.Index('collection_transform_from_collection_id_idx',
                                                   'transform_from_collection_id'),
+                                         sa.Column('options', JSONB, nullable=False, default=sa.text("'{}'::jsonb"),
+                                                   server_default=sa.text("'{}'::jsonb")),
                                          )
 
         self.collection_note_table = sa.Table('collection_note', self.metadata,
@@ -344,7 +346,7 @@ class DataBase:
                 return collection['id']
 
     def get_or_create_collection_id(self, source_id, data_version, sample,
-                                    transform_from_collection_id=None, transform_type=''):
+                                    transform_from_collection_id=None, transform_type='', create_options={}):
 
         collection_id = self.get_collection_id(
             source_id,
@@ -365,6 +367,7 @@ class DataBase:
                 'store_start_at': datetime.datetime.utcnow(),
                 'check_data': False,
                 'check_older_data_with_schema_version_1_1': False,
+                'options': create_options,
             })
             collection_id = value.inserted_primary_key[0]
 
@@ -388,6 +391,7 @@ class DataBase:
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
                     deleted_at=collection['deleted_at'],
+                    options=collection['options'],
                 ))
         return out
 
@@ -410,6 +414,7 @@ class DataBase:
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
                     deleted_at=collection['deleted_at'],
+                    options=collection['options'],
                 ))
         return out
 
@@ -432,6 +437,7 @@ class DataBase:
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
                     deleted_at=collection['deleted_at'],
+                    options=collection['options'],
                 )
 
     def get_all_notes_in_collection(self, collection_id):

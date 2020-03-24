@@ -2,7 +2,7 @@ class CollectionModel:
 
     def __init__(self, database_id=None, source_id=None, data_version=None, sample=None, transform_type='',
                  transform_from_collection_id=None, check_data=None, check_older_data_with_schema_version_1_1=None,
-                 store_start_at=None, store_end_at=None, deleted_at=None):
+                 store_start_at=None, store_end_at=None, deleted_at=None, options={}):
         self.database_id = database_id
         self.source_id = source_id
         self.data_version = data_version
@@ -14,6 +14,7 @@ class CollectionModel:
         self.store_start_at = store_start_at
         self.store_end_at = store_end_at
         self.deleted_at = deleted_at
+        self.options = options
 
 
 class FileModel:
