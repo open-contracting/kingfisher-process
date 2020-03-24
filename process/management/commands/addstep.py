@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db import transaction
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 from process.broker import connect
 from process.cli import CollectionCommand
@@ -9,7 +9,7 @@ from process.models import Collection
 
 
 class Command(CollectionCommand):
-    help = _("Adds a step to the collection's processing pipeline")
+    help = gettext("Adds a step to the collection's processing pipeline")
 
     def add_collection_arguments(self, parser):
         parser.add_argument('step', choices=['check'] + Collection.Transforms.values, help=_('the step to add'))
