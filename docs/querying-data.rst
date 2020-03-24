@@ -1,9 +1,9 @@
 Querying data in Kingfisher Process
 ====================================
 
-The Kingfisher Process :doc:`data model` is based on collections. Each collection contains either data downloaded from an OCDS publisher using a `Kingfisher Scrape<https://kingfisher-scrape.readthedocs.io/en/latest/>`__ spider, or loaded locally using the :doc:`local-load` cli tool.
+The Kingfisher Process :doc:`data-model` is based on collections. Each collection contains either data downloaded from an OCDS publisher using a `Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io/en/latest/>`__ spider, or loaded locally using the :doc:`cli/local-load` cli tool.
 
-OCDS data can be published using either `releases or records<https://standard.open-contracting.org/latest/en/getting_started/releases_and_records/>`__. Releases are point in time updates about a contracting process and a record provides an index of all the releases for a contracting process.
+OCDS data can be published using either `releases or records <https://standard.open-contracting.org/latest/en/getting_started/releases_and_records/>`__. Releases are point in time updates about a contracting process and a record provides an index of all the releases for a contracting process.
 
 Kingfisher Process automatically transforms OCDS releases to create compiled release collections,  containing a single compiled release per contracting process populated with the latest value of each field.
 
@@ -12,7 +12,7 @@ Since most analysis is much easier to perform on compiled releases, we recommend
 Get a list of compiled release collections from a particular source
 -------------------------------------------------------------------
 
-The following query returns a list of compiled release collections downloaded from the `State Procurement Agency of Georgia's OCDS API<https://odapi.spa.ge/>`__:
+The following query returns a list of compiled release collections downloaded from the `State Procurement Agency of Georgia's OCDS API <https://odapi.spa.ge/>`__:
 
 .. code-block:: sql
 
@@ -29,7 +29,7 @@ The following query returns a list of compiled release collections downloaded fr
 
 To find collections from a different source, change the ``source_id`` parameter. The ``source_id`` in Kingfisher Process is based on the name of the spider in Kingfisher Scrape.
 
-See the list of spiders in the `Kingfisher Scrape Github Repository<https://github.com/open-contracting/kingfisher-scrape/tree/master/kingfisher_scrapy/spiders>`__ for a list of possible sources. Each ``.py`` file is a spider, and the part before the ``.py`` extension is the ``source_id``.
+See the list of spiders in the `Kingfisher Scrape Github Repository <https://github.com/open-contracting/kingfisher-scrape/tree/master/kingfisher_scrapy/spiders>`__ for a list of possible sources. Each ``.py`` file is a spider, and the part before the ``.py`` extension is the ``source_id``.
 
 Get the JSON data stored in a collection
 ----------------------------------------
@@ -94,7 +94,7 @@ The following query calculates the total value of completed tenders in collectio
 
   Consider which statuses you want to include or exclude from your analysis, for example you might wish to exclude pending and cancelled contracts when calculating the total value of contracts entered into by each buyer.
 
-  The `OCDS codelist documentation<https://standard.open-contracting.org/latest/en/schema/codelists/#>`__ describes the meaning of the statuses for each object.
+  The `OCDS codelist documentation <https://standard.open-contracting.org/latest/en/schema/codelists/#>`__ describes the meaning of the statuses for each object.
 
 Calculate the top 10 buyers by award value
 ------------------------------------------
@@ -135,13 +135,13 @@ The ``cross join`` in this query acts like an inner join between each row of the
   limit
       10;
 
-Use the `PostgreSQL documentation<https://www.postgresql.org/docs/current/functions-json.html>`__ to learn more about operators and functions for working with JSON data.
+Use the `PostgreSQL documentation <https://www.postgresql.org/docs/current/functions-json.html>`__ to learn more about operators and functions for working with JSON data.
 
 .. tip:: Organization identifiers
 
   For simplicity, the above query groups by the ``buyer.name`` field. Using organization names as a dimension in your analysis can be unreliable, since spellings and abbreviations of the same organization name can differ.
 
-  OCDS recommends that publishers provide `organization identifiers<https://standard.open-contracting.org/latest/en/schema/identifiers/#organization-ids>`__ so that the legal entities involved in a contracting process can be reliably identified.
+  OCDS recommends that publishers provide `organization identifiers <https://standard.open-contracting.org/latest/en/schema/identifiers/#organization-ids>`__ so that the legal entities involved in a contracting process can be reliably identified.
 
   The identifier for an organization in OCDS is stored in the ``.identifier`` property of the entry in the ``parties`` section for the organization.
 
@@ -152,7 +152,7 @@ Coverage of the OCDS schema varies by publisher.
 
 To identify the fields needed for your analysis and how to answer them, use the `OCDS schema documentation <https://standard.open-contracting.org/latest/en/schema/release/>`__ to understand the meaning, structure and format of the fields in OCDS.
 
-To check whether the fields needed for your analysis are available for a particular collection, use `Kingfisher Views<https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ to generate a summary of the collection and check the ``field_counts`` table.
+To check whether the fields needed for your analysis are available for a particular collection, use `Kingfisher Views <https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ to generate a summary of the collection and check the ``field_counts`` table.
 
 The following query lists the coverage of each field in collection 584:
 
