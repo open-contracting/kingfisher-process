@@ -12,7 +12,7 @@ class Command(CollectionCommand):
         parser.add_argument('note', help=_('the note'))
 
     def handle_collection(self, collection, *args, **options):
-        form = CollectionNoteForm(dict(collection=collection, **options))
+        form = CollectionNoteForm(dict(collection=collection, note=options['note']))
         if form.is_valid():
             form.save()
         else:
