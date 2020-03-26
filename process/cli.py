@@ -27,7 +27,7 @@ class CollectionCommand(BaseCommand):
         try:
             collection = Collection.objects.get(pk=collection_id)
         except Collection.DoesNotExist:
-            raise CommandError(_('Collection %(collection_id)s does not exist') % {'collection_id': collection_id})
+            raise CommandError(_('Collection %(id)s does not exist') % {'id': collection_id})
 
         self.handle_collection(collection, *args, **options)
 
