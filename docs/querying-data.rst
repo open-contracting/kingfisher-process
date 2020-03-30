@@ -90,9 +90,9 @@ The following query calculates the total value of completed tenders in collectio
 
 .. tip:: Filtering on status fields
 
-  The ``tender``, ``award`` and ``contract`` fields in OCDS all have a ``.status`` property.
+  The ``tender``, ``award`` and ``contract`` objects in OCDS all have a ``.status`` property.
 
-  Consider which statuses you want to include or exclude from your analysis, for example you might wish to exclude pending and cancelled contracts when calculating the total value of contracts entered into by each buyer.
+  Consider which statuses you want to include or exclude from your analysis, for example you might wish to exclude pending and cancelled contracts when calculating the total value of contracts for each buyer.
 
   The `OCDS codelist documentation <https://standard.open-contracting.org/latest/en/schema/codelists/#>`__ describes the meaning of the statuses for each object.
 
@@ -152,28 +152,6 @@ Coverage of the OCDS schema varies by publisher.
 
 To identify the fields needed for your analysis and how to answer them, use the `OCDS schema documentation <https://standard.open-contracting.org/latest/en/schema/release/>`__ to understand the meaning, structure and format of the fields in OCDS.
 
-To check whether the fields needed for your analysis are available for a particular collection, use `Kingfisher Views <https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ to generate a summary of the collection and check the ``field_counts`` table.
+To check whether the fields needed for your analysis are available for a particular collection, you can use the `field counts table<https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ from Kingfisher Views.
 
-The following query lists the coverage of each field in collection 584:
-
-.. code-block:: sql
-
-  select
-    *
-  from
-    view_data_collection_584.field_counts
-  where
-    collection_id = 584
-
-You can also check the coverage of specific fields or groups of fields by filtering on the ``path`` column:
-
-.. code-block:: sql
-
-  select
-    *
-  from
-    view_data_collection_584.field_counts
-  where
-    collection_id = 584
-  and
-    path in ('tender.value.amount', 'tender.procurementMethod')
+To learn more, refer to the `querying data in Kingfisher Views documentation<https://kingfisher-views.readthedocs.io/en/latest/querying-data.html#querying-other-collections-and-fields>`__.
