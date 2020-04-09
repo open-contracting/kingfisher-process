@@ -18,7 +18,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
         store.store_file_from_local("test.json", "http://example.com", "record_package", "utf-8", json_filename)
 
@@ -99,7 +99,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_releases.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_releases.json'
         )
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 

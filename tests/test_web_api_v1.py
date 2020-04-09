@@ -125,7 +125,7 @@ class TestWebAPIV1(BaseWebTest):
     def test_api_v1_submit_local_file(self):
         # Call
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         data = {
@@ -344,7 +344,7 @@ class TestWebAPIV1(BaseWebTest):
 
         # Call - good data
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_releases.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_releases.json'
         )
 
         with open(json_filename) as f:

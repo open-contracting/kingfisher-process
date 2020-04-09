@@ -19,7 +19,7 @@ class TestTransformCompileReleases(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_1_releases_multiple_with_same_ocid.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_multiple_with_same_ocid.json'
         )
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 
@@ -79,7 +79,7 @@ class TestTransformCompileReleases(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_1_releases_one_compiled.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_one_compiled.json'
         )
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 
@@ -119,7 +119,7 @@ class TestTransformCompileReleases(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_1_releases_two_compiled_with_same_ocid.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_two_compiled_with_same_ocid.json'
         )
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 
