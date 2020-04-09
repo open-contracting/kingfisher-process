@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres
+        image: postgres:11
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -32,7 +32,7 @@ jobs:
     - run: pip install -r requirements_dev.txt
     - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
     - env:
-        KINGFISHER_PROCESS_DB_URI: postgres:///travis
+        KINGFISHER_PROCESS_DB_URI: postgresql://postgres:postgres@postgres/postgres
         KINGFISHER_PROCESS_WEB_API_KEYS: 1234
       run: pytest --cov ocdskingfisherprocess
     - env:
