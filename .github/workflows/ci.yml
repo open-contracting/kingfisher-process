@@ -16,7 +16,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - 5432/tcp
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
@@ -32,7 +32,7 @@ jobs:
     - run: pip install -r requirements_dev.txt
     - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
     - env:
-        KINGFISHER_PROCESS_DB_URI: postgresql://postgres:postgres@postgres/postgres
+        KINGFISHER_PROCESS_DB_URI: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
         KINGFISHER_PROCESS_WEB_API_KEYS: 1234
       run: pytest --cov ocdskingfisherprocess
     - env:
