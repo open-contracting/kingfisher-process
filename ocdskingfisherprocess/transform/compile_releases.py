@@ -1,7 +1,9 @@
-from ocdskingfisherprocess.transform.base import BaseTransform
-import sqlalchemy as sa
-import ocdsmerge
 import datetime
+
+import ocdsmerge
+import sqlalchemy as sa
+
+from ocdskingfisherprocess.transform.base import BaseTransform
 
 
 class CompileReleasesTransform(BaseTransform):

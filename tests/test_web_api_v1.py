@@ -1,9 +1,11 @@
-from tests.base import BaseWebTest
-import sqlalchemy as sa
 import io
-import os
 import json
+import os
 import random
+
+import sqlalchemy as sa
+
+from tests.base import BaseWebTest
 
 
 class TestWebAPIV1(BaseWebTest):

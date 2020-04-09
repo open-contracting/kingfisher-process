@@ -1,5 +1,5 @@
-import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
+import ocdskingfisherprocess.database
 from ocdskingfisherprocess.checks import Checks
 
 

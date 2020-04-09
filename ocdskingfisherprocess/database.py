@@ -1,17 +1,17 @@
 import collections
 import datetime
 import json
+import logging
 import os
 from functools import partial
-import logging
 
 import alembic.config
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 
-from ocdskingfisherprocess.models import CollectionModel, FileModel, FileItemModel, CollectionNoteModel
-from ocdskingfisherprocess.util import get_hash_md5_for_data
+from ocdskingfisherprocess.models import CollectionModel, CollectionNoteModel, FileItemModel, FileModel
 from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
+from ocdskingfisherprocess.util import get_hash_md5_for_data
 
 
 class SetEncoder(json.JSONEncoder):

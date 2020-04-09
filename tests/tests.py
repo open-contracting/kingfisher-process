@@ -1,9 +1,11 @@
-import ocdskingfisherprocess.util
-from tests.base import BaseTest, BaseDataBaseTest
 import datetime
 import os
-from ocdskingfisherprocess.store import Store
+
 import sqlalchemy as sa
+
+import ocdskingfisherprocess.util
+from ocdskingfisherprocess.store import Store
+from tests.base import BaseDataBaseTest, BaseTest
 
 
 class TestDataBase(BaseDataBaseTest):

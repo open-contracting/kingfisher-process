@@ -1,7 +1,7 @@
-import os
 import glob
-import inspect
 import importlib
+import inspect
+import os
 
 import ocdskingfisherprocess.cli.commands.base
 

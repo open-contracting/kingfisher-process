@@ -1,12 +1,11 @@
-import tempfile
-import shutil
 import datetime
 import logging
+import shutil
+import tempfile
 
 import sqlalchemy as sa
-
+from libcoveocds.api import APIException, ocds_json_output
 from libcoveocds.config import LibCoveOCDSConfig
-from libcoveocds.api import ocds_json_output, APIException
 
 
 class Checks:

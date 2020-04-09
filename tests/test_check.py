@@ -1,9 +1,11 @@
 import datetime
 import os
+
 import sqlalchemy as sa
+
+from ocdskingfisherprocess.checks import Checks
 from ocdskingfisherprocess.store import Store
 from tests.base import BaseDataBaseTest
-from ocdskingfisherprocess.checks import Checks
 
 
 class TestAllChecksOff(BaseDataBaseTest):

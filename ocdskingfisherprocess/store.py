@@ -1,4 +1,5 @@
 import json
+
 from ocdskingfisherprocess.database import DatabaseStore
 from ocdskingfisherprocess.util import FileToStore
 

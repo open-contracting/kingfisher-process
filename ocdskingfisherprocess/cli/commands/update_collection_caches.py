@@ -1,6 +1,7 @@
-import ocdskingfisherprocess.database
-import ocdskingfisherprocess.cli.commands.base
 import logging
+
+import ocdskingfisherprocess.cli.commands.base
+import ocdskingfisherprocess.database
 
 
 class UpdateCollectionCachesCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):

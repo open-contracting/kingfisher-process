@@ -1,6 +1,7 @@
 import datetime
-from tests.base import BaseDataBaseTest
+
 from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES, TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
+from tests.base import BaseDataBaseTest
 
 
 class TestStandardPipelineOn(BaseDataBaseTest):

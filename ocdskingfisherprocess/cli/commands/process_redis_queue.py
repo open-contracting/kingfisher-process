@@ -1,7 +1,7 @@
 import datetime
-from threading import Timer
-import os
 import logging
+import os
+from threading import Timer
 
 import redis
 

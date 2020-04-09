@@ -1,6 +1,8 @@
-from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore, \
-    control_codes_to_filter_out, control_code_to_filter_out_to_human_readable
 import os
+
+from ocdskingfisherprocess.util import (FileToStore, control_code_to_filter_out_to_human_readable,
+                                        control_codes_to_filter_out, parse_string_to_boolean,
+                                        parse_string_to_date_time)
 
 
 def test_parse_string_to_boolean_1():
