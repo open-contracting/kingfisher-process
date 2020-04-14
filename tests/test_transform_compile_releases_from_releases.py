@@ -9,7 +9,7 @@ from ocdskingfisherprocess.transform.compile_releases import CompileReleasesTran
 from tests.base import BaseDataBaseTest
 
 
-class TestTransformCompileReleases(BaseDataBaseTest):
+class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
 
     def test_1(self):
         # Make source collection
