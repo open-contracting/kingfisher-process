@@ -5,7 +5,7 @@ Flask
 alembic
 pgpasslib
 psycopg2
-ocdsmerge
+ocdsmerge<0.6 # need to update to API changes
 blinker
 redis
 sentry-sdk

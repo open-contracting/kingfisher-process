@@ -36,7 +36,7 @@ markupsafe==1.1.1         # via jinja2, mako
 more-itertools==8.0.2     # via zipp
 ocdsextensionregistry==0.0.16  # via ocdskit
 ocdskit==0.1.4
-ocdsmerge==0.5.11
+ocdsmerge==0.5.12
 openpyxl==3.0.2           # via flattentool
 pgpasslib==1.1.0
 prometheus-client==0.7.1
