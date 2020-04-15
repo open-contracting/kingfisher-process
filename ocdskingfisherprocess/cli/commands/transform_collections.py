@@ -1,7 +1,4 @@
-import ocdskingfisherprocess.database
-import ocdskingfisherprocess.cli.commands.base
 import concurrent.futures
-from ocdskingfisherprocess.transform.util import get_transform_instance
 import datetime
 import logging
 import os
@@ -13,8 +10,6 @@ import sentry_sdk
 import ocdskingfisherprocess.cli.commands.base
 import ocdskingfisherprocess.database
 from ocdskingfisherprocess.transform.util import get_transform_instance
-
-logger = logging.getLogger("ocdskingfisher.cli.transform-collections")
 
 
 class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
@@ -35,8 +30,6 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
         if collection.transform_type:
             if not args.quiet:
                 print("Collection " + str(collection.database_id))
-            if not args.quiet:
-                print("Collection " + str(collection.database_id))
             transform = get_transform_instance(
                 collection.transform_type,
                 self.config,
@@ -51,7 +44,6 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("transform_collection", collection.database_id)
                     sentry_sdk.capture_exception(e)
-
 
     def run_command(self, args):
         logger = logging.getLogger('ocdskingfisher.cli.transform-collections')
@@ -73,6 +65,14 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
                     self.run_collection, collection, run_until_timestamp, args
                 )
                 for collection in self.database.get_all_collections()
+                # Lets keep number of possible threads low!
+                # Only if is a transform and works needs doing
+                # [ There are more things than just "not collection.store_end_at" to check
+                #    to work out if "works needs doing" but
+                #    A) We don't want to duplicate lots of them here
+                #    B) They vary by type and are complex
+                #    C) "not collection.store_end_at" should catch a lot of collections, that will do us for now ]
+                if collection.transform_type and not collection.store_end_at
             ]
 
             for future in concurrent.futures.as_completed(futures):
