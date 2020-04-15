@@ -96,8 +96,9 @@ class CompileReleasesTransform(BaseTransform):
             # This counts as taking a random record, as we have not ordered the SQL query by anything.
             # (In practice the way postgres works I think we will always get the first record by load order,
             #     but with no ORDER BY clause that is not guaranteed)
-            # TODO log we have done this
-            self._process_record(ocid, records[0])
+            warning = 'There were multiple records for this OCID! ' + \
+                    'We have picked one at random and passed it through this transform.'
+            self._process_record(ocid, records[0], warnings=[warning])
 
         elif len(records) == 1:
 
@@ -107,7 +108,11 @@ class CompileReleasesTransform(BaseTransform):
 
             self._process_releases(ocid)
 
-    def _process_record(self, ocid, record):
+    def _process_record(self, ocid, record, warnings=None):
+
+        # avoid https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
+        if not warnings:
+            warnings = []
 
         releases = record.get('releases', [])
         releases_linked = [r for r in releases if 'url' in r and r['url']]
@@ -117,15 +122,15 @@ class CompileReleasesTransform(BaseTransform):
             # We can compile them ourselves.
             merger = ocdsmerge.Merger()
             out = merger.create_compiled_release(releases)
-            self._store_result(ocid, out)
+            self._store_result(ocid, out, warnings=warnings)
             return
 
         compiled_release = record.get('compiledRelease')
         if compiled_release:
 
-            # TODO log we have done this
-
-            self._store_result(ocid, compiled_release)
+            warnings.append('This already had a compiledRelease in the source! ' +
+                            'We have passed it through this transform unchanged.')
+            self._store_result(ocid, compiled_release, warnings=warnings)
             return
 
         releases_compiled = \
@@ -133,20 +138,22 @@ class CompileReleasesTransform(BaseTransform):
 
         if len(releases_compiled) > 1:
             # If more than one, pick one at random. and log that.
-            warning = 'This already has multiple compiled releases in the source! ' + \
-                      'We have picked one at random and passed it through this transform unchanged.'
-            self._store_result(ocid, releases_compiled[0], warnings=[warning])
+            warnings.append('This already has multiple compiled releases in the source! ' +
+                            'We have picked one at random and passed it through this transform unchanged.')
+            self._store_result(ocid, releases_compiled[0], warnings=warnings)
 
         elif len(releases_compiled) == 1:
             # There is just one compiled release - pass it through unchanged, and log that.
-            warning = 'This already has one compiled release in the source! ' + \
-                      'We have passed it through this transform unchanged.'
-            self._store_result(ocid, releases_compiled[0], warnings=[warning])
+            warnings.append('This already has one compiled release in the source! ' +
+                            'We have passed it through this transform unchanged.')
+            self._store_result(ocid, releases_compiled[0], warnings=warnings)
 
         else:
             # We can't process this ocid. Warn of that.
-            pass
-            # TODO log we have done this
+            self.database.add_collection_note(
+                self.destination_collection.database_id,
+                'OCID ' + ocid + ' could not be complied as we did not have enough data to do that.'
+            )
 
     def _process_releases(self, ocid):
 
@@ -182,7 +189,8 @@ class CompileReleasesTransform(BaseTransform):
 
             self._store_result(ocid, out)
 
-    def _store_result(self, ocid, data, warnings=[]):
+    def _store_result(self, ocid, data, warnings=None):
+
         # In the occurrence of a race condition where two concurrent transforms have run the same ocid
         # we rely on the fact that collection_id and filename are unique in the file_item table.
         # Therefore this will error with a violation of unique key constraint and not cause duplicate entries.
