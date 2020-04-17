@@ -43,7 +43,7 @@ mccabe==0.6.1             # via flake8
 more-itertools==8.0.2
 ocdsextensionregistry==0.0.16
 ocdskit==0.1.4
-ocdsmerge==0.5.12
+ocdsmerge==0.6.4
 openpyxl==3.0.2
 packaging==19.2           # via pytest
 pgpasslib==1.1.0

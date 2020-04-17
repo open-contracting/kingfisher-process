@@ -56,6 +56,13 @@ class TestTransformCompileReleases(BaseDataBaseTest):
             result = connection.execute(s)
             assert 1 == result.rowcount
 
+            # Check a couple of fields just to sanity check it's a compiled release
+            compiled_release = result.fetchone()
+            data = self.database.get_data(compiled_release['data_id'])
+            assert 'ocds-213czf-000-00001-2011-01-10T09:30:00Z' == data.get('id')
+            assert '2011-01-10T09:30:00Z' == data.get('date')
+            assert 'ocds-213czf-000-00001' == data.get('ocid')
+
         # transform again! This should be fine
         transform = CompileReleasesTransform(self.config, self.database, destination_collection)
         transform.process()

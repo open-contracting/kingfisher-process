@@ -100,7 +100,8 @@ class CompileReleasesTransform(BaseTransform):
                 warnings=[warning])
         else:
             # There is no compiled release - we will do it ourselves.
-            out = ocdsmerge.merge(releases)
+            merger = ocdsmerge.Merger()
+            out = merger.create_compiled_release(releases)
 
             # In the occurrence of a race condition where two concurrent transforms have run the same ocid
             # we rely on the fact that collection_id and filename are unique in the file_item table.
