@@ -80,7 +80,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
             result_file_item = connection.execute(s)
             assert 1 == result_file_item.rowcount
             collection_file_item = result_file_item.fetchone()
-            assert collection_file_item.warnings == ['This already had a compiledRelease in the source! We have passed it through this transform unchanged.']  # noqa
+            assert collection_file_item.warnings == ['This already had a compiledRelease in the record! It was passed through this transform unchanged.']  # noqa
 
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)
@@ -114,7 +114,10 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)
         assert len(notes) == 1
-        assert 'OCID ocds-213czf-000-00001 could not be complied as we did not have enough data to do that.' == notes[0].note  # noqa
+        assert 'OCID ocds-213czf-000-00001 could not be compiled because at least one release in the releases ' +\
+               'array is a linked release, and the record has neither a compileRelease ' +\
+               'nor a release with a tag of "compiled".' == \
+               notes[0].note
 
     def test_transform_compiles(self):
         """This data files has full releases and nothing else, so the transform should compile itself using ocdsmerge"""  # noqa
@@ -189,7 +192,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
             result_file_item = connection.execute(s)
             assert 1 == result_file_item.rowcount
             collection_file_item = result_file_item.fetchone()
-            assert collection_file_item.warnings == ['There were multiple records for this OCID! We have picked one at random and passed it through this transform.']  # noqa
+            assert collection_file_item.warnings == ['There are multiple records for this OCID! The record to pass through was selected arbitrarily.']  # noqa
 
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)

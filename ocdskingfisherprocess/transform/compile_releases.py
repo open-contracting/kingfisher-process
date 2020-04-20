@@ -94,11 +94,8 @@ class CompileReleasesTransform(BaseTransform):
         # Decide what to do .....
         if len(records) > 1:
 
-            # This counts as taking a random record, as we have not ordered the SQL query by anything.
-            # (In practice the way postgres works I think we will always get the first record by load order,
-            #     but with no ORDER BY clause that is not guaranteed)
-            warning = 'There were multiple records for this OCID! ' + \
-                    'We have picked one at random and passed it through this transform.'
+            warning = 'There are multiple records for this OCID! ' + \
+                    'The record to pass through was selected arbitrarily.'
             self._process_record(ocid, records[0], warnings=[warning])
 
         elif len(records) == 1:
@@ -111,14 +108,13 @@ class CompileReleasesTransform(BaseTransform):
 
     def _process_record(self, ocid, record, warnings=None):
 
-        # avoid https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
         if not warnings:
             warnings = []
 
         releases = record.get('releases', [])
         releases_linked = [r for r in releases if is_linked_release(r)]
 
-        if len(releases) > 0 and len(releases_linked) == 0:
+        if releases and not releases_linked:
             # We have releases and none are linked (have URL's).
             # We can compile them ourselves.
             merger = ocdsmerge.Merger()
@@ -129,8 +125,8 @@ class CompileReleasesTransform(BaseTransform):
         compiled_release = record.get('compiledRelease')
         if compiled_release:
 
-            warnings.append('This already had a compiledRelease in the source! ' +
-                            'We have passed it through this transform unchanged.')
+            warnings.append('This already had a compiledRelease in the record! ' +
+                            'It was passed through this transform unchanged.')
             self._store_result(ocid, compiled_release, warnings=warnings)
             return
 
@@ -139,21 +135,22 @@ class CompileReleasesTransform(BaseTransform):
 
         if len(releases_compiled) > 1:
             # If more than one, pick one at random. and log that.
-            warnings.append('This already has multiple compiled releases in the source! ' +
-                            'We have picked one at random and passed it through this transform unchanged.')
+            warnings.append('This already has multiple compiled releases in the releases array! ' +
+                            'The compiled release to pass through was selected arbitrarily.')
             self._store_result(ocid, releases_compiled[0], warnings=warnings)
 
         elif len(releases_compiled) == 1:
             # There is just one compiled release - pass it through unchanged, and log that.
-            warnings.append('This already has one compiled release in the source! ' +
-                            'We have passed it through this transform unchanged.')
+            warnings.append('This already has one compiled release in the releases array! ' +
+                            'It was passed through this transform unchanged.')
             self._store_result(ocid, releases_compiled[0], warnings=warnings)
 
         else:
             # We can't process this ocid. Warn of that.
             self.database.add_collection_note(
                 self.destination_collection.database_id,
-                'OCID ' + ocid + ' could not be complied as we did not have enough data to do that.'
+                'OCID ' + ocid + ' could not be compiled because at least one release in the releases array is a ' +
+                'linked release, and the record has neither a compileRelease nor a release with a tag of "compiled".'
             )
 
     def _process_releases(self, ocid):
