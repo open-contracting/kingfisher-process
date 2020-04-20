@@ -32,6 +32,7 @@ itsdangerous==1.1.0
 jdcal==1.4.1
 jinja2==2.10.3
 json-merge-patch==0.2
+jsonpointer==2.0
 jsonref==0.2
 jsonschema==3.2.0
 libcove==0.12.2
@@ -42,7 +43,7 @@ markupsafe==1.1.1
 mccabe==0.6.1             # via flake8
 more-itertools==8.0.2
 ocdsextensionregistry==0.0.16
-ocdskit==0.1.4
+ocdskit==0.2.6
 ocdsmerge==0.6.4
 openpyxl==3.0.2
 packaging==19.2           # via pytest

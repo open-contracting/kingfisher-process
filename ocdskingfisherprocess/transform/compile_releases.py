@@ -2,6 +2,7 @@ import datetime
 
 import ocdsmerge
 import sqlalchemy as sa
+from ocdskit.util import is_linked_release
 
 from ocdskingfisherprocess.transform.base import BaseTransform
 
@@ -115,7 +116,7 @@ class CompileReleasesTransform(BaseTransform):
             warnings = []
 
         releases = record.get('releases', [])
-        releases_linked = [r for r in releases if 'url' in r and r['url']]
+        releases_linked = [r for r in releases if is_linked_release(r)]
 
         if len(releases) > 0 and len(releases_linked) == 0:
             # We have releases and none are linked (have URL's).
