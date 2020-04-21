@@ -117,9 +117,16 @@ class CompileReleasesTransform(BaseTransform):
         if releases and not releases_linked:
             # We have releases and none are linked (have URL's).
             # We can compile them ourselves.
-            merger = ocdsmerge.Merger()
-            out = merger.create_compiled_release(releases)
-            self._store_result(ocid, out, warnings=warnings)
+            try:
+                merger = ocdsmerge.Merger()
+                out = merger.create_compiled_release(releases)
+                self._store_result(ocid, out, warnings=warnings)
+            except ocdsmerge.exceptions.OCDSMergeError as error:
+                self.database.add_collection_note(
+                    self.destination_collection.database_id,
+                    'OCID ' + ocid + ' could not be compiled because merge library threw an error: '
+                    + error.__class__.__name__ + ' ' + str(error)
+                )
             return
 
         compiled_release = record.get('compiledRelease')
@@ -182,10 +189,16 @@ class CompileReleasesTransform(BaseTransform):
             self._store_result(ocid, releases_compiled[0], warnings=[warning])
         else:
             # There is no compiled release - we will do it ourselves.
-            merger = ocdsmerge.Merger()
-            out = merger.create_compiled_release(releases)
-
-            self._store_result(ocid, out)
+            try:
+                merger = ocdsmerge.Merger()
+                out = merger.create_compiled_release(releases)
+                self._store_result(ocid, out)
+            except ocdsmerge.exceptions.OCDSMergeError as error:
+                self.database.add_collection_note(
+                    self.destination_collection.database_id,
+                    'OCID ' + ocid + ' could not be compiled because merge library threw an error: '
+                    + error.__class__.__name__ + ' ' + str(error)
+                )
 
     def _store_result(self, ocid, data, warnings=None):
 

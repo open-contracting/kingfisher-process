@@ -112,3 +112,15 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
         assert len(file_items) == 1
         assert len(file_items[0].warnings) == 1
         assert 'This already has multiple compiled releases in the source! We have picked one at random and passed it through this transform unchanged.' == file_items[0].warnings[0]  # noqa
+
+    def test_no_dates(self):
+
+        source_collection_id, source_collection, destination_collection_id, destination_collection = \
+            self._setup_collections_and_data_run_transform('sample_1_0_releases_no_dates.json')
+
+        # Check collection notes
+        notes = self.database.get_all_notes_in_collection(destination_collection_id)
+        assert len(notes) == 1
+        assert 'OCID ocds-213czf-000-00001 could not be compiled because merge library threw an error: ' + \
+               'MissingDateKeyError The `date` field of at least one release is missing.' == \
+               notes[0].note

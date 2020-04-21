@@ -211,3 +211,21 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
         assert destination_collection.store_end_at != None  # noqa
+
+    def test_no_dates(self):
+
+        source_collection_id, source_collection, destination_collection_id, destination_collection = \
+            self._setup_collections_and_data_run_transform('sample_1_1_record_releases_not_compiled_no_date.json')
+
+        # check
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.compiled_release_table])
+            result = connection.execute(s)
+            assert 0 == result.rowcount
+
+        # Check collection notes
+        notes = self.database.get_all_notes_in_collection(destination_collection_id)
+        assert len(notes) == 1
+        assert 'OCID ocds-213czf-000-00001 could not be compiled because merge library threw an error: ' + \
+               'MissingDateKeyError The `date` field of at least one release is missing.' == \
+               notes[0].note
