@@ -11,7 +11,8 @@ from tests.base import BaseDataBaseTest
 
 class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
 
-    def test_1(self):
+    def _setup_collections_and_data_run_transform(self, filename):
+
         # Make source collection
         source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
         source_collection = self.database.get_collection(source_collection_id)
@@ -20,7 +21,7 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
         store = Store(self.config, self.database)
         store.set_collection(source_collection)
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_multiple_with_same_ocid.json'
+            os.path.realpath(__file__)), 'fixtures', filename
         )
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
 
@@ -49,6 +50,13 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
         # transform! This should do the work.
         transform = CompileReleasesTransform(self.config, self.database, destination_collection)
         transform.process()
+
+        return source_collection_id, source_collection, destination_collection_id, destination_collection
+
+    def test_1(self):
+
+        source_collection_id, source_collection, destination_collection_id, destination_collection = \
+            self._setup_collections_and_data_run_transform('sample_1_1_releases_multiple_with_same_ocid.json')
 
         # check
         with self.database.get_engine().begin() as connection:
@@ -79,33 +87,8 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
 
     def test_one_compiled(self):
 
-        # Make source collection
-        source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
-        source_collection = self.database.get_collection(source_collection_id)
-
-        # Load some data
-        store = Store(self.config, self.database)
-        store.set_collection(source_collection)
-        json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_one_compiled.json'
-        )
-        store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
-
-        # Mark source collection as finished
-        self.database.mark_collection_store_done(source_collection_id)
-
-        # Make destination collection
-        destination_collection_id = self.database.get_or_create_collection_id(
-            source_collection.source_id,
-            source_collection.data_version,
-            source_collection.sample,
-            transform_from_collection_id=source_collection_id,
-            transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
-        destination_collection = self.database.get_collection(destination_collection_id)
-
-        # transform!
-        transform = CompileReleasesTransform(self.config, self.database, destination_collection)
-        transform.process()
+        source_collection_id, source_collection, destination_collection_id, destination_collection = \
+            self._setup_collections_and_data_run_transform('sample_1_1_releases_one_compiled.json')
 
         # Check warning
         files = self.database.get_all_files_in_collection(destination_collection_id)
@@ -119,33 +102,8 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
 
     def test_two_compiled_with_same_ocid(self):
 
-        # Make source collection
-        source_collection_id = self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
-        source_collection = self.database.get_collection(source_collection_id)
-
-        # Load some data
-        store = Store(self.config, self.database)
-        store.set_collection(source_collection)
-        json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_two_compiled_with_same_ocid.json'
-        )
-        store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
-
-        # Mark source collection as finished
-        self.database.mark_collection_store_done(source_collection_id)
-
-        # Make destination collection
-        destination_collection_id = self.database.get_or_create_collection_id(
-            source_collection.source_id,
-            source_collection.data_version,
-            source_collection.sample,
-            transform_from_collection_id=source_collection_id,
-            transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
-        destination_collection = self.database.get_collection(destination_collection_id)
-
-        # transform!
-        transform = CompileReleasesTransform(self.config, self.database, destination_collection)
-        transform.process()
+        source_collection_id, source_collection, destination_collection_id, destination_collection = \
+            self._setup_collections_and_data_run_transform('sample_1_1_releases_two_compiled_with_same_ocid.json')
 
         # Check warning
         files = self.database.get_all_files_in_collection(destination_collection_id)
