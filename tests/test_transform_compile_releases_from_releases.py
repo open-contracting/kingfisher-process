@@ -121,6 +121,36 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)
         assert len(notes) == 1
-        assert 'OCID ocds-213czf-000-00001 could not be compiled because merge library threw an error: ' + \
-               'MissingDateKeyError The `date` field of at least one release is missing.' == \
+        assert 'OCID ocds-213czf-000-00001 could not be compiled because ' +\
+               'there are no releases with dates nor a release with a tag of "compiled".' == \
                notes[0].note
+
+    def test_some_dates(self):
+
+        source_collection_id, source_collection, destination_collection_id, destination_collection = \
+            self._setup_collections_and_data_run_transform('sample_1_0_releases_some_dates.json')
+
+        # check
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.compiled_release_table])
+            result = connection.execute(s)
+            assert 1 == result.rowcount
+
+            # Check a couple of fields just to sanity check it's a compiled release
+            compiled_release = result.fetchone()
+            data = self.database.get_data(compiled_release['data_id'])
+            assert 'ocds-213czf-000-00001-2010-03-15T09:30:00Z' == data.get('id')
+            assert '2010-03-15T09:30:00Z' == data.get('date')
+            assert 'ocds-213czf-000-00001' == data.get('ocid')
+
+        # Check warning
+        files = self.database.get_all_files_in_collection(destination_collection_id)
+        assert len(files) == 1
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 1
+        assert len(file_items[0].warnings) == 1
+        assert 'This OCID had some releases without a date element. We have compiled all other releases.' == file_items[0].warnings[0]  # noqa
+
+        # Check collection notes
+        notes = self.database.get_all_notes_in_collection(destination_collection_id)
+        assert len(notes) == 0

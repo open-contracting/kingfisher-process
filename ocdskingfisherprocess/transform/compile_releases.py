@@ -112,23 +112,28 @@ class CompileReleasesTransform(BaseTransform):
             warnings = []
 
         releases = record.get('releases', [])
-        releases_linked = [r for r in releases if is_linked_release(r)]
+        releases_with_date, releases_without_date = self._check_dates_in_releases(releases)
 
-        if releases and not releases_linked:
-            # We have releases and none are linked (have URL's).
+        # Can we compile ourselves?
+        releases_linked = [r for r in releases_with_date if is_linked_release(r)]
+        if releases_with_date and not releases_linked:
+            # We have releases with date fields and none are linked (have URL's).
             # We can compile them ourselves.
-            try:
-                merger = ocdsmerge.Merger()
-                out = merger.create_compiled_release(releases)
-                self._store_result(ocid, out, warnings=warnings)
-            except ocdsmerge.exceptions.OCDSMergeError as error:
-                self.database.add_collection_note(
-                    self.destination_collection.database_id,
-                    'OCID ' + ocid + ' could not be compiled because merge library threw an error: '
-                    + error.__class__.__name__ + ' ' + str(error)
-                )
+            # (Checking releases_with_date here and not releases means that a record with
+            #  a compiledRelease and releases with no dates will be processed by using the compiledRelease,
+            #  so we still have some data)
+            if releases_without_date:
+                warnings.append('This OCID had some releases without a date element. ' +
+                                'We have compiled all other releases.')
+
+            self._compile_releases_by_ocdsmerge(ocid, releases_with_date, warnings=warnings)
             return
 
+        # Whatever happens now, users will appreciate a warning about the bad data
+        if releases_without_date:
+            warnings.append('This OCID had some releases without a date element.')
+
+        # Is there a compiledRelease?
         compiled_release = record.get('compiledRelease')
         if compiled_release:
 
@@ -137,6 +142,7 @@ class CompileReleasesTransform(BaseTransform):
             self._store_result(ocid, compiled_release, warnings=warnings)
             return
 
+        # Is there a release tagged 'compiled'?
         releases_compiled = \
             [x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']]
 
@@ -157,7 +163,8 @@ class CompileReleasesTransform(BaseTransform):
             self.database.add_collection_note(
                 self.destination_collection.database_id,
                 'OCID ' + ocid + ' could not be compiled because at least one release in the releases array is a ' +
-                'linked release, and the record has neither a compileRelease nor a release with a tag of "compiled".'
+                'linked release or there are no releases with dates, ' +
+                'and the record has neither a compileRelease nor a release with a tag of "compiled".'
             )
 
     def _process_releases(self, ocid):
@@ -188,17 +195,40 @@ class CompileReleasesTransform(BaseTransform):
                       'We have passed it through this transform unchanged.'
             self._store_result(ocid, releases_compiled[0], warnings=[warning])
         else:
-            # There is no compiled release - we will do it ourselves.
-            try:
-                merger = ocdsmerge.Merger()
-                out = merger.create_compiled_release(releases)
-                self._store_result(ocid, out)
-            except ocdsmerge.exceptions.OCDSMergeError as error:
+            # There is no compiled release - we will try to do it ourselves.
+            releases_with_date, releases_without_date = self._check_dates_in_releases(releases)
+            if releases_with_date:
+
+                warnings = []
+                if releases_without_date:
+                    warnings.append('This OCID had some releases without a date element. ' +
+                                    'We have compiled all other releases.')
+
+                self._compile_releases_by_ocdsmerge(ocid, releases_with_date, warnings=warnings)
+            else:
+                # We can't process this ocid. Warn of that.
                 self.database.add_collection_note(
                     self.destination_collection.database_id,
-                    'OCID ' + ocid + ' could not be compiled because merge library threw an error: '
-                    + error.__class__.__name__ + ' ' + str(error)
+                    'OCID ' + ocid + ' could not be compiled because there are no releases with dates ' +
+                    'nor a release with a tag of "compiled".'
                 )
+
+    def _check_dates_in_releases(self, releases):
+        releases_with_date = [r for r in releases if 'date' in r]
+        releases_without_date = [r for r in releases if 'date' not in r]
+        return releases_with_date, releases_without_date
+
+    def _compile_releases_by_ocdsmerge(self, ocid, releases, warnings=None):
+        try:
+            merger = ocdsmerge.Merger()
+            out = merger.create_compiled_release(releases)
+            self._store_result(ocid, out, warnings=warnings)
+        except ocdsmerge.exceptions.OCDSMergeError as error:
+            self.database.add_collection_note(
+                self.destination_collection.database_id,
+                'OCID ' + ocid + ' could not be compiled because merge library threw an error: '
+                + error.__class__.__name__ + ' ' + str(error)
+            )
 
     def _store_result(self, ocid, data, warnings=None):
 
