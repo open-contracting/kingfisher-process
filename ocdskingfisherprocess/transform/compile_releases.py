@@ -112,9 +112,10 @@ class CompileReleasesTransform(BaseTransform):
             warnings = []
 
         releases = record.get('releases', [])
-        releases_linked = [r for r in releases if is_linked_release(r)]
         releases_with_date, releases_without_date = self._check_dates_in_releases(releases)
 
+        # Can we compile ourselves?
+        releases_linked = [r for r in releases_with_date if is_linked_release(r)]
         if releases_with_date and not releases_linked:
             # We have releases with date fields and none are linked (have URL's).
             # We can compile them ourselves.
