@@ -11,6 +11,11 @@ Requirements
 Installation
 ------------
 
+Clone the repository and move into the newly created folder::
+
+    git clone https://github.com/open-contracting/kingfisher-process.git
+    cd kingfisher-process
+
 Create a virtual environment::
 
     virtualenv -p python3 .ve
@@ -18,7 +23,7 @@ Create a virtual environment::
 Activate the virtual environment::
 
     source .ve/bin/activate
-
+    
 Install the requirements::
 
     pip install -r requirements.txt
