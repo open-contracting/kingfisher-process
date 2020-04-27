@@ -6,7 +6,7 @@ OCDS Kingfisher - Process |release|
 Typical usage
 -------------
 
-Kingfisher Process receives OCDS data either via the :ref:`web API <web-api>` (used by Kingfisher Scrape) or the :doc:`cli/local-load` command.
+Kingfisher Process receives OCDS data either via the :ref:`web API <web-api>` (used by Kingfisher Collect) or the :doc:`cli/local-load` command.
 
 OCDS data are stored in a PostgreSQL database and organized into "collections", as described in the :doc:`data-model` and specified in the :doc:`database-structure`. Once incoming data are stored:
 
