@@ -51,7 +51,7 @@ requests-cache==0.5.2     # via ocdsextensionregistry
 requests==2.22.0          # via libcove, libcoveocds, ocdsextensionregistry, ocdskit, ocdsmerge, requests-cache
 rfc3987==1.3.8            # via ocdskit
 schema==0.7.1             # via flattentool
-sentry-sdk==0.13.5
+sentry-sdk==0.14.3
 six==1.13.0               # via bleach, flattentool, jsonschema, pyrsistent, python-dateutil
 sqlalchemy==1.2.19
 sqlparse==0.3.0           # via django
