@@ -6,6 +6,9 @@ import logging.config
 import os
 
 import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 import ocdskingfisherprocess.cli.util
 import ocdskingfisherprocess.config
@@ -19,7 +22,10 @@ def main():
     config.load_user_config()
 
     if config.sentry_dsn:
-        sentry_sdk.init(config.sentry_dsn)
+        sentry_sdk.init(
+            dsn=config.sentry_dsn,
+            integrations=[DjangoIntegration(), RedisIntegration(), SqlalchemyIntegration()]
+        )
 
     database = DataBase(config)
 
