@@ -36,4 +36,4 @@ ocdskingfisher.redis-queue-collection-store-finished
 ocdskingfisher.cli.update-collection-caches
   An ``INFO``-level message when updating each collection, and when starting the command.
 odskingfisher.web
-  An informative message for each web API call.
+  An ``INFO``-level message for each web API call.
