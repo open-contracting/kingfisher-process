@@ -28,6 +28,8 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
             return
 
         if collection.transform_type:
+            logger = logging.getLogger('ocdskingfisher.cli.transform-collections')
+            logger.info("Starting to transform collection " + str(collection.database_id))
             if not args.quiet:
                 print("Collection " + str(collection.database_id))
             transform = get_transform_instance(
