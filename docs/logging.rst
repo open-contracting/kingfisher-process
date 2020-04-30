@@ -27,13 +27,13 @@ ocdskingfisher.cli.delete-collections
   An ``INFO``-level message when deleting each collection and orphan data, and when starting and finishing the command.
 ocdskingfisher.cli.transform-collections
   An ``INFO``-level message when building each transformed collection, and when starting and finishing the command.
+ocdskingfisher.cli.update-collection-caches
+  An ``INFO``-level message when updating each collection, and when starting the command.
 ocdskingfisher.database.delete-collection
   A ``DEBUG``-level message for each step of deleting a collection.
 ocdskingfisher.redis-queue
   An ``INFO``-level message for each Redis message received.
 ocdskingfisher.redis-queue-collection-store-finished
   An ``INFO``-level message for each Redis message received.
-ocdskingfisher.cli.update-collection-caches
-  An ``INFO``-level message when updating each collection, and when starting the command.
 odskingfisher.web
   An ``INFO``-level message for each web API call.
