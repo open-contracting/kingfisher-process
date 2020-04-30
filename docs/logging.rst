@@ -26,7 +26,7 @@ ocdskingfisher.cli.check-collections
 ocdskingfisher.cli.delete-collections
   An ``INFO``-level message when deleting each collection and orphan data, and when starting and finishing the command.
 ocdskingfisher.cli.transform-collections
-  An ``INFO``-level message when starting and finishing the command.
+  An ``INFO``-level message when building each transformed collection, and when starting and finishing the command.
 ocdskingfisher.database.delete-collection
   A ``DEBUG``-level message for each step of deleting a collection.
 ocdskingfisher.redis-queue
