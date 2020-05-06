@@ -11,6 +11,12 @@ You should only run one of these at once, as if two are run at once they may try
 
     python ocdskingfisher-process-cli transform-collections
 
+By default, it will run with a single thread. You can have it run multiple threads at once. A single collection will still be processed at the same speed, but multiple collections will be processed at once.
+
+.. code-block:: shell-session
+
+    python ocdskingfisher-process-cli transform-collections --threads 10
+
 
 Running from cron
 -----------------

@@ -1,7 +1,8 @@
-import os
 import configparser
-import pgpasslib
+import os
 import sys
+
+import pgpasslib
 
 
 """This holds configuration information for Kingfisher.

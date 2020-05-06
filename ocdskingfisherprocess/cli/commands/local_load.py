@@ -1,8 +1,9 @@
-import ocdskingfisherprocess.database
-import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.store import Store
-import os
 import glob
+import os
+
+import ocdskingfisherprocess.cli.commands.base
+import ocdskingfisherprocess.database
+from ocdskingfisherprocess.store import Store
 
 
 class CheckCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):

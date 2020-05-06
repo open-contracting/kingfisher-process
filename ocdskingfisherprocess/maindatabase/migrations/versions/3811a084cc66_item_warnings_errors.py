@@ -5,10 +5,9 @@ Revises: b66e30eb6816
 Create Date: 2019-03-15 15:14:24.254514
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB
-
 
 # revision identifiers, used by Alembic.
 revision = '3811a084cc66'

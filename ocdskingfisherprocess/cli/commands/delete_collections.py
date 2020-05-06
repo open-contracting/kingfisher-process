@@ -1,5 +1,6 @@
-import ocdskingfisherprocess.cli.commands.base
 import logging
+
+import ocdskingfisherprocess.cli.commands.base
 
 
 class DeleteCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):

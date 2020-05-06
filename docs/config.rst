@@ -38,6 +38,8 @@ To override ``config.ini`` and/or ``.pgpass``, set the ``KINGFISHER_PROCESS_DB_U
 
     export KINGFISHER_PROCESS_DB_URI='postgresql://user:password@localhost:5432/dbname'
 
+.. _config-logging:
+
 Logging
 -------
 

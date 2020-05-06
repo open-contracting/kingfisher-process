@@ -1,10 +1,11 @@
-import ocdskingfisherprocess.database
-import ocdskingfisherprocess.cli.commands.base
-from ocdskingfisherprocess.checks import Checks
 import datetime
-from threading import Timer
-import os
 import logging
+import os
+from threading import Timer
+
+import ocdskingfisherprocess.cli.commands.base
+import ocdskingfisherprocess.database
+from ocdskingfisherprocess.checks import Checks
 
 
 class CheckCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):
