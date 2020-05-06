@@ -32,4 +32,5 @@ And that's it! In short, Kingfisher Process accepts "raw" OCDS data, and then ch
    logging.rst
    cli/index.rst
    web.rst
+   transform/compile-release.rst
    development.rst
