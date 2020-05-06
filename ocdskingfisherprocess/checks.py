@@ -151,11 +151,14 @@ class Checks:
     def _handle_package(self, package):
         cove_temp_folder = tempfile.mkdtemp(prefix='ocdskingfisher-cove-', dir=tempfile.gettempdir())
         try:
-            return ocds_json_output(cove_temp_folder, None, None,
-                                    convert=False,
-                                    lib_cove_ocds_config=self.libcoveocds_config,
-                                    file_type='json',
-                                    json_data=package)
+            output = ocds_json_output(cove_temp_folder, None, None,
+                                      convert=False,
+                                      lib_cove_ocds_config=self.libcoveocds_config,
+                                      file_type='json',
+                                      json_data=package)
+            output.pop('releases_aggregates', None)
+            output.pop('records_aggregates', None)
+            return output
         finally:
             shutil.rmtree(cove_temp_folder)
 
