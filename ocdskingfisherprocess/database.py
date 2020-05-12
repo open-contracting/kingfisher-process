@@ -288,7 +288,6 @@ class DataBase:
         if not self._engine:
             self._engine = sa.create_engine(
                 self.config.database_uri,
-                pool_pre_ping=True,
                 json_serializer=SetEncoder().encode,
                 json_deserializer=partial(
                     json.loads,
