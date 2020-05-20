@@ -1,5 +1,5 @@
-OCDS Kingfisher - Process |release|
-===================================
+OCDS Kingfisher Process
+=======================
 
 .. include:: ../README.rst
 
