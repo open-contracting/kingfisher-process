@@ -61,6 +61,11 @@ class TransformCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLI
 
             Timer(run_for_seconds + 60, exitfunc).start()
 
+        # Make sure Engine is created once upfront, before threading starts, as there
+        # is a race condition where multiple Engines could be made.
+        # Engine itself and the its default QueuePool should be threadsafe.
+        self.database.get_engine()
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
             futures = [
                 executor.submit(
