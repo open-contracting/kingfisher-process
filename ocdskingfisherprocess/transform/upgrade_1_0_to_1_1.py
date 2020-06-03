@@ -47,9 +47,11 @@ class Upgrade10To11Transform(BaseTransform):
                     self.database.release_table.c.collection_file_item_id == file_item_model.database_id)
             )
 
-        for release_row in release_rows:
-            if not self.has_release_id_been_done(release_row['id']):
-                self.process_release_row(file_model, file_item_model, release_row)
+            release_ids = [x['id'] for x in release_rows]
+
+        for release_id in release_ids:
+            if not self.has_release_id_been_done(release_id):
+                self.process_release_id(file_model, file_item_model, release_id)
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
@@ -62,14 +64,22 @@ class Upgrade10To11Transform(BaseTransform):
                     self.database.record_table.c.collection_file_item_id == file_item_model.database_id)
             )
 
-        for record_row in record_rows:
-            if not self.has_record_id_been_done(record_row['id']):
-                self.process_record_row(file_model, file_item_model, record_row)
+            record_ids = [x['id'] for x in record_rows]
+
+        for record_id in record_ids:
+            if not self.has_record_id_been_done(record_id):
+                self.process_record_id(file_model, file_item_model, record_id)
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-    def process_release_row(self, file_model, file_item_model, release_row):
+    def process_release_id(self, file_model, file_item_model, release_id):
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.release_table]) \
+                .where(self.database.release_table.c.id == release_id)
+            result = connection.execute(s)
+            release_row = result.fetchone()
+
         package = self.database.get_package_data(release_row.package_data_id)
         package['releases'] = [self.database.get_data(release_row.data_id)]
         package = upgrade_10_11(package)
@@ -91,7 +101,13 @@ class Upgrade10To11Transform(BaseTransform):
 
             store.insert_release(package['releases'][0], package_data)
 
-    def process_record_row(self, file_model, file_item_model, record_row):
+    def process_record_id(self, file_model, file_item_model, record_id):
+        with self.database.get_engine().begin() as connection:
+            s = sa.sql.select([self.database.record_table]) \
+                .where(self.database.record_table.c.id == record_id)
+            result = connection.execute(s)
+            record_row = result.fetchone()
+
         package = self.database.get_package_data(record_row.package_data_id)
         package['records'] = [self.database.get_data(record_row.data_id)]
         package = upgrade_10_11(package)
