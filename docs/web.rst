@@ -29,4 +29,4 @@ To run the app locally in **development** mode::
 
 Then, open <http://127.0.0.1:5000/>
 
-However, to successfully interact with `Kingfisher Collect <https://kingfisher-collect.readthedocs.io/en/latest/kingfisher_process.html>`__  is recommended to deploy the web app in a production environment, for more documentation on how to do that in Flask please refer to `Flask documentation <https://flask.palletsprojects.com/en/1.1.x/deploying/>`__
+To use Kingfisher Process in a **production** environment with `Kingfisher Collect <https://kingfisher-collect.readthedocs.io/en/latest/kingfisher_process.html>`__, see `Flask's documentation <https://flask.palletsprojects.com/en/1.1.x/deploying/>`__ on deploying apps.
