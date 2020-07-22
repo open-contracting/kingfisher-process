@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+**Briefly, what is the user doing and what is their challenge?**
+
 **What data sources are being used?** *(e.g. spider names)*
 
 **How frequently is the data being collected?** *(e.g. daily, once, irregular)*
