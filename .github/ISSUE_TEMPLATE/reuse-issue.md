@@ -1,6 +1,6 @@
 ---
-name: Reuse issue
-about: Describe a user's reuse and any challenges
+name: Re-use issue
+about: Describe a user's re-use and any challenges
 title: ''
 labels: ''
 assignees: ''
