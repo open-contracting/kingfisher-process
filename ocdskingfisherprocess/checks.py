@@ -6,6 +6,7 @@ import tempfile
 import sqlalchemy as sa
 from libcoveocds.api import APIException, ocds_json_output
 from libcoveocds.config import LibCoveOCDSConfig
+from sentry_sdk import capture_exception
 
 
 class Checks:
@@ -186,13 +187,15 @@ class Checks:
             with self.database.get_engine().begin() as connection:
                 connection.execute(self.database.release_check_table.insert(), checks)
         except APIException as err:
-            checks = [{
-                'release_id': release_row.id,
-                'error': str(err),
-                'override_schema_version': override_schema_version
-            }]
-            with self.database.get_engine().begin() as connection:
-                connection.execute(self.database.release_check_error_table.insert(), checks)
+            # This is a specific exception throw by the library.
+            # We save it to the database
+            self._store_release_row_error(release_row, override_schema_version, err)
+        except Exception as err:
+            # This is any old exception
+            # We save it to the database
+            self._store_release_row_error(release_row, override_schema_version, err)
+            # But lets also report this to Sentry, as it may be a system/host error that we should be alerted about
+            capture_exception(err)
 
     def _check_record_row(self, record_row, override_schema_version=''):
         self.logger.debug('check_record_row called for row ' + str(record_row.id) +
@@ -211,10 +214,30 @@ class Checks:
             with self.database.get_engine().begin() as connection:
                 connection.execute(self.database.record_check_table.insert(), checks)
         except APIException as err:
-            checks = [{
-                'record_id': record_row.id,
-                'error': str(err),
-                'override_schema_version': override_schema_version
-            }]
-            with self.database.get_engine().begin() as connection:
-                connection.execute(self.database.record_check_error_table.insert(), checks)
+            # This is a specific exception throw by the library.
+            # We save it to the database
+            self._store_record_row_error(record_row, override_schema_version, err)
+        except Exception as err:
+            # This is any old exception
+            # We save it to the database
+            self._store_record_row_error(record_row, override_schema_version, err)
+            # But lets also report this to Sentry, as it may be a system/host error that we should be alerted about
+            capture_exception(err)
+
+    def _store_release_row_error(self, release_row, override_schema_version, err):
+        checks = [{
+            'release_id': release_row.id,
+            'error': str(err),
+            'override_schema_version': override_schema_version
+        }]
+        with self.database.get_engine().begin() as connection:
+            connection.execute(self.database.release_check_error_table.insert(), checks)
+
+    def _store_record_row_error(self, record_row, override_schema_version, err):
+        checks = [{
+            'record_id': record_row.id,
+            'error': str(err),
+            'override_schema_version': override_schema_version
+        }]
+        with self.database.get_engine().begin() as connection:
+            connection.execute(self.database.record_check_error_table.insert(), checks)
