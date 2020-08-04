@@ -29,7 +29,17 @@ class Upgrade10To11Transform(BaseTransform):
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-        # If the source collection is finished, then we can mark the transform as finished
+        # We maybe mark the transform as finished here
+        # There is a race condition we have to be careful off
+        # * Collection starts being downloaded, 100 files downloaded and saved
+        # * Transform starts
+        # * Transform loads list of 100 files into memory
+        # * Transform takes a while to process all 100 files
+        # * In that time, 10 final files are downloaded and saved and source collection is marked as ended
+        # * Now we can't mark the destination collection as closed because we haven't processed the 10 final files!
+        # Fortunately, because this check is "if self.source_collection.store_end_at" and
+        #   because "self.source_collection" is loaded into memory right at start, this race condition can't occur.
+        # But leaving comment as warning to others that order of loading things into memory is important
         if self.source_collection.store_end_at:
             self.database.mark_collection_store_done(self.destination_collection.database_id)
 
