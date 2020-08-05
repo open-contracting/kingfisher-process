@@ -768,12 +768,12 @@ class DataBase:
         while True:
             with self.get_engine().begin() as connection:
                 ids_to_delete = []
-                for row in connection.execute(sa.sql.text(sql_get), {}):
+                for row in connection.execute(sa.sql.text(sql_get)):
                     ids_to_delete.append(row['id'])
                 if not ids_to_delete:
                     return
                 connection.execute(
-                    sa.sql.expression.text("DELETE FROM package_data WHERE id IN :ids"),
+                    sa.sql.text("DELETE FROM package_data WHERE id IN :ids"),
                     ids=tuple(ids_to_delete)
                 )
 
