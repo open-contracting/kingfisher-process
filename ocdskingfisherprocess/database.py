@@ -758,17 +758,24 @@ class DataBase:
                 )
 
     def _delete_orphan_data_package_data(self):
-        data = {}
-        sql = """DELETE FROM package_data
-                WHERE id NOT IN
-                    (
-                        SELECT package_data_id FROM release union
-                        SELECT package_data_id FROM record
-                    );"""
+        sql_get = """SELECT package_data.id FROM package_data
+                       LEFT JOIN release ON release.package_data_id = package_data.id
+                       LEFT JOIN record ON record.package_data_id = package_data.id
+                       WHERE release.package_data_id IS NULL AND record.package_data_id IS NULL
+                       LIMIT 10000;"""
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
         logger.debug("Deleting package_data")
-        with self.get_engine().begin() as connection:
-            connection.execute(sa.sql.expression.text(sql), data)
+        while True:
+            with self.get_engine().begin() as connection:
+                ids_to_delete = []
+                for row in connection.execute(sa.sql.text(sql_get)):
+                    ids_to_delete.append(row['id'])
+                if not ids_to_delete:
+                    return
+                connection.execute(
+                    sa.sql.text("DELETE FROM package_data WHERE id IN :ids"),
+                    ids=tuple(ids_to_delete)
+                )
 
     def _get_check_query(self, obj_type, collection_id, override_schema_version):
         data = {'collection_id': collection_id}
