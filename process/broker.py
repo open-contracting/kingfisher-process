@@ -11,7 +11,7 @@ from process.util import json_dumps
 
 @contextmanager
 def connect():
-    client = RabbitMQClient(**settings.RABBITMQ)
+    client = RabbitMQClient(settings.AMQP_URL, settings.AMQP_EXCHANGE)
     try:
         yield client
     finally:
@@ -19,7 +19,7 @@ def connect():
 
 
 class RabbitMQClient:
-    def __init__(self, host='localhost', exchange=''):
+    def __init__(self, url='amqp://localhost', exchange=''):
         """
         Connects to RabbitMQ, creates a channel, and creates a durable exchange, unless using the default exchange.
 
@@ -28,7 +28,7 @@ class RabbitMQClient:
         """
         self.exchange = exchange
 
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        self.connection = pika.BlockingConnection(pika.URLParameters(url))
         self.channel = self.connection.channel()
 
         if exchange:

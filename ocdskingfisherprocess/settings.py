@@ -127,11 +127,8 @@ STATIC_URL = '/static/'
 
 # Customization
 
-RABBITMQ = {
-    'host': 'localhost',
-    'exchange': 'ocdskingfisherprocess',
-    'port': os.getenv('KINGFISHER_RABBITMQ_PORT', '5672')
-}
+AMQP_URL = os.getenv('AMQP_URL', 'amqp://localhost')
+AMQP_EXCHANGE = 'ocdskingfisherprocess'
 
 SCRAPYD = {
     'url': os.getenv('KINGFISHER_PROCESS_SCRAPYD_URL'),
