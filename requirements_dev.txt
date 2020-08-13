@@ -5,41 +5,43 @@
 #    pip-compile requirements_dev.in
 #
 appnope==0.1.0            # via ipython
-asgiref==3.2.6
+asgiref==3.2.6            # via -r requirements.txt, django
 backcall==0.1.0           # via ipython
-certifi==2019.11.28
-chardet==3.0.4
+certifi==2019.11.28       # via -r requirements.txt, requests
+chardet==3.0.4            # via -r requirements.txt, requests
 click==7.1.1              # via pip-tools
-coverage==5.0.4
+coverage==5.0.4           # via coveralls
+coveralls==2.1.2          # via -r requirements_dev.in
 decorator==4.4.2          # via ipython, traitlets
-dj-database-url==0.5.0
-django==3.0.4
+dj-database-url==0.5.0    # via -r requirements.txt
+django==3.0.4             # via -r requirements.txt
+docopt==0.6.2             # via coveralls
 entrypoints==0.3          # via flake8
-flake8==3.7.9
-idna==2.9
+flake8==3.7.9             # via -r requirements_dev.in
+idna==2.9                 # via -r requirements.txt, requests
 ipython-genutils==0.2.0   # via traitlets
-ipython==7.13.0
-isort==4.3.21
+ipython==7.13.0           # via -r requirements_dev.in
+isort==4.3.21             # via -r requirements_dev.in
 jedi==0.16.0              # via ipython
 mccabe==0.6.1             # via flake8
-orjson==2.6.1
+orjson==2.6.1             # via -r requirements.txt
 parso==0.6.2              # via jedi
 pexpect==4.8.0            # via ipython
 pickleshare==0.7.5        # via ipython
-pika==1.1.0
-pip-tools==4.5.1
+pika==1.1.0               # via -r requirements.txt
+pip-tools==4.5.1          # via -r requirements_dev.in
 prompt-toolkit==3.0.4     # via ipython
-psycopg2==2.8.4
+psycopg2==2.8.4           # via -r requirements.txt
 ptyprocess==0.6.0         # via pexpect
 pycodestyle==2.5.0        # via flake8
 pyflakes==2.1.1           # via flake8
 pygments==2.6.1           # via ipython
-pytz==2019.3
-requests==2.23.0
+pytz==2019.3              # via -r requirements.txt, django
+requests==2.23.0          # via -r requirements.txt, coveralls
 six==1.14.0               # via pip-tools, traitlets
-sqlparse==0.3.1
+sqlparse==0.3.1           # via -r requirements.txt, django
 traitlets==4.3.3          # via ipython
-urllib3==1.25.8
+urllib3==1.25.8           # via -r requirements.txt, requests
 wcwidth==0.1.9            # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
