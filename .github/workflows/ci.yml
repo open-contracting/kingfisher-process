@@ -41,7 +41,7 @@ jobs:
     - run: pip install -r requirements_dev.txt
     - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
     - env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
+        DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
         AMQP_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
       run: coverage run --source ocdskingfisherprocess,process manage.py test
     - env:
