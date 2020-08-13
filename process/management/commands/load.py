@@ -10,7 +10,7 @@ from process.util import wrap as w
 
 
 class Command(BaseCommand):
-    help = w(t('Load data into a collection\n'
+    help = w(t('Load data into a collection, asynchronously\n'
                'To load data into a new collection, set at least the --source and --note options. The --time option '
                'defaults to the earliest file creation time; if files were copied into place, set --time explicitly.\n'
                'The collection is automatically "closed" to new files. (Some processing steps like "compile-releases" '
@@ -25,7 +25,9 @@ class Command(BaseCommand):
                'compiled release), including JSON arrays and concatenated JSON of these. If OCDS data is embedded '
                'within files, use the --root-path option to indicate the path to the OCDS data to process within the '
                'files. For example, if release packages are in an array under a "results" key, use: --root-path '
-               'results.item'))
+               'results.item\n'
+               'Additional processing is not automatically configured (checking, upgrading, merging, etc.). To add a '
+               'pre-processing step, use the addstep command.'))
 
     def add_arguments(self, parser):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
