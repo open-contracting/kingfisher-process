@@ -11,8 +11,8 @@ from process.util import json_dumps
 
 @contextmanager
 def connect():
+    client = RabbitMQClient(**settings.RABBITMQ)
     try:
-        client = RabbitMQClient(**settings.RABBITMQ)
         yield client
     finally:
         client.close()
