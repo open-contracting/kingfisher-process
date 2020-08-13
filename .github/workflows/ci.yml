@@ -42,6 +42,7 @@ jobs:
     - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
     - env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
+        RABBITMQ_PORT: ${{ job.services.rabbitmq.ports[5672] }}
       run: coverage run --source ocdskingfisherprocess,process manage.py test
     - env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

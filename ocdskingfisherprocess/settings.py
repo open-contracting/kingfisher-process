@@ -130,6 +130,7 @@ STATIC_URL = '/static/'
 RABBITMQ = {
     'host': 'localhost',
     'exchange': 'ocdskingfisherprocess',
+    'port': os.getenv('KINGFISHER_RABBITMQ_PORT', '5672')
 }
 
 SCRAPYD = {
