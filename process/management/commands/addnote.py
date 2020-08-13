@@ -1,5 +1,6 @@
 from django.core.management.base import CommandError
-from django.utils.translation import gettext, gettext_lazy as _
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
 
 from process.cli import CollectionCommand
 from process.forms import CollectionNoteForm

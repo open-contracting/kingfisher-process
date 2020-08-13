@@ -1,5 +1,6 @@
-import orjson
 from textwrap import fill
+
+import orjson
 
 
 def json_dumps(data):
