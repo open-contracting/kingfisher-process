@@ -82,7 +82,8 @@ WSGI_APPLICATION = 'ocdskingfisherprocess.wsgi.application'
 
 DATABASES = {
     # https://docs.djangoproject.com/en/3.0/ref/databases/#postgresql-connection-settings
-    'default': dj_database_url.config(default='postgresql:///ocdskingfisherprocess?application_name=kingfisher-process'),
+    'default': dj_database_url.config(
+        default='postgresql:///ocdskingfisherprocess?application_name=kingfisher-process'),
 }
 
 
