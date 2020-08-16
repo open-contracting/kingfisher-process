@@ -73,7 +73,7 @@ class CollectionTests(TestCase):
 
                 self.assertTrue(source.steps[transform_type])
                 self.assertEqual(len(transforms), 1)
-                self.assertEqual(transforms[0].source_id, 'example')
+                self.assertEqual(transforms[0].source_id, 'france')
                 self.assertEqual(transforms[0].data_version, datetime.datetime(2001, 1, 1, 0, 0))
                 self.assertFalse(transforms[0].sample)
                 self.assertEqual(transforms[0].expected_files_count, None)
