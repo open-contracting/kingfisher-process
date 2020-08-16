@@ -39,7 +39,7 @@ class AddnoteTests(TransactionTestCase):
         with self.assertRaises(CommandError) as e:
             call_command('addnote', source.pk, '   ')
 
-        self.assertEqual(str(e.exception), 'note "   " cannot be blank')
+        self.assertEqual(str(e.exception), "note '   ' cannot be blank")
 
     def test_duplicate(self):
         source = collection()
@@ -51,4 +51,4 @@ class AddnoteTests(TransactionTestCase):
         with self.assertRaises(CommandError) as e:
             call_command('addnote', source.pk, 'A note')
 
-        self.assertEqual(str(e.exception), 'Collection {} already has the note "A note"'.format(source.pk))
+        self.assertEqual(str(e.exception), "Collection {} already has the note 'A note'".format(source.pk))

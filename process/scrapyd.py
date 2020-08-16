@@ -4,6 +4,14 @@ import requests
 from django.conf import settings
 
 
+def configured():
+    """
+    :returns: whether the connection to Scrapyd is configured
+    :rtype: bool
+    """
+    return bool(settings.SCRAPYD['url'])
+
+
 def spiders():
     """
     :returns: the names of the spiders in the Scrapyd project
