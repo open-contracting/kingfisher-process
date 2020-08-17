@@ -62,7 +62,7 @@ class AddstepTests(TransactionTestCase):
                 calls = [call(transform_type, {'file_id': pk, 'source_id': source.pk,
                                                'destination_id': destination.pk}) for pk in pks]
 
-                self.assertEqual(destination.source_id, 'example')
+                self.assertEqual(destination.source_id, 'france')
                 self.assertEqual(destination.data_version, datetime.datetime(2001, 1, 1, 0, 0))
                 self.assertFalse(destination.sample)
                 self.assertEqual(destination.expected_files_count, None)

@@ -13,11 +13,11 @@ class CollectionTests(TestCase):
         obj = Collection()
         self.assertEqual(str(obj), '{source_id}:{data_version}')
 
-        obj.source_id = 'example'
-        self.assertEqual(str(obj), 'example:{data_version}')
+        obj.source_id = 'france'
+        self.assertEqual(str(obj), 'france:{data_version}')
 
         obj.data_version = '2001-01-01 00:00:00'
-        self.assertEqual(str(obj), 'example:2001-01-01 00:00:00')
+        self.assertEqual(str(obj), 'france:2001-01-01 00:00:00')
 
     def test_str_data_version(self):
         obj = Collection(data_version='2001-01-01 00:00:00')
