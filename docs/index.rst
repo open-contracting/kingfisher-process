@@ -25,6 +25,7 @@ And that's it! In short, Kingfisher Process accepts "raw" OCDS data, and then ch
    :maxdepth: 1
 
    requirements-install.rst
+   requirements-standard-extension-website.rst
    config.rst
    data-model.rst
    database-structure.rst
