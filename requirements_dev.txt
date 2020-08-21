@@ -36,7 +36,7 @@ jsonpointer==2.0          # via -r requirements.txt, ocdskit
 jsonref==0.2              # via -r requirements.txt, flattentool, libcove, libcoveocds, ocdskit, ocdsmerge
 jsonschema==3.2.0         # via -r requirements.txt, libcove, libcoveocds, ocdskit
 libcove==0.12.2           # via -r requirements.txt, libcoveocds
-libcoveocds==0.7.4        # via -r requirements.txt
+libcoveocds==0.7.5        # via -r requirements.txt
 lxml==4.4.2               # via -r requirements.txt, flattentool
 mako==1.1.0               # via -r requirements.txt, alembic
 markupsafe==1.1.1         # via -r requirements.txt, jinja2, mako

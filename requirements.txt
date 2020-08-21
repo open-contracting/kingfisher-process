@@ -30,7 +30,7 @@ jsonpointer==2.0          # via ocdskit
 jsonref==0.2              # via flattentool, libcove, libcoveocds, ocdskit, ocdsmerge
 jsonschema==3.2.0         # via libcove, libcoveocds, ocdskit
 libcove==0.12.2           # via libcoveocds
-libcoveocds==0.7.4        # via -r requirements.in
+libcoveocds==0.7.5        # via -r requirements.in
 lxml==4.4.2               # via flattentool
 mako==1.1.0               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
