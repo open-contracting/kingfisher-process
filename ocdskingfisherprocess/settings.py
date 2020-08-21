@@ -14,7 +14,7 @@ import os
 
 import dj_database_url
 
-production = os.getenv('KINGFISHER_PROCESS_ENV') == 'production'
+production = os.getenv('DJANGO_ENV') == 'production'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,14 +24,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('KINGFISHER_PROCESS_SECRET_KEY', '^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4')
+SECRET_KEY = os.getenv('SECRET_KEY', '^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not production
 
-ALLOWED_HOSTS = [
-    'process.kingfisher.open-contracting.org',
-]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+if 'ALLOWED_HOSTS' in os.environ:
+    ALLOWED_HOSTS.extend(os.getenv('ALLOWED_HOSTS').split(','))
 
 
 # Application definition
@@ -143,15 +143,14 @@ SILENCED_SYSTEM_CHECKS = [
 
 # https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 if production:
-    # Run: env KINGFISHER_PROCESS_ENV=production KINGFISHER_PROCESS_SECURE_HSTS_SECONDS=1 ./manage.py check --deploy
+    # Run: env DJANGO_ENV=production SECURE_HSTS_SECONDS=1 ./manage.py check --deploy
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
     SECURE_REFERRER_POLICY = 'same-origin'
 
     # https://docs.djangoproject.com/en/3.0/ref/middleware/#http-strict-transport-security
-    secure_hsts_seconds = os.getenv('KINGFISHER_PROCESS_SECURE_HSTS_SECONDS')
-    if secure_hsts_seconds:
-        SECURE_HSTS_SECONDS = secure_hsts_seconds
+    if 'SECURE_HSTS_SECONDS' in os.environ:
+        SECURE_HSTS_SECONDS = os.getenv('SECURE_HSTS_SECONDS')
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         SECURE_HSTS_PRELOAD = True
