@@ -130,7 +130,7 @@ class Command(BaseCommand):
 
         # TODO: This command is incomplete. Partial work was committed to allow others to continue.
 
-        # TODO: If format can't be determined, skip and leave the collection open?
+        # TODO: If format can't be determined, skip with a warning, and leave the collection open?
         # What to do about binary and non-JSON files? (If we only load .json files, we'll miss .jsonl, etc. files)
-        # Should OCDS Kit's detect-format be improved to ignore files whose first non-whitespace char isn't [ or {?
-        # Should OCDS Kit's detect-format warn about any BOM?
+        # Should ocdskit's detect-format be improved to ignore files whose first non-whitespace character isn't [ or {?
+        # Should ocdskit's detect-format warn about a BOM?
