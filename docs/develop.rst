@@ -35,6 +35,23 @@ Please feel free to add links to this section.
 Tips & tricks
 ~~~~~~~~~~~~~
 
+Legacy database
+^^^^^^^^^^^^^^^
+
+Kingfisher Process was rewritten to use Django and RabbitMQ. It was previously written using Flask and SQLAlchemy.
+
+You can compare ``models.py`` to the output of:
+
+.. code-block:: shell
+
+   env DATABASE_URL=postgresql://user@host/dbname ./manage.py inspectdb
+
+To avoid an error when migrating from the SQLAlchemy-managed database to the Django-managed database, `run <https://docs.djangoproject.com/en/3.1/topics/migrations/#initial-migrations>`__:
+
+.. code-block:: shell
+
+   ./manage.py migrate --fake-initial
+
 Management commands
 ^^^^^^^^^^^^^^^^^^^
 
