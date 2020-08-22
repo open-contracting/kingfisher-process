@@ -82,6 +82,7 @@ class Command(BaseCommand):
                 raise CommandError(_('Collection %(id)s is closed to new files. If you need to re-open it, please '
                                      'comment at https://github.com/open-contracting/kingfisher-process/issues/276')
                                    % {'id': collection_id})
+            # TODO: Reset expected_files_count, so that endload can't be run until this command completes.
         else:
             if not configured():
                 self.stderr.write(self.style.WARNING("The --source argument can't be validated, because a Scrapyd URL "
@@ -100,6 +101,8 @@ class Command(BaseCommand):
 
             data = {'source_id': options['source'], 'data_version': data_version, 'sample': options['sample'],
                     'force': options['force']}
+            # TODO: Add local_load the collection's options. If --keep-open, add keep_open to the collection's options.
+
             form = CollectionForm(data)
 
             if form.is_valid():
@@ -130,7 +133,12 @@ class Command(BaseCommand):
 
         # TODO: This command is incomplete. Partial work was committed to allow others to continue.
 
-        # TODO: If format can't be determined, skip with a warning, and leave the collection open?
+        # TODO: Guess the file format using OCDS Kit (need to make detect-format into a library method)
+        # If format can't be determined, skip with a warning, and leave the collection open?
         # What to do about binary and non-JSON files? (If we only load .json files, we'll miss .jsonl, etc. files)
         # Should ocdskit's detect-format be improved to ignore files whose first non-whitespace character isn't [ or {?
         # Should ocdskit's detect-format warn about a BOM?
+        # Send a message for each file
+        # Set/update expected_files_count
+        # Send the total number of messages sent
+        # Print the collection ID
