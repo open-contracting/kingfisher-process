@@ -63,6 +63,7 @@ class Collection(models.Model):
     expected_files_count = models.IntegerField(null=True, blank=True)
     # Deprecated
     check_data = models.BooleanField(default=False)
+    # Obsolete
     check_older_data_with_schema_version_1_1 = models.BooleanField(default=False)
 
     # Provenance
