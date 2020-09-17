@@ -1,11 +1,7 @@
-Querying data in Kingfisher Process
-====================================
+Querying data
+=============
 
-The Kingfisher Process :doc:`data-model` is based on collections. Each collection contains either data downloaded from an OCDS publisher using a `Kingfisher Scrape <https://kingfisher-scrape.readthedocs.io/en/latest/>`__ spider, or loaded locally using the :doc:`cli/local-load` cli tool.
-
-OCDS data can be published using either `releases or records <https://standard.open-contracting.org/latest/en/getting_started/releases_and_records/>`__. Releases are point in time updates about a contracting process and a record provides an index of all the releases for a contracting process.
-
-Kingfisher Process automatically transforms OCDS releases to create compiled release collections,  containing a single compiled release per contracting process populated with the latest value of each field.
+Before you begin, read the :doc:`index` and :doc:`data-model` pages to learn about how data is stored in Kingfisher Process.
 
 Since most analysis is much easier to perform on compiled releases, we recommend working with compiled release collections to begin with.
 
