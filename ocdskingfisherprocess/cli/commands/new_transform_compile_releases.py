@@ -1,5 +1,5 @@
-import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
+import ocdskingfisherprocess.database
 from ocdskingfisherprocess.transform import TRANSFORM_TYPE_COMPILE_RELEASES
 
 

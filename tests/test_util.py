@@ -1,6 +1,8 @@
-from ocdskingfisherprocess.util import parse_string_to_date_time, parse_string_to_boolean, FileToStore, \
-    control_codes_to_filter_out, control_code_to_filter_out_to_human_readable
 import os
+
+from ocdskingfisherprocess.util import (FileToStore, control_code_to_filter_out_to_human_readable,
+                                        control_codes_to_filter_out, parse_string_to_boolean,
+                                        parse_string_to_date_time)
 
 
 def test_parse_string_to_boolean_1():
@@ -39,7 +41,7 @@ def test_parse_string_to_date_time_2():
 
 def test_file_to_store_sample_1_0_record_with_control_codes():
     json_filename = os.path.join(os.path.dirname(
-        os.path.realpath(__file__)), 'data', 'sample_1_0_record_with_control_codes.json'
+        os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record_with_control_codes.json'
     )
 
     with FileToStore(json_filename) as file_to_store:
@@ -52,7 +54,7 @@ def test_file_to_store_sample_1_0_record_with_control_codes():
 
 def test_file_to_store_sample_1_0_record():
     json_filename = os.path.join(os.path.dirname(
-        os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+        os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
     )
 
     with FileToStore(json_filename) as file_to_store:

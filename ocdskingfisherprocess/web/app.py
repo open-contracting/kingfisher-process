@@ -7,6 +7,8 @@ import sentry_sdk
 from flask import Flask, Response, current_app, render_template
 from prometheus_client.exposition import generate_latest
 from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 import ocdskingfisherprocess.signals.signals
 import ocdskingfisherprocess.web.views_api_v1 as views_api_v1
@@ -23,7 +25,7 @@ def create_app(config=None):
     if config.sentry_dsn:
         sentry_sdk.init(
             dsn=config.sentry_dsn,
-            integrations=[FlaskIntegration()]
+            integrations=[FlaskIntegration(), RedisIntegration(), SqlalchemyIntegration()]
         )
 
     logging_config_file_full_path = os.path.expanduser('~/.config/ocdskingfisher-process/logging.json')

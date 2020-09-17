@@ -1,6 +1,6 @@
-import ocdskingfisherprocess.cli.commands.base
-
 import redis
+
+import ocdskingfisherprocess.cli.commands.base
 
 
 class UpgradeDataBaseCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):

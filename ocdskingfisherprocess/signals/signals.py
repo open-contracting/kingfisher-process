@@ -1,4 +1,5 @@
 import json
+
 import redis
 
 from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS

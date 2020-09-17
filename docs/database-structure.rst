@@ -105,6 +105,10 @@ release_check, record_check, release_check_error and record_check_error tables
 
 These tables store the results of running the Data Review Tool (also called CoVE) on each piece of data. See http://standard.open-contracting.org/review/
 
+If the check was run successfully, the result could be that the data passed or failed. In either case, these results will be stored in the `release_check` or `record_check` tables.
+
+If the check could not be run due to a crash, that will be stored in the `release_check_error` or `record_check_error` tables.
+
 transform_upgrade_1_0_to_1_1_status_release and transform_upgrade_1_0_to_1_1_status_record
 ------------------------------------------------------------------------------------------
 

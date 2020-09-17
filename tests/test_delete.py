@@ -1,6 +1,8 @@
 import datetime
 import os
+
 import sqlalchemy as sa
+
 from ocdskingfisherprocess.store import Store
 from ocdskingfisherprocess.transform import TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
 from ocdskingfisherprocess.transform.upgrade_1_0_to_1_1 import Upgrade10To11Transform
@@ -22,12 +24,12 @@ class TestDelete(BaseDataBaseTest):
 
         # Load several records to test data delete
         json_filename1 = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
         store.store_file_from_local("test1.json", "http://example.com", "record", "utf-8", json_filename1)
 
         json_filename2 = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_1_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_record.json'
         )
         store.store_file_from_local("test2.json", "http://example.com", "record", "utf-8", json_filename2)
 
@@ -99,7 +101,7 @@ class TestDelete(BaseDataBaseTest):
         store.set_collection(source_collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)

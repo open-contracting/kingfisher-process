@@ -1,5 +1,5 @@
-import ocdskingfisherprocess.database
 import ocdskingfisherprocess.cli.commands.base
+import ocdskingfisherprocess.database
 
 
 class EndCollectionStoreCLICommand(ocdskingfisherprocess.cli.commands.base.CLICommand):

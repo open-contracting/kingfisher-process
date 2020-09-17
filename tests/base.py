@@ -1,8 +1,8 @@
-from ocdskingfisherprocess.database import DataBase
 from ocdskingfisherprocess.config import Config
-from ocdskingfisherprocess.web.app import create_app
+from ocdskingfisherprocess.database import DataBase
 from ocdskingfisherprocess.signals import KINGFISHER_SIGNALS
 from ocdskingfisherprocess.signals.signals import setup_signals
+from ocdskingfisherprocess.web.app import create_app
 
 
 def _reset_signals():

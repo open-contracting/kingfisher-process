@@ -1,5 +1,5 @@
-from prometheus_client import Gauge
 import redis
+from prometheus_client import Gauge
 
 PROMETHEUS_REDIS_QUEUE_LENGTH = Gauge(
     'kingfisher_process_redis_queue_length',

@@ -10,15 +10,15 @@ Collections are distinct sets of OCDS data. They are the largest unit on which t
 
 A collection is uniquely identified by the combination of:
 
-* Name (``source_id``): A string. If the collection was created by Kingfisher Scrape, this is the ``name`` attribute of the `spider <https://github.com/open-contracting/kingfisher-scrape/tree/master/kingfisher_scrapy/spiders>`__.
-* Date (``data_version``): The date and time at which the collection was created. If the collection was created by Kingfisher Scrape, this is the ``start_time`` `statistic <https://docs.scrapy.org/en/latest/topics/stats.html>`__ of the crawl.
+* Name (``source_id``): A string. If the collection was created by Kingfisher Collect, this is the ``name`` attribute of the `spider <https://github.com/open-contracting/kingfisher-collect/tree/master/kingfisher_scrapy/spiders>`__.
+* Date (``data_version``): The date and time at which the collection was created. If the collection was created by Kingfisher Collect, this is the ``start_time`` `statistic <https://docs.scrapy.org/en/latest/topics/stats.html>`__ of the crawl.
 * Sample (``sample``): A boolean. Whether the collection is only a sample of the data from the source.
 * Base collection (``transform_from_collection_id``): An integer. The ID of the collection that was transformed into this collection.
 * Transform type (``transform_type``): A string. The identifier of the transformer that was used to produce this collection.
 
 Each collection is given an integer ID; this is used to refer to the collection in the :doc:`cli/index` and the database.
 
-Collections are created by Kingfisher Scrape, the :ref:`web API <web-api>`, or the :doc:`cli/new-collection` command.
+Collections are created by Kingfisher Collect, the :ref:`web API <web-api>`, or the :doc:`cli/new-collection` command.
 
 .. _schema-check-flags:
 
@@ -56,7 +56,7 @@ Files
 A collection contains one or more files. A file is uniquely identified by its collection and filename. Files can have:
 
 errors
-    The file could not be retrieved. Presently, errors are either reported by Kingfisher Scrape or caught by the :doc:`cli/local-load` command.
+    The file could not be retrieved. Presently, errors are either reported by Kingfisher Collect or caught by the :doc:`cli/local-load` command.
 
 warnings
     The file contents had to be modified in order to be stored. Presently, the only warning is about the removal of control characters.

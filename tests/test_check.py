@@ -1,9 +1,11 @@
 import datetime
 import os
+
 import sqlalchemy as sa
+
+from ocdskingfisherprocess.checks import Checks
 from ocdskingfisherprocess.store import Store
 from tests.base import BaseDataBaseTest
-from ocdskingfisherprocess.checks import Checks
 
 
 class TestAllChecksOff(BaseDataBaseTest):
@@ -20,7 +22,7 @@ class TestAllChecksOff(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
@@ -74,7 +76,7 @@ class TestAllChecksOff(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_release.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
@@ -136,7 +138,7 @@ class TestCheckOn(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
@@ -218,7 +220,7 @@ class TestCheckOn(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_release.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
@@ -306,7 +308,7 @@ class TestCheckOlderThan11On(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
@@ -388,7 +390,7 @@ class TestCheckOlderThan11On(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_release.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
@@ -477,7 +479,7 @@ class TestCheckAllOn(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
@@ -556,7 +558,7 @@ class TestCheckAllOn(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_release.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
@@ -635,7 +637,7 @@ class TestCheckAllOn(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
@@ -718,7 +720,7 @@ class TestCheckAllOn(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_0_release.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_0_release.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
@@ -804,7 +806,7 @@ class TestCheck11NotSelected(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_1_record.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_record.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "record", "utf-8", json_filename)
@@ -823,7 +825,7 @@ class TestCheck11NotSelected(BaseDataBaseTest):
         store.set_collection(collection)
 
         json_filename = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'data', 'sample_1_1_releases_multiple_with_same_ocid.json'
+            os.path.realpath(__file__)), 'fixtures', 'sample_1_1_releases_multiple_with_same_ocid.json'
         )
 
         store.store_file_from_local("test.json", "http://example.com", "release_package", "utf-8", json_filename)
