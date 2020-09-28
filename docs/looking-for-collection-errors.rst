@@ -23,10 +23,10 @@ Both `collection_file` and `collection_file_item` tables have an `errors` and a 
 
 .. code-block:: shell-session
 
-    SELECT * FROM collection_file WHERE collection_id =3 AND (errors IS NOT NULL OR (warnings != 'null' AND warnings IS NOT NULL));
+    SELECT * FROM collection_file WHERE collection_id =3 AND (errors IS NOT NULL OR warnings IS NOT NULL);
     SELECT * FROM collection_file_item JOIN collection_file ON collection_file_item.collection_file_id = collection_file.id
        WHERE collection_file.collection_id = 3 AND
-       (collection_file_item.errors IS NOT NULL OR (collection_file_item.warnings != 'null' AND collection_file_item.warnings IS NOT NULL ));
+       (collection_file_item.errors IS NOT NULL OR collection_file_item.warnings IS NOT NULL );
 
 Errors with checks
 ------------------
