@@ -59,10 +59,9 @@ To get data from a collection containing releases or records, join to the ``rele
 Calculate the total value of completed tenders in a collection
 --------------------------------------------------------------
 
-In OCDS, the tender value is stored in the ``tender.value`` object which consists of a numeric ``.amount`` property with an associated ``.currency``. The tender status is stored in the ``tender.status`` field.
+In OCDS, the tender value is stored in the ``tender.value`` `Value <https://standard.open-contracting.org/latest/en/schema/reference/#value>`__ object which consists of a numeric ``.amount`` property with an associated ``.currency``. The tender status is stored in the ``tender.status`` field.
 
 To access the properties of a JSON object use the PostgreSQL ``->`` operator. The ``->`` operator takes a jsonb object and the name of a key as inputs and returns the value of the key as a jsonb value. The ``->>`` operator returns the value as a string.
-
 
 The following query calculates the total value of completed tenders in collection 584:
 
@@ -95,9 +94,9 @@ The following query calculates the total value of completed tenders in collectio
 Calculate the top 10 buyers by award value
 ------------------------------------------
 
-Details of the buyer for a contracting process in OCDS are stored in the ``parties`` section and referenced from the ``buyer`` object.
+Details of the buyer for a contracting process in OCDS are stored in the ``parties`` `section <https://standard.open-contracting.org/latest/en/schema/reference/#parties>`__ and referenced from the ``buyer`` `OrganizationReference <https://standard.open-contracting.org/latest/en/schema/reference/#organizationreference>`__ object.
 
-Since a single contracting process can have many awards, for example where lots are used, the ``awards`` section in OCDS is an array. The award value is stored in the ``awards.value`` object.
+Since a single contracting process can have many awards, e.g. where lots are used, the ``awards`` `section <https://standard.open-contracting.org/latest/en/schema/reference/#award>`__ in OCDS is an array. The award value is stored in the ``awards.value`` object.
 
 The following query calculates the top 10 buyers by the value of awards for collection 584.
 
