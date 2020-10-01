@@ -12,18 +12,18 @@ The following query returns a list of compiled release collections downloaded fr
 
 .. code-block:: sql
 
-  SELECT
-      *
-  FROM
-      collection -- the `collection` table contains a list of all collections in the database
-  WHERE
-      source_id = 'georgia_releases' -- filter by collections from the 'georgia_releases' source.
-  AND
-      cached_compiled_releases_count > 0 -- filter by collections containing compiled releases
-  ORDER BY
-      id DESC; -- collection ids are sequential, order by newest first
+   SELECT
+       *
+   FROM
+       collection -- the `collection` table contains a list of all collections in the database
+   WHERE
+       source_id = 'georgia_releases' -- filter by collections from the 'georgia_releases' source.
+   AND
+       cached_compiled_releases_count > 0 -- filter by collections containing compiled releases
+   ORDER BY
+       id DESC; -- collection ids are sequential, order by newest first
 
-To find collections from a different source, change the ``source_id`` parameter. The ``source_id`` in Kingfisher Process is based on the name of the spider in Kingfisher Collect.
+To find collections from a different source, change the ``source_id`` condition. The ``source_id`` in Kingfisher Process is based on the name of the spider in Kingfisher Collect.
 
 See the list of spiders in the `Kingfisher Collect documentation <https://kingfisher-collect.readthedocs.io/en/latest/spiders.html>`__ for a list of possible sources.
 
@@ -36,105 +36,105 @@ The following query returns the full JSON data for the first 3 compiled releases
 
 .. code-block:: sql
 
-  SELECT
-      data
-  FROM
-      data -- raw OCDS JSON data is stored as jsonb blobs in the `data` column of the `data` table
-  JOIN
-      compiled_release ON data.id = compiled_release.data_id -- join to the `compiled_release` table to filter data from a specific collection
-  WHERE
-      collection_id = 584
-  LIMIT 3;
+   SELECT
+       data
+   FROM
+       data -- raw OCDS JSON data is stored as jsonb blobs in the `data` column of the `data` table
+   JOIN
+       compiled_release ON data.id = compiled_release.data_id -- join to the `compiled_release` table to filter data from a specific collection
+   WHERE
+       collection_id = 584
+   LIMIT 3;
 
-To get data from a different collection, change the ``collection_id`` parameter.
+To get data from a different collection, change the ``collection_id`` condition.
 
 To get data from a collection containing releases or records, join to the ``release`` or ``record`` tables rather than the ``compiled_release`` table.
 
 .. tip:: Rendering JSON using Redash
 
-  If you are using OCP's Redash instance, you can render the results of a query as pretty printed and collapsible JSON by clicking the '+ New Visualization' button, setting the visualization type to 'table' and setting the data column to display as JSON.
+   If you are using OCP's Redash instance, you can render the results of a query as pretty printed and collapsible JSON by clicking the '+ New Visualization' button, setting the visualization type to 'table' and setting the data column to display as JSON.
 
 Calculate the total value of completed tenders in a collection
 --------------------------------------------------------------
 
-In OCDS, the tender value is stored in the ``tender.value`` `Value <https://standard.open-contracting.org/latest/en/schema/reference/#value>`__ object which consists of a numeric ``.amount`` property with an associated ``.currency``. The tender status is stored in the ``tender.status`` field.
+In OCDS, the tender value is stored in the ``tender.value`` `Value <https://standard.open-contracting.org/latest/en/schema/reference/#value>`__ object which consists of a numeric ``.amount`` field and a string ``.currency`` field. The tender status is stored in the ``tender.status`` field.
 
-To access the properties of a JSON object use the PostgreSQL ``->`` operator. The ``->`` operator takes a jsonb object and the name of a key as inputs and returns the value of the key as a jsonb value. The ``->>`` operator returns the value as a string.
+To access the properties of a JSON object use the PostgreSQL ``->`` operator. The ``->`` operator takes a JSONB object and a property's name as input, and returns the property's value as a JSONB value. The ``->>`` operator returns the value as a literal value (like text or integer).
 
 The following query calculates the total value of completed tenders in collection 584:
 
 .. code-block:: sql
 
-  SELECT
-      sum((data -> 'tender' -> 'value' -> 'amount')::numeric) AS tender_value,
-      data -> 'tender' -> 'value' ->> 'currency' AS currency
-  FROM
-      data
-  JOIN
-      compiled_release ON data.id = compiled_release.data_id
-  WHERE
-      collection_id = 584
-  AND
-      data -> 'tender' ->> 'status' = 'complete'
-  GROUP BY
-      currency;
+   SELECT
+       sum((data -> 'tender' -> 'value' -> 'amount')::numeric) AS tender_value,
+       data -> 'tender' -> 'value' ->> 'currency' AS currency
+   FROM
+       data
+   JOIN
+       compiled_release ON data.id = compiled_release.data_id
+   WHERE
+       collection_id = 584
+   AND
+       data -> 'tender' ->> 'status' = 'complete'
+   GROUP BY
+       currency;
 
 .. tip:: Filtering on status fields
 
-  The ``tender``, ``award`` and ``contract`` objects in OCDS all have a ``.status`` property.
+   The ``tender``, ``awards`` and ``contracts`` objects in OCDS all have a ``.status`` field.
 
-  Consider which statuses you want to include or exclude from your analysis, for example you might wish to exclude pending and cancelled contracts when calculating the total value of contracts for each buyer.
+   Consider which statuses you want to include or exclude from your analysis; for example, you might want to exclude pending and cancelled contracts when calculating the total value of contracts for each buyer.
 
-  The `OCDS codelist documentation <https://standard.open-contracting.org/latest/en/schema/codelists/#>`__ describes the meaning of the statuses for each object.
+   The `OCDS codelist documentation <https://standard.open-contracting.org/latest/en/schema/codelists/#>`__ describes the meaning of the statuses for each object.
 
 Calculate the top 10 buyers by award value
 ------------------------------------------
 
 Details of the buyer for a contracting process in OCDS are stored in the ``parties`` `section <https://standard.open-contracting.org/latest/en/schema/reference/#parties>`__ and referenced from the ``buyer`` `OrganizationReference <https://standard.open-contracting.org/latest/en/schema/reference/#organizationreference>`__ object.
 
-Since a single contracting process can have many awards, e.g. where lots are used, the ``awards`` `section <https://standard.open-contracting.org/latest/en/schema/reference/#award>`__ in OCDS is an array. The award value is stored in the ``awards.value`` object.
+Since a single contracting process can have many awards, e.g. when divided into lots, the ``awards`` `section <https://standard.open-contracting.org/latest/en/schema/reference/#award>`__ in OCDS is an array. The award value is stored in the ``awards.value`` object.
 
 The following query calculates the top 10 buyers by the value of awards for collection 584.
 
-The PostgreSQL ``jsonb_array_elements`` function used in this query expands the ``awards`` array to a set of jsonb blobs, one for each award.
+The PostgreSQL ``jsonb_array_elements`` function used in this query expands the ``awards`` array to a set of JSONB blobs, one for each award.
 
-The ``cross join`` in this query acts like an inner join between each row of the data table and the results of the ``jsonb_array_elements`` function for that row.
+The ``CROSS JOIN`` in this query joins each row of the data table with each result of the ``jsonb_array_elements`` function for that row.
 
 .. code-block:: sql
 
-  SELECT
-      data -> 'buyer' ->> 'name' AS buyer_name,
-      sum((awards -> 'value' -> 'amount')::numeric) AS award_value,
-      awards -> 'value' ->> 'currency' AS currency
-  FROM
-      data
-  JOIN
-      compiled_release ON data.id = compiled_release.data_id
-  CROSS JOIN
-      jsonb_array_elements(data -> 'awards') AS awards
-  WHERE
-      collection_id = 584
-  AND
-      (awards -> 'value' -> 'amount')::numeric > 0 -- filter out awards with no value
-  AND
-      awards ->> 'status' = 'active'
-  GROUP BY
-      buyer_name,
-      currency
-  ORDER BY
-      award_value desc
-  LIMIT
-      10;
+   SELECT
+       data -> 'buyer' ->> 'name' AS buyer_name,
+       sum((awards -> 'value' -> 'amount')::numeric) AS award_value,
+       awards -> 'value' ->> 'currency' AS currency
+   FROM
+       data
+   JOIN
+       compiled_release ON data.id = compiled_release.data_id
+   CROSS JOIN
+       jsonb_array_elements(data -> 'awards') AS awards
+   WHERE
+       collection_id = 584
+   AND
+       (awards -> 'value' -> 'amount')::numeric > 0 -- filter out awards with no value
+   AND
+       awards ->> 'status' = 'active'
+   GROUP BY
+       buyer_name,
+       currency
+   ORDER BY
+       award_value desc
+   LIMIT
+       10;
 
 Use the `PostgreSQL documentation <https://www.postgresql.org/docs/current/functions-json.html>`__ to learn more about operators and functions for working with JSON data.
 
 .. tip:: Organization identifiers
 
-  For simplicity, the above query groups by the ``buyer.name`` field. Using organization names as a dimension in your analysis can be unreliable, since spellings and abbreviations of the same organization name can differ.
+   For simplicity, the above query groups by the ``buyer_name`` column. Using organization names as a dimension in your analysis can be unreliable, since spellings and abbreviations of the same organization name can differ.
 
-  OCDS recommends that publishers provide `organization identifiers <https://standard.open-contracting.org/latest/en/schema/identifiers/#organization-ids>`__ so that the legal entities involved in a contracting process can be reliably identified.
+   OCDS recommends that publishers provide `organization identifiers <https://standard.open-contracting.org/latest/en/schema/identifiers/#organization-ids>`__ so that the legal entities involved in a contracting process can be reliably identified.
 
-  The identifier for an organization in OCDS is stored in the ``.identifier`` property of the entry in the ``parties`` section for the organization.
+   The identifier for an organization in OCDS is stored in the ``.identifier`` field of the entry in the ``parties`` section for the organization.
 
 Querying other collections and fields
 -------------------------------------
