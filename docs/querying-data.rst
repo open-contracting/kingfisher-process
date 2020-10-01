@@ -12,16 +12,16 @@ The following query returns a list of compiled release collections downloaded fr
 
 .. code-block:: sql
 
-  select
+  SELECT
       *
-  from
-      collection --the `collection` table contains a list of all collections in the database
-  where
-      source_id = 'georgia_releases' --filter by collections from the 'georgia_releases' source.
-  and
-      cached_compiled_releases_count > 0 --filter by collections containing compiled releases
-  order by
-      id desc; --collection ids are sequential, order by newest first
+  FROM
+      collection -- the `collection` table contains a list of all collections in the database
+  WHERE
+      source_id = 'georgia_releases' -- filter by collections from the 'georgia_releases' source.
+  AND
+      cached_compiled_releases_count > 0 -- filter by collections containing compiled releases
+  ORDER BY
+      id DESC; -- collection ids are sequential, order by newest first
 
 To find collections from a different source, change the ``source_id`` parameter. The ``source_id`` in Kingfisher Process is based on the name of the spider in Kingfisher Collect.
 
@@ -36,17 +36,15 @@ The following query returns the full JSON data for the first 3 compiled releases
 
 .. code-block:: sql
 
-  select
+  SELECT
       data
-  from
-      data --raw OCDS JSON data is stored as jsonb blobs in the `data` column of the `data` table
-  join
-      compiled_release
-  on
-    data.id = compiled_release.data_id -- join to the `compiled_release` table to filter data from a specific collection
-  where
+  FROM
+      data -- raw OCDS JSON data is stored as jsonb blobs in the `data` column of the `data` table
+  JOIN
+      compiled_release ON data.id = compiled_release.data_id -- join to the `compiled_release` table to filter data from a specific collection
+  WHERE
       collection_id = 584
-  limit 3;
+  LIMIT 3;
 
 To get data from a different collection, change the ``collection_id`` parameter.
 
@@ -67,20 +65,18 @@ The following query calculates the total value of completed tenders in collectio
 
 .. code-block:: sql
 
-  select
-      sum((data -> 'tender' -> 'value' -> 'amount')::numeric) as tender_value,
-      data -> 'tender' -> 'value' ->> 'currency' as currency
-  from
+  SELECT
+      sum((data -> 'tender' -> 'value' -> 'amount')::numeric) AS tender_value,
+      data -> 'tender' -> 'value' ->> 'currency' AS currency
+  FROM
       data
-  join
-      compiled_release
-  on
-      data.id = compiled_release.data_id
-  where
+  JOIN
+      compiled_release ON data.id = compiled_release.data_id
+  WHERE
       collection_id = 584
-  and
+  AND
       data -> 'tender' ->> 'status' = 'complete'
-  group by
+  GROUP BY
       currency;
 
 .. tip:: Filtering on status fields
@@ -106,28 +102,28 @@ The ``cross join`` in this query acts like an inner join between each row of the
 
 .. code-block:: sql
 
-  select
-      data -> 'buyer' ->> 'name' as buyer_name,
-      sum((awards -> 'value' -> 'amount')::numeric) as award_value,
-      awards -> 'value' ->> 'currency' as currency
-  from
+  SELECT
+      data -> 'buyer' ->> 'name' AS buyer_name,
+      sum((awards -> 'value' -> 'amount')::numeric) AS award_value,
+      awards -> 'value' ->> 'currency' AS currency
+  FROM
       data
-  join
-      compiled_release on data.id = compiled_release.data_id
-  cross join
-      jsonb_array_elements(data -> 'awards') as awards
-  where
+  JOIN
+      compiled_release ON data.id = compiled_release.data_id
+  CROSS JOIN
+      jsonb_array_elements(data -> 'awards') AS awards
+  WHERE
       collection_id = 584
-  and
-      (awards -> 'value' -> 'amount')::numeric > 0 --filter out awards with no value
-  and
+  AND
+      (awards -> 'value' -> 'amount')::numeric > 0 -- filter out awards with no value
+  AND
       awards ->> 'status' = 'active'
-  group by
+  GROUP BY
       buyer_name,
       currency
-  order by
+  ORDER BY
       award_value desc
-  limit
+  LIMIT
       10;
 
 Use the `PostgreSQL documentation <https://www.postgresql.org/docs/current/functions-json.html>`__ to learn more about operators and functions for working with JSON data.
