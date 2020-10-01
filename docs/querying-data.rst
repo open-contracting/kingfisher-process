@@ -54,7 +54,7 @@ To get data from a collection containing releases or records, join to the ``rele
 
 .. tip:: Rendering JSON using Redash
 
-  If you are using Redash, you can render the results of a query as pretty printed and collapsible JSON by clicking the '+ New Visualization' button, setting the visualization type to 'table' and setting the data column to display as JSON.
+  If you are using OCP's Redash instance, you can render the results of a query as pretty printed and collapsible JSON by clicking the '+ New Visualization' button, setting the visualization type to 'table' and setting the data column to display as JSON.
 
 Calculate the total value of completed tenders in a collection
 --------------------------------------------------------------
