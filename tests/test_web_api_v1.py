@@ -83,6 +83,72 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
+        assert files[0].warnings == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 1
+        assert file_items[0].errors == None  # noqa
+        assert file_items[0].warnings == None  # noqa
+
+        notes = self.database.get_all_notes_in_collection(collection_id)
+        assert len(notes) == 0
+
+        # Test warnings and errors are empty and actually NULL's in database, for easier finding later
+        # https://github.com/open-contracting/kingfisher-process/issues/306
+        with self.database.get_engine().begin() as connection:
+
+            collection_file_results = connection.execute(
+                'SELECT (warnings is null) as w, (errors is null) as e from collection_file'
+            )
+            for collection_file_result in collection_file_results:
+                assert collection_file_result[0] == True # noqa
+                assert collection_file_result[1] == True # noqa
+
+            collection_file_item_results = connection.execute(
+                'SELECT (warnings is null) as w, (errors is null) as e from collection_file_item'
+            )
+            for collection_file_item_result in collection_file_item_results:
+                assert collection_file_item_result[0] == True # noqa
+                assert collection_file_item_result[1] == True # noqa
+
+    def test_api_v1_submit_file_with_control_code(self):
+        # Call
+        data = {
+            'collection_source': 'test',
+            'collection_data_version': '2018-10-10 00:12:23',
+            'collection_sample': 'true',
+            'file_name': 'test.json',
+            'url': 'http://example.com',
+            'data_type': 'record',
+            'file': (io.BytesIO(b' {"control_code": "\\u0000"}'), "data.json")
+        }
+
+        result = self.flaskclient.post('/api/v1/submit/file/',
+                                       data=data,
+                                       content_type='multipart/form-data',
+                                       headers={'Authorization': 'ApiKey ' + self.config.web_api_keys[0]})
+
+        assert result.status_code == 200
+
+        # Check
+        collection_id = self.database.get_collection_id('test', '2018-10-10 00:12:23', True)
+        assert collection_id
+
+        collection = self.database.get_collection(collection_id)
+        assert collection.store_start_at != None # noqa
+        assert collection.store_end_at == None # noqa
+
+        files = self.database.get_all_files_in_collection(collection_id)
+        assert len(files) == 1
+        assert files[0].filename == 'test.json'
+        assert files[0].url == 'http://example.com'
+        assert files[0].errors == None # noqa
+        assert files[0].warnings ==  ['We had to replace control codes: \\u0000'] # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 1
+        assert file_items[0].errors == None  # noqa
+        assert file_items[0].warnings == None  # noqa
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -120,6 +186,10 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert len(files[0].errors) == 1
         assert files[0].errors[0] == "JSONDecodeError('Expecting value: line 1 column 1 (char 0)',)"
+        assert files[0].warnings == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 0
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -160,6 +230,12 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
+        assert files[0].warnings == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 1
+        assert file_items[0].errors == None  # noqa
+        assert file_items[0].warnings == None  # noqa
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -208,6 +284,12 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
+        assert files[0].warnings == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 1
+        assert file_items[0].errors == None  # noqa
+        assert file_items[0].warnings == None  # noqa
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -287,6 +369,10 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].url == 'http://example.com'
         assert len(files[0].errors) == 1
         assert files[0].errors[0] == 'The error was ... because reasons.'
+        assert files[0].warnings == None # noqa
+
+        file_items = self.database.get_all_files_items_in_file(files[0])
+        assert len(file_items) == 0
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -334,10 +420,12 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
+        assert files[0].warnings == None # noqa
 
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 1
         assert file_items[0].errors == ['Release list not found']
+        assert file_items[0].warnings == None # noqa
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
@@ -398,11 +486,14 @@ class TestWebAPIV1(BaseWebTest):
         assert files[0].filename == 'test.json'
         assert files[0].url == 'http://example.com'
         assert files[0].errors == None # noqa
+        assert files[0].warnings == None # noqa
 
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 2
         assert file_items[0].errors == None # noqa
+        assert file_items[0].warnings == None # noqa
         assert file_items[1].errors == ['Release list not found']
+        assert file_items[1].warnings == None # noqa
 
         notes = self.database.get_all_notes_in_collection(collection_id)
         assert len(notes) == 0
