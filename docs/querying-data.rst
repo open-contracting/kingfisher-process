@@ -122,9 +122,8 @@ The ``CROSS JOIN`` in this query joins each row of the data table with each resu
        buyer_name,
        currency
    ORDER BY
-       award_value desc
-   LIMIT
-       10;
+       award_value DESC
+   LIMIT 10;
 
 Use the `PostgreSQL documentation <https://www.postgresql.org/docs/current/functions-json.html>`__ to learn more about operators and functions for working with JSON data.
 
