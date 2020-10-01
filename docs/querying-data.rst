@@ -23,9 +23,9 @@ The following query returns a list of compiled release collections downloaded fr
   order by
       id desc; --collection ids are sequential, order by newest first
 
-To find collections from a different source, change the ``source_id`` parameter. The ``source_id`` in Kingfisher Process is based on the name of the spider in Kingfisher Scrape.
+To find collections from a different source, change the ``source_id`` parameter. The ``source_id`` in Kingfisher Process is based on the name of the spider in Kingfisher Collect.
 
-See the list of spiders in the `Kingfisher Scrape Github Repository <https://github.com/open-contracting/kingfisher-scrape/tree/master/kingfisher_scrapy/spiders>`__ for a list of possible sources. Each ``.py`` file is a spider, and the part before the ``.py`` extension is the ``source_id``.
+See the list of spiders in the `Kingfisher Collect documentation <https://kingfisher-collect.readthedocs.io/en/latest/spiders.html>`__ for a list of possible sources.
 
 Get the JSON data stored in a collection
 ----------------------------------------
@@ -148,6 +148,6 @@ Coverage of the OCDS schema varies by publisher.
 
 To identify the fields needed for your analysis and how to answer them, use the `OCDS schema documentation <https://standard.open-contracting.org/latest/en/schema/release/>`__ to understand the meaning, structure and format of the fields in OCDS.
 
-To check whether the fields needed for your analysis are available for a particular collection, you can use the `field counts table<https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ from Kingfisher Views.
+To check whether the fields needed for your analysis are available for a particular collection, you can use the `field counts table <https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ from Kingfisher Views.
 
-To learn more, refer to the `querying data in Kingfisher Views documentation<https://kingfisher-views.readthedocs.io/en/latest/querying-data.html#querying-other-collections-and-fields>`__.
+To learn more, refer to the `querying data in Kingfisher Views documentation <https://kingfisher-views.readthedocs.io/en/latest/querying-data.html#querying-other-collections-and-fields>`__.
