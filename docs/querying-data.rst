@@ -59,7 +59,7 @@ Calculate the total value of completed tenders in a collection
 
 In OCDS, the tender value is stored in the ``tender.value`` `Value <https://standard.open-contracting.org/latest/en/schema/reference/#value>`__ object which consists of a numeric ``.amount`` field and a string ``.currency`` field. The tender status is stored in the ``tender.status`` field.
 
-To access the properties of a JSON object use the PostgreSQL ``->`` operator. The ``->`` operator takes a JSONB object and a property's name as input, and returns the property's value as a JSONB value. The ``->>`` operator returns the value as a literal value (like text or integer).
+To access the properties of a JSON object use the PostgreSQL ``->`` operator. The ``->`` operator takes a JSONB object and a property's name as input, and returns the property's value as a JSONB value. The ``->>`` operator returns the value as text.
 
 The following query calculates the total value of completed tenders in collection 584:
 
