@@ -13,6 +13,10 @@ OCDS data are stored in a PostgreSQL database and organized into "collections", 
 * If the :doc:`standard-pipeline` is enabled, the data are automatically pre-processed into new collections.
 * If the :ref:`schema checks <schema-check-flags>` are enabled, the data are automatically checked for schema errors.
 
+OCDS data can be published as either `releases or records <https://standard.open-contracting.org/latest/en/getting_started/releases_and_records/>`__. A release is a point-in-time update about a contracting process, and a record provides an index to all releases for a contracting process.
+
+Kingfisher Process can automatically transform a collection of releases into a collection of compiled releases, containing a single compiled release per contracting process. A compiled release contains the latest value of each field from its original releases.
+
 Once the data are stored, you can query the PostgreSQL database; refer to the :doc:`data-model` and :doc:`database-structure` for an orientation to the database tables.
 
 A :doc:`cli/index` allows you to list collections, add notes to collections, run schema checks, and :ref:`transform collections <transformed-collections>`.
@@ -29,6 +33,7 @@ And that's it! In short, Kingfisher Process accepts "raw" OCDS data, and then ch
    config.rst
    data-model.rst
    database-structure.rst
+   querying-data.rst
    standard-pipeline.rst
    looking-for-collection-errors.rst
    logging.rst
