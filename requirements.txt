@@ -27,7 +27,7 @@ jdcal==1.4.1              # via openpyxl
 jinja2==2.10.3            # via flask
 json-merge-patch==0.2     # via libcove, libcoveocds, ocdsextensionregistry
 jsonpointer==2.0          # via ocdskit
-jsonref==0.2              # via flattentool, libcove, ocdskit, ocdsmerge
+jsonref==0.2              # via flattentool, libcove, ocdsextensionregistry, ocdskit, ocdsmerge
 jsonschema==3.2.0         # via libcove, ocdskit
 libcove==0.12.2           # via libcoveocds
 libcoveocds==0.7.5
@@ -35,8 +35,8 @@ lxml==4.4.2               # via flattentool
 mako==1.1.0               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
 more-itertools==8.0.2     # via zipp
-ocdsextensionregistry==0.0.16  # via ocdskit
-ocdskit==0.2.15
+ocdsextensionregistry==0.0.24  # via ocdskit
+ocdskit==0.2.16
 ocdsmerge==0.6.4
 openpyxl==3.0.2           # via flattentool
 pgpasslib==1.1.0
