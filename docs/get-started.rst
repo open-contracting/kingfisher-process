@@ -6,13 +6,13 @@ RabbitMQ
 
 1. Install RabbitMQ. On macOS:
 
-   .. code-block:: shell
+   .. code-block:: shell-session
 
       brew install rabbitmq
 
 1. Enable the `management plugin <https://www.rabbitmq.com/management.html>`__:
 
-   .. code-block:: shell
+   .. code-block:: shell-session
 
       rabbitmq-plugins enable rabbitmq_management
 
