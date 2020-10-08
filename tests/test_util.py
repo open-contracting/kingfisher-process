@@ -6,27 +6,27 @@ from ocdskingfisherprocess.util import (FileToStore, control_code_to_filter_out_
 
 
 def test_parse_string_to_boolean_1():
-    assert True == parse_string_to_boolean("true") # noqa
+    assert parse_string_to_boolean("true") is True
 
 
 def test_parse_string_to_boolean_2():
-    assert False == parse_string_to_boolean("false") # noqa
+    assert parse_string_to_boolean("false") is False
 
 
 def test_parse_string_to_boolean_3():
-    assert True == parse_string_to_boolean("t") # noqa
+    assert parse_string_to_boolean("t") is True
 
 
 def test_parse_string_to_boolean_4():
-    assert False == parse_string_to_boolean("") # noqa
+    assert parse_string_to_boolean("") is False
 
 
 def test_parse_string_to_boolean_5():
-    assert False == parse_string_to_boolean(None) # noqa
+    assert parse_string_to_boolean(None) is False
 
 
 def test_parse_string_to_boolean_6():
-    assert True == parse_string_to_boolean("True") # noqa
+    assert parse_string_to_boolean("True") is True
 
 
 def test_parse_string_to_date_time_1():

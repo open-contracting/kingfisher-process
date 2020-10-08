@@ -83,7 +83,7 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at != None # noqa
+        assert destination_collection.store_end_at is not None
 
     def test_one_compiled(self):
 
@@ -111,7 +111,7 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 1
         assert len(file_items[0].warnings) == 1
-        assert 'This already has multiple compiled releases in the source! We have picked one at random and passed it through this transform unchanged.' == file_items[0].warnings[0]  # noqa
+        assert 'This already has multiple compiled releases in the source! We have picked one at random and passed it through this transform unchanged.' == file_items[0].warnings[0]  # noqa: E501
 
     def test_no_dates(self):
 
@@ -149,7 +149,7 @@ class TestTransformCompileReleasesFromReleases(BaseDataBaseTest):
         file_items = self.database.get_all_files_items_in_file(files[0])
         assert len(file_items) == 1
         assert len(file_items[0].warnings) == 1
-        assert 'This OCID had some releases without a date element. We have compiled all other releases.' == file_items[0].warnings[0]  # noqa
+        assert 'This OCID had some releases without a date element. We have compiled all other releases.' == file_items[0].warnings[0]  # noqa: E501
 
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)

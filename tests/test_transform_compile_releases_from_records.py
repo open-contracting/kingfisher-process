@@ -80,7 +80,9 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
             result_file_item = connection.execute(s)
             assert 1 == result_file_item.rowcount
             collection_file_item = result_file_item.fetchone()
-            assert collection_file_item.warnings == ['This already had a compiledRelease in the record! It was passed through this transform unchanged.']  # noqa
+            assert collection_file_item.warnings == [
+                'This already had a compiledRelease in the record! It was passed through this transform unchanged.',
+            ]
 
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)
@@ -98,7 +100,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at != None # noqa
+        assert destination_collection.store_end_at is not None
 
     def test_no_compiled_release_linked_records_so_cant_do_anything(self):
 
@@ -120,7 +122,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
                notes[0].note
 
     def test_transform_compiles(self):
-        """This data files has full releases and nothing else, so the transform should compile itself using ocdsmerge"""  # noqa
+        # This data files has full releases and nothing else, so the transform should compile itself using ocdsmerge
 
         source_collection_id, source_collection, destination_collection_id, destination_collection = \
             self._setup_collections_and_data_run_transform('sample_1_1_record_releases_not_compiled.json')
@@ -145,7 +147,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
             result_file_item = connection.execute(s)
             assert 1 == result_file_item.rowcount
             collection_file_item = result_file_item.fetchone()
-            assert collection_file_item.warnings == None  # noqa
+            assert collection_file_item.warnings is None
 
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)
@@ -163,7 +165,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at != None # noqa
+        assert destination_collection.store_end_at is not None
 
     def test_two_records_same_ocid(self):
         source_collection_id, source_collection, destination_collection_id, destination_collection = \
@@ -192,7 +194,9 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
             result_file_item = connection.execute(s)
             assert 1 == result_file_item.rowcount
             collection_file_item = result_file_item.fetchone()
-            assert collection_file_item.warnings == ['There are multiple records for this OCID! The record to pass through was selected arbitrarily.']  # noqa
+            assert collection_file_item.warnings == [
+                'There are multiple records for this OCID! The record to pass through was selected arbitrarily.',
+            ]
 
         # Check collection notes
         notes = self.database.get_all_notes_in_collection(destination_collection_id)
@@ -210,7 +214,7 @@ class TestTransformCompileReleasesFromRecords(BaseDataBaseTest):
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at != None  # noqa
+        assert destination_collection.store_end_at is not None
 
     def test_no_dates(self):
 

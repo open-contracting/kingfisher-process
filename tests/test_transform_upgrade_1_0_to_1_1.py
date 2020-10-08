@@ -79,7 +79,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
 
         # destination collection will not be closed (because source is still open!)
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at == None # noqa
+        assert destination_collection.store_end_at is None
 
         # Mark source collection as finished
         self.database.mark_collection_store_done(source_collection_id)
@@ -90,7 +90,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at != None # noqa
+        assert destination_collection.store_end_at is not None
 
     def test_release_1(self):
         # Make source collection
@@ -160,7 +160,7 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
 
         # destination collection will not be closed (because source is still open!)
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at == None # noqa
+        assert destination_collection.store_end_at is None
 
         # Mark source collection as finished
         self.database.mark_collection_store_done(source_collection_id)
@@ -171,4 +171,4 @@ class TestTransformUpgrade10To11(BaseDataBaseTest):
 
         # destination collection should be closed
         destination_collection = self.database.get_collection(destination_collection_id)
-        assert destination_collection.store_end_at != None # noqa
+        assert destination_collection.store_end_at is not None

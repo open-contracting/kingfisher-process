@@ -43,7 +43,7 @@ class Store:
     def is_collection_store_ended(self):
         if not self.collection:
             self.collection = self.database.get_collection(self.collection_id)
-        return self.collection.store_end_at != None # noqa
+        return self.collection.store_end_at is not None
 
     def add_collection_note(self, note):
         if isinstance(note, str):
