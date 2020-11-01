@@ -23,8 +23,7 @@ class NewTransformUpgrade10To11CLICommand(ocdskingfisherprocess.cli.commands.bas
             transform_from_collection_id=self.collection.database_id,
             transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
         if id:
-            if not args.quiet:
-                print("Already exists! The ID is {}".format(id))
+            print("Already exists! The ID is {}".format(id))
             return
 
         id = self.database.get_or_create_collection_id(self.collection.source_id,
@@ -33,6 +32,5 @@ class NewTransformUpgrade10To11CLICommand(ocdskingfisherprocess.cli.commands.bas
                                                        transform_from_collection_id=self.collection.database_id,
                                                        transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1)
 
-        if not args.quiet:
-            print("Created! The ID is {}".format(id))
-            print("Now run transform-collection with that ID.")
+        print("Created! The ID is {}".format(id))
+        print("Now run transform-collection with that ID.")

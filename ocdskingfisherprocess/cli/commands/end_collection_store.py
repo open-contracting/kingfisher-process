@@ -13,11 +13,9 @@ class EndCollectionStoreCLICommand(ocdskingfisherprocess.cli.commands.base.CLICo
         self.run_command_for_selecting_existing_collection(args)
 
         if self.collection.store_end_at:
-            if not args.quiet:
-                print("Already Ended!")
+            print("Already Ended!")
             return
 
         self.database.mark_collection_store_done(self.collection.database_id)
 
-        if not args.quiet:
-            print("Store Ended!")
+        print("Store Ended!")

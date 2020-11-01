@@ -15,7 +15,8 @@ class DeleteCollectionsCLICommand(ocdskingfisherprocess.cli.commands.base.CLICom
                     print("Collection " + str(collection.database_id))
                 logger.info("Starting to delete collection " + str(collection.database_id))
                 self.database.delete_collection(collection.database_id)
-        print("Orphan Data")
+        if not args.quiet:
+            print("Orphan Data")
         logger.info("Starting to delete orphan data")
         self.database.delete_orphan_data()
         logger.info("Finishing command")
