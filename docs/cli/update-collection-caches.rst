@@ -7,7 +7,7 @@ It can be run multiple times on a collection, as updating a cache will not cause
 
 You should only run one of these at once, as if two are run at once they may try and do the same work.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli update-collection-caches
 

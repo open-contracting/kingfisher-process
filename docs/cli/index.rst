@@ -5,7 +5,7 @@ You can use the tool with the provided CLI script. There are various sub-command
 
 You can pass the `quiet` flag to all sub commands, to get less output printed to the terminal.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli --quiet <command> ...
 

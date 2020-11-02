@@ -9,7 +9,7 @@ Pass the ID of the source collection. Use :doc:`list-collections` to look up the
 
 It will create a new destination collection to hold the upgraded data and return the ID of this to you.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli new-transform-upgrade-1-0-to-1-1 17
 

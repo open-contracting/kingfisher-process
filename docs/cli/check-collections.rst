@@ -7,7 +7,7 @@ It can be run multiple times, and data already checked will not be rechecked.
 
 You should only run one of these at once, as if two are run at once they may try and do the same work.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli check-collections
 
@@ -16,7 +16,7 @@ Running from cron
 
 You can also pass a maximum number of seconds that the process should run for.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli check-collections --runforseconds 60
 

@@ -11,7 +11,7 @@ Pass the ID of the source collection. Use :doc:`list-collections` to look up the
 
 It will create a new destination collection to hold the compiled releases and return the ID of this to you.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli new-transform-compile-releases 17
 

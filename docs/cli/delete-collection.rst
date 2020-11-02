@@ -9,7 +9,7 @@ Note this does not actually do the work of deleting - it simply marks that you w
 
 Pass the ID of the collection you want the work done in. Use :doc:`list-collections` to look up the ID you want.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli delete-collection 17
 

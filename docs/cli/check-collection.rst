@@ -7,7 +7,7 @@ It can be run multiple times on a collection, and data already checked will not 
 
 Pass the ID of the collection you want checked. Use :doc:`list-collections` to look up the ID you want.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli check-collection 17
 

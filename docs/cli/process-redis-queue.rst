@@ -7,7 +7,7 @@ It will keep running until you stop it manually.
 
 It is safe to run more than one of these commands at once.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli process-redis-queue
 
@@ -16,7 +16,7 @@ Running from cron
 
 You can also pass a maximum number of seconds that the process should run for.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     python ocdskingfisher-process-cli process-redis-queue --runforseconds 60
 

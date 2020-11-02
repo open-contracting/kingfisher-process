@@ -29,7 +29,7 @@ It is possible to clear these errors from the database and then the relevant dat
 
 First, look at the errors to make sure they are what you expect:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     SELECT DISTINCT(error) FROM release_check_error WHERE error LIKE 'HTTPSConnectionPool(host=%';
     SELECT DISTINCT(error) FROM record_check_error WHERE error LIKE 'HTTPSConnectionPool(host=%';
@@ -38,7 +38,7 @@ They should be error messages for the websites that were down.
 
 If so, then delete those rows:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
    DELETE FROM release_check_error WHERE error LIKE 'HTTPSConnectionPool(host=%';
    DELETE FROM record_check_error WHERE error LIKE 'HTTPSConnectionPool(host=%';

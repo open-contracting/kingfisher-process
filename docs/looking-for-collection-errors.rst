@@ -12,7 +12,7 @@ Notes
 
 Notes may contain errors for a collection.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     SELECT * FROM collection_note WHERE collection_id =3;
 
@@ -21,7 +21,7 @@ Files & File Items
 
 Both `collection_file` and `collection_file_item` tables have an `errors` and a `warnings` column that may store details of errors encountered.
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     SELECT * FROM collection_file WHERE collection_id =3 AND (errors IS NOT NULL OR warnings IS NOT NULL);
     SELECT * FROM collection_file_item JOIN collection_file ON collection_file_item.collection_file_id = collection_file.id
@@ -35,7 +35,7 @@ A collection will be checked. Any errors encountered while checking will be stor
 
 You can check for problems here with:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
     SELECT release.id AS release_id, release_check_error.error FROM release_check_error JOIN release ON release_check_error.release_id = release.id
        WHERE release.collection_id=3;
