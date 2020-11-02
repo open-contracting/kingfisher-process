@@ -42,13 +42,13 @@ Kingfisher Process was rewritten to use Django and RabbitMQ. It was previously w
 
 You can compare ``models.py`` to the output of:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
    env DATABASE_URL=postgresql://user@host/dbname ./manage.py inspectdb
 
 To avoid an error when migrating from the SQLAlchemy-managed database to the Django-managed database, `run <https://docs.djangoproject.com/en/3.1/topics/migrations/#initial-migrations>`__:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
    ./manage.py migrate --fake-initial
 
@@ -57,13 +57,13 @@ Management commands
 
 To access a Python shell with Django configured:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
    ./manage.py shell
 
 To access the default database:
 
-.. code-block:: shell-session
+.. code-block:: shell
 
    ./manage.py dbshell
 
