@@ -372,11 +372,10 @@ class DataBase:
         return collection_id
 
     def get_all_collections(self):
-        out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]).order_by(self.collection_table.c.id.asc())
-            for collection in connection.execute(s):
-                out.append(CollectionModel(
+            return [
+                CollectionModel(
                     database_id=collection['id'],
                     source_id=collection['source_id'],
                     data_version=collection['data_version'],
@@ -388,17 +387,16 @@ class DataBase:
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
                     deleted_at=collection['deleted_at'],
-                ))
-        return out
+                ) for collection in connection.execute(s)
+            ]
 
     def get_collections_that_transform_this_collection(self, collection_id):
-        out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_table]) \
                 .where(self.collection_table.c.transform_from_collection_id == collection_id)
 
-            for collection in connection.execute(s):
-                out.append(CollectionModel(
+            return [
+                CollectionModel(
                     database_id=collection['id'],
                     source_id=collection['source_id'],
                     data_version=collection['data_version'],
@@ -410,8 +408,8 @@ class DataBase:
                     store_start_at=collection['store_start_at'],
                     store_end_at=collection['store_end_at'],
                     deleted_at=collection['deleted_at'],
-                ))
-        return out
+                ) for collection in connection.execute(s)
+            ]
 
     def get_collection(self, collection_id):
         with self.get_engine().begin() as connection:
@@ -435,49 +433,46 @@ class DataBase:
                 )
 
     def get_all_notes_in_collection(self, collection_id):
-        out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_note_table]) \
                 .where(self.collection_note_table.c.collection_id == collection_id) \
                 .order_by(self.collection_note_table.c.stored_at.asc())
-            for collection_note in connection.execute(s):
-                out.append(CollectionNoteModel(
+            return [
+                CollectionNoteModel(
                     database_id=collection_note['id'],
                     note=collection_note['note'],
                     stored_at=collection_note['stored_at'],
-                ))
-        return out
+                ) for collection_note in connection.execute(s)
+            ]
 
     def get_all_files_in_collection(self, collection_id):
-        out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_table]) \
                 .where(self.collection_file_table.c.collection_id == collection_id) \
                 .order_by(self.collection_file_table.c.id.asc())
-            for collection_file in connection.execute(s):
-                out.append(FileModel(
+            return [
+                FileModel(
                     database_id=collection_file['id'],
                     filename=collection_file['filename'],
                     url=collection_file['url'],
                     warnings=collection_file['warnings'],
                     errors=collection_file['errors'],
-                ))
-        return out
+                ) for collection_file in connection.execute(s)
+            ]
 
     def get_all_files_items_in_file(self, file):
-        out = []
         with self.get_engine().begin() as connection:
             s = sa.sql.select([self.collection_file_item_table]) \
                 .where(self.collection_file_item_table.c.collection_file_id == file.database_id) \
                 .order_by(self.collection_file_item_table.c.number.asc())
-            for result in connection.execute(s):
-                out.append(FileItemModel(
+            return [
+                FileItemModel(
                     database_id=result['id'],
                     number=result['number'],
                     errors=result['errors'],
                     warnings=result['warnings'],
-                ))
-        return out
+                ) for result in connection.execute(s)
+            ]
 
     def is_release_check_done(self, release_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
@@ -722,9 +717,8 @@ class DataBase:
         data_get = {'collection_id': collection_id}
         while True:
             with self.get_engine().begin() as connection:
-                ids_to_delete = []
-                for row in connection.execute(sa.sql.expression.text(select_sql), data_get):
-                    ids_to_delete.append(str(row['id']))
+                ids_to_delete = [str(row['id'])
+                                 for row in connection.execute(sa.sql.expression.text(select_sql), data_get)]
                 if len(ids_to_delete) == 0:
                     return
                 connection.execute(
@@ -749,9 +743,8 @@ class DataBase:
         logger.debug("Deleting data")
         while True:
             with self.get_engine().begin() as connection:
-                ids_to_delete = []
-                for row in connection.execute(sa.sql.expression.text(sql_get), data_get):
-                    ids_to_delete.append(str(row['id']))
+                ids_to_delete = [str(row['id'])
+                                 for row in connection.execute(sa.sql.expression.text(sql_get), data_get)]
                 if len(ids_to_delete) == 0:
                     return
                 connection.execute(
@@ -769,9 +762,7 @@ class DataBase:
         logger.debug("Deleting package_data")
         while True:
             with self.get_engine().begin() as connection:
-                ids_to_delete = []
-                for row in connection.execute(sa.sql.text(sql_get)):
-                    ids_to_delete.append(row['id'])
+                ids_to_delete = [row['id'] for row in connection.execute(sa.sql.text(sql_get))]
                 if not ids_to_delete:
                     return
                 connection.execute(

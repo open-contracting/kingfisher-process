@@ -38,7 +38,7 @@ class CompileReleasesTransform(BaseTransform):
 
     def _get_ocids(self):
         ''' Gets the ocids for this collection that have not been transformed'''
-        ocids = []
+        ocids = set()
 
         # get ocids from releases
         with self.database.get_engine().begin() as engine:
@@ -54,8 +54,7 @@ class CompileReleasesTransform(BaseTransform):
                 destination_collection_id=self.destination_collection.database_id
             )
 
-            for row in query:
-                ocids.append(row['ocid'])
+            ocids.update(row['ocid'] for row in query)
 
         # get ocids from records
         with self.database.get_engine().begin() as engine:
@@ -71,9 +70,7 @@ class CompileReleasesTransform(BaseTransform):
                 destination_collection_id=self.destination_collection.database_id
             )
 
-            for row in query:
-                if row['ocid'] not in ocids:
-                    ocids.append(row['ocid'])
+            ocids.update(row['ocid'] for row in query)
 
         # done
         return ocids
@@ -88,8 +85,7 @@ class CompileReleasesTransform(BaseTransform):
                 " WHERE record.collection_id = :collection_id AND record.ocid = :ocid "
             ), collection_id=self.source_collection.database_id, ocid=ocid)
 
-            for row in query:
-                records.append(self.database.get_data(row['data_id']))
+            records = [self.database.get_data(row['data_id']) for row in query]
 
         # Decide what to do .....
         if len(records) > 1:
@@ -177,8 +173,7 @@ class CompileReleasesTransform(BaseTransform):
                 " WHERE release.collection_id = :collection_id AND release.ocid = :ocid "
             ), collection_id=self.source_collection.database_id, ocid=ocid)
 
-            for row in query:
-                releases.append(self.database.get_data(row['data_id']))
+            releases = [self.database.get_data(row['data_id']) for row in query]
 
         # Are any releases already compiled? https://github.com/open-contracting/kingfisher-process/issues/147
         releases_compiled = \
