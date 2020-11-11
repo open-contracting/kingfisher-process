@@ -142,6 +142,6 @@ Coverage of the OCDS schema varies by publisher.
 
 To identify the fields needed for your analysis and how to answer them, use the `OCDS schema documentation <https://standard.open-contracting.org/latest/en/schema/release/>`__ to understand the meaning, structure and format of the fields in OCDS.
 
-To check whether the fields needed for your analysis are available for a particular collection, you can use the `field counts table <https://kingfisher-views.readthedocs.io/en/latest/database.html#field-counts>`__ from Kingfisher Views.
+To check whether the fields needed for your analysis are available for a particular collection, you can use the `field counts table <https://kingfisher-summarize.readthedocs.io/en/latest/database.html#field-counts>`__ from Kingfisher Summarize.
 
-To learn more, refer to the `querying data in Kingfisher Views documentation <https://kingfisher-views.readthedocs.io/en/latest/querying-data.html#querying-other-collections-and-fields>`__.
+To learn more, refer to the `querying data in Kingfisher Summarize documentation <https://kingfisher-summarize.readthedocs.io/en/latest/querying-data.html#querying-other-collections-and-fields>`__.

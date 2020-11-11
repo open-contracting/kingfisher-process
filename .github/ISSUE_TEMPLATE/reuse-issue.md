@@ -19,6 +19,6 @@ assignees: ''
 
 **What Kingfisher Process operations are required?** *(load, check, upgrade, compile)*
 
-**Is the user also using Kingfisher Views?** *(yes, no)*
+**Is the user also using Kingfisher Summarize?** *(yes, no)*
 
 **Has the user modified any Kingfisher components?** *(yes, no)* *If yes, please ask them to share their changes, whether via email or GitHub.*
