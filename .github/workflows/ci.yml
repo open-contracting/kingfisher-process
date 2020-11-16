@@ -31,10 +31,11 @@ jobs:
     - run: curl -s -S --retry 3 $BASEDIR/tests/install.sh | bash -
     - run: pip install -r requirements_dev.txt
     - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
-    - env:
+    - run: pytest --cov ocdskingfisherprocess
+      env:
         KINGFISHER_PROCESS_DB_URI: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
         KINGFISHER_PROCESS_WEB_API_KEYS: 1234
-      run: pytest --cov ocdskingfisherprocess
+      if: always()
     - env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: coveralls
