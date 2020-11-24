@@ -631,76 +631,80 @@ class DataBase:
             )
 
     def delete_collection(self, collection_id):
-        self._delete_collection_run_sql("release_check_error", """DELETE FROM release_check_error
-                WHERE release_id IN
-                    (
-                        SELECT id FROM release
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("record_check_error", """DELETE FROM record_check_error
-                        WHERE record_id IN
-                            (
-                                SELECT id FROM record
-                                WHERE collection_id = :collection_id
-                            );""", collection_id)
-        self._delete_collection_run_sql("record_check", """DELETE FROM record_check
-                WHERE record_id IN
-                    (
-                        SELECT id FROM record
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("release_check", """DELETE FROM release_check
-                WHERE release_id IN
-                    (
-                        SELECT id FROM release
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("compiled_release", """DELETE FROM compiled_release
-                WHERE id IN
-                    (
-                        SELECT id FROM compiled_release
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_record", """DELETE FROM transform_upgrade_1_0_to_1_1_status_record
-                WHERE source_record_id IN
-                    (
-                        SELECT id FROM record
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("record", """DELETE FROM record
-                WHERE id IN
-                    (
-                        SELECT id FROM record
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_release", """DELETE FROM transform_upgrade_1_0_to_1_1_status_release
-                WHERE source_release_id IN
-                    (
-                        SELECT id FROM release
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
-        self._delete_collection_run_sql("release", """DELETE FROM release
-                WHERE id IN
-                    (
-                        SELECT id FROM release
-                        WHERE collection_id = :collection_id
-                    );""", collection_id)
+        self._delete_collection_run_sql("release_check_error", """
+            DELETE FROM release_check_error
+            WHERE release_id IN (
+                SELECT id FROM release
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("record_check_error", """
+            DELETE FROM record_check_error
+            WHERE record_id IN (
+                SELECT id FROM record
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("record_check", """
+            DELETE FROM record_check
+            WHERE record_id IN (
+                SELECT id FROM record
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("release_check", """
+            DELETE FROM release_check
+            WHERE release_id IN (
+                SELECT id FROM release
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("compiled_release", """
+            DELETE FROM compiled_release
+            WHERE id IN (
+                SELECT id FROM compiled_release
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_record", """
+            DELETE FROM transform_upgrade_1_0_to_1_1_status_record
+            WHERE source_record_id IN (
+                SELECT id FROM record
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("record", """
+            DELETE FROM record
+            WHERE id IN (
+                SELECT id FROM record
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("transform_upgrade_1_0_to_1_1_status_release", """
+            DELETE FROM transform_upgrade_1_0_to_1_1_status_release
+            WHERE source_release_id IN (
+                SELECT id FROM release
+                WHERE collection_id = :collection_id
+            );""", collection_id)
+        self._delete_collection_run_sql("release", """
+            DELETE FROM release
+            WHERE id IN (
+                SELECT id FROM release
+                WHERE collection_id = :collection_id
+            );""", collection_id)
         self._delete_collection_run_sql_in_blocks(
             "collection_file_item",
-            """SELECT collection_file_item.id FROM collection_file_item
-            JOIN collection_file ON collection_file_item.collection_file_id = collection_file.id
-            WHERE collection_file.collection_id = :collection_id LIMIT 10000""",
+            """
+                SELECT collection_file_item.id
+                FROM collection_file_item
+                JOIN collection_file ON collection_file_item.collection_file_id = collection_file.id
+                WHERE collection_file.collection_id = :collection_id
+                LIMIT 10000
+            """,
             collection_id,
             "collection_file_item"
         )
-        self._delete_collection_run_sql("collection_file", """DELETE FROM collection_file
-                WHERE collection_id = :collection_id;""", collection_id)
-        self._delete_collection_run_sql("collection_note", """DELETE FROM collection_note
-                WHERE collection_id = :collection_id;""", collection_id)
-        self._delete_collection_run_sql("collection", """UPDATE collection SET transform_from_collection_id = NULL
-                 WHERE transform_from_collection_id = :collection_id;""", collection_id)
-        self._delete_collection_run_sql("collection", """DELETE FROM collection
-                WHERE id = :collection_id;""", collection_id)
+        self._delete_collection_run_sql(
+            "collection_file", "DELETE FROM collection_file WHERE collection_id = :collection_id;", collection_id)
+        self._delete_collection_run_sql(
+            "collection_note", "DELETE FROM collection_note WHERE collection_id = :collection_id;", collection_id)
+        self._delete_collection_run_sql("collection", "UPDATE collection SET transform_from_collection_id = NULL "
+            "WHERE transform_from_collection_id = :collection_id;", collection_id)
+        self._delete_collection_run_sql(
+            "collection", "DELETE FROM collection WHERE id = :collection_id;", collection_id)
 
     def _delete_collection_run_sql(self, label, sql, collection_id):
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
@@ -733,12 +737,15 @@ class DataBase:
 
     def _delete_orphan_data_data(self):
         data_get = {}
-        sql_get = """SELECT data.id FROM data
-                LEFT JOIN release ON release.data_id = data.id
-                LEFT JOIN record ON record.data_id = data.id
-                LEFT JOIN compiled_release ON compiled_release.data_id = data.id
-                WHERE release.data_id IS NULL AND record.data_id IS NULL AND compiled_release.data_id IS NULL
-                LIMIT 10000;"""
+        sql_get = """
+            SELECT data.id
+            FROM data
+            LEFT JOIN release ON release.data_id = data.id
+            LEFT JOIN record ON record.data_id = data.id
+            LEFT JOIN compiled_release ON compiled_release.data_id = data.id
+            WHERE release.data_id IS NULL AND record.data_id IS NULL AND compiled_release.data_id IS NULL
+            LIMIT 10000;
+        """
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
         logger.debug("Deleting data")
         while True:
@@ -753,11 +760,14 @@ class DataBase:
                 )
 
     def _delete_orphan_data_package_data(self):
-        sql_get = """SELECT package_data.id FROM package_data
-                       LEFT JOIN release ON release.package_data_id = package_data.id
-                       LEFT JOIN record ON record.package_data_id = package_data.id
-                       WHERE release.package_data_id IS NULL AND record.package_data_id IS NULL
-                       LIMIT 10000;"""
+        sql_get = """
+            SELECT package_data.id
+            FROM package_data
+            LEFT JOIN release ON release.package_data_id = package_data.id
+            LEFT JOIN record ON record.package_data_id = package_data.id
+            WHERE release.package_data_id IS NULL AND record.package_data_id IS NULL
+            LIMIT 10000;
+        """
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
         logger.debug("Deleting package_data")
         while True:
@@ -772,28 +782,31 @@ class DataBase:
 
     def _get_check_query(self, obj_type, collection_id, override_schema_version):
         data = {'collection_id': collection_id}
-        sql = """ SELECT
-                           release.id,
-                           release.data_id,
-                           release.package_data_id
-                           FROM release"""
+        sql = """
+            SELECT release.id, release.data_id, release.package_data_id
+            FROM release
+        """
         if override_schema_version:
-            sql += """ LEFT JOIN release_check ON release_check.release_id = release.id
-                          AND release_check.override_schema_version = :override_schema_version
-                       LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
-                          AND release_check_error.override_schema_version = :override_schema_version
-                       LEFT JOIN package_data on package_data.id = package_data_id
-                       WHERE release.collection_id = :collection_id
-                       AND release_check.id IS NULL AND release_check_error.id IS NULL
-                       AND coalesce(data ->> 'version', '1.0') <> :override_schema_version"""
+            sql += """
+                LEFT JOIN release_check ON release_check.release_id = release.id
+                    AND release_check.override_schema_version = :override_schema_version
+                LEFT JOIN release_check_error ON release_check_error.release_id = release.id
+                    AND release_check_error.override_schema_version = :override_schema_version
+                LEFT JOIN package_data ON package_data.id = release.package_data_id
+                WHERE release.collection_id = :collection_id
+                    AND release_check.id IS NULL AND release_check_error.id IS NULL
+                    AND coalesce(data ->> 'version', '1.0') <> :override_schema_version
+            """
             data['override_schema_version'] = override_schema_version
         else:
-            sql += """ LEFT JOIN release_check ON release_check.release_id = release.id
-                          AND release_check.override_schema_version IS NULL
-                       LEFT JOIN release_check_error ON release_check_error.release_id = release_check_error.id
-                          AND release_check_error.override_schema_version IS NULL
-                        WHERE release.collection_id = :collection_id
-                        AND release_check.id IS NULL AND release_check_error.id IS NULL """
+            sql += """
+                LEFT JOIN release_check ON release_check.release_id = release.id
+                    AND release_check.override_schema_version = ''
+                LEFT JOIN release_check_error ON release_check_error.release_id = release.id
+                    AND release_check_error.override_schema_version = ''
+                WHERE release.collection_id = :collection_id
+                    AND release_check.id IS NULL AND release_check_error.id IS NULL
+            """
 
         return sql.replace('release', obj_type), data
 
