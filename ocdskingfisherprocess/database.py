@@ -788,24 +788,32 @@ class DataBase:
         """
         if override_schema_version:
             sql += """
-                LEFT JOIN release_check ON release_check.release_id = release.id
-                    AND release_check.override_schema_version = :override_schema_version
-                LEFT JOIN release_check_error ON release_check_error.release_id = release.id
-                    AND release_check_error.override_schema_version = :override_schema_version
                 LEFT JOIN package_data ON package_data.id = release.package_data_id
                 WHERE release.collection_id = :collection_id
                     AND release_check.id IS NULL AND release_check_error.id IS NULL
-                    AND coalesce(data ->> 'version', '1.0') <> :override_schema_version
+                    AND NOT EXISTS (
+                        SELECT FROM release_check
+                        WHERE release_id = release.id AND override_schema_version = :override_schema_version
+                    )
+                    AND NOT EXISTS (
+                        SELECT FROM release_check_error
+                        WHERE release_id = release.id AND override_schema_version = :override_schema_version
+                    )
+                    AND coalesce(data ->> 'version', '1.0') <> :override_schema_version;
             """
             data['override_schema_version'] = override_schema_version
         else:
             sql += """
-                LEFT JOIN release_check ON release_check.release_id = release.id
-                    AND release_check.override_schema_version = ''
-                LEFT JOIN release_check_error ON release_check_error.release_id = release.id
-                    AND release_check_error.override_schema_version = ''
                 WHERE release.collection_id = :collection_id
                     AND release_check.id IS NULL AND release_check_error.id IS NULL
+                    AND NOT EXISTS (
+                        SELECT FROM release_check
+                        WHERE release_id = release.id AND override_schema_version = ''
+                    )
+                    AND NOT EXISTS (
+                        SELECT FROM release_check_error
+                        WHERE release_id = release.id AND override_schema_version = ''
+                    );
             """
 
         return sql.replace('release', obj_type), data
