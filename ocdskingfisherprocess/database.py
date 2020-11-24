@@ -476,14 +476,14 @@ class DataBase:
 
     def is_release_check_done(self, release_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
-            s = sa.sql.select([self.release_check_table]) \
+            s = sa.sql.select([self.release_check_table.c.id]) \
                 .where((self.release_check_table.c.release_id == release_id) &
                        (self.release_check_table.c.override_schema_version == override_schema_version))
             result = connection.execute(s)
             if result.fetchone():
                 return True
 
-            s = sa.sql.select([self.release_check_error_table]) \
+            s = sa.sql.select([self.release_check_error_table.c.id]) \
                 .where((self.release_check_error_table.c.release_id == release_id) &
                        (self.release_check_error_table.c.override_schema_version == override_schema_version))
             result = connection.execute(s)
@@ -494,14 +494,14 @@ class DataBase:
 
     def is_record_check_done(self, record_id, override_schema_version=''):
         with self.get_engine().begin() as connection:
-            s = sa.sql.select([self.record_check_table]) \
+            s = sa.sql.select([self.record_check_table.c.id]) \
                 .where((self.record_check_table.c.record_id == record_id) &
                        (self.record_check_table.c.override_schema_version == override_schema_version))
             result = connection.execute(s)
             if result.fetchone():
                 return True
 
-            s = sa.sql.select([self.record_check_error_table]) \
+            s = sa.sql.select([self.record_check_error_table.c.id]) \
                 .where((self.record_check_error_table.c.record_id == record_id) &
                        (self.record_check_error_table.c.override_schema_version == override_schema_version))
             result = connection.execute(s)
@@ -790,7 +790,6 @@ class DataBase:
             sql += """
                 LEFT JOIN package_data ON package_data.id = release.package_data_id
                 WHERE release.collection_id = :collection_id
-                    AND release_check.id IS NULL AND release_check_error.id IS NULL
                     AND NOT EXISTS (
                         SELECT FROM release_check
                         WHERE release_id = release.id AND override_schema_version = :override_schema_version
@@ -805,7 +804,6 @@ class DataBase:
         else:
             sql += """
                 WHERE release.collection_id = :collection_id
-                    AND release_check.id IS NULL AND release_check_error.id IS NULL
                     AND NOT EXISTS (
                         SELECT FROM release_check
                         WHERE release_id = release.id AND override_schema_version = ''
