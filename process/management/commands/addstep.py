@@ -39,7 +39,7 @@ class Command(CollectionCommand):
         # SHARE blocks (and is blocked by) UPDATE, but doesn't block another SELECT FOR SHARE.
         #
         # https://www.postgresql.org/docs/current/transaction-iso.html#XACT-READ-COMMITTED
-        # https://www.postgresql.org/docs/12/explicit-locking.html#LOCKING-ROWS
+        # https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS
         #
         # By using SELECT FOR SHARE, loaders don't block each other. (If SELECT FOR UPDATE were used, they would.)
         #
