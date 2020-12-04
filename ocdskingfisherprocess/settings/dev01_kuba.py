@@ -17,6 +17,9 @@ import os
 
 import dj_database_url
 
+ENV_NAME="dev01_kuba"
+ENV_VERSION="1.0"
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -36,6 +39,13 @@ DATABASES = {
     # https://docs.djangoproject.com/en/3.0/ref/databases/#postgresql-connection-settings
     'default': dj_database_url.config(
         default='postgresql:///ocdskingfisherprocess?application_name=kingfisher-process'),
+}
+
+RABBITMQ = {
+    'username': 'rabbit',
+    'password': 'rabbit',
+    'host': 'localhost',
+    'port': '29000',
 }
 
 # The schema in the older version had index names longer than 30 characters.
