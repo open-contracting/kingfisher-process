@@ -11,6 +11,8 @@ class Command(BaseWorker):
 
     workerName = "loader"
 
+    consumeKeys = ["collect"]
+
     def __init__(self):
         super().__init__(self.workerName)
 
@@ -26,9 +28,10 @@ class Command(BaseWorker):
             self.debug("Received message {}".format(input_message))
             
             # send message for a next phase
-            message = {"dataset_id": dataset_id}
-            self.publish(json.dumps(message), get_param("exchange_name") + routing_key)
+            message = {"dataset_id": 1}
+            self.publish(json.dumps(message))
 
+            # confirm message processing 
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception(

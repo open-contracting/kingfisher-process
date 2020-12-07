@@ -2,6 +2,7 @@ import argparse
 import os
 import logging
 import pika
+import sys
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -16,9 +17,11 @@ class BaseWorker(BaseCommand):
 
     rabbitChannel = None
 
-    rabbitConsumeRoutingKey = None
+    rabbitConsumeRoutingKeys = []
 
     rabbitPublishRoutingKey = None
+
+    rabbitConsumeQueue = None
 
     def __init__(self, name):
         self.loggerInstance = logging.getLogger("worker.{}".format(name))
@@ -30,15 +33,29 @@ class BaseWorker(BaseCommand):
         self.consume(self.process)
 
     def initMessaging(self):
-        """Connects to RabbitMQ"""
+        """Connects to RabbitMQ and prepares all the necessities - exchange, proper names for queues etc."""
         self.debug("Connecting to RabbitMQ...")
 
-        self.rabbitConsumeRoutingKey = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
-        
+        # build queue name
+        self.rabbitConsumeQueue = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
+  
+        # build consume keys
+        if isinstance(self.consumeKeys, list) and self.consumeKeys:
+            # multiple keys to process
+            for consumeKey in self.consumeKeys:
+                self.rabbitConsumeRoutingKeys.append("kingfisher_process_{}_{}".format(self.envId, consumeKey))
+        else:
+            # undefined consume keys
+            self.error("No consume keys specified, unable to proceed")
+            sys.exit()
+
+        # build publis key
         self.rabbitPublishRoutingKey = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
 
+        # build exchange name
         self.rabbitExchange = "kingfisher_process_{}".format(self.envId)
 
+        # connect to messaging 
         credentials = pika.PlainCredentials(settings.RABBITMQ["username"],
                                             settings.RABBITMQ["password"])
 
@@ -49,6 +66,7 @@ class BaseWorker(BaseCommand):
                                                                     heartbeat=0))
         self.rabbitChannel = connection.channel()
 
+        # declare durable exchange
         self.rabbitChannel.exchange_declare(exchange=self.rabbitExchange,
                             durable='true',
                             exchange_type='direct')
@@ -58,23 +76,29 @@ class BaseWorker(BaseCommand):
 
 
     def consume(self, callback):
-        self.rabbitChannel.queue_declare(queue=self.rabbitConsumeRoutingKey, durable=True)
+        """Define which messages to consume and queue for this worker"""
+        # declare queue to store unprocessed messages
+        self.rabbitChannel.queue_declare(queue=self.rabbitConsumeQueue, durable=True)
 
-        self.rabbitChannel.queue_bind(exchange=self.rabbitExchange,
-                        queue=self.rabbitConsumeRoutingKey,
-                        routing_key=self.rabbitConsumeRoutingKey)
+        # bind consume keys to the queue
+        for consumeKey in self.rabbitConsumeRoutingKeys:
+            self.rabbitChannel.queue_bind(exchange=self.rabbitExchange,
+                            queue=self.rabbitConsumeQueue,
+                            routing_key=consumeKey)
 
-        self.rabbitChannel.basic_qos(prefetch_count=1)
-        self.rabbitChannel.basic_consume(queue=self.rabbitConsumeRoutingKey, on_message_callback=callback)
+            self.debug("Consuming messages from exchange {} with routing key {}".format(
+                self.rabbitExchange,
+                consumeKey))
 
-        self.debug("Consuming messages from exchange {} with routing key {}".format(
-            self.rabbitExchange,
-            self.rabbitConsumeRoutingKey))
+            self.rabbitChannel.basic_qos(prefetch_count=1)
+            self.rabbitChannel.basic_consume(queue=self.rabbitConsumeQueue, on_message_callback=callback)
+
 
         self.rabbitChannel.start_consuming()
     
 
     def publish(self, message):
+        """Publish message with work for a next part of process"""
         self.rabbitChannel.basic_publish(exchange=self.rabbitExchange,
                             routing_key=self.rabbitPublishRoutingKey,
                             body=message,
