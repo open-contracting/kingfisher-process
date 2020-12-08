@@ -2,13 +2,14 @@ import argparse
 import os
 import logging
 import pika
-import sys
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
+from django.utils.translation import gettext as t
+
 
 class BaseWorker(BaseCommand):
-    
+
     loggerInstance = None
 
     envId = None
@@ -39,12 +40,12 @@ class BaseWorker(BaseCommand):
 
         # build queue name
         self.rabbitConsumeQueue = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
-  
+
         # build consume keys
         if hasattr(self, 'consumeKeys') and isinstance(self.consumeKeys, list) and self.consumeKeys:
-                # multiple keys to process
-                for consumeKey in self.consumeKeys:
-                    self.rabbitConsumeRoutingKeys.append("kingfisher_process_{}_{}".format(self.envId, consumeKey))
+            # multiple keys to process
+            for consumeKey in self.consumeKeys:
+                self.rabbitConsumeRoutingKeys.append("kingfisher_process_{}_{}".format(self.envId, consumeKey))
         else:
             # undefined consume keys
             self.debug("No or improper defined consume keys, starting without listening to messages.")
@@ -55,25 +56,24 @@ class BaseWorker(BaseCommand):
         # build exchange name
         self.rabbitExchange = "kingfisher_process_{}".format(self.envId)
 
-        # connect to messaging 
+        # connect to messaging
         credentials = pika.PlainCredentials(settings.RABBITMQ["username"],
                                             settings.RABBITMQ["password"])
 
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ["host"],
-                                                                    port=settings.RABBITMQ["port"],
-                                                                    credentials=credentials,
-                                                                    blocked_connection_timeout=1800,
-                                                                    heartbeat=0))
+                                                                       port=settings.RABBITMQ["port"],
+                                                                       credentials=credentials,
+                                                                       blocked_connection_timeout=1800,
+                                                                       heartbeat=0))
         self.rabbitChannel = connection.channel()
 
         # declare durable exchange
         self.rabbitChannel.exchange_declare(exchange=self.rabbitExchange,
-                            durable='true',
-                            exchange_type='direct')
+                                            durable='true',
+                                            exchange_type='direct')
         self.debug("Declared exchange {}".format(self.rabbitExchange))
 
         self.info("RabbitMQ connection established")
-
 
     def consume(self, callback):
         """Define which messages to consume and queue for this worker"""
@@ -83,8 +83,8 @@ class BaseWorker(BaseCommand):
         # bind consume keys to the queue
         for consumeKey in self.rabbitConsumeRoutingKeys:
             self.rabbitChannel.queue_bind(exchange=self.rabbitExchange,
-                            queue=self.rabbitConsumeQueue,
-                            routing_key=consumeKey)
+                                          queue=self.rabbitConsumeQueue,
+                                          routing_key=consumeKey)
 
             self.debug("Consuming messages from exchange {} with routing key {}".format(
                 self.rabbitExchange,
@@ -93,23 +93,20 @@ class BaseWorker(BaseCommand):
             self.rabbitChannel.basic_qos(prefetch_count=1)
             self.rabbitChannel.basic_consume(queue=self.rabbitConsumeQueue, on_message_callback=callback)
 
-
         self.rabbitChannel.start_consuming()
-    
 
     def publish(self, message):
         """Publish message with work for a next part of process"""
         self.rabbitChannel.basic_publish(exchange=self.rabbitExchange,
-                            routing_key=self.rabbitPublishRoutingKey,
-                            body=message,
-                            properties=pika.BasicProperties(delivery_mode=2))
+                                         routing_key=self.rabbitPublishRoutingKey,
+                                         body=message,
+                                         properties=pika.BasicProperties(delivery_mode=2))
 
         self.debug("Published message to exchange {} with routing key {}. Message: {}".format(
                 self.rabbitExchange, self.rabbitPublishRoutingKey, message
             )
         )
 
-    
     def file_or_directory(self, string):
         """Checks whether the path is existing file or directory. Raises an exception if not"""
         if not os.path.exists(string):
@@ -121,25 +118,25 @@ class BaseWorker(BaseCommand):
         return self.loggerInstance
 
     def debug(self, message):
-        """Shortcut function to logging facility""" 
+        """Shortcut function to logging facility"""
         self.logger().debug(message)
 
     def info(self, message):
-        """Shortcut function to logging facility""" 
+        """Shortcut function to logging facility"""
         self.logger().info(message)
 
     def warning(self, message):
-        """Shortcut function to logging facility""" 
+        """Shortcut function to logging facility"""
         self.logger().warning(message)
 
     def error(self, message):
-        """Shortcut function to logging facility""" 
+        """Shortcut function to logging facility"""
         self.logger().error(message)
 
     def critical(self, message):
-        """Shortcut function to logging facility""" 
+        """Shortcut function to logging facility"""
         self.logger().critical(message)
 
     def exception(self, message):
-        """Shortcut function to logging facility""" 
+        """Shortcut function to logging facility"""
         self.logger().exception(message)

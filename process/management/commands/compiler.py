@@ -1,17 +1,14 @@
-import argparse
-import os
 import json
 import sys
 
 from process.management.commands.base.worker import BaseWorker
-from django.utils.translation import gettext_lazy as _
-from django.utils.translation import gettext as t
+
 
 class Command(BaseWorker):
 
     workerName = "compiler"
 
-    consumeKeys = ["upgrader","checker"]
+    consumeKeys = ["upgrader", "checker"]
 
     def __init__(self):
         super().__init__(self.workerName)
@@ -22,12 +19,12 @@ class Command(BaseWorker):
             input_message = json.loads(body.decode('utf8'))
 
             self.debug("Received message {}".format(input_message))
-            
+
             # send message for a next phase
             message = {"dataset_id": 1}
             self.publish(json.dumps(message))
 
-            # confirm message processing 
+            # confirm message processing
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception(
