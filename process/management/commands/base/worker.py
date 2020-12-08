@@ -23,13 +23,14 @@ class BaseWorker(BaseCommand):
 
     rabbitConsumeQueue = None
 
-    def __init__(self, name):
+    def __init__(self, name, *args, **kwargs):
         self.loggerInstance = logging.getLogger("worker.{}".format(name))
         self.envId = "{}_{}".format(settings.ENV_NAME, settings.ENV_VERSION)
+        self.initMessaging()
+        super(BaseWorker, self).__init__(*args, **kwargs)
 
     def handle(self, *args, **options):
         self.logger().debug("Worker started")
-        self.initMessaging()
         self.consume(self.process)
 
     def initMessaging(self):
@@ -40,14 +41,13 @@ class BaseWorker(BaseCommand):
         self.rabbitConsumeQueue = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
   
         # build consume keys
-        if isinstance(self.consumeKeys, list) and self.consumeKeys:
-            # multiple keys to process
-            for consumeKey in self.consumeKeys:
-                self.rabbitConsumeRoutingKeys.append("kingfisher_process_{}_{}".format(self.envId, consumeKey))
+        if hasattr(self, 'consumeKeys') and isinstance(self.consumeKeys, list) and self.consumeKeys:
+                # multiple keys to process
+                for consumeKey in self.consumeKeys:
+                    self.rabbitConsumeRoutingKeys.append("kingfisher_process_{}_{}".format(self.envId, consumeKey))
         else:
             # undefined consume keys
-            self.error("No consume keys specified, unable to proceed")
-            sys.exit()
+            self.debug("No or improper defined consume keys, starting without listening to messages.")
 
         # build publis key
         self.rabbitPublishRoutingKey = "kingfisher_process_{}_{}".format(self.envId, self.workerName)

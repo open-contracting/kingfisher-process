@@ -36,9 +36,14 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 DATABASES = {
-    # https://docs.djangoproject.com/en/3.0/ref/databases/#postgresql-connection-settings
-    'default': dj_database_url.config(
-        default='postgresql:///ocdskingfisherprocess?application_name=kingfisher-process'),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'kingfisher',                      # Or path to database file if using sqlite3.
+        'USER': 'postgres',                      # Not used with sqlite3.
+        'PASSWORD': 'kingfisher',                  # Not used with sqlite3.
+        'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '22060',                      # Set to empty string for default. Not used with sqlite3.
+    }
 }
 
 RABBITMQ = {
