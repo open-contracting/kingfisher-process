@@ -4,13 +4,18 @@ from django.db import transaction
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-from process.broker import connect
-from process.cli import CollectionCommand
+
 from process.models import Collection
+from process.management.commands.base.collection_command import CollectionCommand
 
 
 class Command(CollectionCommand):
     help = gettext("Adds a step to the collection's processing pipeline")
+
+    workerName = "add_step"
+
+    def __init__(self):
+        super().__init__(self.workerName)
 
     def add_collection_arguments(self, parser):
         parser.add_argument('step', choices=['check'] + Collection.Transforms.values, help=_('the step to add'))
@@ -75,7 +80,6 @@ class Command(CollectionCommand):
             if destination:
                 message['destination_id'] = destination.pk
 
-            with connect() as client:
-                file_ids = collection.collectionfile_set.values_list('id', flat=True)
-                for file_id in file_ids.iterator():
-                    client.publish(step, dict(file_id=file_id, **message))
+            file_ids = collection.collectionfile_set.values_list('id', flat=True)
+            for file_id in file_ids.iterator():
+                self.publish(step, dict(file_id=file_id, **message))

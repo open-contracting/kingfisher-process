@@ -18,7 +18,7 @@ class AddstepTests(TransactionTestCase):
 
     # The following tests mirror those in `test_models.py` for `Collection.add_step()` and `Collection.clean_fields()`.
 
-    @patch('process.broker.RabbitMQClient.publish')
+    @patch('process.management.commands.base.worker.BaseWorker.publish')
     def test_check(self, publish):
         source = collection()
         source.save()
@@ -37,7 +37,7 @@ class AddstepTests(TransactionTestCase):
         self.assertTrue(source.steps['check'])
         publish.assert_has_calls(calls)
 
-    @patch('process.broker.RabbitMQClient.publish')
+    @patch('process.management.commands.base.worker.BaseWorker.publish')
     def test_transform(self, publish):
         source = collection()
         source.save()
