@@ -10,24 +10,25 @@ from django.utils.translation import gettext as t
 
 class BaseWorker(BaseCommand):
 
-    loggerInstance = None
+    logger_instance = None
 
-    envId = None
+    env_id = None
 
-    rabbitExchange = None
+    rabbit_exchange = None
 
-    rabbitChannel = None
+    rabbit_channel = None
 
-    rabbitConsumeRoutingKeys = []
+    rabbit_consume_routing_keys = []
 
-    rabbitPublishRoutingKey = None
+    rabbit_publish_routing_key = None
 
-    rabbitConsumeQueue = None
+    rabbit_consume_queue = None
 
     def __init__(self, name, *args, **kwargs):
-        self.loggerInstance = logging.getLogger("worker.{}".format(name))
-        self.envId = "{}_{}".format(settings.ENV_NAME, settings.ENV_VERSION)
-        self.initMessaging()
+        self.logger_instance = logging.getLogger("worker.{}".format(name))
+        self.env_id = "{}_{}".format(settings.ENV_NAME, settings.ENV_VERSION)
+        if settings.RABBITMQ:
+            self.initMessaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
 
     def handle(self, *args, **options):
@@ -39,22 +40,22 @@ class BaseWorker(BaseCommand):
         self.debug("Connecting to RabbitMQ...")
 
         # build queue name
-        self.rabbitConsumeQueue = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
+        self.rabbit_consume_queue = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
 
         # build consume keys
-        if hasattr(self, 'consumeKeys') and isinstance(self.consumeKeys, list) and self.consumeKeys:
+        if hasattr(self, 'consume_keys') and isinstance(self.consume_keys, list) and self.consume_keys:
             # multiple keys to process
-            for consumeKey in self.consumeKeys:
-                self.rabbitConsumeRoutingKeys.append("kingfisher_process_{}_{}".format(self.envId, consumeKey))
+            for consumeKey in self.consume_keys:
+                self.rabbit_consume_routing_keys.append("kingfisher_process_{}_{}".format(self.env_id, consumeKey))
         else:
             # undefined consume keys
             self.debug("No or improper defined consume keys, starting without listening to messages.")
 
         # build publis key
-        self.rabbitPublishRoutingKey = "kingfisher_process_{}_{}".format(self.envId, self.workerName)
+        self.rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
 
         # build exchange name
-        self.rabbitExchange = "kingfisher_process_{}".format(self.envId)
+        self.rabbit_exchange = "kingfisher_process_{}".format(self.env_id)
 
         # connect to messaging
         credentials = pika.PlainCredentials(settings.RABBITMQ["username"],
@@ -65,45 +66,45 @@ class BaseWorker(BaseCommand):
                                                                        credentials=credentials,
                                                                        blocked_connection_timeout=1800,
                                                                        heartbeat=0))
-        self.rabbitChannel = connection.channel()
+        self.rabbit_channel = connection.channel()
 
         # declare durable exchange
-        self.rabbitChannel.exchange_declare(exchange=self.rabbitExchange,
+        self.rabbit_channel.exchange_declare(exchange=self.rabbit_exchange,
                                             durable='true',
                                             exchange_type='direct')
-        self.debug("Declared exchange {}".format(self.rabbitExchange))
+        self.debug("Declared exchange {}".format(self.rabbit_exchange))
 
         self.info("RabbitMQ connection established")
 
     def consume(self, callback):
         """Define which messages to consume and queue for this worker"""
         # declare queue to store unprocessed messages
-        self.rabbitChannel.queue_declare(queue=self.rabbitConsumeQueue, durable=True)
+        self.rabbit_channel.queue_declare(queue=self.rabbit_consume_queue, durable=True)
 
         # bind consume keys to the queue
-        for consumeKey in self.rabbitConsumeRoutingKeys:
-            self.rabbitChannel.queue_bind(exchange=self.rabbitExchange,
-                                          queue=self.rabbitConsumeQueue,
+        for consumeKey in self.rabbit_consume_routing_keys:
+            self.rabbit_channel.queue_bind(exchange=self.rabbit_exchange,
+                                          queue=self.rabbit_consume_queue,
                                           routing_key=consumeKey)
 
             self.debug("Consuming messages from exchange {} with routing key {}".format(
-                self.rabbitExchange,
+                self.rabbit_exchange,
                 consumeKey))
 
-            self.rabbitChannel.basic_qos(prefetch_count=1)
-            self.rabbitChannel.basic_consume(queue=self.rabbitConsumeQueue, on_message_callback=callback)
+            self.rabbit_channel.basic_qos(prefetch_count=1)
+            self.rabbit_channel.basic_consume(queue=self.rabbit_consume_queue, on_message_callback=callback)
 
-        self.rabbitChannel.start_consuming()
+        self.rabbit_channel.start_consuming()
 
     def publish(self, message):
         """Publish message with work for a next part of process"""
-        self.rabbitChannel.basic_publish(exchange=self.rabbitExchange,
-                                         routing_key=self.rabbitPublishRoutingKey,
+        self.rabbit_channel.basic_publish(exchange=self.rabbit_exchange,
+                                         routing_key=self.rabbit_publish_routing_key,
                                          body=message,
                                          properties=pika.BasicProperties(delivery_mode=2))
 
         self.debug("Published message to exchange {} with routing key {}. Message: {}".format(
-                self.rabbitExchange, self.rabbitPublishRoutingKey, message
+                self.rabbit_exchange, self.rabbit_publish_routing_key, message
             )
         )
 
@@ -115,7 +116,7 @@ class BaseWorker(BaseCommand):
 
     def logger(self):
         """Returns initialised logger instance"""
-        return self.loggerInstance
+        return self.logger_instance
 
     def debug(self, message):
         """Shortcut function to logging facility"""

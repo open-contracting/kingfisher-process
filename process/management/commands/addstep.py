@@ -12,10 +12,10 @@ from process.management.commands.base.collection_command import CollectionComman
 class Command(CollectionCommand):
     help = gettext("Adds a step to the collection's processing pipeline")
 
-    workerName = "add_step"
+    worker_name = "add_step"
 
     def __init__(self):
-        super().__init__(self.workerName)
+        super().__init__(self.worker_name)
 
     def add_collection_arguments(self, parser):
         parser.add_argument('step', choices=['check'] + Collection.Transforms.values, help=_('the step to add'))

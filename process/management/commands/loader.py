@@ -33,10 +33,10 @@ class Command(BaseWorker):
                'Additional processing is not automatically configured (checking, upgrading, merging, etc.). To add a '
                'pre-processing step, use the addstep command.'))
 
-    workerName = "loader"
+    worker_name = "loader"
 
     def __init__(self):
-        super().__init__(self.workerName)
+        super().__init__(self.worker_name)
 
     def add_arguments(self, parser):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter

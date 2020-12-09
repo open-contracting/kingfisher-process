@@ -6,12 +6,12 @@ from process.management.commands.base.worker import BaseWorker
 
 class Command(BaseWorker):
 
-    workerName = "compiler"
+    worker_name = "compiler"
 
-    consumeKeys = ["upgrader", "checker"]
+    consume_keys = ["upgrader", "checker"]
 
     def __init__(self):
-        super().__init__(self.workerName)
+        super().__init__(self.worker_name)
 
     def process(self, channel, method, properties, body):
         try:

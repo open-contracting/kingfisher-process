@@ -6,8 +6,8 @@ from process.models import Collection
 
 class CollectionCommand(BaseWorker):
 
-    def __init__(self, workerName):
-        super().__init__(workerName)
+    def __init__(self, worker_name):
+        super().__init__(worker_name)
 
     def add_arguments(self, parser):
         """
