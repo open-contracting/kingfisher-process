@@ -70,8 +70,8 @@ class BaseWorker(BaseCommand):
 
         # declare durable exchange
         self.rabbit_channel.exchange_declare(exchange=self.rabbit_exchange,
-                                            durable='true',
-                                            exchange_type='direct')
+                                             durable='true',
+                                             exchange_type='direct')
         self.debug("Declared exchange {}".format(self.rabbit_exchange))
 
         self.info("RabbitMQ connection established")
@@ -84,8 +84,8 @@ class BaseWorker(BaseCommand):
         # bind consume keys to the queue
         for consumeKey in self.rabbit_consume_routing_keys:
             self.rabbit_channel.queue_bind(exchange=self.rabbit_exchange,
-                                          queue=self.rabbit_consume_queue,
-                                          routing_key=consumeKey)
+                                           queue=self.rabbit_consume_queue,
+                                           routing_key=consumeKey)
 
             self.debug("Consuming messages from exchange {} with routing key {}".format(
                 self.rabbit_exchange,
@@ -99,9 +99,9 @@ class BaseWorker(BaseCommand):
     def publish(self, message):
         """Publish message with work for a next part of process"""
         self.rabbit_channel.basic_publish(exchange=self.rabbit_exchange,
-                                         routing_key=self.rabbit_publish_routing_key,
-                                         body=message,
-                                         properties=pika.BasicProperties(delivery_mode=2))
+                                          routing_key=self.rabbit_publish_routing_key,
+                                          body=message,
+                                          properties=pika.BasicProperties(delivery_mode=2))
 
         self.debug("Published message to exchange {} with routing key {}. Message: {}".format(
                 self.rabbit_exchange, self.rabbit_publish_routing_key, message
