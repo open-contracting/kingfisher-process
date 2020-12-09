@@ -8,7 +8,6 @@ from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 
-from os.path import basename
 from process.forms import CollectionForm, CollectionNoteForm, CollectionFileForm
 from process.models import Collection
 from process.scrapyd import configured
