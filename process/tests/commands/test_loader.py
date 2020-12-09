@@ -84,7 +84,14 @@ class LoadTests(TransactionTestCase):
 
     def test_time_future(self):
         with self.assertRaises(CommandError) as e:
-            call_command('loader', '--source', 'france', '--note', 'x', '--time', '3000-01-01 00:00', path('file.json'))
+            call_command('loader',
+                         '--source',
+                         'france',
+                         '--note',
+                         'x',
+                         '--time',
+                         '3000-01-01 00:00',
+                         path('file.json'))
 
         message = "'3000-01-01 00:00' is greater than the earliest file modification time: '20"
         self.assertTrue(str(e.exception).startswith(message))
