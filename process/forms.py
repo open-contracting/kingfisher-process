@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 import process.scrapyd
-from process.models import Collection, CollectionNote
+from process.models import Collection, CollectionNote, CollectionFile
 
 
 class KingfisherForm(forms.ModelForm):
@@ -20,6 +20,9 @@ class KingfisherForm(forms.ModelForm):
         return '\n'.join(messages)
 
     def error_message_formatter(self, field, error):
+        if error.code == 'required':
+            return _('%(field)s %(value)r cannot be blank') % {
+                'field': field, 'value': self[field].data}
         if error.params:
             message = error.message % error.params
         else:
@@ -69,10 +72,19 @@ class CollectionNoteForm(KingfisherForm):
         fields = ['collection', 'note']
 
     def error_message_formatter(self, field, error):
-        if error.code == 'required':
-            return _('%(field)s %(value)r cannot be blank') % {
-                'field': field, 'value': self[field].data}
-        elif error.code == 'unique_together' and error.params['unique_check'] == ('collection', 'note'):
+        if error.code == 'unique_together' and error.params['unique_check'] == ('collection', 'note'):
             return _('Collection %(id)s already has the note %(value)r') % {
                 'id': self['collection'].data.pk, 'value': self['note'].data}
+        return super().error_message_formatter(field, error)
+
+
+class CollectionFileForm(KingfisherForm):
+    class Meta:
+        model = CollectionFile
+        fields = ['collection', 'filename', 'url', 'warnings', 'errors']
+
+    def error_message_formatter(self, field, error):
+        if error.code == 'unique_together' and error.params['unique_check'] == ('collection', 'filename'):
+            return _('Collection %(id)s already contains file %(value)r') % {
+                'id': self['collection'].data.pk, 'value': self['filename'].data}
         return super().error_message_formatter(field, error)

@@ -6,11 +6,13 @@ from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 
-from process.forms import CollectionForm, CollectionNoteForm
+from os.path import basename
+from process.forms import CollectionForm, CollectionNoteForm, CollectionFileForm
 from process.models import Collection
 from process.scrapyd import configured
-from process.util import walk
+from process.util import json_dumps, walk
 from process.util import wrap as w
 from process.management.commands.base.worker import BaseWorker
 
@@ -129,6 +131,25 @@ class Command(BaseWorker):
                 form.save()
             else:
                 raise CommandError(form.error_messages)
+
+        self.debug("Processing path {}".format(options['PATH']))
+
+        with transaction.atomic():
+            for file_path in walk(options['PATH']):
+                self.debug("Storing file {}".format(file_path))
+                form = CollectionFileForm(dict(collection=collection,
+                                               filename=file_path))
+
+                if form.is_valid():
+                    collection_file = form.save()
+                    message = {
+                        "collection_file_id": collection_file.id
+                    }
+                    self.publish(json_dumps(message))
+                else:
+                    raise CommandError(form.error_messages)
+
+        self.info("Load command completed")
 
         # TODO: This command is incomplete. Partial work was committed to allow others to continue.
 
