@@ -2,6 +2,7 @@ import os
 from textwrap import fill
 
 import orjson
+import hashlib
 
 
 def json_dumps(data):
@@ -27,3 +28,7 @@ def walk(paths):
                 for name in files:
                     if not name.startswith('.'):
                         yield os.path.join(root, name)
+
+
+def get_hash(data):
+    return hashlib.md5(data.encode('utf-8')).hexdigest()

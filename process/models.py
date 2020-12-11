@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+from django.core.serializers.json import DjangoJSONEncoder
 
 # # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
 # don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
@@ -117,6 +118,7 @@ class Collection(models.Model):
                                       code='parent_deleted')
 
             if self.transform_type == self.parent.transform_type:
+                message = "Unable to proceed"
                 if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
                     message = _('Parent collection %(id)s is itself already a compilation of %(parent_id)s')
                 elif self.parent.transform_type == Collection.Transforms.UPGRADE_10_11:
@@ -223,7 +225,7 @@ class Data(models.Model):
         ]
 
     hash_md5 = models.TextField()
-    data = JSONField()
+    data = JSONField(encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return self.hash_md5
@@ -240,7 +242,7 @@ class PackageData(models.Model):
         ]
 
     hash_md5 = models.TextField()
-    data = JSONField()
+    data = JSONField(encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return self.hash_md5

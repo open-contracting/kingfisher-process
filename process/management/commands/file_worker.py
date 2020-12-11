@@ -1,0 +1,111 @@
+import json
+import sys
+import ijson
+
+from process.management.commands.base.worker import BaseWorker
+from process.models import CollectionFile, CollectionFileItem, PackageData, Release, Data
+from ocdskit.exceptions import UnknownFormatError
+from django.db import transaction
+from process.util import get_hash
+from ijson.common import ObjectBuilder
+
+
+class Command(BaseWorker):
+
+    worker_name = "file_worker"
+
+    consume_keys = ["loader"]
+
+    def __init__(self):
+        super().__init__(self.worker_name)
+
+    def process(self, channel, method, properties, body):
+        try:
+            # parse input message
+            input_message = json.loads(body.decode('utf8'))
+            self.debug("Received message {}".format(input_message))
+
+            collection_file = CollectionFile.objects.get(pk=input_message["collection_file_id"])
+
+            try:
+                with transaction.atomic():
+                    with open(collection_file.filename, "rb") as f:
+                        file_objects = []
+                        package_data_object = None
+                        builder_object = ObjectBuilder()
+                        builder_package = ObjectBuilder()
+
+                        build_object = False
+                        build_package = False
+                        for prefix, event, value in ijson.parse(f):
+                            if prefix == "item" and event == 'start_map':
+                                builder_package = ObjectBuilder()
+                                build_package = True
+
+                            if prefix == "item.releases.item" and event == 'start_map':
+                                builder_object = ObjectBuilder()
+                                build_object = True
+
+                            if prefix == "item.releases.item" and event == 'end_map':
+                                build_object = False
+                                file_objects.append(builder_object.value)
+
+                            if prefix == "item" and event == 'end_map':
+                                build_package = False
+                                package_data_object = builder_package.value
+
+                            if build_object:
+                                builder_object.event(event, value)
+
+                            if build_package:
+                                if not prefix.startswith("item.releases"):
+                                    builder_package.event(event, value)
+
+                        package_hash = get_hash(str(package_data_object))
+                        try:
+                            package_data = PackageData.objects.get(hash_md5=package_hash)
+                        except (PackageData.DoesNotExist, PackageData.MultipleObjectsReturned):
+                            package_data = PackageData()
+                            package_data.data = package_data_object
+                            package_data.hash_md5 = package_hash
+                            package_data.save()
+
+                        counter = 1
+                        for item in file_objects:
+
+                            collection_file_item = CollectionFileItem()
+                            collection_file_item.collection_file = collection_file
+                            collection_file_item.number = counter
+                            counter += 1
+                            collection_file_item.save()
+
+                            item_hash = get_hash(str(item))
+
+                            try:
+                                data = Data.objects.get(hash_md5=item_hash)
+                            except (Data.DoesNotExist, Data.MultipleObjectsReturned):
+                                data = Data()
+                                data.data = item
+                                data.hash_md5 = item_hash
+                                data.save()
+
+                            release = Release()
+                            release.collection = collection_file.collection
+                            release.collection_file_item = collection_file_item
+                            release.data = data
+                            release.package_data = package_data
+                            release.save()
+
+                    self.publish(json.dumps(input_message))
+            except UnknownFormatError as e:
+                self.exception("Uknown format for collection file id {}".format(collection_file.id))
+                # save error
+                collection_file.errors = {"exception": e}
+                collection_file.save()
+
+            # confirm message processing
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception:
+            self.exception(
+                "Something went wrong when processing {}".format(body))
+            sys.exit()

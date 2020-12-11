@@ -141,12 +141,12 @@ class Command(BaseWorker):
 
                 if form.is_valid():
                     collection_file = form.save()
-                    message = {
-                        "collection_file_id": collection_file.id
-                    }
-                    self.publish(json_dumps(message))
                 else:
                     raise CommandError(form.error_messages)
+
+        message = {"collection_file_id": collection_file.id}
+
+        self.publish(json_dumps(message))
 
         self.info("Load command completed")
 
