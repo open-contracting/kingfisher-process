@@ -70,7 +70,7 @@ class Command(BaseWorker):
                             package_data.hash_md5 = package_hash
                             package_data.save()
 
-                        counter = 1
+                        counter = 0
                         for item in file_objects:
 
                             collection_file_item = CollectionFileItem()
@@ -94,9 +94,13 @@ class Command(BaseWorker):
                             release.collection_file_item = collection_file_item
                             release.data = data
                             release.package_data = package_data
+                            release.release_id = item["id"]
+                            release.ocid = item["ocid"]
                             release.save()
 
-                    self.publish(json.dumps(input_message))
+                    self.deleteStep(collection_file)
+
+                self.publish(json.dumps(input_message))
             except UnknownFormatError as e:
                 self.exception("Uknown format for collection file id {}".format(collection_file.id))
                 # save error

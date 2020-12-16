@@ -187,6 +187,26 @@ class CollectionFile(models.Model):
         return self.filename
 
 
+class CollectionFileStep(models.Model):
+    """
+    A step in the lifecycle of collection file.
+    """
+    class Meta:
+        db_table = 'collection_file_step'
+        indexes = [
+            models.Index(name='collection_file_step_collection_file_id_idx', fields=['collection_file']),
+            models.Index(name='collection_file_step_name_idx', fields=['name']),
+
+        ]
+        constraints = [
+            models.UniqueConstraint(name='unique_collection_file_item_name', fields=[
+                'collection_file', 'name']),
+        ]
+
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
+    name = models.CharField(max_length=64, blank=False)
+
+
 class CollectionFileItem(models.Model):
     """
     An item within a file in the collection.

@@ -7,9 +7,10 @@ from django.db.utils import IntegrityError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
+from django.conf import settings
 
 from process.forms import CollectionForm, CollectionNoteForm, CollectionFileForm
-from process.models import Collection
+from process.models import Collection, CollectionFileStep
 from process.scrapyd import configured
 from process.util import json_dumps, walk
 from process.util import wrap as w
@@ -133,31 +134,24 @@ class Command(BaseWorker):
 
         self.debug("Processing path {}".format(options['PATH']))
 
-        with transaction.atomic():
-            for file_path in walk(options['PATH']):
+        for file_path in walk(options['PATH']):
+            with transaction.atomic():
                 self.debug("Storing file {}".format(file_path))
                 form = CollectionFileForm(dict(collection=collection,
                                                filename=file_path))
 
                 if form.is_valid():
                     collection_file = form.save()
+                    for step in settings.DEFAULT_STEPS:
+                        collection_file_step = CollectionFileStep()
+                        collection_file_step.collection_file = collection_file
+                        collection_file_step.name = step
+                        collection_file_step.save()
                 else:
                     raise CommandError(form.error_messages)
 
-        message = {"collection_file_id": collection_file.id}
+            message = {"collection_file_id": collection_file.id}
 
-        self.publish(json_dumps(message))
+            self.publish(json_dumps(message))
 
         self.info("Load command completed")
-
-        # TODO: This command is incomplete. Partial work was committed to allow others to continue.
-
-        # TODO: Guess the file format using OCDS Kit (need to make detect-format into a library method)
-        # If format can't be determined, skip with a warning, and leave the collection open?
-        # What to do about binary and non-JSON files? (If we only load .json files, we'll miss .jsonl, etc. files)
-        # Should ocdskit's detect-format be improved to ignore files whose first non-whitespace character isn't [ or {?
-        # Should ocdskit's detect-format warn about a BOM?
-        # Send a message for each file
-        # Set/update expected_files_count
-        # Send the total number of messages sent
-        # Print the collection ID

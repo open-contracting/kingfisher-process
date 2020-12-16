@@ -6,6 +6,7 @@ import pika
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as t
+from process.models import CollectionFileStep
 
 
 class BaseWorker(BaseCommand):
@@ -107,6 +108,12 @@ class BaseWorker(BaseCommand):
                 self.rabbit_exchange, self.rabbit_publish_routing_key, message
             )
         )
+
+    def deleteStep(self, collection_file):
+        collection_file_step = CollectionFileStep.objects.filter(
+                            collection_file=collection_file).get(
+                            name=self.worker_name)
+        collection_file_step.delete()
 
     def file_or_directory(self, string):
         """Checks whether the path is existing file or directory. Raises an exception if not"""

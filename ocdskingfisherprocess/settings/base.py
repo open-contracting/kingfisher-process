@@ -141,16 +141,4 @@ SILENCED_SYSTEM_CHECKS = [
     'models.E034',
 ]
 
-# https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-if production:
-    # Run: env DJANGO_ENV=production SECURE_HSTS_SECONDS=1 ./manage.py check --deploy
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
-    SECURE_REFERRER_POLICY = 'same-origin'
-
-    # https://docs.djangoproject.com/en/3.0/ref/middleware/#http-strict-transport-security
-    if 'SECURE_HSTS_SECONDS' in os.environ:
-        SECURE_HSTS_SECONDS = os.getenv('SECURE_HSTS_SECONDS')
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-        SECURE_HSTS_PRELOAD = True
+DEFAULT_STEPS = ["file_worker", "checker", "compiler", "upgrader"]
