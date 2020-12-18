@@ -3,8 +3,9 @@ import sys
 import ijson
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import CollectionFile, CollectionFileItem, PackageData, Release, Data
+from process.models import Collection, CollectionFile, CollectionFileItem, PackageData, Release, Data
 from ocdskit.exceptions import UnknownFormatError
+from ocdskit.upgrade import upgrade_10_11
 from django.db import transaction
 from process.util import get_hash
 from ijson.common import ObjectBuilder
@@ -25,7 +26,22 @@ class Command(BaseWorker):
             input_message = json.loads(body.decode('utf8'))
             self.debug("Received message {}".format(input_message))
 
-            collection_file = CollectionFile.objects.get(pk=input_message["collection_file_id"])
+            collection_file = CollectionFile.objects.prefetch_related('collection').get(
+                pk=input_message["collection_file_id"])
+
+            collection = collection_file.collection
+
+            try:
+                upgraded_collection = Collection.objects.filter(
+                    transform_type__exact=Collection.Transforms.UPGRADE_10_11).get(parent=collection)
+            except (Collection.DoesNotExist):
+                upgraded_collection = None
+
+            if upgraded_collection:
+                upgraded_collection_file = collection_file
+                upgraded_collection_file.pk = None
+                upgraded_collection_file.collection = upgraded_collection
+                upgraded_collection_file.save()
 
             try:
                 with transaction.atomic():
@@ -97,6 +113,34 @@ class Command(BaseWorker):
                             release.release_id = item["id"]
                             release.ocid = item["ocid"]
                             release.save()
+
+                            if upgraded_collection:
+                                item = upgrade_10_11(item)
+
+                                collection_file_item = CollectionFileItem()
+                                collection_file_item.collection_file = upgraded_collection_file
+                                collection_file_item.number = counter
+                                counter += 1
+                                collection_file_item.save()
+
+                                item_hash = get_hash(str(item))
+
+                                try:
+                                    data = Data.objects.get(hash_md5=item_hash)
+                                except (Data.DoesNotExist, Data.MultipleObjectsReturned):
+                                    data = Data()
+                                    data.data = item
+                                    data.hash_md5 = item_hash
+                                    data.save()
+
+                                release = Release()
+                                release.collection = collection_file.collection
+                                release.collection_file_item = collection_file_item
+                                release.data = data
+                                release.package_data = package_data
+                                release.release_id = item["id"]
+                                release.ocid = item["ocid"]
+                                release.save()
 
                     self.deleteStep(collection_file)
 

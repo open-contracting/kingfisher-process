@@ -58,6 +58,7 @@ class Command(BaseWorker):
         parser.add_argument('-n', '--note', help=_('add a note to the collection (required for a new collection)'))
         parser.add_argument('-f', '--force', help=_('use the provided --source value, regardless of whether it is '
                                                     'recognized'), action='store_true')
+        parser.add_argument('-u', '--upgrade', help=_('upgrade collection to latest version'), action='store_true')
 
     def handle(self, *args, **options):
         if not options['collection'] and not options['source']:
@@ -125,12 +126,26 @@ class Command(BaseWorker):
                     self.stderr.write(self.style.ERROR(_('Use --force to ignore the following error:')))
                 raise CommandError(form.error_messages)
 
+            if options['upgrade']:
+                data["transform_type"] = Collection.Transforms.UPGRADE_10_11
+                data["parent"] = collection
+                upgrade_form = CollectionForm(data)
+                if upgrade_form.is_valid():
+                    upgraded_collection = upgrade_form.save()
+
         if options['note']:
             form = CollectionNoteForm(dict(collection=collection, note=options['note']))
             if form.is_valid():
                 form.save()
             else:
                 raise CommandError(form.error_messages)
+
+            if options['upgrade']:
+                form = CollectionNoteForm(dict(collection=upgraded_collection, note=options['note']))
+                if form.is_valid():
+                    form.save()
+                else:
+                    raise CommandError(form.error_messages)
 
         self.debug("Processing path {}".format(options['PATH']))
 

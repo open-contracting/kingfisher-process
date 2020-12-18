@@ -33,7 +33,7 @@ class KingfisherForm(forms.ModelForm):
 class CollectionForm(KingfisherForm):
     class Meta:
         model = Collection
-        fields = ['source_id', 'data_version', 'sample']
+        fields = ['source_id', 'data_version', 'sample', 'transform_type', 'parent']
 
     force = forms.BooleanField(required=False)
 
