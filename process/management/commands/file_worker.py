@@ -9,6 +9,7 @@ from ocdskit.upgrade import upgrade_10_11
 from django.db import transaction
 from process.util import get_hash
 from ijson.common import ObjectBuilder
+from process.util import json_dumps
 
 
 class Command(BaseWorker):
@@ -38,9 +39,10 @@ class Command(BaseWorker):
                 upgraded_collection = None
 
             if upgraded_collection:
-                upgraded_collection_file = collection_file
-                upgraded_collection_file.pk = None
+                upgraded_collection_file = CollectionFile()
                 upgraded_collection_file.collection = upgraded_collection
+                upgraded_collection_file.filename = collection_file.filename
+                upgraded_collection_file.url = collection_file.url
                 upgraded_collection_file.save()
 
             try:
@@ -145,6 +147,10 @@ class Command(BaseWorker):
                     self.deleteStep(collection_file)
 
                 self.publish(json.dumps(input_message))
+
+                if upgraded_collection:
+                    message = {"collection_file_id": upgraded_collection_file.id}
+                    self.publish(json_dumps(message))
             except UnknownFormatError as e:
                 self.exception("Uknown format for collection file id {}".format(collection_file.id))
                 # save error

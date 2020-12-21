@@ -8,6 +8,7 @@ from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.conf import settings
+from django.db.models.functions import Now
 
 from process.forms import CollectionForm, CollectionNoteForm, CollectionFileForm
 from process.models import Collection, CollectionFileStep
@@ -59,6 +60,7 @@ class Command(BaseWorker):
         parser.add_argument('-f', '--force', help=_('use the provided --source value, regardless of whether it is '
                                                     'recognized'), action='store_true')
         parser.add_argument('-u', '--upgrade', help=_('upgrade collection to latest version'), action='store_true')
+        parser.add_argument('-c', '--compile', help=_('compile collection'), action='store_true')
 
     def handle(self, *args, **options):
         if not options['collection'] and not options['source']:
@@ -101,15 +103,22 @@ class Command(BaseWorker):
                         'time': options['time'], 'mtime': data_version})
                 data_version = options['time']
 
-            data = {'source_id': options['source'], 'data_version': data_version, 'sample': options['sample'],
-                    'force': options['force']}
-            # TODO: Add local_load the collection's options. If --keep-open, add keep_open to the collection's options.
+            data = {
+                        'source_id': options['source'],
+                        'data_version': data_version,
+                        'sample': options['sample'],
+                        'force': options['force']
+                    }
 
             form = CollectionForm(data)
 
             if form.is_valid():
                 try:
                     collection = form.save()
+                    if options['upgrade']:
+                        steps = ["upgrade"]
+                        collection.steps = steps
+                        collection.save()
                 except IntegrityError:
                     del data['force']  # force is a field on the form, not the model
                     collection = Collection.objects.get(**data, transform_type='')
@@ -132,6 +141,10 @@ class Command(BaseWorker):
                 upgrade_form = CollectionForm(data)
                 if upgrade_form.is_valid():
                     upgraded_collection = upgrade_form.save()
+                    if options["compile"]:
+                        steps = ["compile"]
+                        collection.steps = steps
+                        upgraded_collection.save()
 
         if options['note']:
             form = CollectionNoteForm(dict(collection=collection, note=options['note']))
@@ -169,4 +182,9 @@ class Command(BaseWorker):
 
             self.publish(json_dumps(message))
 
+        collection.store_end_at = Now()
+        collection.save()
+
+        upgraded_collection.store_end_at = Now()
+        upgraded_collection.save()
         self.info("Load command completed")
