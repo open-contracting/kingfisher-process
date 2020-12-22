@@ -1,8 +1,8 @@
+import hashlib
 import os
 from textwrap import fill
 
 import orjson
-import hashlib
 
 
 def json_dumps(data):

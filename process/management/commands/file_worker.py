@@ -1,15 +1,15 @@
 import json
 import sys
-import ijson
 
-from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, CollectionFileItem, PackageData, Release, Data
+import ijson
+from django.db import transaction
+from ijson.common import ObjectBuilder
+
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
-from django.db import transaction
-from process.util import get_hash
-from ijson.common import ObjectBuilder
-from process.util import json_dumps
+from process.management.commands.base.worker import BaseWorker
+from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Release
+from process.util import get_hash, json_dumps
 
 
 class Command(BaseWorker):

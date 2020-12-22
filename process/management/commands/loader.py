@@ -2,20 +2,20 @@ import argparse
 import os
 import time
 
+from django.conf import settings
 from django.core.management.base import CommandError
+from django.db import transaction
+from django.db.models.functions import Now
 from django.db.utils import IntegrityError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
-from django.db import transaction
-from django.conf import settings
-from django.db.models.functions import Now
 
-from process.forms import CollectionForm, CollectionNoteForm, CollectionFileForm
+from process.forms import CollectionFileForm, CollectionForm, CollectionNoteForm
+from process.management.commands.base.worker import BaseWorker
 from process.models import Collection, CollectionFileStep
 from process.scrapyd import configured
 from process.util import json_dumps, walk
 from process.util import wrap as w
-from process.management.commands.base.worker import BaseWorker
 
 
 class Command(BaseWorker):

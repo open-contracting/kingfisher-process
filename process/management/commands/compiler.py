@@ -1,10 +1,13 @@
 import json
 import sys
 
-from process.management.commands.base.worker import BaseWorker
-from process.models import CollectionFile, Collection, CollectionFileStep, Release, CollectionFileItem, Data, CompiledRelease
 from ocdsmerge import Merger
+
+from process.management.commands.base.worker import BaseWorker
+from process.models import (Collection, CollectionFile, CollectionFileItem, CollectionFileStep, CompiledRelease, Data,
+                            Release)
 from process.util import get_hash
+
 
 class Command(BaseWorker):
 
@@ -30,7 +33,8 @@ class Command(BaseWorker):
 
                 if self.proceed(collection):
                     try:
-                        compile_collection = Collection.objects.filter(parent=collection).get(steps__contains="compile")
+                        compile_collection = Collection.objects.filter(
+                                                parent=collection).get(steps__contains="compile")
                     except Collection.DoesNotExist:
                         # create collection
                         compile_collection = Collection()
@@ -52,11 +56,14 @@ class Command(BaseWorker):
 
                         self.info("Compiling releases")
 
-                        ocids = Release.objects.filter(collection_file_item__collection_file__collection=collection).order_by(
-                            ).values('ocid').distinct()
+                        ocids = Release.objects.filter(
+                                    collection_file_item__collection_file__collection=collection).order_by(
+                                    ).values('ocid').distinct()
+
                         for ocid in ocids:
-                            releases = Release.objects.filter(collection_file_item__collection_file__collection=collection).filter(
-                                ocid=ocid['ocid']).order_by().prefetch_related('data')
+                            releases = Release.objects.filter(
+                                            collection_file_item__collection_file__collection=collection).filter(
+                                            ocid=ocid['ocid']).order_by().prefetch_related('data')
                             releases_data = []
                             for release in releases:
                                 releases_data.append(release.data.data)

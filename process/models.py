@@ -1,9 +1,9 @@
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, transaction
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
-from django.core.serializers.json import DjangoJSONEncoder
 
 # # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
 # don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`

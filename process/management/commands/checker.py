@@ -1,10 +1,11 @@
 import json
 import sys
 
+from django.db import transaction
+from libcoveocds.api import ocds_json_output
+
 from process.management.commands.base.worker import BaseWorker
 from process.models import CollectionFile, Release, ReleaseCheck
-from libcoveocds.api import ocds_json_output
-from django.db import transaction
 
 
 class Command(BaseWorker):

@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 import process.scrapyd
-from process.models import Collection, CollectionNote, CollectionFile
+from process.models import Collection, CollectionFile, CollectionNote
 
 
 class KingfisherForm(forms.ModelForm):

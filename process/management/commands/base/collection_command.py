@@ -1,6 +1,7 @@
-from process.management.commands.base.worker import BaseWorker
 from django.core.management.base import CommandError
 from django.utils.translation import gettext_lazy as _
+
+from process.management.commands.base.worker import BaseWorker
 from process.models import Collection
 
 

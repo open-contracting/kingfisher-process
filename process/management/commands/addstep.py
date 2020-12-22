@@ -4,9 +4,8 @@ from django.db import transaction
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-
-from process.models import Collection
 from process.management.commands.base.collection_command import CollectionCommand
+from process.models import Collection
 
 
 class Command(CollectionCommand):
