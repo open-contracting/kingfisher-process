@@ -4,3 +4,7 @@ orjson
 pika
 psycopg2
 requests
+ijson
+libcoveocds
+ocdsmerge
+ocdskit
