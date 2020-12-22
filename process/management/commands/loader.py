@@ -185,6 +185,7 @@ class Command(BaseWorker):
         collection.store_end_at = Now()
         collection.save()
 
-        upgraded_collection.store_end_at = Now()
-        upgraded_collection.save()
+        if options['upgrade']:
+            upgraded_collection.store_end_at = Now()
+            upgraded_collection.save()
         self.info("Load command completed")
