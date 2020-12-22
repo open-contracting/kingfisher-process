@@ -103,9 +103,11 @@ class LoadTests(TransactionTestCase):
                     call_command('loader', '--source', 'france', '--note', 'x', '--time', value, path('file.json'))
 
                 self.assertEqual(str(e.exception), 'data_version \'{}\' is not in "YYYY-MM-DD HH:MM:SS" format or is '
+
                                                    'an invalid date/time'.format(value))
 
-    def test_source_invalid(self):
+    @patch('process.management.commands.base.worker.BaseWorker.publish')
+    def test_source_invalid(self, publish):
         with captured_stderr() as stderr:
             try:
                 call_command('loader', '--source', 'nonexistent', '--note', 'x', path('file.json'))
@@ -140,7 +142,8 @@ class LoadTests(TransactionTestCase):
                                                "Scrapyd. Did you mean: france")
 
     @patch('process.scrapyd.spiders')
-    def test_source_invalid_scrapyd_force(self, spiders):
+    @patch('process.management.commands.base.worker.BaseWorker.publish')
+    def test_source_invalid_scrapyd_force(self, spiders, publish):
         spiders.return_value = ['france']
 
         with self.settings(SCRAPYD={'url': 'http://example.com', 'project': 'kingfisher'}):
@@ -150,7 +153,8 @@ class LoadTests(TransactionTestCase):
                 self.fail('Unexpected exception {}'.format(e))
 
     @patch('process.scrapyd.spiders')
-    def test_source_local(self, spiders):
+    @patch('process.management.commands.base.worker.BaseWorker.publish')
+    def test_source_local(self, spiders, publish):
         spiders.return_value = ['france']
 
         with self.settings(SCRAPYD={'url': 'http://example.com', 'project': 'kingfisher'}):

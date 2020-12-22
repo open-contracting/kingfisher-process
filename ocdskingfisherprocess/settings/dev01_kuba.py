@@ -44,10 +44,7 @@ DATABASES = {
 }
 
 RABBITMQ = {
-    'username': 'rabbit',
-    'password': 'rabbit',
-    'host': 'localhost',
-    'port': '29000',
+
 }
 
 # The schema in the older version had index names longer than 30 characters.
