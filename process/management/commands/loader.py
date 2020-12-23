@@ -143,7 +143,7 @@ class Command(BaseWorker):
                     upgraded_collection = upgrade_form.save()
                     if options["compile"]:
                         steps = ["compile"]
-                        collection.steps = steps
+                        upgraded_collection.steps = steps
                         upgraded_collection.save()
 
         if options['note']:

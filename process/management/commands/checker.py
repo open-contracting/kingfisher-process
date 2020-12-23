@@ -44,8 +44,6 @@ class Command(BaseWorker):
                     releaseCheck.release = release
                     releaseCheck.save()
 
-                self.deleteStep(collection_file)
-
             # send message for a next phase
             self.publish(json.dumps(input_message))
 

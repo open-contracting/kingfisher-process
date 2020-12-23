@@ -4,9 +4,9 @@ import sys
 import ijson
 from django.db import transaction
 from ijson.common import ObjectBuilder
-
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
+
 from process.management.commands.base.worker import BaseWorker
 from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Release
 from process.util import get_hash, json_dumps

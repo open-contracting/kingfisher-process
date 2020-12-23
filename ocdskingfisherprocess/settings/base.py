@@ -141,4 +141,4 @@ SILENCED_SYSTEM_CHECKS = [
     'models.E034',
 ]
 
-DEFAULT_STEPS = ["file_worker", "checker", "compiler"]
+DEFAULT_STEPS = ["file_worker"]
