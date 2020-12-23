@@ -17,20 +17,22 @@ class Command(BaseWorker):
     def process(self, channel, method, properties, body):
         try:
             # parse input message
-            input_message = json.loads(body.decode('utf8'))
+            input_message = json.loads(body.decode("utf8"))
 
             self.debug("Received message {}".format(input_message))
 
             try:
-                collection_file = CollectionFile.objects.prefetch_related('collection').get(
-                    pk=input_message["collection_file_id"])
+                collection_file = CollectionFile.objects.prefetch_related(
+                    "collection"
+                ).get(pk=input_message["collection_file_id"])
 
                 collection = collection_file.collection
 
                 if self.proceed(collection):
                     try:
                         compile_collection = Collection.objects.filter(
-                                                parent=collection).get(parent__steps__contains="compile")
+                            parent=collection
+                        ).get(parent__steps__contains="compile")
                     except Collection.DoesNotExist:
                         # create collection
                         compile_collection = Collection()
@@ -39,11 +41,21 @@ class Command(BaseWorker):
                         compile_collection.source_id = collection.source_id
                         compile_collection.data_version = collection.data_version
                         compile_collection.sample = collection.sample
-                        compile_collection.expected_files_count = collection.expected_files_count
-                        compile_collection.transform_type = Collection.Transforms.COMPILE_RELEASES
-                        compile_collection.cached_releases_count = collection.cached_releases_count
-                        compile_collection.cached_records_count = collection.cached_records_count
-                        compile_collection.cached_compiled_releases_count = collection.cached_compiled_releases_count
+                        compile_collection.expected_files_count = (
+                            collection.expected_files_count
+                        )
+                        compile_collection.transform_type = (
+                            Collection.Transforms.COMPILE_RELEASES
+                        )
+                        compile_collection.cached_releases_count = (
+                            collection.cached_releases_count
+                        )
+                        compile_collection.cached_records_count = (
+                            collection.cached_records_count
+                        )
+                        compile_collection.cached_compiled_releases_count = (
+                            collection.cached_compiled_releases_count
+                        )
                         compile_collection.store_start_at = collection.store_start_at
                         compile_collection.store_end_at = collection.store_end_at
                         compile_collection.deleted_at = collection.deleted_at
@@ -51,29 +63,45 @@ class Command(BaseWorker):
 
                         self.info("Compiling releases")
 
-                        ocids = Release.objects.filter(
-                                    collection_file_item__collection_file__collection=collection).order_by(
-                                    ).values('ocid').distinct()
+                        ocids = (
+                            Release.objects.filter(
+                                collection_file_item__collection_file__collection=collection
+                            )
+                            .order_by()
+                            .values("ocid")
+                            .distinct()
+                        )
 
                         for item in ocids:
                             # send message for a next phase
-                            message = {"ocid": item["ocid"], "collection_id": collection.pk}
+                            message = {
+                                "ocid": item["ocid"],
+                                "collection_id": collection.pk,
+                            }
                             self.publish(json.dumps(message))
 
                 # confirm message processing
             except CollectionFile.DoesNotExist:
-                self.warning("Collection file {} not found".format(input_message["collection_file_id"]))
+                self.warning(
+                    "Collection file {} not found".format(
+                        input_message["collection_file_id"]
+                    )
+                )
 
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
-            self.exception(
-                "Something went wrong when processing {}".format(body))
+            self.exception("Something went wrong when processing {}".format(body))
             sys.exit()
 
     def proceed(self, collection):
         if "compile" in collection.steps and collection.store_end_at is not None:
-            collection_file_step_count = CollectionFileStep.objects.filter(
-                collection_file__collection=collection).filter(name="file_checker").count()
+            collection_file_step_count = (
+                CollectionFileStep.objects.filter(
+                    collection_file__collection=collection
+                )
+                .filter(name="file_checker")
+                .count()
+            )
             if collection_file_step_count == 0:
                 return True
 
