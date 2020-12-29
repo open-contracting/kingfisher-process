@@ -20,36 +20,42 @@ class Command(BaseWorker):
     def process(self, channel, method, properties, body):
         try:
             # parse input message
-            input_message = json.loads(body.decode('utf8'))
+            input_message = json.loads(body.decode("utf8"))
 
             self.debug("Received message {}".format(input_message))
 
             with transaction.atomic():
-                collection_file = CollectionFile.objects.get(pk=input_message["collection_file_id"])
+                try:
+                    collection_file = CollectionFile.objects.get(pk=input_message["collection_file_id"])
+                    releases = Release.objects.filter(collection_file_item__collection_file=collection_file)
 
-                releases = Release.objects.filter(collection_file_item__collection_file=collection_file)
+                    for release in releases:
+                        self.debug("Checking release {}".format(release))
+                        check_result = ocds_json_output(
+                            "",
+                            "",
+                            schema_version="1.0",
+                            convert=False,
+                            cache_schema=True,
+                            file_type="json",
+                            json_data=release.data.data,
+                        )
 
-                for release in releases:
-                    self.debug("Checking release {}".format(release))
-                    check_result = ocds_json_output("",
-                                                    "",
-                                                    schema_version="1.0",
-                                                    convert=False,
-                                                    cache_schema=True,
-                                                    file_type="json",
-                                                    json_data=release.data.data)
+                        # eliminate nonrequired check results
+                        check_result.pop("releases_aggregates", None)
+                        check_result.pop("records_aggregates", None)
 
-                    releaseCheck = ReleaseCheck()
-                    releaseCheck.cove_output = check_result
-                    releaseCheck.release = release
-                    releaseCheck.save()
+                        releaseCheck = ReleaseCheck()
+                        releaseCheck.cove_output = check_result
+                        releaseCheck.release = release
+                        releaseCheck.save()
 
-            # send message for a next phase
-            self.publish(json.dumps(input_message))
+                    # confirm message processing
+                    channel.basic_ack(delivery_tag=method.delivery_tag)
+                except CollectionFile.DoesNotExist:
+                    self.warning("Collection file {} not found.".format(input_message["collection_file_id"]))
+                    channel.basic_ack(delivery_tag=method.delivery_tag)
 
-            # confirm message processing
-            channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
-            self.exception(
-                "Something went wrong when processing {}".format(body))
+            self.exception("Something went wrong when processing {}".format(body))
             sys.exit()

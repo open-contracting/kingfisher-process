@@ -24,17 +24,19 @@ class Command(BaseWorker):
     def process(self, channel, method, properties, body):
         try:
             # parse input message
-            input_message = json.loads(body.decode('utf8'))
+            input_message = json.loads(body.decode("utf8"))
             self.debug("Received message {}".format(input_message))
 
-            collection_file = CollectionFile.objects.prefetch_related('collection').get(
-                pk=input_message["collection_file_id"])
+            collection_file = CollectionFile.objects.prefetch_related("collection").get(
+                pk=input_message["collection_file_id"]
+            )
 
             collection = collection_file.collection
 
             try:
                 upgraded_collection = Collection.objects.filter(
-                    transform_type__exact=Collection.Transforms.UPGRADE_10_11).get(parent=collection)
+                    transform_type__exact=Collection.Transforms.UPGRADE_10_11
+                ).get(parent=collection)
             except (Collection.DoesNotExist):
                 upgraded_collection = None
 
@@ -56,19 +58,19 @@ class Command(BaseWorker):
                         build_object = False
                         build_package = False
                         for prefix, event, value in ijson.parse(f):
-                            if prefix == "item" and event == 'start_map':
+                            if prefix == "item" and event == "start_map":
                                 builder_package = ObjectBuilder()
                                 build_package = True
 
-                            if prefix == "item.releases.item" and event == 'start_map':
+                            if prefix == "item.releases.item" and event == "start_map":
                                 builder_object = ObjectBuilder()
                                 build_object = True
 
-                            if prefix == "item.releases.item" and event == 'end_map':
+                            if prefix == "item.releases.item" and event == "end_map":
                                 build_object = False
                                 file_objects.append(builder_object.value)
 
-                            if prefix == "item" and event == 'end_map':
+                            if prefix == "item" and event == "end_map":
                                 build_package = False
                                 package_data_object = builder_package.value
 
@@ -122,7 +124,6 @@ class Command(BaseWorker):
                                 collection_file_item = CollectionFileItem()
                                 collection_file_item.collection_file = upgraded_collection_file
                                 collection_file_item.number = counter
-                                counter += 1
                                 collection_file_item.save()
 
                                 item_hash = get_hash(str(item))
@@ -136,7 +137,7 @@ class Command(BaseWorker):
                                     data.save()
 
                                 release = Release()
-                                release.collection = collection_file.collection
+                                release.collection = upgraded_collection_file.collection
                                 release.collection_file_item = collection_file_item
                                 release.data = data
                                 release.package_data = package_data
@@ -160,6 +161,5 @@ class Command(BaseWorker):
             # confirm message processing
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
-            self.exception(
-                "Something went wrong when processing {}".format(body))
+            self.exception("Something went wrong when processing {}".format(body))
             sys.exit()

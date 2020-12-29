@@ -33,7 +33,7 @@ class Command(BaseWorker):
             ocid = input_message["ocid"]
             collection_id = input_message["collection_id"]
 
-            with transaction.atomic:
+            with transaction.atomic():
                 self.info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_release(collection_id, ocid)
 
