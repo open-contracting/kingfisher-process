@@ -22,6 +22,8 @@ def compile_release(collection_id, ocid):
 
     :raises TypeError: if there arent integers provided on input
     :raises ValueError: if there are no items of such id (collections/ocid)
+    :raises ValueError: if the compiled release already exists
+    :raises ValueError: if there are no releases to compile in the source/parent collection
     """
 
     # validate input
