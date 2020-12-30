@@ -51,6 +51,7 @@ class Collection(models.Model):
                 fields=["source_id", "data_version", "sample"],
                 condition=Q(transform_type=""),
             ),
+            models.UniqueConstraint(name="unique_upgraded_compiled_collection", fields=["parent", "transform_type"]),
         ]
 
     class Transforms(models.TextChoices):

@@ -76,15 +76,3 @@ class Command(BaseWorker):
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
             sys.exit()
-
-    def proceed(self, collection):
-        if "compile" in collection.steps and collection.store_end_at is not None:
-            collection_file_step_count = (
-                CollectionFileStep.objects.filter(collection_file__collection=collection)
-                .filter(name="file_checker")
-                .count()
-            )
-            if collection_file_step_count == 0:
-                return True
-
-        return False

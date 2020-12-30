@@ -1,11 +1,12 @@
 from django.db import transaction
 from django.test import TransactionTestCase
 
+from process.exceptions import AlreadyExists
 from process.models import CompiledRelease
 from process.processors.compiler import compile_release
 
 
-class CompilerTests(TransactionTestCase):
+class CompileReleaseTests(TransactionTestCase):
     fixtures = ["process/tests/fixtures/complete_db.json"]
 
     def test_malformed_input(self):
@@ -27,7 +28,7 @@ class CompilerTests(TransactionTestCase):
         self.assertEqual(str(e.exception), "No releases with ocid sdf found in parent collection.")
 
     def test_already_compiled(self):
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(AlreadyExists) as e:
             compile_release(2, "ocds-px0z7d-17998-18005-1")
         self.assertEqual(
             str(e.exception),

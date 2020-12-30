@@ -1,7 +1,9 @@
 import logging
 
+from django.db.utils import IntegrityError
 from ocdsmerge import Merger
 
+from process.exceptions import AlreadyExists
 from process.models import Collection, CollectionFile, CollectionFileItem, CompiledRelease, Data, Release
 from process.util import get_hash
 
@@ -48,7 +50,9 @@ def compile_release(collection_id, ocid):
         compiled_release = CompiledRelease.objects.filter(ocid__exact=ocid).get(
             collection_file_item__collection_file__collection=collection
         )
-        raise ValueError("CompiledRelease {} for a collection {} already exists".format(compiled_release, collection))
+        raise AlreadyExists(
+            "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
+        )
     except CompiledRelease.DoesNotExist:
         # happy day - compiled release should not exist
         logger.debug("compiled_release with ocid {} does not exist, we can compile that and store it".format(ocid))
@@ -114,3 +118,58 @@ def compile_release(collection_id, ocid):
     logger.debug("Stored compiled release {}".format(release))
 
     return release
+
+
+def create_compiled_collection(parent_collection_id):
+    """
+    Creates compiled collection transformed from parent/source collection identified by parent_collection_id.
+
+    :param int parent_collection_id: collection id - new compiled collection will be created based on this collection
+
+    :returns: id of newly created collection
+
+    :raises ValueError: if there is no collection with parent_collection_id or
+    :raises ValueError: if the parent collection shouldn't be compiled (no compile in steps)
+    :raises AlreadyExists: if the compiled collection was already created
+    """
+
+    # validate input
+    if not isinstance(parent_collection_id, int):
+        raise TypeError("parent_collection_id is not an int value")
+
+    try:
+        parent_collection = Collection.objects.filter(id=parent_collection_id).get(steps__contains="compile")
+
+        try:
+            # create collection
+            compiled_collection = Collection()
+            compiled_collection.parent = parent_collection
+            compiled_collection.steps = []
+            compiled_collection.source_id = parent_collection.source_id
+            compiled_collection.data_version = parent_collection.data_version
+            compiled_collection.sample = parent_collection.sample
+            compiled_collection.expected_files_count = parent_collection.expected_files_count
+            compiled_collection.transform_type = Collection.Transforms.COMPILE_RELEASES
+            compiled_collection.cached_releases_count = parent_collection.cached_releases_count
+            compiled_collection.cached_records_count = parent_collection.cached_records_count
+            compiled_collection.cached_compiled_releases_count = parent_collection.cached_compiled_releases_count
+            compiled_collection.store_start_at = parent_collection.store_start_at
+            compiled_collection.store_end_at = parent_collection.store_end_at
+            compiled_collection.deleted_at = parent_collection.deleted_at
+            compiled_collection.save()
+
+            return compiled_collection
+        except IntegrityError:
+            logger.warning(
+                "Compiled collection already created for parent_collection_id {}".format(parent_collection_id)
+            )
+
+            raise AlreadyExists(
+                "Compiled collection already created for parent_collection_id {}".format(parent_collection_id)
+            )
+
+    except Collection.DoesNotExist:
+        logger.warning("Parent collection (with steps including compile) id {} not found".format(parent_collection_id))
+        raise ValueError(
+            "Parent collection (with steps including compile) id {} not found".format(parent_collection_id)
+        )
