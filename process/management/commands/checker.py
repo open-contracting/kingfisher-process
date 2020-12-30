@@ -2,10 +2,10 @@ import json
 import sys
 
 from django.db import transaction
-from libcoveocds.api import ocds_json_output
 
+from process.exceptions import AlreadyExists
 from process.management.commands.base.worker import BaseWorker
-from process.models import CollectionFile, Release, ReleaseCheck
+from process.processors.checker import check_releases
 
 
 class Command(BaseWorker):
@@ -24,38 +24,15 @@ class Command(BaseWorker):
 
             self.debug("Received message {}".format(input_message))
 
-            with transaction.atomic():
-                try:
-                    collection_file = CollectionFile.objects.get(pk=input_message["collection_file_id"])
-                    releases = Release.objects.filter(collection_file_item__collection_file=collection_file)
+            collection_file_id = input_message["collection_file_id"]
+            try:
+                with transaction.atomic():
+                    check_releases(collection_file_id)
+            except AlreadyExists:
+                self.exception("Checks already calculated for collection file id {}".format(collection_file_id))
 
-                    for release in releases:
-                        self.debug("Checking release {}".format(release))
-                        check_result = ocds_json_output(
-                            "",
-                            "",
-                            schema_version="1.0",
-                            convert=False,
-                            cache_schema=True,
-                            file_type="json",
-                            json_data=release.data.data,
-                        )
-
-                        # eliminate nonrequired check results
-                        check_result.pop("releases_aggregates", None)
-                        check_result.pop("records_aggregates", None)
-
-                        releaseCheck = ReleaseCheck()
-                        releaseCheck.cove_output = check_result
-                        releaseCheck.release = release
-                        releaseCheck.save()
-
-                    # confirm message processing
-                    channel.basic_ack(delivery_tag=method.delivery_tag)
-                except CollectionFile.DoesNotExist:
-                    self.warning("Collection file {} not found.".format(input_message["collection_file_id"]))
-                    channel.basic_ack(delivery_tag=method.delivery_tag)
-
+            self.info("Checks calculated for collection file {}".format(collection_file_id))
+            channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
             sys.exit()
