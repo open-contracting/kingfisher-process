@@ -4,7 +4,15 @@ from django.db.utils import IntegrityError
 from ocdsmerge import Merger
 
 from process.exceptions import AlreadyExists
-from process.models import Collection, CollectionFile, CollectionFileItem, CompiledRelease, Data, Release
+from process.models import (
+    Collection,
+    CollectionFile,
+    CollectionFileItem,
+    CollectionFileStep,
+    CompiledRelease,
+    Data,
+    Release,
+)
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -127,6 +135,7 @@ def create_compiled_collection(parent_collection_id):
     :param int parent_collection_id: collection id - new compiled collection will be created based on this collection
 
     :returns: id of newly created collection
+    :rtype: int
 
     :raises ValueError: if there is no collection with parent_collection_id or
     :raises ValueError: if the parent collection shouldn't be compiled (no compile in steps)
@@ -173,3 +182,58 @@ def create_compiled_collection(parent_collection_id):
         raise ValueError(
             "Parent collection (with steps including compile) id {} not found".format(parent_collection_id)
         )
+
+
+def compilable(collection_id):
+    """
+    Checks whether the collection
+        * should be compiled (compile in steps)
+        * could be compiled (load complete)
+        * already wasn't compiled
+
+    :param int collection_id: collection id - new compiled collection will be created based on this collection
+
+    :returns: true if the collection can be created
+    :rtype: bool
+
+    :raises ValueError: if there is no collection with such collection_id or
+    """
+
+    # validate input
+    if not isinstance(collection_id, int):
+        raise TypeError("collection_id is not an int value")
+
+    try:
+        collection = Collection.objects.filter(id=collection_id).get(steps__contains="compile")
+
+        if collection.store_end_at is not None:
+            collection_file_step_count = (
+                CollectionFileStep.objects.filter(collection_file__collection=collection)
+                .filter(name="file_worker")
+                .count()
+            )
+
+            if collection_file_step_count == 0:
+                # all OK with the parent, but wasnt it compiled already?
+                try:
+                    compiled_collection = Collection.objects.filter(parent=collection).get(
+                        parent__steps__contains="compile"
+                    )
+                    logger.debug("Collection {} already compiled as {}".format(collection, compiled_collection))
+                    return False
+                except Collection.DoesNotExist:
+                    return True
+            else:
+                logger.debug(
+                    "Load not finished yet for collection {} - remaining {} steps.".format(
+                        collection, collection_file_step_count
+                    )
+                )
+                return False
+        else:
+            logger.debug("Collection {} not completely stored yet.".format(collection))
+            return False
+
+    except Collection.DoesNotExist:
+        logger.warning("Collection (with steps including compile) id {} not found".format(collection_id))
+        raise ValueError("Collection (with steps including compile) id {} not found".format(collection_id))

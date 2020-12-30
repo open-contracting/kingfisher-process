@@ -1,8 +1,12 @@
 import json
 import sys
 
+from django.db import transaction
+
+from process.exceptions import AlreadyExists
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, CollectionFileStep, Release
+from process.models import CollectionFile, Release
+from process.processors.compiler import compilable, create_compiled_collection
 
 
 class Command(BaseWorker):
@@ -28,31 +32,14 @@ class Command(BaseWorker):
 
                 collection = collection_file.collection
 
-                if self.proceed(collection):
+                if compilable(collection.id):
                     try:
-                        compile_collection = Collection.objects.filter(parent=collection).get(
-                            parent__steps__contains="compile"
-                        )
-                    except Collection.DoesNotExist:
-                        # create collection
-                        compile_collection = Collection()
-                        compile_collection.parent = collection
-                        compile_collection.steps = []
-                        compile_collection.source_id = collection.source_id
-                        compile_collection.data_version = collection.data_version
-                        compile_collection.sample = collection.sample
-                        compile_collection.expected_files_count = collection.expected_files_count
-                        compile_collection.transform_type = Collection.Transforms.COMPILE_RELEASES
-                        compile_collection.cached_releases_count = collection.cached_releases_count
-                        compile_collection.cached_records_count = collection.cached_records_count
-                        compile_collection.cached_compiled_releases_count = collection.cached_compiled_releases_count
-                        compile_collection.store_start_at = collection.store_start_at
-                        compile_collection.store_end_at = collection.store_end_at
-                        compile_collection.deleted_at = collection.deleted_at
-                        compile_collection.save()
+                        with transaction.atomic():
+                            create_compiled_collection(collection.id)
 
-                        self.info("Compiling releases")
+                        self.info("Planning release compilation")
 
+                        # get all ocids for collection
                         ocids = (
                             Release.objects.filter(collection_file_item__collection_file__collection=collection)
                             .order_by()
@@ -61,16 +48,23 @@ class Command(BaseWorker):
                         )
 
                         for item in ocids:
-                            # send message for a next phase
+                            # send message to a next phase
                             message = {
                                 "ocid": item["ocid"],
                                 "collection_id": collection.pk,
                             }
                             self.publish(json.dumps(message))
 
-                # confirm message processing
+                    except AlreadyExists:
+                        self.warning(
+                            """
+                            Tried to create already existing compiled collection. This can happen in
+                            evironments with multiple compilers running."""
+                        )
+                else:
+                    self.debug("Collection {} is not compilable.".format(collection))
             except CollectionFile.DoesNotExist:
-                self.warning("Collection file {} not found".format(input_message["collection_file_id"]))
+                self.error("Collection file {} not found".format(input_message["collection_file_id"]))
 
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
