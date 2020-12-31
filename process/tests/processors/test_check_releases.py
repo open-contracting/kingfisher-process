@@ -23,5 +23,8 @@ class CheckReleasesTests(TransactionTestCase):
             check_releases(2)
 
     def test_happy_day(self):
+        count = ReleaseCheck.objects.filter(release__collection_file_item__collection_file=1).count()
         ReleaseCheck.objects.filter(release__collection_file_item__collection_file=1).delete()
         check_releases(1)
+
+        self.assertEqual(count, 100)

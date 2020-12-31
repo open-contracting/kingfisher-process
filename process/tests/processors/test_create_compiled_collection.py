@@ -35,3 +35,5 @@ class CreatedCompiledCollectionTests(TransactionTestCase):
         collection = create_compiled_collection(2)
 
         self.assertEqual(collection.parent.id, 2)
+        self.assertTrue("compile" in collection.parent.steps)
+        self.assertTrue("compile-releases" == collection.transform_type)
