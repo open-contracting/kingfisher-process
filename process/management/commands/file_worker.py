@@ -1,15 +1,11 @@
 import json
 import sys
 
-import ijson
 from django.db import transaction
-from ijson.common import ObjectBuilder
-from ocdskit.exceptions import UnknownFormatError
-from ocdskit.upgrade import upgrade_10_11
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Release
-from process.util import get_hash, json_dumps
+from process.processors.file_loader import process_file
+from process.util import json_dumps
 
 
 class Command(BaseWorker):
@@ -27,136 +23,20 @@ class Command(BaseWorker):
             input_message = json.loads(body.decode("utf8"))
             self.debug("Received message {}".format(input_message))
 
-            collection_file = CollectionFile.objects.prefetch_related("collection").get(
-                pk=input_message["collection_file_id"]
-            )
+            collection_file_id = input_message["collection_file_id"]
 
-            collection = collection_file.collection
+            upgraded_collection_file_id = None
+            with transaction.atomic():
+                upgraded_collection_file_id = process_file(collection_file_id)
 
-            try:
-                upgraded_collection = Collection.objects.filter(
-                    transform_type__exact=Collection.Transforms.UPGRADE_10_11
-                ).get(parent=collection)
-            except (Collection.DoesNotExist):
-                upgraded_collection = None
+                self.deleteStep(collection_file_id)
 
-            if upgraded_collection:
-                upgraded_collection_file = CollectionFile()
-                upgraded_collection_file.collection = upgraded_collection
-                upgraded_collection_file.filename = collection_file.filename
-                upgraded_collection_file.url = collection_file.url
-                upgraded_collection_file.save()
+            self.publish(json.dumps(input_message))
 
-            try:
-                with transaction.atomic():
-                    with open(collection_file.filename, "rb") as f:
-                        file_objects = []
-                        package_data_object = None
-                        builder_object = ObjectBuilder()
-                        builder_package = ObjectBuilder()
-
-                        build_object = False
-                        build_package = False
-                        for prefix, event, value in ijson.parse(f):
-                            if prefix == "item" and event == "start_map":
-                                builder_package = ObjectBuilder()
-                                build_package = True
-
-                            if prefix == "item.releases.item" and event == "start_map":
-                                builder_object = ObjectBuilder()
-                                build_object = True
-
-                            if prefix == "item.releases.item" and event == "end_map":
-                                build_object = False
-                                file_objects.append(builder_object.value)
-
-                            if prefix == "item" and event == "end_map":
-                                build_package = False
-                                package_data_object = builder_package.value
-
-                            if build_object:
-                                builder_object.event(event, value)
-
-                            if build_package:
-                                if not prefix.startswith("item.releases"):
-                                    builder_package.event(event, value)
-
-                        package_hash = get_hash(str(package_data_object))
-                        try:
-                            package_data = PackageData.objects.get(hash_md5=package_hash)
-                        except (PackageData.DoesNotExist, PackageData.MultipleObjectsReturned):
-                            package_data = PackageData()
-                            package_data.data = package_data_object
-                            package_data.hash_md5 = package_hash
-                            package_data.save()
-
-                        counter = 0
-                        for item in file_objects:
-
-                            collection_file_item = CollectionFileItem()
-                            collection_file_item.collection_file = collection_file
-                            collection_file_item.number = counter
-                            counter += 1
-                            collection_file_item.save()
-
-                            item_hash = get_hash(str(item))
-
-                            try:
-                                data = Data.objects.get(hash_md5=item_hash)
-                            except (Data.DoesNotExist, Data.MultipleObjectsReturned):
-                                data = Data()
-                                data.data = item
-                                data.hash_md5 = item_hash
-                                data.save()
-
-                            release = Release()
-                            release.collection = collection_file.collection
-                            release.collection_file_item = collection_file_item
-                            release.data = data
-                            release.package_data = package_data
-                            release.release_id = item["id"]
-                            release.ocid = item["ocid"]
-                            release.save()
-
-                            if upgraded_collection:
-                                item = upgrade_10_11(item)
-
-                                collection_file_item = CollectionFileItem()
-                                collection_file_item.collection_file = upgraded_collection_file
-                                collection_file_item.number = counter
-                                collection_file_item.save()
-
-                                item_hash = get_hash(str(item))
-
-                                try:
-                                    data = Data.objects.get(hash_md5=item_hash)
-                                except (Data.DoesNotExist, Data.MultipleObjectsReturned):
-                                    data = Data()
-                                    data.data = item
-                                    data.hash_md5 = item_hash
-                                    data.save()
-
-                                release = Release()
-                                release.collection = upgraded_collection_file.collection
-                                release.collection_file_item = collection_file_item
-                                release.data = data
-                                release.package_data = package_data
-                                release.release_id = item["id"]
-                                release.ocid = item["ocid"]
-                                release.save()
-
-                    self.deleteStep(collection_file)
-
-                self.publish(json.dumps(input_message))
-
-                if upgraded_collection:
-                    message = {"collection_file_id": upgraded_collection_file.id}
-                    self.publish(json_dumps(message))
-            except UnknownFormatError as e:
-                self.exception("Uknown format for collection file id {}".format(collection_file.id))
-                # save error
-                collection_file.errors = {"exception": e}
-                collection_file.save()
+            # send upgraded collection file to further processing
+            if upgraded_collection_file_id:
+                message = {"collection_file_id": upgraded_collection_file_id}
+                self.publish(json_dumps(message))
 
             # confirm message processing
             channel.basic_ack(delivery_tag=method.delivery_tag)
