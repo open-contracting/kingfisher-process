@@ -3,7 +3,6 @@ import logging
 import ijson
 from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
-from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
 
 from process.exceptions import AlreadyExists
