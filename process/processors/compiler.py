@@ -134,7 +134,7 @@ def create_compiled_collection(parent_collection_id):
 
     :param int parent_collection_id: collection id - new compiled collection will be created based on this collection
 
-    :returns: id of newly created collection
+    :returns: created collection
     :rtype: int
 
     :raises ValueError: if there is no collection with parent_collection_id or
