@@ -10,6 +10,7 @@ from django.db.utils import IntegrityError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
+from process.forms import CollectionFileForm
 from process.management.commands.base.worker import BaseWorker
 from process.models import Collection, CollectionFileStep
 from process.processors.loader import create_master_collection

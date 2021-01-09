@@ -1,4 +1,3 @@
-from django.db.utils import IntegrityError
 from django.test import TransactionTestCase
 
 from process.models import Collection
