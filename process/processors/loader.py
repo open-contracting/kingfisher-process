@@ -1,26 +1,44 @@
 import logging
 
-from django.db.utils import IntegrityError
+from django.conf import settings
 
-from process.forms import CollectionForm, CollectionNoteForm
-from process.models import Collection
+from process.forms import CollectionFileForm, CollectionForm, CollectionNoteForm
+from process.models import Collection, CollectionFileStep
 
 # Get an instance of a logger
 logger = logging.getLogger("processor.loader")
+
+
+def create_collection_file(collection, file_path):
+    form = CollectionFileForm(dict(collection=collection, filename=file_path))
+
+    if form.is_valid():
+        collection_file = form.save()
+        for step in settings.DEFAULT_STEPS:
+            collection_file_step = CollectionFileStep()
+            collection_file_step.collection_file = collection_file
+            collection_file_step.name = step
+            collection_file_step.save()
+    else:
+        raise ValueError(form.error_messages)
 
 
 def create_master_collection(source_id, data_version, note=None, upgrade=False, compile=False, sample=False):
     """
     Creates master collection, note, upgraded collection etc. based on provided data
 
-    :param int parent_collection_id: collection id - new compiled collection will be created based on this collection
+    :param str source_id: collection source
+    :param str data_version: data version in ISO format
+    :param str note: text description
+    :param boolean upgrade: whether to plan collection upgrade
+    :param boolean compile: whether to plan collection compile
+    :param boolean sample: is this sample only
 
     :returns: id of newly created collection
     :rtype: int
 
-    :raises ValueError: if there is no collection with parent_collection_id or
-    :raises ValueError: if the parent collection shouldn't be compiled (no compile in steps)
-    :raises AlreadyExists: if the compiled collection was already created
+    :raises ValueError: if there is validation error
+    :raises IntegrityError: if such colleciton already exists
     """
     data = {"source_id": source_id, "data_version": data_version, "sample": sample}
 
@@ -33,7 +51,7 @@ def create_master_collection(source_id, data_version, note=None, upgrade=False, 
         collection = collection_form.save()
 
         if note:
-            __save_note(collection, note)
+            _save_note(collection, note)
 
         upgraded_collection = None
         if upgrade:
@@ -49,7 +67,7 @@ def create_master_collection(source_id, data_version, note=None, upgrade=False, 
             if upgrade_collection_form.is_valid():
                 upgraded_collection = upgrade_collection_form.save()
                 if note:
-                    __save_note(upgraded_collection, note)
+                    _save_note(upgraded_collection, note)
             else:
                 raise ValueError(upgrade_collection_form.error_messages)
 
@@ -58,7 +76,7 @@ def create_master_collection(source_id, data_version, note=None, upgrade=False, 
         raise ValueError(collection_form.error_messages)
 
 
-def __save_note(collection, note):
+def _save_note(collection, note):
     """
     Creates note for a given collection
     """

@@ -1,3 +1,4 @@
+from django.db.utils import IntegrityError
 from django.test import TransactionTestCase
 
 from process.models import Collection, CollectionNote
@@ -16,6 +17,13 @@ class CreatedCompiledCollectionTests(TransactionTestCase):
             str(e.exception),
             "data_version 'wrong_data_version' is not in ISO format or is an invalid date/time",
         )
+
+    def test_integrity_error(self):
+        with self.assertRaises(IntegrityError) as e:
+            create_master_collection(
+                "portugal-releases", "2020-12-29 09:22:08", "testing note", upgrade=False, compile=False, sample=False
+            )
+        self.assertTrue(str(e.exception).startswith("duplicate key value violates unique constraint "))
 
     def test_happy_day(self):
         collection, upgraded_collection = create_master_collection(

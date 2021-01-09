@@ -40,17 +40,17 @@ def process_file(collection_file_id):
         collection_file = CollectionFile.objects.prefetch_related("collection").get(pk=collection_file_id)
 
         try:
-            file_items, file_package_data = __read_data_from_file(collection_file.filename)
+            file_items, file_package_data = _read_data_from_file(collection_file.filename)
         except FileNotFoundError as e:
             raise ValueError("File '{}' not found".format(collection_file.filename)) from e
 
-        __store_data(collection_file, file_items, file_package_data, False)
+        _store_data(collection_file, file_items, file_package_data, False)
 
         upgraded_collection = get_upgraded_collection(collection_file)
 
         if upgraded_collection:
-            upgraded_collection_file = __create_upgraded_collection_file(collection_file, upgraded_collection)
-            __store_data(upgraded_collection_file, file_items, file_package_data, True)
+            upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
+            _store_data(upgraded_collection_file, file_items, file_package_data, True)
 
             return upgraded_collection_file.id
 
@@ -61,7 +61,7 @@ def process_file(collection_file_id):
         raise AlreadyExists("Item already exists".format(collection_file_id)) from e
 
 
-def __read_data_from_file(filename):
+def _read_data_from_file(filename):
     with open(filename, "rb") as f:
         file_items = []
         package_data_object = None
@@ -97,7 +97,7 @@ def __read_data_from_file(filename):
     return file_items, package_data_object
 
 
-def __store_data(collection_file, file_items, file_package_data, upgrade=False):
+def _store_data(collection_file, file_items, file_package_data, upgrade=False):
     # store package data
     package_hash = get_hash(str(file_package_data))
     try:
@@ -173,7 +173,7 @@ def get_upgraded_collection(collection_file):
     return upgraded_collection
 
 
-def __create_upgraded_collection_file(collection_file, upgraded_collection):
+def _create_upgraded_collection_file(collection_file, upgraded_collection):
     """
     Simple helper responsible for "copying" existing collection file to an upgraded_collection.collection_file.
     """
