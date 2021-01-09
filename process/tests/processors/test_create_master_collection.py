@@ -5,7 +5,7 @@ from process.models import Collection, CollectionNote
 from process.processors.loader import create_master_collection
 
 
-class CreatedCompiledCollectionTests(TransactionTestCase):
+class CreateMasterCollectionTests(TransactionTestCase):
     fixtures = ["process/tests/fixtures/complete_db.json"]
 
     def test_malformed_input(self):

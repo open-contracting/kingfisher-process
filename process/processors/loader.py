@@ -10,15 +10,30 @@ logger = logging.getLogger("processor.loader")
 
 
 def create_collection_file(collection, file_path):
+    """
+    Creates file for a collection and steps for this file.
+
+    :param Collection collection: collection
+    :param str file_path:
+
+    :returns: created collection file
+    :rtype: CollectionFile
+
+    :raises ValueError: if there is a validation error
+    """
     form = CollectionFileForm(dict(collection=collection, filename=file_path))
 
     if form.is_valid():
         collection_file = form.save()
+        logger.debug("Created colleciton file {}".format(collection_file))
         for step in settings.DEFAULT_STEPS:
             collection_file_step = CollectionFileStep()
             collection_file_step.collection_file = collection_file
             collection_file_step.name = step
             collection_file_step.save()
+            logger.debug("Created colleciton file step {}".format(collection_file_step))
+
+        return collection_file
     else:
         raise ValueError(form.error_messages)
 
@@ -37,7 +52,7 @@ def create_master_collection(source_id, data_version, note=None, upgrade=False, 
     :returns: id of newly created collection
     :rtype: int
 
-    :raises ValueError: if there is validation error
+    :raises ValueError: if there is a validation error
     :raises IntegrityError: if such colleciton already exists
     """
     data = {"source_id": source_id, "data_version": data_version, "sample": sample}
