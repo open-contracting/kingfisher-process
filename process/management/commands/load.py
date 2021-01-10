@@ -77,6 +77,9 @@ class Command(BaseWorker):
         )
         parser.add_argument("-u", "--upgrade", help=_("upgrade collection to latest version"), action="store_true")
         parser.add_argument("-c", "--compile", help=_("compile collection"), action="store_true")
+        parser.add_argument(
+            "-k", "--keep-open", help=_("keep collection open for future file additions"), action="store_true"
+        )
 
     def handle(self, *args, **options):
         if not options["source"]:
@@ -150,11 +153,12 @@ class Command(BaseWorker):
 
             self.publish(json_dumps(message))
 
-        collection.store_end_at = Now()
-        collection.save()
+        if not options["keep_open"]:
+            collection.store_end_at = Now()
+            collection.save()
 
-        if upgraded_collection:
-            upgraded_collection.store_end_at = Now()
-            upgraded_collection.save()
+            if upgraded_collection:
+                upgraded_collection.store_end_at = Now()
+                upgraded_collection.save()
 
         self.info("Load command completed")

@@ -235,5 +235,5 @@ def compilable(collection_id):
             return False
 
     except Collection.DoesNotExist:
-        logger.warning("Collection (with steps including compile) id {} not found".format(collection_id))
-        raise ValueError("Collection (with steps including compile) id {} not found".format(collection_id))
+        logger.info("Collection (with steps including compile) id {} not found".format(collection_id))
+        return False

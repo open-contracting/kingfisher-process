@@ -14,9 +14,7 @@ class CompilableTests(TransactionTestCase):
         self.assertEqual(str(e.exception), "collection_id is not an int value")
 
     def test_nonexistent_input(self):
-        with self.assertRaises(ValueError) as e:
-            compilable(5)
-        self.assertEqual(str(e.exception), "Collection (with steps including compile) id 5 not found")
+        self.assertEqual(compilable(5), False)
 
     def test_already_compiled(self):
         self.assertEqual(compilable(2), False)
