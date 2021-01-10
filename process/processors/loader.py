@@ -38,7 +38,9 @@ def create_collection_file(collection, file_path):
         raise ValueError(form.error_messages)
 
 
-def create_master_collection(source_id, data_version, note=None, upgrade=False, compile=False, sample=False):
+def create_master_collection(
+    source_id, data_version, note=None, upgrade=False, compile=False, sample=False, force=False
+):
     """
     Creates master collection, note, upgraded collection etc. based on provided data
 
@@ -53,9 +55,10 @@ def create_master_collection(source_id, data_version, note=None, upgrade=False, 
     :rtype: int
 
     :raises ValueError: if there is a validation error
+    :raises ValueError: if there is a validation error
     :raises IntegrityError: if such colleciton already exists
     """
-    data = {"source_id": source_id, "data_version": data_version, "sample": sample}
+    data = {"source_id": source_id, "data_version": data_version, "sample": sample, "force": force}
 
     if upgrade:
         data["steps"] = ["upgrade"]

@@ -56,12 +56,12 @@ class CollectionForm(KingfisherForm):
                         "%(value)r is not a spider in the %(project)s project of Scrapyd. Did you mean: " "%(match)s"
                     )
                 else:
-                    message = _("%(value)r is not a spider in the %(project)s project of Scrapyd")
+                    message = _("%(value)r is not a spider in the %(project)s project of Scrapyd (can be forced)")
                 self.add_error("source_id", ValidationError(message, params=params, code="invalid_choice"))
 
     def error_message_formatter(self, field, error):
         if field == "data_version" and error.code == "invalid":
-            return _("%(field)s %(value)r is not in ISO format or is an invalid date/time") % {
+            return _('%(field)s %(value)r is not in "YYYY-MM-DD HH:MM:SS" format or is an invalid date/time') % {
                 "field": field,
                 "value": self[field].data,
             }

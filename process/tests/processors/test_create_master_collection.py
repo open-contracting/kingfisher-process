@@ -15,7 +15,7 @@ class CreateMasterCollectionTests(TransactionTestCase):
             )
         self.assertEqual(
             str(e.exception),
-            "data_version 'wrong_data_version' is not in ISO format or is an invalid date/time",
+            "data_version 'wrong_data_version' is not in \"YYYY-MM-DD HH:MM:SS\" format or is an invalid date/time",
         )
 
     def test_integrity_error(self):
