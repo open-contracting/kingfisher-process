@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as t
 
 from process.models import CollectionFileStep
+from process.util import get_env_id, get_rabbit_channel
 
 
 class BaseWorker(BaseCommand):
@@ -28,7 +29,7 @@ class BaseWorker(BaseCommand):
 
     def __init__(self, name, *args, **kwargs):
         self.logger_instance = logging.getLogger("worker.{}".format(name))
-        self.env_id = "{}_{}".format(settings.ENV_NAME, settings.ENV_VERSION)
+        self.env_id = get_env_id()
         if settings.RABBITMQ:
             self.initMessaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
@@ -53,29 +54,13 @@ class BaseWorker(BaseCommand):
             # undefined consume keys
             self.debug("No or improper defined consume keys, starting without listening to messages.")
 
-        # build publis key
+        # build publish key
         self.rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
 
         # build exchange name
         self.rabbit_exchange = "kingfisher_process_{}".format(self.env_id)
 
-        # connect to messaging
-        credentials = pika.PlainCredentials(settings.RABBITMQ["username"], settings.RABBITMQ["password"])
-
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=settings.RABBITMQ["host"],
-                port=settings.RABBITMQ["port"],
-                credentials=credentials,
-                blocked_connection_timeout=1800,
-                heartbeat=0,
-            )
-        )
-        self.rabbit_channel = connection.channel()
-
-        # declare durable exchange
-        self.rabbit_channel.exchange_declare(exchange=self.rabbit_exchange, durable="true", exchange_type="direct")
-        self.debug("Declared exchange {}".format(self.rabbit_exchange))
+        self.rabbit_channel = get_rabbit_channel(self.rabbit_exchange)
 
         self.info("RabbitMQ connection established")
 

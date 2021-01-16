@@ -9,293 +9,382 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Collection',
+            name="Collection",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('source_id', models.TextField(help_text='If sourced from Scrapy, this should be the name of the spider.')),
-                ('data_version', models.DateTimeField(help_text='The time at which the data was collected (not loaded).')),
-                ('store_start_at', models.DateTimeField(auto_now_add=True)),
-                ('store_end_at', models.DateTimeField(blank=True, null=True)),
-                ('sample', models.BooleanField(default=False)),
-                ('check_data', models.BooleanField(default=False)),
-                ('check_older_data_with_schema_version_1_1', models.BooleanField(default=False)),
-                ('transform_type', models.TextField(blank=True, choices=[('compile-releases', 'Compile releases'), ('upgrade-1-0-to-1-1', 'Upgrade from 1.0 to 1.1 ')])),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('cached_releases_count', models.IntegerField(blank=True, null=True)),
-                ('cached_records_count', models.IntegerField(blank=True, null=True)),
-                ('cached_compiled_releases_count', models.IntegerField(blank=True, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "source_id",
+                    models.TextField(help_text="If sourced from Scrapy, this should be the name of the spider."),
+                ),
+                (
+                    "data_version",
+                    models.DateTimeField(help_text="The time at which the data was collected (not loaded)."),
+                ),
+                ("store_start_at", models.DateTimeField(auto_now_add=True)),
+                ("store_end_at", models.DateTimeField(blank=True, null=True)),
+                ("sample", models.BooleanField(default=False)),
+                ("check_data", models.BooleanField(default=False)),
+                ("check_older_data_with_schema_version_1_1", models.BooleanField(default=False)),
+                (
+                    "transform_type",
+                    models.TextField(
+                        blank=True,
+                        choices=[
+                            ("compile-releases", "Compile releases"),
+                            ("upgrade-1-0-to-1-1", "Upgrade from 1.0 to 1.1 "),
+                        ],
+                    ),
+                ),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("cached_releases_count", models.IntegerField(blank=True, null=True)),
+                ("cached_records_count", models.IntegerField(blank=True, null=True)),
+                ("cached_compiled_releases_count", models.IntegerField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'collection',
+                "db_table": "collection",
             },
         ),
         migrations.CreateModel(
-            name='CollectionFile',
+            name="CollectionFile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('filename', models.TextField(blank=True)),
-                ('warnings', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
-                ('url', models.TextField(blank=True)),
-                ('errors', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("filename", models.TextField(blank=True)),
+                ("warnings", django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ("url", models.TextField(blank=True)),
+                ("errors", django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'collection_file',
+                "db_table": "collection_file",
             },
         ),
         migrations.CreateModel(
-            name='CollectionFileItem',
+            name="CollectionFileItem",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('number', models.IntegerField(blank=True)),
-                ('warnings', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
-                ('errors', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("number", models.IntegerField(blank=True)),
+                ("warnings", django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ("errors", django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'collection_file_item',
+                "db_table": "collection_file_item",
             },
         ),
         migrations.CreateModel(
-            name='CollectionNote',
+            name="CollectionNote",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', models.TextField()),
-                ('stored_at', models.DateTimeField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("note", models.TextField()),
+                ("stored_at", models.DateTimeField()),
             ],
             options={
-                'db_table': 'collection_note',
+                "db_table": "collection_note",
             },
         ),
         migrations.CreateModel(
-            name='CompiledRelease',
+            name="CompiledRelease",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ocid', models.TextField(blank=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("ocid", models.TextField(blank=True)),
             ],
             options={
-                'db_table': 'compiled_release',
+                "db_table": "compiled_release",
             },
         ),
         migrations.CreateModel(
-            name='Data',
+            name="Data",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hash_md5', models.TextField()),
-                ('data', django.contrib.postgres.fields.jsonb.JSONField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("hash_md5", models.TextField()),
+                ("data", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'db_table': 'data',
+                "db_table": "data",
             },
         ),
         migrations.CreateModel(
-            name='PackageData',
+            name="PackageData",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hash_md5', models.TextField()),
-                ('data', django.contrib.postgres.fields.jsonb.JSONField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("hash_md5", models.TextField()),
+                ("data", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'db_table': 'package_data',
+                "db_table": "package_data",
             },
         ),
         migrations.CreateModel(
-            name='Record',
+            name="Record",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ocid', models.TextField(blank=True)),
-                ('collection', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection')),
-                ('collection_file_item', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFileItem')),
-                ('data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Data')),
-                ('package_data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.PackageData')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("ocid", models.TextField(blank=True)),
+                (
+                    "collection",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"
+                    ),
+                ),
+                (
+                    "collection_file_item",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFileItem"
+                    ),
+                ),
+                (
+                    "data",
+                    models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Data"),
+                ),
+                (
+                    "package_data",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.PackageData"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'record',
+                "db_table": "record",
             },
         ),
         migrations.CreateModel(
-            name='Release',
+            name="Release",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('release_id', models.TextField(blank=True)),
-                ('ocid', models.TextField(blank=True)),
-                ('collection', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection')),
-                ('collection_file_item', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFileItem')),
-                ('data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Data')),
-                ('package_data', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.PackageData')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("release_id", models.TextField(blank=True)),
+                ("ocid", models.TextField(blank=True)),
+                (
+                    "collection",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"
+                    ),
+                ),
+                (
+                    "collection_file_item",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFileItem"
+                    ),
+                ),
+                (
+                    "data",
+                    models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Data"),
+                ),
+                (
+                    "package_data",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.PackageData"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'release',
+                "db_table": "release",
             },
         ),
         migrations.CreateModel(
-            name='ReleaseCheck',
+            name="ReleaseCheck",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('override_schema_version', models.TextField(blank=True)),
-                ('cove_output', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('release', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Release')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("override_schema_version", models.TextField(blank=True)),
+                ("cove_output", django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "release",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Release"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'release_check',
+                "db_table": "release_check",
             },
         ),
         migrations.CreateModel(
-            name='RecordCheck',
+            name="RecordCheck",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('override_schema_version', models.TextField(blank=True)),
-                ('cove_output', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('record', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Record')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("override_schema_version", models.TextField(blank=True)),
+                ("cove_output", django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "record",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Record"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'record_check',
+                "db_table": "record_check",
             },
         ),
         migrations.AddConstraint(
-            model_name='packagedata',
-            constraint=models.UniqueConstraint(fields=('hash_md5',), name='unique_package_data_hash_md5'),
+            model_name="packagedata",
+            constraint=models.UniqueConstraint(fields=("hash_md5",), name="unique_package_data_hash_md5"),
         ),
         migrations.AddConstraint(
-            model_name='data',
-            constraint=models.UniqueConstraint(fields=('hash_md5',), name='unique_data_hash_md5'),
+            model_name="data",
+            constraint=models.UniqueConstraint(fields=("hash_md5",), name="unique_data_hash_md5"),
         ),
         migrations.AddField(
-            model_name='compiledrelease',
-            name='collection',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
+            model_name="compiledrelease",
+            name="collection",
+            field=models.ForeignKey(
+                db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"
+            ),
         ),
         migrations.AddField(
-            model_name='compiledrelease',
-            name='collection_file_item',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFileItem'),
+            model_name="compiledrelease",
+            name="collection_file_item",
+            field=models.ForeignKey(
+                db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFileItem"
+            ),
         ),
         migrations.AddField(
-            model_name='compiledrelease',
-            name='data',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Data'),
+            model_name="compiledrelease",
+            name="data",
+            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Data"),
         ),
         migrations.AddField(
-            model_name='collectionnote',
-            name='collection',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
+            model_name="collectionnote",
+            name="collection",
+            field=models.ForeignKey(
+                db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"
+            ),
         ),
         migrations.AddField(
-            model_name='collectionfileitem',
-            name='collection_file',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFile'),
+            model_name="collectionfileitem",
+            name="collection_file",
+            field=models.ForeignKey(
+                db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFile"
+            ),
         ),
         migrations.AddField(
-            model_name='collectionfile',
-            name='collection',
-            field=models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
+            model_name="collectionfile",
+            name="collection",
+            field=models.ForeignKey(
+                db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"
+            ),
         ),
         migrations.AddField(
-            model_name='collection',
-            name='parent',
-            field=models.ForeignKey(blank=True, db_column='transform_from_collection_id', db_index=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
+            model_name="collection",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="transform_from_collection_id",
+                db_index=False,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="process.Collection",
+            ),
         ),
         migrations.AddIndex(
-            model_name='releasecheck',
-            index=models.Index(fields=['release'], name='release_check_release_id_idx'),
+            model_name="releasecheck",
+            index=models.Index(fields=["release"], name="release_check_release_id_idx"),
         ),
         migrations.AddConstraint(
-            model_name='releasecheck',
-            constraint=models.UniqueConstraint(fields=('release', 'override_schema_version'), name='unique_release_check_release_id_and_more'),
+            model_name="releasecheck",
+            constraint=models.UniqueConstraint(
+                fields=("release", "override_schema_version"), name="unique_release_check_release_id_and_more"
+            ),
         ),
         migrations.AddIndex(
-            model_name='release',
-            index=models.Index(fields=['collection_file_item'], name='release_collection_id_idx'),
+            model_name="release",
+            index=models.Index(fields=["collection_file_item"], name="release_collection_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='release',
-            index=models.Index(fields=['collection_file_item'], name='release_collection_file_item_id_idx'),
+            model_name="release",
+            index=models.Index(fields=["collection_file_item"], name="release_collection_file_item_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='release',
-            index=models.Index(fields=['ocid'], name='release_ocid_idx'),
+            model_name="release",
+            index=models.Index(fields=["ocid"], name="release_ocid_idx"),
         ),
         migrations.AddIndex(
-            model_name='release',
-            index=models.Index(fields=['data'], name='release_data_id_idx'),
+            model_name="release",
+            index=models.Index(fields=["data"], name="release_data_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='release',
-            index=models.Index(fields=['package_data'], name='release_package_data_id_idx'),
+            model_name="release",
+            index=models.Index(fields=["package_data"], name="release_package_data_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='recordcheck',
-            index=models.Index(fields=['record'], name='record_check_record_id_idx'),
+            model_name="recordcheck",
+            index=models.Index(fields=["record"], name="record_check_record_id_idx"),
         ),
         migrations.AddConstraint(
-            model_name='recordcheck',
-            constraint=models.UniqueConstraint(fields=('record', 'override_schema_version'), name='unique_record_check_record_id_and_more'),
+            model_name="recordcheck",
+            constraint=models.UniqueConstraint(
+                fields=("record", "override_schema_version"), name="unique_record_check_record_id_and_more"
+            ),
         ),
         migrations.AddIndex(
-            model_name='record',
-            index=models.Index(fields=['collection'], name='record_collection_id_idx'),
+            model_name="record",
+            index=models.Index(fields=["collection"], name="record_collection_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='record',
-            index=models.Index(fields=['collection_file_item'], name='record_collection_file_item_id_idx'),
+            model_name="record",
+            index=models.Index(fields=["collection_file_item"], name="record_collection_file_item_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='record',
-            index=models.Index(fields=['ocid'], name='record_ocid_idx'),
+            model_name="record",
+            index=models.Index(fields=["ocid"], name="record_ocid_idx"),
         ),
         migrations.AddIndex(
-            model_name='record',
-            index=models.Index(fields=['data'], name='record_data_id_idx'),
+            model_name="record",
+            index=models.Index(fields=["data"], name="record_data_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='record',
-            index=models.Index(fields=['package_data'], name='record_package_data_id_idx'),
+            model_name="record",
+            index=models.Index(fields=["package_data"], name="record_package_data_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='compiledrelease',
-            index=models.Index(fields=['collection'], name='compiled_release_collection_id_idx'),
+            model_name="compiledrelease",
+            index=models.Index(fields=["collection"], name="compiled_release_collection_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='compiledrelease',
-            index=models.Index(fields=['collection_file_item'], name='compiled_release_collection_file_item_id_idx'),
+            model_name="compiledrelease",
+            index=models.Index(fields=["collection_file_item"], name="compiled_release_collection_file_item_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='compiledrelease',
-            index=models.Index(fields=['ocid'], name='compiled_release_ocid_idx'),
+            model_name="compiledrelease",
+            index=models.Index(fields=["ocid"], name="compiled_release_ocid_idx"),
         ),
         migrations.AddIndex(
-            model_name='compiledrelease',
-            index=models.Index(fields=['data'], name='compiled_release_data_id_idx'),
+            model_name="compiledrelease",
+            index=models.Index(fields=["data"], name="compiled_release_data_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='collectionnote',
-            index=models.Index(fields=['collection'], name='collection_note_collection_id_idx'),
+            model_name="collectionnote",
+            index=models.Index(fields=["collection"], name="collection_note_collection_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='collectionfileitem',
-            index=models.Index(fields=['collection_file'], name='collection_file_item_collection_file_id_idx'),
+            model_name="collectionfileitem",
+            index=models.Index(fields=["collection_file"], name="collection_file_item_collection_file_id_idx"),
         ),
         migrations.AddConstraint(
-            model_name='collectionfileitem',
-            constraint=models.UniqueConstraint(fields=('collection_file', 'number'), name='unique_collection_file_item_identifiers'),
+            model_name="collectionfileitem",
+            constraint=models.UniqueConstraint(
+                fields=("collection_file", "number"), name="unique_collection_file_item_identifiers"
+            ),
         ),
         migrations.AddIndex(
-            model_name='collectionfile',
-            index=models.Index(fields=['collection'], name='collection_file_collection_id_idx'),
+            model_name="collectionfile",
+            index=models.Index(fields=["collection"], name="collection_file_collection_id_idx"),
         ),
         migrations.AddConstraint(
-            model_name='collectionfile',
-            constraint=models.UniqueConstraint(fields=('collection', 'filename'), name='unique_collection_file_identifiers'),
+            model_name="collectionfile",
+            constraint=models.UniqueConstraint(
+                fields=("collection", "filename"), name="unique_collection_file_identifiers"
+            ),
         ),
         migrations.AddIndex(
-            model_name='collection',
-            index=models.Index(fields=['parent'], name='collection_transform_from_collection_id_idx'),
+            model_name="collection",
+            index=models.Index(fields=["parent"], name="collection_transform_from_collection_id_idx"),
         ),
         migrations.AddConstraint(
-            model_name='collection',
-            constraint=models.UniqueConstraint(condition=models.Q(transform_type=''), fields=('source_id', 'data_version', 'sample'), name='unique_collection_identifiers'),
+            model_name="collection",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(transform_type=""),
+                fields=("source_id", "data_version", "sample"),
+                name="unique_collection_identifiers",
+            ),
         ),
     ]

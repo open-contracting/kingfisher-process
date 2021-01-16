@@ -64,7 +64,7 @@ class Collection(models.Model):
     sample = models.BooleanField(default=False)
 
     # Routing slip
-    steps = JSONField(blank=True, default=dict)
+    steps = JSONField(blank=True, null=True, default=dict)
     options = JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
     # Deprecated
@@ -164,6 +164,34 @@ class Collection(models.Model):
                     params={"source_id": self.parent.pk, "destination_id": qs[0].pk},
                     code="transform_duplicated",
                 )
+
+    def get_upgraded_collection(self):
+        """
+        Returns existing upgraded collection or None.
+
+        :returns: upgraded collection
+        :rtype: Collection
+        """
+        try:
+            return Collection.objects.filter(transform_type__exact=Collection.Transforms.UPGRADE_10_11).get(
+                parent=self
+            )
+        except Collection.DoesNotExist:
+            return None
+
+    def get_compiled_collection(self):
+        """
+        Returns existing compiled collection or None.
+
+        :returns: compiled collection
+        :rtype: Collection
+        """
+        try:
+            return Collection.objects.filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES).get(
+                parent=self
+            )
+        except Collection.DoesNotExist:
+            return None
 
 
 class CollectionNote(models.Model):

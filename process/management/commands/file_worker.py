@@ -12,7 +12,7 @@ class Command(BaseWorker):
 
     worker_name = "file_worker"
 
-    consume_keys = ["loader"]
+    consume_keys = ["loader", "api"]
 
     def __init__(self):
         super().__init__(self.worker_name)

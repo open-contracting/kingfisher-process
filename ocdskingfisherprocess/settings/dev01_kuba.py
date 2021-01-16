@@ -32,6 +32,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
+CORS_ORIGIN_WHITELIST = ["http://localhost:22061"]
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -49,6 +51,8 @@ RABBITMQ = {
     "host": "localhost",
     "port": "29000",
 }
+
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:22061"]
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [

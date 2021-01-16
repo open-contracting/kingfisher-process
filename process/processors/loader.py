@@ -25,13 +25,13 @@ def create_collection_file(collection, file_path):
 
     if form.is_valid():
         collection_file = form.save()
-        logger.debug("Created colleciton file {}".format(collection_file))
+        logger.debug("Create collection file {}".format(collection_file))
         for step in settings.DEFAULT_STEPS:
             collection_file_step = CollectionFileStep()
             collection_file_step.collection_file = collection_file
             collection_file_step.name = step
             collection_file_step.save()
-            logger.debug("Created colleciton file step {}".format(collection_file_step))
+            logger.debug("Created collection file step {}".format(collection_file_step))
 
         return collection_file
     else:
@@ -51,8 +51,8 @@ def create_master_collection(
     :param boolean compile: whether to plan collection compile
     :param boolean sample: is this sample only
 
-    :returns: id of newly created collection
-    :rtype: int
+    :returns: created master collection and potentialy upgraded collection
+    :rtype: Collection, Collection
 
     :raises ValueError: if there is a validation error
     :raises ValueError: if there is a validation error

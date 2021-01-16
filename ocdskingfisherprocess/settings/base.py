@@ -14,67 +14,76 @@ import os
 
 import dj_database_url
 
-production = os.getenv('DJANGO_ENV') == 'production'
+production = os.getenv("DJANGO_ENV") == "production"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+ALLOWED_HOSTS = ["*"]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_URLS_REGEX = r"^/api/.*$"
+
+CORS_EXPOSE_HEADERS = ["Content-Disposition"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', '^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4')
+SECRET_KEY = os.getenv("SECRET_KEY", "^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not production
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-if 'ALLOWED_HOSTS' in os.environ:
-    ALLOWED_HOSTS.extend(os.getenv('ALLOWED_HOSTS').split(','))
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+if "ALLOWED_HOSTS" in os.environ:
+    ALLOWED_HOSTS.extend(os.getenv("ALLOWED_HOSTS").split(","))
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'process.apps.ProcessConfig',
-    # 'django.contrib.admin',
-    # 'django.contrib.auth',
-    # 'django.contrib.contenttypes',
-    # 'django.contrib.sessions',
-    # 'django.contrib.messages',
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.auth",
+    "corsheaders",
+    "process.apps.ProcessConfig",
     # 'django.contrib.staticfiles',
+    # 'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'ocdskingfisherprocess.urls'
+ROOT_URLCONF = "ocdskingfisherprocess.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'ocdskingfisherprocess.wsgi.application'
+WSGI_APPLICATION = "ocdskingfisherprocess.wsgi.application"
 
 
 # Database
@@ -82,8 +91,9 @@ WSGI_APPLICATION = 'ocdskingfisherprocess.wsgi.application'
 
 DATABASES = {
     # https://docs.djangoproject.com/en/3.0/ref/databases/#postgresql-connection-settings
-    'default': dj_database_url.config(
-        default='postgresql:///ocdskingfisherprocess?application_name=kingfisher-process'),
+    "default": dj_database_url.config(
+        default="postgresql:///ocdskingfisherprocess?application_name=kingfisher-process"
+    ),
 }
 
 
@@ -92,16 +102,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -109,9 +119,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -123,22 +133,22 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 
 # Customization
 
-AMQP_URL = os.getenv('AMQP_URL', 'amqp://localhost')
-AMQP_EXCHANGE = 'ocdskingfisherprocess'
+AMQP_URL = os.getenv("AMQP_URL", "amqp://localhost")
+AMQP_EXCHANGE = "ocdskingfisherprocess"
 
 SCRAPYD = {
-    'url': os.getenv('KINGFISHER_PROCESS_SCRAPYD_URL'),
-    'project': 'kingfisher',
+    "url": os.getenv("KINGFISHER_PROCESS_SCRAPYD_URL"),
+    "project": "kingfisher",
 }
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
-    'models.E034',
+    "models.E034",
 ]
 
 DEFAULT_STEPS = ["file_worker"]
