@@ -193,6 +193,18 @@ class Collection(models.Model):
         except Collection.DoesNotExist:
             return None
 
+    def get_root_parent(self):
+        """
+        Returns "root" parent of collection. Basically traverses the tree to the top.
+
+        :returns: root collection
+        :rtype: Collection
+        """
+        if self.parent is None:
+            return self
+        else:
+            return self.parent.get_root_parent()
+
 
 class CollectionNote(models.Model):
     """

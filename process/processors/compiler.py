@@ -208,7 +208,7 @@ def compilable(collection_id):
 
         if collection.store_end_at is not None:
             collection_file_step_count = (
-                CollectionFileStep.objects.filter(collection_file__collection=collection)
+                CollectionFileStep.objects.filter(collection_file__collection=collection.get_root_parent())
                 .filter(name="file_worker")
                 .count()
             )
