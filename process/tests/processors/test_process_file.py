@@ -19,7 +19,7 @@ class ProcessFileTests(TransactionTestCase):
     def test_file_not_found(self):
         with self.assertRaises(ValueError) as e:
             process_file(5)
-        self.assertEqual(str(e.exception), "File 'ocds-px0z7d-10094-10001-1' not found")
+        self.assertEqual(str(e.exception), "File for collection file id:5 not found")
 
     def test_happy_day(self):
         collection_file = CollectionFile.objects.get(id=1)

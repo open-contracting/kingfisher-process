@@ -4,13 +4,16 @@ import ijson
 from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
 from ocdskit.upgrade import upgrade_10_11
+from ocdskit.util import detect_format
 
 from process.exceptions import AlreadyExists
-from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Release
+from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Record, Release
 from process.util import get_hash
 
 # Get an instance of a logger
 logger = logging.getLogger("processor.file_loader")
+
+SUPPORTED_FORMATS = ["release package", "record package"]
 
 
 def process_file(collection_file_id):
@@ -39,29 +42,57 @@ def process_file(collection_file_id):
 
         collection_file = CollectionFile.objects.prefetch_related("collection").get(pk=collection_file_id)
 
-        try:
-            file_items, file_package_data = _read_data_from_file(collection_file.filename)
-        except FileNotFoundError as e:
-            raise ValueError("File '{}' not found".format(collection_file.filename)) from e
+        # detect format and check, whether its supported
+        format = detect_format(collection_file.filename)
 
-        _store_data(collection_file, file_items, file_package_data, False)
+        if format[0] not in SUPPORTED_FORMATS:
+            raise ValueError(
+                "Unsupported format '{}' for file {}. Must be one of {}".format(
+                    format, collection_file, SUPPORTED_FORMATS
+                )
+            )
 
+        # read the file data
+        file_items, file_package_data = _read_data_from_file(collection_file.filename, format)
+
+        # store data for a current collection
+        _store_data(collection_file, file_items, file_package_data, format, False)
+
+        # should we store upgraded data as well?
         upgraded_collection = get_upgraded_collection(collection_file)
 
         if upgraded_collection:
             upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
-            _store_data(upgraded_collection_file, file_items, file_package_data, True)
+            _store_data(upgraded_collection_file, file_items, file_package_data, format, True)
 
+            # return upgraded file
             return upgraded_collection_file.id
 
+        # not upgrading, return None
         return None
+    except FileNotFoundError as e:
+        raise ValueError("File for collection file id:{} not found".format(collection_file_id)) from e
     except CollectionFile.DoesNotExist:
         raise ValueError("Collection file id {} not found".format(collection_file_id))
     except IntegrityError as e:
         raise AlreadyExists("Item already exists".format(collection_file_id)) from e
 
 
-def _read_data_from_file(filename):
+def _read_data_from_file(filename, format):
+    key = ""
+    package_key = ""
+    # is there an aray with data?
+    if format[2]:
+        key = "item."
+        package_key = "item"
+
+    if format[0] == "record package":
+        key = key + "records"
+    elif format[0] == "release package":
+        key = key + "releases"
+    else:
+        raise ValueError("Unsupported format {} for {}, must be one of {}".format(format, filename, SUPPORTED_FORMATS))
+
     with open(filename, "rb") as f:
         file_items = []
         package_data_object = None
@@ -71,19 +102,19 @@ def _read_data_from_file(filename):
         build_object = False
         build_package = False
         for prefix, event, value in ijson.parse(f):
-            if prefix == "item" and event == "start_map":
+            if prefix == package_key and event == "start_map":
                 builder_package = ObjectBuilder()
                 build_package = True
 
-            if prefix == "item.releases.item" and event == "start_map":
+            if prefix == "{}.item".format(key) and event == "start_map":
                 builder_object = ObjectBuilder()
                 build_object = True
 
-            if prefix == "item.releases.item" and event == "end_map":
+            if prefix == "{}.item".format(key) and event == "end_map":
                 build_object = False
                 file_items.append(builder_object.value)
 
-            if prefix == "item" and event == "end_map":
+            if prefix == package_key and event == "end_map":
                 build_package = False
                 package_data_object = builder_package.value
 
@@ -91,13 +122,13 @@ def _read_data_from_file(filename):
                 builder_object.event(event, value)
 
             if build_package:
-                if not prefix.startswith("item.releases"):
+                if not prefix.startswith(key):
                     builder_package.event(event, value)
 
     return file_items, package_data_object
 
 
-def _store_data(collection_file, file_items, file_package_data, upgrade=False):
+def _store_data(collection_file, file_items, file_package_data, format, upgrade=False):
     # store package data
     package_hash = get_hash(str(file_package_data))
     try:
@@ -132,15 +163,29 @@ def _store_data(collection_file, file_items, file_package_data, upgrade=False):
             data.hash_md5 = item_hash
             data.save()
 
-        # store release
-        release = Release()
-        release.collection = collection_file.collection
-        release.collection_file_item = collection_file_item
-        release.data = data
-        release.package_data = package_data
-        release.release_id = item["id"]
-        release.ocid = item["ocid"]
-        release.save()
+        if format[0] == "record package":
+            # store record
+            record = Record()
+            record.collection = collection_file.collection
+            record.collection_file_item = collection_file_item
+            record.data = data
+            record.package_data = package_data
+            record.ocid = item["ocid"]
+            record.save()
+        elif format[0] == "release package":
+            # store release
+            release = Release()
+            release.collection = collection_file.collection
+            release.collection_file_item = collection_file_item
+            release.data = data
+            release.package_data = package_data
+            release.release_id = item["id"]
+            release.ocid = item["ocid"]
+            release.save()
+        else:
+            raise ValueError(
+                "Unsupported format {} for {}, must be one of {}".format(format, collection_file, SUPPORTED_FORMATS)
+            )
 
 
 def get_upgraded_collection(collection_file):
