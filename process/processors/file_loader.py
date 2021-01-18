@@ -86,6 +86,7 @@ def _read_data_from_file(filename, format):
         key = "item."
         package_key = "item"
 
+    # build key based on what we are handling
     if format[0] == "record package":
         key = key + "records"
     elif format[0] == "release package":
@@ -102,26 +103,33 @@ def _read_data_from_file(filename, format):
         build_object = False
         build_package = False
         for prefix, event, value in ijson.parse(f):
+
             if prefix == package_key and event == "start_map":
+                # collection of package data started
                 builder_package = ObjectBuilder()
                 build_package = True
 
             if prefix == "{}.item".format(key) and event == "start_map":
+                # collection of the record/release data item started here
                 builder_object = ObjectBuilder()
                 build_object = True
 
             if prefix == "{}.item".format(key) and event == "end_map":
+                # collection of the record/release data item ended here
                 build_object = False
                 file_items.append(builder_object.value)
 
             if prefix == package_key and event == "end_map":
+                # collection of package data ended
                 build_package = False
                 package_data_object = builder_package.value
 
             if build_object:
+                # store data to current record/release item
                 builder_object.event(event, value)
 
             if build_package:
+                # store data to package object
                 if not prefix.startswith(key):
                     builder_package.event(event, value)
 
