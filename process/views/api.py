@@ -5,7 +5,7 @@ from os.path import isfile
 import pika
 from django.db import transaction
 from django.db.models.functions import Now
-from django.http.response import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 
 from process.models import Collection
 from process.processors.loader import create_collection_file as loader_create_collection_file
@@ -47,6 +47,34 @@ def create_collection(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
+def close_collection(request):
+    if request.method == "POST":
+        input = json.loads(request.body)
+        try:
+            collection = Collection.objects.get(id=input["collection_id"])
+
+            with transaction.atomic():
+                collection = Collection.objects.get(id=input["collection_id"])
+                collection.store_end_at = Now()
+                collection.save()
+
+                upgraded_collection = collection.get_upgraded_collection()
+                if upgraded_collection:
+                    upgraded_collection.store_end_at = Now()
+                    upgraded_collection.save()
+
+            return HttpResponse("Collection closed")
+        except Collection.DoesNotExist:
+            error = "Collection with id {} not found".format(input["collection_id"])
+            logger.error(error)
+            return HttpResponseServerError(error)
+        except Exception as e:
+            response = HttpResponseServerError(e)
+            logger.exception("Unable to close collection", e)
+            return response
+    return HttpResponseBadRequest("Only POST requests accepted")
+
+
 def create_collection_file(request):
     if request.method == "POST":
         input = json.loads(request.body)
@@ -77,7 +105,7 @@ def create_collection_file(request):
                         upgraded_collection.store_end_at = Now()
                         upgraded_collection.save()
 
-            publish(json_dumps(message))
+            _publish(json_dumps(message))
 
             return JsonResponse(message)
         except Collection.DoesNotExist:
@@ -91,7 +119,7 @@ def create_collection_file(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
-def publish(message):
+def _publish(message):
     """Publish message with work for a next part of process"""
     # build exchange name
     rabbit_exchange = "kingfisher_process_{}".format(get_env_id())
