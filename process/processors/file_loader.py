@@ -202,8 +202,13 @@ def _get_data_type(collection_file):
     """
     collection = collection_file.collection
     if not collection.data_type:
-        collection.set_data_type(detect_format(collection_file.filename))
+        detected_format = detect_format(collection_file.filename)
+        collection.set_data_type(detected_format)
         collection.save()
+        upgraded_collection = collection.get_upgraded_collection()
+        if upgraded_collection:
+            upgraded_collection.set_data_type(detected_format)
+            upgraded_collection.save()
 
     return collection.data_type
 

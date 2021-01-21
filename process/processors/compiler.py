@@ -1,6 +1,5 @@
 import logging
 
-from django.db.utils import IntegrityError
 from ocdsmerge import Merger
 
 from process.exceptions import AlreadyExists
@@ -128,62 +127,6 @@ def compile_release(collection_id, ocid):
     return release
 
 
-def create_compiled_collection(parent_collection_id):
-    """
-    Creates compiled collection transformed from parent/source collection identified by parent_collection_id.
-
-    :param int parent_collection_id: collection id - new compiled collection will be created based on this collection
-
-    :returns: created collection
-    :rtype: int
-
-    :raises ValueError: if there is no collection with parent_collection_id or
-    :raises ValueError: if the parent collection shouldn't be compiled (no compile in steps)
-    :raises AlreadyExists: if the compiled collection was already created
-    """
-
-    # validate input
-    if not isinstance(parent_collection_id, int):
-        raise TypeError("parent_collection_id is not an int value")
-
-    try:
-        parent_collection = Collection.objects.filter(id=parent_collection_id).get(steps__contains="compile")
-
-        try:
-            # create collection
-            compiled_collection = Collection()
-            compiled_collection.parent = parent_collection
-            compiled_collection.steps = []
-            compiled_collection.source_id = parent_collection.source_id
-            compiled_collection.data_version = parent_collection.data_version
-            compiled_collection.sample = parent_collection.sample
-            compiled_collection.expected_files_count = parent_collection.expected_files_count
-            compiled_collection.transform_type = Collection.Transforms.COMPILE_RELEASES
-            compiled_collection.cached_releases_count = parent_collection.cached_releases_count
-            compiled_collection.cached_records_count = parent_collection.cached_records_count
-            compiled_collection.cached_compiled_releases_count = parent_collection.cached_compiled_releases_count
-            compiled_collection.store_start_at = parent_collection.store_start_at
-            compiled_collection.store_end_at = parent_collection.store_end_at
-            compiled_collection.deleted_at = parent_collection.deleted_at
-            compiled_collection.save()
-
-            return compiled_collection
-        except IntegrityError:
-            logger.warning(
-                "Compiled collection already created for parent_collection_id {}".format(parent_collection_id)
-            )
-
-            raise AlreadyExists(
-                "Compiled collection already created for parent_collection_id {}".format(parent_collection_id)
-            )
-
-    except Collection.DoesNotExist:
-        logger.warning("Parent collection (with steps including compile) id {} not found".format(parent_collection_id))
-        raise ValueError(
-            "Parent collection (with steps including compile) id {} not found".format(parent_collection_id)
-        )
-
-
 def compilable(collection_id):
     """
     Checks whether the collection
@@ -206,6 +149,10 @@ def compilable(collection_id):
     try:
         collection = Collection.objects.filter(id=collection_id).get(steps__contains="compile")
 
+        if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+            # records can be processed immediately
+            return True
+
         if collection.store_end_at is not None:
             collection_file_step_count = (
                 CollectionFileStep.objects.filter(collection_file__collection=collection.get_root_parent())
@@ -214,14 +161,11 @@ def compilable(collection_id):
             )
 
             if collection_file_step_count == 0:
-                # all OK with the parent, but wasnt it compiled already?
-                try:
-                    compiled_collection = Collection.objects.filter(parent=collection).get(
-                        parent__steps__contains="compile"
-                    )
-                    logger.debug("Collection {} already compiled as {}".format(collection, compiled_collection))
+                compiled_collection = collection.get_compiled_collection()
+                if compiled_collection.compilation_started:
+                    # the compilation was already started
                     return False
-                except Collection.DoesNotExist:
+                else:
                     return True
             else:
                 logger.debug(

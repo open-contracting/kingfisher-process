@@ -3,10 +3,9 @@ import sys
 
 from django.db import transaction
 
-from process.exceptions import AlreadyExists
 from process.management.commands.base.worker import BaseWorker
-from process.models import CollectionFile, Release
-from process.processors.compiler import compilable, create_compiled_collection
+from process.models import Collection, CollectionFile, Release
+from process.processors.compiler import compilable
 
 
 class Command(BaseWorker):
@@ -33,36 +32,41 @@ class Command(BaseWorker):
                 collection = collection_file.collection
 
                 if compilable(collection.id):
-                    try:
-                        with transaction.atomic():
-                            create_compiled_collection(collection.id)
-
-                        self.info("Planning release compilation")
-
-                        # get all ocids for collection
-                        ocids = (
-                            Release.objects.filter(collection_file_item__collection_file__collection=collection)
-                            .order_by()
-                            .values("ocid")
-                            .distinct()
+                    with transaction.atomic():
+                        compiled_collection = (
+                            Collection.objects.select_for_update()
+                            .filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
+                            .filter(compilation_started=False)
+                            .get(parent=collection)
                         )
 
-                        for item in ocids:
-                            # send message to a next phase
-                            message = {
-                                "ocid": item["ocid"],
-                                "collection_id": collection.pk,
-                            }
-                            self.publish(json.dumps(message))
+                        compiled_collection.compilation_started = True
+                        compiled_collection.save()
 
-                    except AlreadyExists:
-                        self.warning(
-                            """
-                            Tried to create already existing compiled collection. This can happen in
-                            evironments with multiple compilers running."""
-                        )
+                    self.info("Planning release compilation")
+
+                    # get all ocids for collection
+                    ocids = (
+                        Release.objects.filter(collection_file_item__collection_file__collection=collection)
+                        .order_by()
+                        .values("ocid")
+                        .distinct()
+                    )
+
+                    for item in ocids:
+                        # send message to a next phase
+                        message = {
+                            "ocid": item["ocid"],
+                            "collection_id": compiled_collection.id,
+                        }
+                        self.publish(json.dumps(message))
                 else:
                     self.debug("Collection {} is not compilable.".format(collection))
+            except Collection.DoesNotExist:
+                self.warning(
+                    """"Tried to plan compilation for already "planned" collection.
+                    This can rarely happen in multi worker environments."""
+                )
             except CollectionFile.DoesNotExist:
                 self.error("Collection file {} not found".format(input_message["collection_file_id"]))
 

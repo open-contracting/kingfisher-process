@@ -58,6 +58,10 @@ class Collection(models.Model):
         COMPILE_RELEASES = "compile-releases", _("Compile releases")
         UPGRADE_10_11 = "upgrade-1-0-to-1-1", _("Upgrade from 1.0 to 1.1 ")
 
+    class DataTypes:
+        RELEASE_PACKAGE = "release package"
+        RECORD_PACKAGE = "record package"
+
     # Identification
     source_id = models.TextField(help_text=_("If sourced from Scrapy, this should be the name of the spider."))
     data_version = models.DateTimeField(help_text=_("The time at which the data was collected (not loaded)."))
@@ -67,6 +71,8 @@ class Collection(models.Model):
     steps = JSONField(blank=True, null=True, default=dict)
     options = JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
+    compilation_started = models.BooleanField(default=False)
+
     # Deprecated
     check_data = models.BooleanField(default=False)
     # Obsolete
