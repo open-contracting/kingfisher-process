@@ -24,14 +24,11 @@ class Command(BaseWorker):
             "To load data into a new collection, set at least --source and --note. --time defaults to the earliest "
             "file modification time; if files were copied into place, set --time explicitly.\n"
             'The collection is automatically "closed" to new files.'
-            "All files must have the same encoding (default UTF-8). If some files have different encodings, keep "
-            "the collection open as above, and separately load the files with each encoding, using --encoding.\n"
+            "All files must have the same encoding (default UTF-8).\n"
             "The formats of files are automatically detected (release package, record package, release, record, "
-            "compiled release), including JSON arrays and concatenated JSON of these. If OCDS data is embedded "
-            "within files, use --root-path to indicate the path to the OCDS data to process within the files. For "
-            'example, if release packages are in an array under a "results" key, use: --root-path results.item\n'
-            "Additional processing is not automatically configured (checking, upgrading, merging, etc.). To add a "
-            "pre-processing step, use the addstep command."
+            "compiled release), including JSON arrays and concatenated JSON of these.\n"
+            "Additional processing is not automatically configured (upgrading, merging, etc.). To add a "
+            "pre-processing step, use --upgrade or --compile."
         )
     )
 
@@ -160,5 +157,9 @@ class Command(BaseWorker):
             if upgraded_collection:
                 upgraded_collection.store_end_at = Now()
                 upgraded_collection.save()
+
+            if compiled_collection:
+                compiled_collection.store_end_at = Now()
+                compiled_collection.save()
 
         self.info("Load command completed")

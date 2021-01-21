@@ -24,7 +24,7 @@ def create_collection(request):
             )
 
         try:
-            collection, upgraded_collection = create_collections(
+            collection, upgraded_collection, compiled_collection = create_collections(
                 input["source_id"],
                 input["data_version"],
                 note=(input.get("note")),
@@ -38,6 +38,9 @@ def create_collection(request):
 
             if upgraded_collection:
                 result["upgraded_collection_id"] = upgraded_collection.id
+
+            if compiled_collection:
+                result["compiled_collection_id"] = compiled_collection.id
 
             return JsonResponse(result)
         except Exception as e:
