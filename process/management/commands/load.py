@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from process.management.commands.base.worker import BaseWorker
 from process.models import Collection
-from process.processors.loader import create_collection_file, create_master_collection
+from process.processors.loader import create_collection_file, create_collections
 from process.scrapyd import configured
 from process.util import json_dumps, walk
 from process.util import wrap as w
@@ -111,7 +111,7 @@ class Command(BaseWorker):
             data_version = options["time"]
 
         try:
-            collection, upgraded_collection, compiled_collection = create_master_collection(
+            collection, upgraded_collection, compiled_collection = create_collections(
                 options["source"],
                 data_version,
                 options["note"],

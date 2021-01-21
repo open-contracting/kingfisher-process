@@ -37,33 +37,31 @@ def process_file(collection_file_id):
         raise TypeError("collection_file_id is not an int value")
 
     try:
-        collection_file = CollectionFile.objects.get(id=collection_file_id)
+        collection_file = CollectionFile.objects.prefetch_related("collection").get(pk=collection_file_id)
         logger.info("Loading data for collection file {}".format(collection_file))
 
-        collection_file = CollectionFile.objects.prefetch_related("collection").get(pk=collection_file_id)
-
         # detect format and check, whether its supported
-        format = detect_format(collection_file.filename)
+        data_type = _get_data_type(collection_file)
 
-        if format[0] not in SUPPORTED_FORMATS:
+        if data_type["format"] not in SUPPORTED_FORMATS:
             raise ValueError(
-                "Unsupported format '{}' for file {}. Must be one of {}".format(
-                    format, collection_file, SUPPORTED_FORMATS
+                "Unsupported data type '{}' for file {}. Must be one of {}".format(
+                    data_type, collection_file, SUPPORTED_FORMATS
                 )
             )
 
         # read the file data
-        file_items, file_package_data = _read_data_from_file(collection_file.filename, format)
+        file_items, file_package_data = _read_data_from_file(collection_file.filename, data_type)
 
         # store data for a current collection
-        _store_data(collection_file, file_items, file_package_data, format, False)
+        _store_data(collection_file, file_items, file_package_data, data_type, False)
 
         # should we store upgraded data as well?
         upgraded_collection = get_upgraded_collection(collection_file)
 
         if upgraded_collection:
             upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
-            _store_data(upgraded_collection_file, file_items, file_package_data, format, True)
+            _store_data(upgraded_collection_file, file_items, file_package_data, data_type, True)
 
             # return upgraded file
             return upgraded_collection_file.id
@@ -78,21 +76,23 @@ def process_file(collection_file_id):
         raise AlreadyExists("Item already exists".format(collection_file_id)) from e
 
 
-def _read_data_from_file(filename, format):
+def _read_data_from_file(filename, data_type):
     key = ""
     package_key = ""
     # is there an aray with data?
-    if format[2]:
+    if data_type["array"]:
         key = "item."
         package_key = "item"
 
     # build key based on what we are handling
-    if format[0] == "record package":
+    if data_type["format"] == "record package":
         key = key + "records"
-    elif format[0] == "release package":
+    elif data_type["format"] == "release package":
         key = key + "releases"
     else:
-        raise ValueError("Unsupported format {} for {}, must be one of {}".format(format, filename, SUPPORTED_FORMATS))
+        raise ValueError(
+            "Unsupported format {} for {}, must be one of {}".format(data_type, filename, SUPPORTED_FORMATS)
+        )
 
     with open(filename, "rb") as f:
         file_items = []
@@ -136,7 +136,7 @@ def _read_data_from_file(filename, format):
     return file_items, package_data_object
 
 
-def _store_data(collection_file, file_items, file_package_data, format, upgrade=False):
+def _store_data(collection_file, file_items, file_package_data, data_type, upgrade=False):
     # store package data
     package_hash = get_hash(str(file_package_data))
     try:
@@ -171,7 +171,7 @@ def _store_data(collection_file, file_items, file_package_data, format, upgrade=
             data.hash_md5 = item_hash
             data.save()
 
-        if format[0] == "record package":
+        if data_type["format"] == "record package":
             # store record
             record = Record()
             record.collection = collection_file.collection
@@ -180,7 +180,7 @@ def _store_data(collection_file, file_items, file_package_data, format, upgrade=
             record.package_data = package_data
             record.ocid = item["ocid"]
             record.save()
-        elif format[0] == "release package":
+        elif data_type["format"] == "release package":
             # store release
             release = Release()
             release.collection = collection_file.collection
@@ -194,6 +194,18 @@ def _store_data(collection_file, file_items, file_package_data, format, upgrade=
             raise ValueError(
                 "Unsupported format {} for {}, must be one of {}".format(format, collection_file, SUPPORTED_FORMATS)
             )
+
+
+def _get_data_type(collection_file):
+    """
+    Returns the expected data type of the collection_file.
+    """
+    collection = collection_file.collection
+    if not collection.data_type:
+        collection.set_data_type(detect_format(collection_file.filename))
+        collection.save()
+
+    return collection.data_type
 
 
 def get_upgraded_collection(collection_file):
