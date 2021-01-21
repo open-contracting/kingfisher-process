@@ -38,11 +38,9 @@ def create_collection_file(collection, file_path):
         raise ValueError(form.error_messages)
 
 
-def create_master_collection(
-    source_id, data_version, note=None, upgrade=False, compile=False, sample=False, force=False
-):
+def create_collections(source_id, data_version, note=None, upgrade=False, compile=False, sample=False, force=False):
     """
-    Creates master collection, note, upgraded collection etc. based on provided data
+    Creates master collection, note, upgraded collection, compiled collection etc. based on provided data
 
     :param str source_id: collection source
     :param str data_version: data version in ISO format
@@ -51,8 +49,8 @@ def create_master_collection(
     :param boolean compile: whether to plan collection compile
     :param boolean sample: is this sample only
 
-    :returns: created master collection and potentialy upgraded collection
-    :rtype: Collection, Collection
+    :returns: created master collection, upgraded collection, compiled_collection
+    :rtype: Collection, Collection, Collection
 
     :raises ValueError: if there is a validation error
     :raises ValueError: if there is a validation error
@@ -61,35 +59,54 @@ def create_master_collection(
     data = {"source_id": source_id, "data_version": data_version, "sample": sample, "force": force}
 
     if upgrade:
-        data["steps"] = ["upgrade"]
+        collection_steps = ["upgrade"]
+    elif compile:
+        collection_steps = ["compile"]
+    else:
+        collection_steps = None
 
-    collection_form = CollectionForm(data)
+    # create master collection
+    collection = _create_collection(data, collection_steps, note, None, None)
 
+    # handling potential upgrade
+    upgraded_collection = None
+    if upgrade and compile:
+        # master -> upgrade -> compile
+        upgraded_collection = _create_collection(
+            data, ["compile"], note, collection, Collection.Transforms.UPGRADE_10_11
+        )
+    if upgrade and not compile:
+        # master -> upgrade
+        upgraded_collection = _create_collection(data, [], note, collection, Collection.Transforms.UPGRADE_10_11)
+
+    # handling compiled collection
+    compiled_collection = None
+    if compile and upgraded_collection:
+        # master -> upgrade -> compile
+        compiled_collection = _create_collection(
+            data, [], note, upgraded_collection, Collection.Transforms.COMPILE_RELEASES
+        )
+
+    if compile and not upgraded_collection:
+        # master -> compile
+        compiled_collection = _create_collection(data, [], note, collection, Collection.Transforms.COMPILE_RELEASES)
+
+    return collection, upgraded_collection, compiled_collection
+
+
+def _create_collection(data, steps, note, parent, transform_type):
+    collection_data = data.copy()
+    collection_data["steps"] = steps
+    collection_data["transform_type"] = transform_type
+    collection_data["parent"] = parent
+
+    collection_form = CollectionForm(collection_data)
     if collection_form.is_valid():
         collection = collection_form.save()
-
         if note:
             _save_note(collection, note)
+        return collection
 
-        upgraded_collection = None
-        if upgrade:
-            if compile:
-                data["steps"] = ["compile"]
-            else:
-                data["steps"] = None
-
-            data["transform_type"] = Collection.Transforms.UPGRADE_10_11
-            data["parent"] = collection
-
-            upgrade_collection_form = CollectionForm(data)
-            if upgrade_collection_form.is_valid():
-                upgraded_collection = upgrade_collection_form.save()
-                if note:
-                    _save_note(upgraded_collection, note)
-            else:
-                raise ValueError(upgrade_collection_form.error_messages)
-
-        return collection, upgraded_collection
     else:
         raise ValueError(collection_form.error_messages)
 

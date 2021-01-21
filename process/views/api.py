@@ -9,7 +9,7 @@ from django.http.response import HttpResponse, HttpResponseBadRequest, HttpRespo
 
 from process.models import Collection
 from process.processors.loader import create_collection_file as loader_create_collection_file
-from process.processors.loader import create_master_collection
+from process.processors.loader import create_collections
 from process.util import get_env_id, get_rabbit_channel, json_dumps
 
 logger = logging.getLogger("views.api")
@@ -24,7 +24,7 @@ def create_collection(request):
             )
 
         try:
-            collection, upgraded_collection = create_master_collection(
+            collection, upgraded_collection = create_collections(
                 input["source_id"],
                 input["data_version"],
                 note=(input.get("note")),

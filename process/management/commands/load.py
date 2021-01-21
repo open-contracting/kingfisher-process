@@ -114,12 +114,12 @@ class Command(BaseWorker):
             data_version = options["time"]
 
         try:
-            collection, upgraded_collection = create_master_collection(
+            collection, upgraded_collection, compiled_collection = create_master_collection(
                 options["source"],
                 data_version,
                 options["note"],
                 upgrade=options["upgrade"],
-                compile=options["upgrade"],
+                compile=options["compile"],
                 sample=options["sample"],
                 force=options["force"],
             )
