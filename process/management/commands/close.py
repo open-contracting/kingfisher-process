@@ -48,7 +48,8 @@ class Command(BaseWorker):
         if collection.parent:
             raise CommandError(
                 _(
-                    'A collection {} cannot be closed as its not the "parent/root" collection, Hint: Its child of {}'.format(
+                    """A collection {} cannot be closed as its not
+                    the "parent/root" collection, Hint: Its child of {}""".format(
                         collection, collection.parent
                     )
                 )
