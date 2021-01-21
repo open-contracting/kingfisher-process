@@ -66,8 +66,6 @@ class Command(BaseWorker):
             help=_("whether the files represent a sample from the source, if loading into " "a new collection"),
             action="store_true",
         )
-        parser.add_argument("--encoding", help=_("the encoding of all files (defaults to UTF-8)"))
-        parser.add_argument("--root-path", help=_("the path to the OCDS data to process within all files"))
         parser.add_argument("-n", "--note", help=_("add a note to the collection (required for a new collection)"))
         parser.add_argument(
             "-f",
@@ -145,6 +143,8 @@ class Command(BaseWorker):
         self.debug("Processing path {}".format(options["PATH"]))
 
         for file_path in walk(options["PATH"]):
+            # note - keep transaction here, not "higher" around the whole cycle
+            # we want to keep relation commited/published as close as possible
             with transaction.atomic():
                 self.debug("Storing file {}".format(file_path))
                 collection_file = create_collection_file(collection, file_path)
