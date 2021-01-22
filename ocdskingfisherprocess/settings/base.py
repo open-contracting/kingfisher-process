@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "process.apps.ProcessConfig",
     # 'django.contrib.staticfiles',
     # 'django.contrib.admin',
+    "tastypie"
 ]
 
 MIDDLEWARE = [

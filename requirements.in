@@ -9,3 +9,4 @@ libcoveocds
 ocdsmerge
 ocdskit
 django-cors-headers
+django-tastypie
