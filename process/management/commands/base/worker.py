@@ -84,11 +84,16 @@ class BaseWorker(BaseCommand):
 
         self.rabbit_channel.start_consuming()
 
-    def publish(self, message):
+    def publish(self, message, routing_key=None):
         """Publish message with work for a next part of process"""
+        if routing_key:
+            publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, routing_key)
+        else:
+            publish_routing_key = self.rabbit_publish_routing_key
+
         self.rabbit_channel.basic_publish(
             exchange=self.rabbit_exchange,
-            routing_key=self.rabbit_publish_routing_key,
+            routing_key=publish_routing_key,
             body=message,
             properties=pika.BasicProperties(delivery_mode=2),
         )

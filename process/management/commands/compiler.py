@@ -4,7 +4,7 @@ import sys
 from django.db import transaction
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, Release
+from process.models import Collection, CollectionFile, Record, Release
 from process.processors.compiler import compilable
 
 
@@ -32,41 +32,13 @@ class Command(BaseWorker):
                 collection = collection_file.collection
 
                 if compilable(collection.id):
-                    with transaction.atomic():
-                        compiled_collection = (
-                            Collection.objects.select_for_update()
-                            .filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
-                            .filter(compilation_started=False)
-                            .get(parent=collection)
-                        )
-
-                        compiled_collection.compilation_started = True
-                        compiled_collection.save()
-
-                    self.info("Planning release compilation")
-
-                    # get all ocids for collection
-                    ocids = (
-                        Release.objects.filter(collection_file_item__collection_file__collection=collection)
-                        .order_by()
-                        .values("ocid")
-                        .distinct()
-                    )
-
-                    for item in ocids:
-                        # send message to a next phase
-                        message = {
-                            "ocid": item["ocid"],
-                            "collection_id": compiled_collection.id,
-                        }
-                        self.publish(json.dumps(message))
+                    if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+                        self._publish_releases(collection)
+                    else:
+                        self._publish_records(collection_file)
                 else:
                     self.debug("Collection {} is not compilable.".format(collection))
-            except Collection.DoesNotExist:
-                self.warning(
-                    """"Tried to plan compilation for already "planned" collection.
-                    This can rarely happen in multi worker environments."""
-                )
+
             except CollectionFile.DoesNotExist:
                 self.error("Collection file {} not found".format(input_message["collection_file_id"]))
 
@@ -74,3 +46,68 @@ class Command(BaseWorker):
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
             sys.exit()
+
+    def _publish_releases(self, collection):
+        try:
+            with transaction.atomic():
+                compiled_collection = (
+                    Collection.objects.select_for_update()
+                    .filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
+                    .filter(compilation_started=False)
+                    .get(parent=collection)
+                )
+
+                compiled_collection.compilation_started = True
+                compiled_collection.save()
+
+            self.info("Planning release compilation for {}".format(compiled_collection))
+
+            # get all ocids for collection
+            ocids = (
+                Release.objects.filter(collection_file_item__collection_file__collection=collection)
+                .order_by()
+                .values("ocid")
+                .distinct()
+            )
+
+            for item in ocids:
+                # send message to a next phase
+                message = {
+                    "ocid": item["ocid"],
+                    "collection_id": collection.id,
+                }
+                self.publish(json.dumps(message), "compiler_release")
+        except Collection.DoesNotExist:
+            self.warning(
+                """"Tried to plan compilation for already "planned" collection.
+                This can rarely happen in multi worker environments."""
+            )
+
+    def _publish_records(self, collection_file):
+        compiled_collection = (
+            Collection.objects.filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
+            .filter(compilation_started=False)
+            .get(parent=collection_file.collection)
+        )
+
+        if not compiled_collection.compilation_started:
+            compiled_collection.compilation_started = True
+            compiled_collection.save()
+
+        self.info("Planning records compilation for {} file {}".format(compiled_collection, collection_file))
+
+        # get all ocids for collection
+        ocids = (
+            Record.objects.filter(collection_file_item__collection_file__collection=collection_file.collection)
+            .order_by()
+            .values("ocid")
+            .distinct()
+        )
+
+        for item in ocids:
+            # send message to a next phase
+            message = {
+                "ocid": item["ocid"],
+                "collection_id": collection_file.collection.id,
+            }
+            self.publish(json.dumps(message), "compiler_record")
