@@ -1,18 +1,12 @@
 import logging
 
-from ocdsmerge import Merger
+import ocdsmerge
+from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
-from process.models import (
-    Collection,
-    CollectionFile,
-    CollectionFileItem,
-    CollectionFileStep,
-    CompiledRelease,
-    Data,
-    Record,
-    Release,
-)
+from process.models import (Collection, CollectionFile, CollectionFileItem,
+                            CollectionFileStep, CompiledRelease, Data, Record,
+                            Release)
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -83,8 +77,8 @@ def compile_release(collection_id, ocid):
         releases_data.append(release.data.data)
 
     # merge data into into single compiled release
-    merger = Merger()
-    compiled_release_data = merger.create_compiled_release(releases_data)
+
+    compiled_release_data = _compile_releases_by_ocdsmerge(ocid, releases_data)
 
     return _save_compiled_release(compiled_release_data, collection, ocid)
 
@@ -128,6 +122,7 @@ def compile_record(collection_id, ocid):
         compiled_release = CompiledRelease.objects.filter(ocid__exact=ocid).get(
             collection_file_item__collection_file__collection=collection
         )
+
         raise AlreadyExists(
             "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
         )
@@ -146,14 +141,81 @@ def compile_record(collection_id, ocid):
         raise ValueError("No records with ocid {} found in parent collection.".format(ocid))
 
     # create array with all the data for releases
-    records_data = []
-    for release in releases:
-        releases_data.append(release.data.data)
+    releases = record.data.data.get("releases", [])
+    releases_with_date, releases_without_date = _check_dates_in_releases(releases)
 
-    # merge data into into single compiled release
-    merger = Merger()
-    compiled_release_data = merger.create_compiled_release(releases_data)
-    return _save_compiled_release(compiled_release_data, collection, ocid)
+    # Can we compile ourselves?
+    releases_linked = [r for r in releases_with_date if is_linked_release(r)]
+    if releases_with_date and not releases_linked:
+        # We have releases with date fields and none are linked (have URL's).
+        # We can compile them ourselves.
+        # (Checking releases_with_date here and not releases means that a record with
+        #  a compiledRelease and releases with no dates will be processed by using the compiledRelease,
+        #  so we still have some data)
+        if releases_without_date:
+            logger.warning(
+                "This OCID {} had some releases without a date element. We have compiled all other releases.".format(
+                    ocid
+                )
+            )
+
+        compiled_release_data = _compile_releases_by_ocdsmerge(ocid, releases_with_date)
+        return _save_compiled_release(compiled_release_data, collection, ocid)
+
+    if releases_without_date:
+        logger.warning("This OCID had some releases without a date element.")
+
+    # Is there a compiledRelease?
+    compiled_release = record.get("compiledRelease")
+    if compiled_release:
+        logger.warning(
+            """
+            This record {} already had a compiledRelease in the record!
+            It was passed through this transform unchanged.""".format(
+                record
+            )
+        )
+
+        return _save_compiled_release(compiled_release, collection, ocid)
+
+    # Is there a release tagged 'compiled'?
+    releases_compiled = [x for x in releases if "tag" in x and isinstance(x["tag"], list) and "compiled" in x["tag"]]
+
+    if len(releases_compiled) > 1:
+        # If more than one, pick one at random. and log that.
+        logger.warning(
+            """
+            This record {} already has multiple compiled releases in the releases array!
+            The compiled release to pass through was selected arbitrarily.""".format(
+                record
+            )
+        )
+        return _save_compiled_release(releases_compiled[0], collection, ocid)
+
+    elif len(releases_compiled) == 1:
+        # There is just one compiled release - pass it through unchanged, and log that.
+        logger.warning(
+            """
+            This record {} already has multiple compiled releases in the releases array!
+            It was passed through this transform unchanged.""".format(
+                record
+            )
+        )
+
+        return _save_compiled_release(releases_compiled[0], collection, ocid)
+
+    else:
+        # We can't process this ocid. Warn of that.
+        logger.error(
+            """
+            Record {} could not be compiled because at least one release in the releases array is
+            a linked release or there are no releases with dates, and the record has
+            neither a compileRelease nor a release with a tag of "compiled".""".format(
+                record
+            )
+        )
+
+    return None
 
 
 def _save_compiled_release(compiled_release_data, collection, ocid):
@@ -253,3 +315,18 @@ def compilable(collection_id):
     except Collection.DoesNotExist:
         logger.info("Collection (with steps including compile) id {} not found".format(collection_id))
         return False
+
+
+def _check_dates_in_releases(releases):
+    releases_with_date = [r for r in releases if "date" in r]
+    releases_without_date = [r for r in releases if "date" not in r]
+    return releases_with_date, releases_without_date
+
+
+def _compile_releases_by_ocdsmerge(ocid, releases):
+    try:
+        merger = ocdsmerge.Merger()
+        out = merger.create_compiled_release(releases)
+        return out
+    except ocdsmerge.exceptions.OCDSMergeError as e:
+        logger.exception("OCID {} could not be compiled because merge library threw an error: ".format(ocid), e)

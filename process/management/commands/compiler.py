@@ -84,11 +84,9 @@ class Command(BaseWorker):
             )
 
     def _publish_records(self, collection_file):
-        compiled_collection = (
-            Collection.objects.filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
-            .filter(compilation_started=False)
-            .get(parent=collection_file.collection)
-        )
+        compiled_collection = Collection.objects.filter(
+            transform_type__exact=Collection.Transforms.COMPILE_RELEASES
+        ).get(parent=collection_file.collection)
 
         if not compiled_collection.compilation_started:
             compiled_collection.compilation_started = True
@@ -98,7 +96,7 @@ class Command(BaseWorker):
 
         # get all ocids for collection
         ocids = (
-            Record.objects.filter(collection_file_item__collection_file__collection=collection_file.collection)
+            Record.objects.filter(collection_file_item__collection_file=collection_file)
             .order_by()
             .values("ocid")
             .distinct()

@@ -34,16 +34,17 @@ class Command(BaseWorker):
             collection_id = input_message["collection_id"]
 
             with transaction.atomic():
-                self.info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
+                self.info("Compiling record collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_record(collection_id, ocid)
 
             # publish message about processed item
-            message = {
-                "ocid": ocid,
-                "compiled_release_id": release.pk,
-            }
+            if release:
+                message = {
+                    "ocid": ocid,
+                    "compiled_release_id": release.pk,
+                }
 
-            self.publish(json.dumps(message))
+                self.publish(json.dumps(message))
 
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
