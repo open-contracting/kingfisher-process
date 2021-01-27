@@ -1,4 +1,3 @@
-from django.core import serializers
 from django.db.models import F, Q
 from tastypie import fields
 from tastypie.resources import ALL_WITH_RELATIONS, ModelResource
