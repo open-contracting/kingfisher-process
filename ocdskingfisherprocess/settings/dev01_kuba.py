@@ -30,9 +30,13 @@ SECRET_KEY = os.getenv("SECRET_KEY", "^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*"]
 
-CORS_ORIGIN_WHITELIST = ["http://localhost:22061"]
+VUE_APP_HOST = "http://localhost:22062"
+
+CORS_ORIGIN_WHITELIST = [VUE_APP_HOST]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
     "default": {
@@ -51,8 +55,6 @@ RABBITMQ = {
     "host": "localhost",
     "port": "29000",
 }
-
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:22061"]
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [

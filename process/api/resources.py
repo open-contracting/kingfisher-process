@@ -1,3 +1,4 @@
+from django.core import serializers
 from django.db.models import F, Q
 from tastypie import fields
 from tastypie.resources import ALL_WITH_RELATIONS, ModelResource
@@ -60,10 +61,19 @@ class BaseResource(ModelResource):
 
 class CollectionResource(BaseResource):
     def get_custom_filter(self, query):
-        return Q(source_id__icontains=query) | Q(transform_type__icontains=query)
+        return Q(source_id__icontains=query) | Q(transform_type__icontains=query) | Q(data_version__icontains=query)
 
     def dehydrate(self, bundle):
-        bundle.data["parent"] = bundle.obj.parent
+        if bundle.obj.parent:
+            bundle.data["parent"] = {
+                "id": bundle.obj.parent.id,
+                "source_id": bundle.obj.parent.source_id,
+                "version": bundle.obj.parent.data_version,
+            }
+
+        bundle.data["file_count"] = bundle.obj.get_file_count()
+        bundle.data["file_step_count"] = bundle.obj.get_file_step_count()
+
         return bundle
 
     class Meta(BaseResource.Meta):

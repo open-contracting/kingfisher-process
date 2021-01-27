@@ -212,6 +212,24 @@ class Collection(models.Model):
         else:
             return self.parent.get_root_parent()
 
+    def get_file_count(self):
+        """
+        Returns count of file items.
+
+        :returns: file count
+        :rtype: int
+        """
+        return CollectionFile.objects.filter(collection=self).count()
+
+    def get_file_step_count(self):
+        """
+        Returns count of file items.
+
+        :returns: file count
+        :rtype: int
+        """
+        return CollectionFileStep.objects.filter(collection_file__collection=self).count()
+
     def set_data_type(self, detected_format):
         """
         Formats detected format to proper dictionary
