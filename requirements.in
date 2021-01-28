@@ -2,7 +2,7 @@ dj-database-url
 Django<3.1
 orjson
 pika
-psycopg2
+psycopg2-binary
 requests
 ijson
 libcoveocds
