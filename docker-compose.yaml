@@ -1,0 +1,42 @@
+version: "2.2"
+services:
+  file_worker:
+    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
+    command: "manage.py file_worker --settings ocdskingfisherprocess.settings.dqt01"
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - /home/datlab/data/:/data
+    scale: 2
+  checker:
+    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
+    command: "manage.py checker --settings ocdskingfisherprocess.settings.dqt01"
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - /home/datlab/data/:/data
+    scale: 2
+  compiler:
+    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
+    command: "manage.py compiler --settings ocdskingfisherprocess.settings.dqt01"
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - /home/datlab/data/:/data
+    scale: 2
+  release_compiler:
+    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
+    command: "manage.py release_compiler --settings ocdskingfisherprocess.settings.dqt01"
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - /home/datlab/data/:/data
+    scale: 2
+  record_compiler:
+    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
+    command: "manage.py record_compiler --settings ocdskingfisherprocess.settings.dqt01"
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - /home/datlab/data/:/data
+    scale: 2
