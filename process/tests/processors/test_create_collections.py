@@ -10,7 +10,9 @@ class CreateCollectionsTests(TransactionTestCase):
 
     def test_malformed_input(self):
         with self.assertRaises(ValueError) as e:
-            create_collections("test", "wrong_data_version", "testing note", upgrade=True, compile=True, sample=False)
+            create_collections(
+                "test", "wrong_data_version", "testing note", upgrade=True, compile=True, check=True, sample=False
+            )
         self.assertEqual(
             str(e.exception),
             "data_version 'wrong_data_version' is not in \"YYYY-MM-DD HH:MM:SS\" format or is an invalid date/time",
@@ -25,12 +27,13 @@ class CreateCollectionsTests(TransactionTestCase):
 
     def test_happy_day(self):
         collection, upgraded_collection, compiled_collection = create_collections(
-            "test", "2020-12-29 09:22:09", "testing note", upgrade=True, compile=True, sample=False
+            "test", "2020-12-29 09:22:09", "testing note", upgrade=True, compile=True, check=True, sample=False
         )
 
         self.assertEqual(upgraded_collection.parent.id, collection.id)
         self.assertEqual(compiled_collection.parent.id, upgraded_collection.id)
         self.assertTrue("upgrade" in collection.steps)
+        self.assertTrue("check" in collection.steps)
         self.assertTrue("compile" in upgraded_collection.steps)
         self.assertEqual(Collection.Transforms.UPGRADE_10_11, upgraded_collection.transform_type)
         self.assertEqual(Collection.Transforms.COMPILE_RELEASES, compiled_collection.transform_type)

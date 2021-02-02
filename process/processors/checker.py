@@ -24,7 +24,7 @@ def check_collection_file(collection_file):
     if not isinstance(collection_file, CollectionFile):
         raise TypeError("collection_file is not a CollectionFile value")
 
-    logger.info("Checking releases for collection file {}".format(collection_file))
+    logger.info("Checking data for collection file {}".format(collection_file))
 
     items_key = None
     if (

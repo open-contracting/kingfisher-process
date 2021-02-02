@@ -72,6 +72,7 @@ class Command(BaseWorker):
         )
         parser.add_argument("-u", "--upgrade", help=_("upgrade collection to latest version"), action="store_true")
         parser.add_argument("-c", "--compile", help=_("compile collection"), action="store_true")
+        parser.add_argument("-e", "--check", help=_("compile collection"), action="store_true")
         parser.add_argument(
             "-k", "--keep-open", help=_("keep collection open for future file additions"), action="store_true"
         )
@@ -117,6 +118,7 @@ class Command(BaseWorker):
                 options["note"],
                 upgrade=options["upgrade"],
                 compile=options["compile"],
+                check=options["check"],
                 sample=options["sample"],
                 force=options["force"],
             )

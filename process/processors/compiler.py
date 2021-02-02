@@ -4,9 +4,16 @@ import ocdsmerge
 from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
-from process.models import (Collection, CollectionFile, CollectionFileItem,
-                            CollectionFileStep, CompiledRelease, Data, Record,
-                            Release)
+from process.models import (
+    Collection,
+    CollectionFile,
+    CollectionFileItem,
+    CollectionFileStep,
+    CompiledRelease,
+    Data,
+    Record,
+    Release,
+)
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -268,7 +275,7 @@ def compilable(collection_id):
         * could be compiled (load complete)
         * already wasn't compiled
 
-    :param int collection_id: collection id - new compiled collection will be created based on this collection
+    :param int collection_id: collection id - to be checked
 
     :returns: true if the collection can be created
     :rtype: bool

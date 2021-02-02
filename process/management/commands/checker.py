@@ -29,13 +29,16 @@ class Command(BaseWorker):
                 pk=input_message["collection_file_id"]
             )
 
-            try:
-                with transaction.atomic():
-                    check_collection_file(collection_file)
-            except AlreadyExists:
-                self.exception("Checks already calculated for collection file {}".format(collection_file))
+            if "check" in collection_file.collection.steps:
+                try:
+                    with transaction.atomic():
+                        check_collection_file(collection_file)
+                except AlreadyExists:
+                    self.exception("Checks already calculated for collection file {}".format(collection_file))
 
-            self.info("Checks calculated for collection file {}".format(collection_file))
+                self.info("Checks calculated for collection file {}".format(collection_file))
+            else:
+                self.info("Collection file {} is not checkable. Skip.".format(collection_file))
             channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))

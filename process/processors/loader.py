@@ -38,7 +38,9 @@ def create_collection_file(collection, file_path):
         raise ValueError(form.error_messages)
 
 
-def create_collections(source_id, data_version, note=None, upgrade=False, compile=False, sample=False, force=False):
+def create_collections(
+    source_id, data_version, note=None, upgrade=False, compile=False, check=False, sample=False, force=False
+):
     """
     Creates master collection, note, upgraded collection, compiled collection etc. based on provided data
 
@@ -58,12 +60,14 @@ def create_collections(source_id, data_version, note=None, upgrade=False, compil
     """
     data = {"source_id": source_id, "data_version": data_version, "sample": sample, "force": force}
 
+    collection_steps = []
+    if check:
+        collection_steps.append("check")
+
     if upgrade:
-        collection_steps = ["upgrade"]
+        collection_steps.append("upgrade")
     elif compile:
-        collection_steps = ["compile"]
-    else:
-        collection_steps = None
+        collection_steps.append("compile")
 
     # create master collection
     collection = _create_collection(data, collection_steps, note, None, None)

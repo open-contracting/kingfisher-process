@@ -30,6 +30,7 @@ def create_collection(request):
                 note=(input.get("note")),
                 upgrade=(input.get("upgrade", False)),
                 compile=(input.get("compile", False)),
+                check=(input.get("check", False)),
                 sample=(input.get("sample", False)),
             )
 
