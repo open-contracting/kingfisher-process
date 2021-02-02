@@ -1,5 +1,4 @@
 import json
-import sys
 
 from django.db import transaction
 
@@ -37,9 +36,8 @@ class Command(BaseWorker):
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
                 self.publish(json_dumps(message))
-
-            # confirm message processing
-            channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
-            sys.exit()
+
+        # confirm message processing
+        channel.basic_ack(delivery_tag=method.delivery_tag)
