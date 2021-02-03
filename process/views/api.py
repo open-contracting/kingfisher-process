@@ -6,6 +6,7 @@ import pika
 from django.db import transaction
 from django.db.models.functions import Now
 from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from process.models import Collection
 from process.processors.loader import create_collection_file as loader_create_collection_file
@@ -15,6 +16,7 @@ from process.util import get_env_id, get_rabbit_channel, json_dumps
 logger = logging.getLogger("views.api")
 
 
+@csrf_exempt
 def create_collection(request):
     if request.method == "POST":
         input = json.loads(request.body)
@@ -51,6 +53,7 @@ def create_collection(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
+@csrf_exempt
 def close_collection(request):
     if request.method == "POST":
         input = json.loads(request.body)
@@ -79,6 +82,7 @@ def close_collection(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
+@csrf_exempt
 def create_collection_file(request):
     if request.method == "POST":
         input = json.loads(request.body)

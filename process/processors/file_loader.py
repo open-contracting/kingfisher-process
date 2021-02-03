@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 
 import ijson
 from django.db.utils import IntegrityError
@@ -117,7 +118,7 @@ def _read_data_from_file(filename, data_type):
             if prefix == "{}.item".format(key) and event == "end_map":
                 # collection of the record/release data item ended here
                 build_object = False
-                file_items.append(builder_object.value)
+                file_items.append(OrderedDict(builder_object.value))
 
             if prefix == package_key and event == "end_map":
                 # collection of package data ended
