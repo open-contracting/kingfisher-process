@@ -2,6 +2,7 @@ import logging
 from collections import OrderedDict
 
 import ijson
+import simplejson as json
 from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
 from ocdskit.upgrade import upgrade_10_11
@@ -160,7 +161,12 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
 
         # upgrade to latest version if necessary
         if upgrade:
-            item = upgrade_10_11(item)
+            # this is not the prettiest solution
+            # however there is no way to tell upgrade_10_11 to not to reorder keys
+            # simplejson is used here as it supports Decimal natively
+            item = upgrade_10_11(
+                json.loads(json.dumps(item, use_decimal=True), object_pairs_hook=OrderedDict, use_decimal=True)
+            )
 
         # store data object
         item_hash = get_hash(str(item))

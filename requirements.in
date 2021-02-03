@@ -10,3 +10,4 @@ ocdsmerge
 ocdskit
 django-cors-headers
 django-tastypie
+simplejson
