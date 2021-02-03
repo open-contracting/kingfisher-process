@@ -6,7 +6,7 @@ services:
     network_mode: "host"
     restart: unless-stopped
     volumes:
-      - /home/datlab/data/:/data
+      - /data:/data
     scale: 2
   checker:
     image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
@@ -14,7 +14,7 @@ services:
     network_mode: "host"
     restart: unless-stopped
     volumes:
-      - /home/datlab/data/:/data
+      - /data:/data
     scale: 2
   compiler:
     image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
@@ -22,7 +22,7 @@ services:
     network_mode: "host"
     restart: unless-stopped
     volumes:
-      - /home/datlab/data/:/data
+      - /data:/data
     scale: 2
   release_compiler:
     image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
@@ -30,7 +30,7 @@ services:
     network_mode: "host"
     restart: unless-stopped
     volumes:
-      - /home/datlab/data/:/data
+      - /data:/data
     scale: 2
   record_compiler:
     image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
@@ -38,5 +38,5 @@ services:
     network_mode: "host"
     restart: unless-stopped
     volumes:
-      - /home/datlab/data/:/data
+      - /data:/data
     scale: 2
