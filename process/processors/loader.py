@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 
-from process.forms import CollectionFileForm, CollectionForm, CollectionNoteForm
+from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
 from process.models import Collection, CollectionFileStep
 
 # Get an instance of a logger
@@ -119,7 +119,7 @@ def _save_note(collection, note):
     """
     Creates note for a given collection
     """
-    form = CollectionNoteForm(dict(collection=collection, note=note))
+    form = CollectionNoteForm(dict(collection=collection, note=note, code=CollectionNote.Codes.INFO))
     if form.is_valid():
         return form.save()
     else:

@@ -1,8 +1,10 @@
 import json
+import traceback
 
 from django.db import transaction
 
 from process.management.commands.base.worker import BaseWorker
+from process.models import Collection, CollectionNote
 from process.processors.file_loader import process_file
 from process.util import json_dumps
 
@@ -17,13 +19,13 @@ class Command(BaseWorker):
         super().__init__(self.worker_name)
 
     def process(self, channel, method, properties, body):
+        # parse input message
+        input_message = json.loads(body.decode("utf8"))
+
         try:
-            # parse input message
-            input_message = json.loads(body.decode("utf8"))
             self.debug("Received message {}".format(input_message))
 
             collection_file_id = input_message["collection_file_id"]
-
             upgraded_collection_file_id = None
             with transaction.atomic():
                 upgraded_collection_file_id = process_file(collection_file_id)
@@ -38,6 +40,16 @@ class Command(BaseWorker):
                 self.publish(json_dumps(message))
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
-
+            try:
+                collection = Collection.objects.get(collection_file_id=input_message["collection_file_id"])
+                self.save_note(
+                    collection,
+                    CollectionNote.Codes.ERROR,
+                    "Unable to process collection_file_id {} \n{}".format(
+                        input_message["collection_file_id"], traceback.format_exc()
+                    ),
+                )
+            except Exception:
+                self.exception("Failed saving collection note")
         # confirm message processing
         channel.basic_ack(delivery_tag=method.delivery_tag)

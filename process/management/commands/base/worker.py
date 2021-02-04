@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as t
 
-from process.models import CollectionFileStep
+from process.models import CollectionFileStep, CollectionNote
 from process.util import get_env_id, get_rabbit_channel
 
 
@@ -143,3 +143,10 @@ class BaseWorker(BaseCommand):
     def exception(self, message):
         """Shortcut function to logging facility"""
         self.logger().exception(message)
+
+    def save_note(self, collection, code, note):
+        """Shortcut to save note to collection"""
+        collection_note = CollectionNote()
+        collection_note.code = code
+        collection_note.note = note
+        collection.save()

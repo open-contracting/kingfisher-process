@@ -263,6 +263,13 @@ class CollectionNote(models.Model):
     note = models.TextField()
     stored_at = models.DateTimeField(auto_now_add=True)
 
+    class Codes(models.TextChoices):
+        INFO = "INFO"
+        ERROR = "ERROR"
+        WARNING = "WARNING"
+
+    code = models.TextField(blank=True, choices=Codes.choices)
+
     def __str__(self):
         return "{note} (id: {id})".format_map(Default(note=self.note, id=self.id))
 

@@ -75,7 +75,7 @@ def process_file(collection_file_id):
     except CollectionFile.DoesNotExist:
         raise ValueError("Collection file id {} not found".format(collection_file_id))
     except IntegrityError as e:
-        raise AlreadyExists("Item already exists".format(collection_file_id)) from e
+        raise AlreadyExists("Item {} already exists".format(collection_file_id)) from e
 
 
 def _read_data_from_file(filename, data_type):

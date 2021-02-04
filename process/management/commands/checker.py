@@ -1,11 +1,11 @@
 import json
-import sys
+import traceback
 
 from django.db import transaction
 
 from process.exceptions import AlreadyExists
 from process.management.commands.base.worker import BaseWorker
-from process.models import CollectionFile
+from process.models import Collection, CollectionFile, CollectionNote
 from process.processors.checker import check_collection_file
 
 
@@ -19,9 +19,9 @@ class Command(BaseWorker):
         super().__init__(self.worker_name)
 
     def process(self, channel, method, properties, body):
+        # parse input message
+        input_message = json.loads(body.decode("utf8"))
         try:
-            # parse input message
-            input_message = json.loads(body.decode("utf8"))
 
             self.debug("Received message {}".format(input_message))
 
@@ -35,11 +35,27 @@ class Command(BaseWorker):
                         check_collection_file(collection_file)
                 except AlreadyExists:
                     self.exception("Checks already calculated for collection file {}".format(collection_file))
+                    self.save_note(
+                        collection_file.collection,
+                        CollectionNote.Codes.WARNING,
+                        "Checks already calculated for collection file {}".format(collection_file),
+                    )
 
                 self.info("Checks calculated for collection file {}".format(collection_file))
             else:
                 self.info("Collection file {} is not checkable. Skip.".format(collection_file))
-            channel.basic_ack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
-            sys.exit()
+            try:
+                collection = Collection.objects.get(collection_file_id=input_message["collection_file_id"])
+                self.save_note(
+                    collection,
+                    CollectionNote.Codes.ERROR,
+                    "Unable to process collection file id {} \n{}".format(
+                        input_message["collection_file_id"], traceback.format_exc()
+                    ),
+                )
+            except Exception:
+                self.exception("Failed saving collection note")
+
+        channel.basic_ack(delivery_tag=method.delivery_tag)

@@ -1,10 +1,10 @@
 import json
-import sys
+import traceback
 
 from django.db import transaction
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, Record, Release
+from process.models import Collection, CollectionFile, CollectionNote, Record, Release
 from process.processors.compiler import compilable
 
 
@@ -18,34 +18,40 @@ class Command(BaseWorker):
         super().__init__(self.worker_name)
 
     def process(self, channel, method, properties, body):
-        try:
-            # parse input message
-            input_message = json.loads(body.decode("utf8"))
+        # parse input message
+        input_message = json.loads(body.decode("utf8"))
 
+        try:
             self.debug("Received message {}".format(input_message))
 
-            try:
-                collection_file = CollectionFile.objects.prefetch_related("collection").get(
-                    pk=input_message["collection_file_id"]
-                )
+            collection_file = CollectionFile.objects.prefetch_related("collection").get(
+                pk=input_message["collection_file_id"]
+            )
 
-                collection = collection_file.collection
+            collection = collection_file.collection
 
-                if compilable(collection.id):
-                    if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-                        self._publish_releases(collection)
-                    else:
-                        self._publish_records(collection_file)
+            if compilable(collection.id):
+                if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+                    self._publish_releases(collection)
                 else:
-                    self.debug("Collection {} is not compilable.".format(collection))
-
-            except CollectionFile.DoesNotExist:
-                self.error("Collection file {} not found".format(input_message["collection_file_id"]))
-
-            channel.basic_ack(delivery_tag=method.delivery_tag)
+                    self._publish_records(collection_file)
+            else:
+                self.debug("Collection {} is not compilable.".format(collection))
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
-            sys.exit()
+            try:
+                collection = Collection.objects.get(collection_file_id=input_message["collection_file_id"])
+                self.save_note(
+                    collection,
+                    CollectionNote.Codes.ERROR,
+                    "Unable to process collection_file_id {} \n{}".format(
+                        input_message["collection_file_id"], traceback.format_exc()
+                    ),
+                )
+            except Exception:
+                self.exception("Failed saving collection note")
+
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def _publish_releases(self, collection):
         try:
