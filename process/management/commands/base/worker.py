@@ -147,6 +147,7 @@ class BaseWorker(BaseCommand):
     def save_note(self, collection, code, note):
         """Shortcut to save note to collection"""
         collection_note = CollectionNote()
+        collection_note.collection = collection
         collection_note.code = code
         collection_note.note = note
         collection_note.save()
