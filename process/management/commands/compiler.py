@@ -40,7 +40,7 @@ class Command(BaseWorker):
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
             try:
-                collection = Collection.objects.get(collection_file_id=input_message["collection_file_id"])
+                collection = Collection.objects.get(collectionfile_id=input_message["collection_file_id"])
                 self.save_note(
                     collection,
                     CollectionNote.Codes.ERROR,

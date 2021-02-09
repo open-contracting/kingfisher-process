@@ -57,7 +57,7 @@ class Command(BaseWorker):
 
             self.exception("Something went wrong when processing {}".format(body))
             try:
-                collection = Collection.objects.get(collection_file__id=collection_file_id)
+                collection = Collection.objects.get(collectionfile__id=collection_file_id)
                 self.save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
