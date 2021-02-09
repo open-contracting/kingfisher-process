@@ -149,4 +149,4 @@ class BaseWorker(BaseCommand):
         collection_note = CollectionNote()
         collection_note.code = code
         collection_note.note = note
-        collection.save()
+        collection_note.save()
