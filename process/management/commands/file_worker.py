@@ -53,9 +53,11 @@ class Command(BaseWorker):
             # return message to queue
             channel.basic_nack(delivery_tag=method.delivery_tag)
         except Exception:
+            collection_file_id = input_message["collection_file_id"]
+
             self.exception("Something went wrong when processing {}".format(body))
             try:
-                collection = Collection.objects.get(collection_file_id=input_message["collection_file_id"])
+                collection = Collection.objects.get(collection_file__id=collection_file_id)
                 self.save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
@@ -65,5 +67,8 @@ class Command(BaseWorker):
                 )
             except Exception:
                 self.exception("Failed saving collection note")
+
+            self.deleteStep(collection_file_id)
+
             # confirm message processing
             channel.basic_ack(delivery_tag=method.delivery_tag)
