@@ -1,7 +1,7 @@
 import json
 import traceback
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from process.management.commands.base.worker import BaseWorker
 from process.models import Collection, CollectionNote
@@ -38,6 +38,20 @@ class Command(BaseWorker):
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
                 self.publish(json_dumps(message))
+
+            # confirm message processing
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+        except IntegrityError:
+            self.exception(
+                """ This should be a very rare exception, most probably one worker stored
+                    data item during processing the very same data in current worker.
+                    Message body {}""".format(
+                    body
+                )
+            )
+
+            # return message to queue
+            channel.basic_nack(delivery_tag=method.delivery_tag)
         except Exception:
             self.exception("Something went wrong when processing {}".format(body))
             try:
@@ -51,5 +65,5 @@ class Command(BaseWorker):
                 )
             except Exception:
                 self.exception("Failed saving collection note")
-        # confirm message processing
-        channel.basic_ack(delivery_tag=method.delivery_tag)
+            # confirm message processing
+            channel.basic_ack(delivery_tag=method.delivery_tag)
