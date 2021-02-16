@@ -11,7 +11,9 @@ def get_hash_md5_for_data(data):
 
 
 control_codes_to_filter_out = [
-    b'\\u0000',
+    b'\\u0000',  # not sure why this is here
+    b'\x00',
+    # \x01 is omitted for no known reason
     b'\x02',
     b'\x03',
     b'\x04',
@@ -20,6 +22,7 @@ control_codes_to_filter_out = [
     b'\x07',
     b'\x08',
     b'\x09',
+    # \n is \x0A
     b'\x0B',
     b'\x0C',
     b'\x0D',
