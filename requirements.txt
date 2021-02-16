@@ -36,7 +36,7 @@ mako==1.1.0               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
 more-itertools==8.0.2     # via zipp
 ocdsextensionregistry==0.0.24  # via ocdskit
-ocdskit==0.2.16
+ocdskit==0.2.19
 ocdsmerge==0.6.4
 openpyxl==3.0.2           # via flattentool
 pgpasslib==1.1.0

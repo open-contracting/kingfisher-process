@@ -43,7 +43,7 @@ markupsafe==1.1.1
 mccabe==0.6.1             # via flake8
 more-itertools==8.0.2
 ocdsextensionregistry==0.0.24
-ocdskit==0.2.16
+ocdskit==0.2.19
 ocdsmerge==0.6.4
 openpyxl==3.0.2
 packaging==19.2           # via pytest
