@@ -108,29 +108,36 @@ class BaseWorker(BaseCommand):
     def _createStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
         """Creates processing step"""
         processing_step = ProcessingStep()
+        processing_step.name = step_type
         if collection_file_id:
-            processing_step.collection_file = CollectionFile.objects.filter(collection_file=collection_file_id).get()
+            processing_step.collection_file = CollectionFile.objects.get(id=collection_file_id)
             processing_step.collection = processing_step.collection_file.collection
         if ocid:
             processing_step.ocid = ocid
-            processing_step.collection = Collection.objects.filter(id=collection_id).get()
+            processing_step.collection = Collection.objects.get(id=collection_id)
 
         processing_step.save()
 
     def _deleteStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
         """Delete processing step"""
-        processing_steps = ProcessingStep.objects.filter(collection_file=collection_file_id)
+        processing_steps = ProcessingStep.objects.all()
+
+        if collection_file_id:
+            processing_steps = processing_steps.filter(collection_file=collection_file_id)
 
         if ocid:
-            processing_steps = processing_steps.objects.filter(ocid=ocid).filter(collection__id=collection_id)
+            processing_steps = processing_steps.filter(ocid=ocid)
+
+        if collection_id:
+            processing_steps = processing_steps.filter(collection__id=collection_id)
 
         try:
-            processing_step = processing_steps.get.get(name=step_type)
+            processing_step = processing_steps.get(name=step_type)
             processing_step.delete()
-        except ProcessingStep.DoesNotExists:
+        except ProcessingStep.DoesNotExist:
             self._error("""No such processing step found
                            step_type:{} collection_id:{} collection_file_id:{} ocid:{}
-                        """.format(step_type, collection_file_id, ocid))
+                        """.format(step_type, collection_id, collection_file_id, ocid))
 
     def _file_or_directory(self, string):
         """Checks whether the path is existing file or directory. Raises an exception if not"""

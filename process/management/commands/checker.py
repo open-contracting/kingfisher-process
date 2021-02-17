@@ -34,7 +34,6 @@ class Command(BaseWorker):
                 try:
                     with transaction.atomic():
                         check_collection_file(collection_file)
-                        self._deleteStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
                 except AlreadyExists:
                     self._exception("Checks already calculated for collection file {}".format(collection_file))
                     self._save_note(
@@ -46,10 +45,12 @@ class Command(BaseWorker):
                 self._info("Checks calculated for collection file {}".format(collection_file))
             else:
                 self._info("Collection file {} is not checkable. Skip.".format(collection_file))
+
+            self._deleteStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
-                collection = Collection.objects.get(collectionfile_id=input_message["collection_file_id"])
+                collection = Collection.objects.get(collectionfile__id=input_message["collection_file_id"])
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,

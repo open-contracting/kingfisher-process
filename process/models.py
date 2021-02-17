@@ -312,9 +312,6 @@ class ProcessingStep(models.Model):
             models.Index(name="processing_step_ocid_idx", fields=["ocid"]),
             models.Index(name="processing_step_name_idx", fields=["name"]),
         ]
-        constraints = [
-            models.UniqueConstraint(name="unique_collection_file_item_name", fields=["collection_file", "name"]),
-        ]
 
     class Types(models.TextChoices):
         LOAD = "LOAD"
@@ -322,10 +319,10 @@ class ProcessingStep(models.Model):
         COMPILE = "COMPILE"
         CHECK = "CHECK"
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=True)
-    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=True)
-    ocid = models.TextField(blank=True)
-    name = models.TextField(blank=True, choices=Types.choices)
+    collection = models.ForeignKey(Collection, null=True, on_delete=models.CASCADE, db_index=True)
+    collection_file = models.ForeignKey(CollectionFile, null=True, on_delete=models.CASCADE, db_index=True)
+    ocid = models.TextField(null=True)
+    name = models.TextField(choices=Types.choices)
 
 
 class CollectionFileItem(models.Model):

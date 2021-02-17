@@ -4,7 +4,8 @@ import traceback
 from django.db import transaction
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, CollectionNote, Record, Release
+from process.models import (Collection, CollectionFile, CollectionNote,
+                            ProcessingStep, Record, Release)
 from process.processors.compiler import compilable
 
 
@@ -40,7 +41,7 @@ class Command(BaseWorker):
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
-                collection = Collection.objects.get(collectionfile_id=input_message["collection_file_id"])
+                collection = Collection.objects.get(collectionfile__id=input_message["collection_file_id"])
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
@@ -82,6 +83,8 @@ class Command(BaseWorker):
                     "ocid": item["ocid"],
                     "collection_id": collection.id,
                 }
+
+                self._createStep(ProcessingStep.Types.COMPILE, collection_id=collection.id, ocid=item["ocid"])
                 self._publish(json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self._warning(
@@ -114,4 +117,8 @@ class Command(BaseWorker):
                 "ocid": item["ocid"],
                 "collection_id": collection_file.collection.id,
             }
+
+            self._createStep(ProcessingStep.Types.COMPILE,
+                             collection_id=collection_file.collection.id,
+                             ocid=item["ocid"])
             self._publish(json.dumps(message), "compiler_record")

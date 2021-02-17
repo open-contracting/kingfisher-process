@@ -4,7 +4,7 @@ import traceback
 from django.db import transaction
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionNote
+from process.models import Collection, CollectionNote, ProcessingStep
 from process.processors.compiler import compile_release
 
 
@@ -37,6 +37,8 @@ class Command(BaseWorker):
             with transaction.atomic():
                 self._info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_release(collection_id, ocid)
+
+            self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=collection_id, ocid=ocid)
 
             # publish message about processed item
             message = {
