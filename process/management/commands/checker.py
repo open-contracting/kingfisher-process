@@ -5,7 +5,8 @@ from django.db import transaction
 
 from process.exceptions import AlreadyExists
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection, CollectionFile, CollectionNote
+from process.models import (Collection, CollectionFile, CollectionNote,
+                            ProcessingStep)
 from process.processors.checker import check_collection_file
 
 
@@ -33,6 +34,7 @@ class Command(BaseWorker):
                 try:
                     with transaction.atomic():
                         check_collection_file(collection_file)
+                        self._deleteStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
                 except AlreadyExists:
                     self._exception("Checks already calculated for collection file {}".format(collection_file))
                     self._save_note(

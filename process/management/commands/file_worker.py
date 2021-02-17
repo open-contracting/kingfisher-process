@@ -32,11 +32,13 @@ class Command(BaseWorker):
 
                 self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
+            self._createStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
             self._publish(json.dumps(input_message))
 
             # send upgraded collection file to further processing
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
+                self._createStep(ProcessingStep.Types.CHECK, collection_file_id=upgraded_collection_file_id)
                 self._publish(json_dumps(message))
 
             # confirm message processing

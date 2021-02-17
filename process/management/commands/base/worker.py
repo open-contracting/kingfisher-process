@@ -7,7 +7,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as t
 
-from process.models import CollectionNote, ProcessingStep
+from process.models import (Collection, CollectionFile, CollectionNote,
+                            ProcessingStep)
 from process.util import get_env_id, get_rabbit_channel
 
 
@@ -104,17 +105,32 @@ class BaseWorker(BaseCommand):
             )
         )
 
-    def _deleteStep(self, step_type=None, collection_file_id=None, ocid=None):
+    def _createStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
+        """Creates processing step"""
+        processing_step = ProcessingStep()
         if collection_file_id:
-            processing_step = ProcessingStep.objects.filter(collection_file=collection_file_id).get(
-                name=step_type
-            )
-        else:
-            processing_step = ProcessingStep.objects.filter(ocid=ocid).get(
-                name=step_type
-            )
+            processing_step.collection_file = CollectionFile.objects.filter(collection_file=collection_file_id).get()
+            processing_step.collection = processing_step.collection_file.collection
+        if ocid:
+            processing_step.ocid = ocid
+            processing_step.collection = Collection.objects.filter(id=collection_id).get()
 
-        processing_step.delete()
+        processing_step.save()
+
+    def _deleteStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
+        """Delete processing step"""
+        processing_steps = ProcessingStep.objects.filter(collection_file=collection_file_id)
+
+        if ocid:
+            processing_steps = processing_steps.objects.filter(ocid=ocid).filter(collection__id=collection_id)
+
+        try:
+            processing_step = processing_steps.get.get(name=step_type)
+            processing_step.delete()
+        except ProcessingStep.DoesNotExists:
+            self._error("""No such processing step found
+                           step_type:{} collection_id:{} collection_file_id:{} ocid:{}
+                        """.format(step_type, collection_file_id, ocid))
 
     def _file_or_directory(self, string):
         """Checks whether the path is existing file or directory. Raises an exception if not"""
