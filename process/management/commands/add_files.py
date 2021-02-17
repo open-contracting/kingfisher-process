@@ -7,7 +7,7 @@ from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import Collection
+from process.models import Collection, ProcessingStep
 from process.processors.loader import create_collection_file
 from process.util import json_dumps, walk
 from process.util import wrap as w
@@ -61,7 +61,7 @@ class Command(BaseWorker):
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
                 self._debug("Storing file {}".format(file_path))
-                collection_file = create_collection_file(collection, file_path)
+                collection_file = create_collection_file(collection, file_path, [ProcessingStep.Types.LOAD])
 
             message = {"collection_file_id": collection_file.id}
 
