@@ -4,16 +4,9 @@ import ocdsmerge
 from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
-from process.models import (
-    Collection,
-    CollectionFile,
-    CollectionFileItem,
-    CollectionFileStep,
-    CompiledRelease,
-    Data,
-    Record,
-    Release,
-)
+from process.models import (Collection, CollectionFile, CollectionFileItem,
+                            CompiledRelease, Data, ProcessingStep, Record,
+                            Release)
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -295,13 +288,13 @@ def compilable(collection_id):
             return True
 
         if collection.store_end_at is not None:
-            collection_file_step_count = (
-                CollectionFileStep.objects.filter(collection_file__collection=collection.get_root_parent())
-                .filter(name="file_worker")
+            processing_step_count = (
+                ProcessingStep.objects.filter(collection_file__collection=collection.get_root_parent())
+                .filter(name=ProcessingStep.Types.LOAD)
                 .count()
             )
 
-            if collection_file_step_count == 0:
+            if processing_step_count == 0:
                 compiled_collection = collection.get_compiled_collection()
                 if compiled_collection.compilation_started:
                     # the compilation was already started
@@ -311,7 +304,7 @@ def compilable(collection_id):
             else:
                 logger.debug(
                     "Load not finished yet for collection {} - remaining {} steps.".format(
-                        collection, collection_file_step_count
+                        collection, processing_step_count
                     )
                 )
                 return False

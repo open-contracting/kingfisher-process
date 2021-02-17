@@ -29,13 +29,13 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self.debug("Received message {}".format(input_message))
+            self._debug("Received message {}".format(input_message))
 
             ocid = input_message["ocid"]
             collection_id = input_message["collection_id"]
 
             with transaction.atomic():
-                self.info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
+                self._info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_release(collection_id, ocid)
 
             # publish message about processed item
@@ -44,13 +44,13 @@ class Command(BaseWorker):
                 "compiled_release_id": release.pk,
             }
 
-            self.publish(json.dumps(message))
+            self._publish(json.dumps(message))
 
         except Exception:
-            self.exception("Something went wrong when processing {}".format(body))
+            self._exception("Something went wrong when processing {}".format(body))
             try:
                 collection = Collection.objects.get(id=input_message["collection_id"])
-                self.save_note(
+                self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
                     "Unable to process {} for collection id : {} \n{}".format(
@@ -58,6 +58,6 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self.exception("Failed saving collection note")
+                self._exception("Failed saving collection note")
 
         channel.basic_ack(delivery_tag=method.delivery_tag)

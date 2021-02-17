@@ -81,4 +81,4 @@ class Command(CollectionCommand):
 
             file_ids = collection.collectionfile_set.values_list('id', flat=True)
             for file_id in file_ids.iterator():
-                self.publish(step, dict(file_id=file_id, **message))
+                self._publish(step, dict(file_id=file_id, **message))

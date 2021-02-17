@@ -22,7 +22,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self.debug("Received message {}".format(input_message))
+            self._debug("Received message {}".format(input_message))
 
             collection_file = CollectionFile.objects.prefetch_related("collection").get(
                 pk=input_message["collection_file_id"]
@@ -36,12 +36,12 @@ class Command(BaseWorker):
                 else:
                     self._publish_records(collection_file)
             else:
-                self.debug("Collection {} is not compilable.".format(collection))
+                self._debug("Collection {} is not compilable.".format(collection))
         except Exception:
-            self.exception("Something went wrong when processing {}".format(body))
+            self._exception("Something went wrong when processing {}".format(body))
             try:
                 collection = Collection.objects.get(collectionfile_id=input_message["collection_file_id"])
-                self.save_note(
+                self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
                     "Unable to process collection_file_id {} \n{}".format(
@@ -49,7 +49,7 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self.exception("Failed saving collection note")
+                self._exception("Failed saving collection note")
 
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -66,7 +66,7 @@ class Command(BaseWorker):
                 compiled_collection.compilation_started = True
                 compiled_collection.save()
 
-            self.info("Planning release compilation for {}".format(compiled_collection))
+            self._info("Planning release compilation for {}".format(compiled_collection))
 
             # get all ocids for collection
             ocids = (
@@ -82,9 +82,9 @@ class Command(BaseWorker):
                     "ocid": item["ocid"],
                     "collection_id": collection.id,
                 }
-                self.publish(json.dumps(message), "compiler_release")
+                self._publish(json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
-            self.warning(
+            self._warning(
                 """"Tried to plan compilation for already "planned" collection.
                 This can rarely happen in multi worker environments."""
             )
@@ -98,7 +98,7 @@ class Command(BaseWorker):
             compiled_collection.compilation_started = True
             compiled_collection.save()
 
-        self.info("Planning records compilation for {} file {}".format(compiled_collection, collection_file))
+        self._info("Planning records compilation for {} file {}".format(compiled_collection, collection_file))
 
         # get all ocids for collection
         ocids = (
@@ -114,4 +114,4 @@ class Command(BaseWorker):
                 "ocid": item["ocid"],
                 "collection_id": collection_file.collection.id,
             }
-            self.publish(json.dumps(message), "compiler_record")
+            self._publish(json.dumps(message), "compiler_record")

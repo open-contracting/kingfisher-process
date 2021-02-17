@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as t
 
-from process.models import CollectionFileStep, CollectionNote
+from process.models import CollectionNote, ProcessingStep
 from process.util import get_env_id, get_rabbit_channel
 
 
@@ -31,16 +31,16 @@ class BaseWorker(BaseCommand):
         self.logger_instance = logging.getLogger("worker.{}".format(name))
         self.env_id = get_env_id()
         if settings.RABBITMQ:
-            self.initMessaging()
+            self._initMessaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
 
     def handle(self, *args, **options):
-        self.logger().debug("Worker started")
-        self.consume(self.process)
+        self._logger().debug("Worker started")
+        self._consume(self.process)
 
-    def initMessaging(self):
+    def _initMessaging(self):
         """Connects to RabbitMQ and prepares all the necessities - exchange, proper names for queues etc."""
-        self.debug("Connecting to RabbitMQ...")
+        self._debug("Connecting to RabbitMQ...")
 
         # build queue name
         self.rabbit_consume_queue = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
@@ -52,7 +52,7 @@ class BaseWorker(BaseCommand):
                 self.rabbit_consume_routing_keys.append("kingfisher_process_{}_{}".format(self.env_id, consumeKey))
         else:
             # undefined consume keys
-            self.debug("No or improper defined consume keys, starting without listening to messages.")
+            self._debug("No or improper defined consume keys, starting without listening to messages.")
 
         # build publish key
         self.rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
@@ -62,9 +62,9 @@ class BaseWorker(BaseCommand):
 
         self.rabbit_channel = get_rabbit_channel(self.rabbit_exchange)
 
-        self.info("RabbitMQ connection established")
+        self._info("RabbitMQ connection established")
 
-    def consume(self, callback):
+    def _consume(self, callback):
         """Define which messages to consume and queue for this worker"""
         # declare queue to store unprocessed messages
         self.rabbit_channel.queue_declare(queue=self.rabbit_consume_queue, durable=True)
@@ -75,7 +75,7 @@ class BaseWorker(BaseCommand):
                 exchange=self.rabbit_exchange, queue=self.rabbit_consume_queue, routing_key=consumeKey
             )
 
-            self.debug(
+            self._debug(
                 "Consuming messages from exchange {} with routing key {}".format(self.rabbit_exchange, consumeKey)
             )
 
@@ -84,7 +84,7 @@ class BaseWorker(BaseCommand):
 
         self.rabbit_channel.start_consuming()
 
-    def publish(self, message, routing_key=None):
+    def _publish(self, message, routing_key=None):
         """Publish message with work for a next part of process"""
         if routing_key:
             publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, routing_key)
@@ -98,53 +98,59 @@ class BaseWorker(BaseCommand):
             properties=pika.BasicProperties(delivery_mode=2),
         )
 
-        self.debug(
+        self._debug(
             "Published message to exchange {} with routing key {}. Message: {}".format(
                 self.rabbit_exchange, self.rabbit_publish_routing_key, message
             )
         )
 
-    def deleteStep(self, collection_file_id):
-        collection_file_step = CollectionFileStep.objects.filter(collection_file=collection_file_id).get(
-            name=self.worker_name
-        )
-        collection_file_step.delete()
+    def _deleteStep(self, step_type=None, collection_file_id=None, ocid=None):
+        if collection_file_id:
+            processing_step = ProcessingStep.objects.filter(collection_file=collection_file_id).get(
+                name=step_type
+            )
+        else:
+            processing_step = ProcessingStep.objects.filter(ocid=ocid).get(
+                name=step_type
+            )
 
-    def file_or_directory(self, string):
+        processing_step.delete()
+
+    def _file_or_directory(self, string):
         """Checks whether the path is existing file or directory. Raises an exception if not"""
         if not os.path.exists(string):
             raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": string})
         return string
 
-    def logger(self):
+    def _logger(self):
         """Returns initialised logger instance"""
         return self.logger_instance
 
-    def debug(self, message):
+    def _debug(self, message):
         """Shortcut function to logging facility"""
-        self.logger().debug(message)
+        self._logger().debug(message)
 
-    def info(self, message):
+    def _info(self, message):
         """Shortcut function to logging facility"""
-        self.logger().info(message)
+        self._logger().info(message)
 
-    def warning(self, message):
+    def _warning(self, message):
         """Shortcut function to logging facility"""
-        self.logger().warning(message)
+        self._logger().warning(message)
 
-    def error(self, message):
+    def _error(self, message):
         """Shortcut function to logging facility"""
-        self.logger().error(message)
+        self._logger().error(message)
 
-    def critical(self, message):
+    def _critical(self, message):
         """Shortcut function to logging facility"""
-        self.logger().critical(message)
+        self._logger().critical(message)
 
-    def exception(self, message):
+    def _exception(self, message):
         """Shortcut function to logging facility"""
-        self.logger().exception(message)
+        self._logger().exception(message)
 
-    def save_note(self, collection, code, note):
+    def _save_note(self, collection, code, note):
         """Shortcut to save note to collection"""
         collection_note = CollectionNote()
         collection_note.collection = collection

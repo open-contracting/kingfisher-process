@@ -1,6 +1,6 @@
 from django.test import TransactionTestCase
 
-from process.models import Collection, CollectionFile, CollectionFileStep
+from process.models import Collection, CollectionFile, ProcessingStep
 from process.processors.compiler import compilable
 
 
@@ -24,8 +24,8 @@ class CompilableTests(TransactionTestCase):
     def test_not_fully_processed(self):
         collection = Collection.objects.get(id=2)
         collection_file = CollectionFile.objects.get(id=1)
-        collection_file_step = CollectionFileStep()
-        collection_file_step.name = "file_worker"
+        collection_file_step = ProcessingStep()
+        collection_file_step.name = ProcessingStep.Types.LOAD
         collection_file_step.collection = Collection.objects.get(id=1)
         collection_file_step.collection_file = collection_file
         collection_file_step.save()

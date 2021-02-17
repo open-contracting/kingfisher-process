@@ -23,7 +23,7 @@ class Command(BaseWorker):
 
     def add_arguments(self, parser):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument("PATH", help=_("a file or directory to load"), nargs="+", type=self.file_or_directory)
+        parser.add_argument("PATH", help=_("a file or directory to load"), nargs="+", type=self._file_or_directory)
         parser.add_argument(
             "-c",
             "--collection",
@@ -54,17 +54,17 @@ class Command(BaseWorker):
                 _("A collection id: {} already closed at {}".format(collection_id, collection.store_end_at))
             )
 
-        self.debug("Processing path {}".format(options["PATH"]))
+        self._debug("Processing path {}".format(options["PATH"]))
 
         for file_path in walk(options["PATH"]):
             # note - keep transaction here, not "higher" around the whole cycle
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
-                self.debug("Storing file {}".format(file_path))
+                self._debug("Storing file {}".format(file_path))
                 collection_file = create_collection_file(collection, file_path)
 
             message = {"collection_file_id": collection_file.id}
 
-            self.publish(json_dumps(message))
+            self._publish(json_dumps(message))
 
-        self.info("Load command completed")
+        self._info("Load command completed")

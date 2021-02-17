@@ -23,7 +23,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
         try:
 
-            self.debug("Received message {}".format(input_message))
+            self._debug("Received message {}".format(input_message))
 
             collection_file = CollectionFile.objects.select_related("collection").get(
                 pk=input_message["collection_file_id"]
@@ -34,21 +34,21 @@ class Command(BaseWorker):
                     with transaction.atomic():
                         check_collection_file(collection_file)
                 except AlreadyExists:
-                    self.exception("Checks already calculated for collection file {}".format(collection_file))
-                    self.save_note(
+                    self._exception("Checks already calculated for collection file {}".format(collection_file))
+                    self._save_note(
                         collection_file.collection,
                         CollectionNote.Codes.WARNING,
                         "Checks already calculated for collection file {}".format(collection_file),
                     )
 
-                self.info("Checks calculated for collection file {}".format(collection_file))
+                self._info("Checks calculated for collection file {}".format(collection_file))
             else:
-                self.info("Collection file {} is not checkable. Skip.".format(collection_file))
+                self._info("Collection file {} is not checkable. Skip.".format(collection_file))
         except Exception:
-            self.exception("Something went wrong when processing {}".format(body))
+            self._exception("Something went wrong when processing {}".format(body))
             try:
                 collection = Collection.objects.get(collectionfile_id=input_message["collection_file_id"])
-                self.save_note(
+                self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
                     "Unable to process collection file id {} \n{}".format(
@@ -56,6 +56,6 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self.exception("Failed saving collection note")
+                self._exception("Failed saving collection note")
 
         channel.basic_ack(delivery_tag=method.delivery_tag)

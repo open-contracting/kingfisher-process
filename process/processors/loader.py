@@ -1,20 +1,20 @@
 import logging
 
-from django.conf import settings
-
-from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
-from process.models import Collection, CollectionFileStep
+from process.forms import (CollectionFileForm, CollectionForm, CollectionNote,
+                           CollectionNoteForm)
+from process.models import Collection, ProcessingStep
 
 # Get an instance of a logger
 logger = logging.getLogger("processor.loader")
 
 
-def create_collection_file(collection, file_path):
+def create_collection_file(collection, file_path, steps):
     """
     Creates file for a collection and steps for this file.
 
     :param Collection collection: collection
-    :param str file_path:
+    :param str file_path path to file data:
+    :param array steps steps to perform:
 
     :returns: created collection file
     :rtype: CollectionFile
@@ -26,12 +26,13 @@ def create_collection_file(collection, file_path):
     if form.is_valid():
         collection_file = form.save()
         logger.debug("Create collection file {}".format(collection_file))
-        for step in settings.DEFAULT_STEPS:
-            collection_file_step = CollectionFileStep()
-            collection_file_step.collection_file = collection_file
-            collection_file_step.name = step
-            collection_file_step.save()
-            logger.debug("Created collection file step {}".format(collection_file_step))
+        for step in steps:
+            processing_step = ProcessingStep()
+            processing_step.collection = collection
+            processing_step.collection_file = collection_file
+            processing_step.name = step
+            processing_step.save()
+            logger.debug("Created processing step {}".format(processing_step))
 
         return collection_file
     else:

@@ -228,7 +228,7 @@ class Collection(models.Model):
         :returns: file count
         :rtype: int
         """
-        return CollectionFileStep.objects.filter(collection_file__collection=self).count()
+        return ProcessingStep.objects.filter(collection_file__collection=self).count()
 
     def set_data_type(self, detected_format):
         """
@@ -300,23 +300,32 @@ class CollectionFile(models.Model):
         return "{filename} (id: {id})".format_map(Default(filename=self.filename, id=self.id))
 
 
-class CollectionFileStep(models.Model):
+class ProcessingStep(models.Model):
     """
     A step in the lifecycle of collection file.
     """
 
     class Meta:
-        db_table = "collection_file_step"
+        db_table = "processing_step"
         indexes = [
-            models.Index(name="collection_file_step_collection_file_id_idx", fields=["collection_file"]),
-            models.Index(name="collection_file_step_name_idx", fields=["name"]),
+            models.Index(name="processing_step_collection_file_id_idx", fields=["collection_file"]),
+            models.Index(name="processing_step_ocid_idx", fields=["ocid"]),
+            models.Index(name="processing_step_name_idx", fields=["name"]),
         ]
         constraints = [
             models.UniqueConstraint(name="unique_collection_file_item_name", fields=["collection_file", "name"]),
         ]
 
+    class Types(models.TextChoices):
+        LOAD = "LOAD"
+        UPGRADE = "UPGRADE"
+        COMPILE = "COMPILE"
+        CHECK = "CHECK"
+
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
-    name = models.CharField(max_length=64, blank=False)
+    ocid = models.TextField(blank=True)
+    name = models.TextField(blank=True, choices=Types.choices)
 
 
 class CollectionFileItem(models.Model):
