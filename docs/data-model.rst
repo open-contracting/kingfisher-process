@@ -112,6 +112,8 @@ release_in_Release_json_lines
 Items
 -----
 
-A file contains one or more items. An item is an OCDS resource: a release, record, release package or record package. An item is uniquely identified by its index within the file. Indices are ``0``-based.
+A file contains one or more items. An item is an OCDS resource: a release, record, release package or record package. An item is uniquely identified by its index (``number``) within the file. Indices are ``0``-based.
 
 Files of the type ``record``, ``release``, ``record_package``, or ``release_package`` have one item only. Files of other types have one or more items.
+
+Kingfisher Process writes errors to the `collection_file_item_errors` table when it cannot load an item.
