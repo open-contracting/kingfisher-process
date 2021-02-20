@@ -10,7 +10,7 @@ Collections are distinct sets of OCDS data. They are the largest unit on which t
 
 A collection is uniquely identified by the combination of:
 
-* Name (``source_id``): A string. If the collection was created by Kingfisher Collect, this is the ``name`` attribute of the `spider <https://github.com/open-contracting/kingfisher-collect/tree/master/kingfisher_scrapy/spiders>`__.
+* Name (``source_id``): A string. If the collection was created by Kingfisher Collect, this is the ``name`` attribute of the `spider <https://github.com/open-contracting/kingfisher-collect/tree/main/kingfisher_scrapy/spiders>`__.
 * Date (``data_version``): The date and time at which the collection was created. If the collection was created by Kingfisher Collect, this is the ``start_time`` `statistic <https://docs.scrapy.org/en/latest/topics/stats.html>`__ of the crawl.
 * Sample (``sample``): A boolean. Whether the collection is only a sample of the data from the source.
 * Base collection (``transform_from_collection_id``): An integer. The ID of the collection that was transformed into this collection.
