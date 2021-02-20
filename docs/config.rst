@@ -10,7 +10,7 @@ Create the tool's configuration directory::
 
 Download the sample main configuration file::
 
-    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/config.ini -o ~/.config/ocdskingfisher-process/config.ini
+    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/main/samples/config.ini -o ~/.config/ocdskingfisher-process/config.ini
 
 Open the main configuration file at ``~/.config/ocdskingfisher-process/config.ini``, and follow the instructions below to update it.
 
@@ -47,11 +47,11 @@ This tool uses the `Python logging module <https://docs.python.org/3/library/log
 
 Logging from the :doc:`cli/index` can be configured with a ``~/.config/ocdskingfisher-process/logging.json`` file. To download the default configuration::
 
-    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/logging.json -o ~/.config/ocdskingfisher-process/logging.json
+    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/main/samples/logging.json -o ~/.config/ocdskingfisher-process/logging.json
 
 To download a different configuration that includes debug messages::
 
-    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/master/samples/logging-debug.json -o ~/.config/ocdskingfisher-process/logging.json
+    curl https://raw.githubusercontent.com/open-contracting/kingfisher-process/main/samples/logging-debug.json -o ~/.config/ocdskingfisher-process/logging.json
 
 Web API
 -------
