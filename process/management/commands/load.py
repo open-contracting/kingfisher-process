@@ -147,7 +147,7 @@ class Command(BaseWorker):
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
                 self._debug("Storing file {}".format(file_path))
-                collection_file = create_collection_file(collection, file_path)
+                collection_file = create_collection_file(collection, file_path=file_path)
 
             message = {"collection_file_id": collection_file.id}
 

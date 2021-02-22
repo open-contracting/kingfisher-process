@@ -89,7 +89,7 @@ def create_collection_file(request):
     if request.method == "POST":
         input = json.loads(request.body)
 
-        if "path" not in input or "collection_id" not in input:
+        if "collection_id" not in input or not ("path" in input or "errors" in input):
             return HttpResponseBadRequest(
                 'Unable to parse input. Please provide {"path":"<some_path>", "collection_id":<some_number>}'
             )
@@ -101,7 +101,9 @@ def create_collection_file(request):
             collection = Collection.objects.get(id=input["collection_id"])
 
             with transaction.atomic():
-                collection_file = loader_create_collection_file(collection, input["path"])
+                collection_file = loader_create_collection_file(collection,
+                                                                file_path=input.get("path", None),
+                                                                errors=input.get("errors", None))
 
                 message = {"collection_file_id": collection_file.id}
 
@@ -115,7 +117,9 @@ def create_collection_file(request):
                         upgraded_collection.store_end_at = Now()
                         upgraded_collection.save()
 
-            _publish(json_dumps(message))
+            if "errors" not in input:
+                # only files without errors will be further processed
+                _publish(json_dumps(message))
 
             return JsonResponse(message)
         except Collection.DoesNotExist:

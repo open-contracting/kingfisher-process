@@ -8,12 +8,13 @@ from process.models import Collection, ProcessingStep
 logger = logging.getLogger("processor.loader")
 
 
-def create_collection_file(collection, file_path):
+def create_collection_file(collection, file_path=None, errors=None):
     """
     Creates file for a collection and steps for this file.
 
     :param Collection collection: collection
-    :param str file_path path to file data:
+    :param str file_path path to file data
+    :param json errors to be stored
 
     :returns: created collection file
     :rtype: CollectionFile
@@ -25,12 +26,19 @@ def create_collection_file(collection, file_path):
     if form.is_valid():
         collection_file = form.save()
         logger.debug("Create collection file {}".format(collection_file))
-        processing_step = ProcessingStep()
-        processing_step.collection = collection
-        processing_step.collection_file = collection_file
-        processing_step.name = ProcessingStep.Types.LOAD
-        processing_step.save()
-        logger.debug("Created processing step {}".format(processing_step))
+        if not errors:
+            processing_step = ProcessingStep()
+            processing_step.collection = collection
+            processing_step.collection_file = collection_file
+            processing_step.name = ProcessingStep.Types.LOAD
+            processing_step.save()
+            logger.debug("Created processing step {}".format(processing_step))
+        else:
+            collection_note = CollectionNote()
+            collection_note.collection = collection
+            collection_note.code = CollectionNote.Codes.ERROR,
+            collection_note.note = "Errors when downloading collection_file_id {} \n{}".format(errors)
+            collection_note.save()
 
         return collection_file
     else:
