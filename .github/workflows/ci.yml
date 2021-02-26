@@ -49,5 +49,5 @@ jobs:
         AMQP_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
       if: always()
     - env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      run: coveralls
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: coveralls --service=github
