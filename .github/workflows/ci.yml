@@ -43,6 +43,7 @@ jobs:
     - run: curl -s -S --retry 3 $BASEDIR/tests/install.sh | bash -
     - run: pip install -r requirements_dev.txt
     - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
+    - run: pytest /tmp/test_requirements.py
     - run: coverage run --source ocdskingfisherprocess,process manage.py test --settings ocdskingfisherprocess.settings.test
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
