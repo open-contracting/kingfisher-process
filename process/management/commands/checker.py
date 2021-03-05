@@ -5,8 +5,7 @@ from django.db import transaction
 
 from process.exceptions import AlreadyExists
 from process.management.commands.base.worker import BaseWorker
-from process.models import (Collection, CollectionFile, CollectionNote,
-                            ProcessingStep)
+from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
 from process.processors.checker import check_collection_file
 
 

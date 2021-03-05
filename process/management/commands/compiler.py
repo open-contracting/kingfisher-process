@@ -4,8 +4,7 @@ import traceback
 from django.db import transaction
 
 from process.management.commands.base.worker import BaseWorker
-from process.models import (Collection, CollectionFile, CollectionNote,
-                            ProcessingStep, Record, Release)
+from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record, Release
 from process.processors.compiler import compilable
 
 

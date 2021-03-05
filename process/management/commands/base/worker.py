@@ -7,8 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as t
 
-from process.models import (Collection, CollectionFile, CollectionNote,
-                            ProcessingStep)
+from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
 from process.util import get_env_id, get_rabbit_channel
 
 
