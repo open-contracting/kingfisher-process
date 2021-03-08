@@ -9,7 +9,7 @@ from django.http.response import (HttpResponse, HttpResponseBadRequest,
                                   HttpResponseServerError, JsonResponse)
 from django.views.decorators.csrf import csrf_exempt
 
-from process.models import Collection
+from process.models import Collection, CollectionNote
 from process.processors.loader import \
     create_collection_file as loader_create_collection_file
 from process.processors.loader import create_collections
@@ -59,6 +59,12 @@ def create_collection(request):
 def close_collection(request):
     if request.method == "POST":
         input = json.loads(request.body)
+
+        if "collection_id" not in input:
+            return HttpResponseBadRequest(
+                'Unable to parse input. Please provide {"collection_id":"<collection_id>"}'
+            )
+
         try:
             collection = Collection.objects.get(id=input["collection_id"])
 
@@ -71,6 +77,20 @@ def close_collection(request):
                 if upgraded_collection:
                     upgraded_collection.store_end_at = Now()
                     upgraded_collection.save()
+
+                if "reason" in input:
+                    collection_note = CollectionNote()
+                    collection_note.collection = collection
+                    collection_note.code = CollectionNote.Codes.INFO
+                    collection_note.note = "Spider close reason: {}".format(input["reason"])
+                    collection_note.save()
+
+                    if upgraded_collection:
+                        collection_note = CollectionNote()
+                        collection_note.collection = upgraded_collection
+                        collection_note.code = CollectionNote.Codes.INFO
+                        collection_note.note = "Spider close reason: {}".format(input["reason"])
+                        collection_note.save()
 
             return HttpResponse("Collection closed")
         except Collection.DoesNotExist:
