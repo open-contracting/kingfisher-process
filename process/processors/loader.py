@@ -1,7 +1,6 @@
 import logging
 
-from process.forms import (CollectionFileForm, CollectionForm, CollectionNote,
-                           CollectionNoteForm)
+from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
 from process.models import Collection, ProcessingStep
 
 # Get an instance of a logger

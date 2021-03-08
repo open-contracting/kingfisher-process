@@ -4,9 +4,8 @@ import ocdsmerge
 from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
-from process.models import (Collection, CollectionFile, CollectionFileItem,
-                            CompiledRelease, Data, ProcessingStep, Record,
-                            Release)
+from process.models import (Collection, CollectionFile, CollectionFileItem, CompiledRelease, Data, ProcessingStep,
+                            Record, Release)
 from process.util import get_hash
 
 # Get an instance of a logger
