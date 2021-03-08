@@ -285,12 +285,14 @@ class CollectionFile(models.Model):
             models.Index(name="collection_file_collection_id_idx", fields=["collection"]),
         ]
         constraints = [
-            models.UniqueConstraint(name="unique_collection_file_identifiers", fields=["collection", "filename"]),
+            models.UniqueConstraint(name="unique_collection_file_identifiers", fields=["collection", "filepath"]),
         ]
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
 
     filename = models.TextField(blank=True)
+    filepath = models.TextField(blank=True)
+
     url = models.TextField(blank=True)
 
     warnings = JSONField(null=True, blank=True)

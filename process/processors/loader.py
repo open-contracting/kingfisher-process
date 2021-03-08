@@ -8,12 +8,13 @@ from process.models import Collection, ProcessingStep
 logger = logging.getLogger("processor.loader")
 
 
-def create_collection_file(collection, file_path=None, errors=None):
+def create_collection_file(collection, filepath=None, filename=None, errors=None, url=None):
     """
     Creates file for a collection and steps for this file.
 
     :param Collection collection: collection
-    :param str file_path path to file data
+    :param str filepath path to file data
+    :param str filename name of the file
     :param json errors to be stored
 
     :returns: created collection file
@@ -21,7 +22,11 @@ def create_collection_file(collection, file_path=None, errors=None):
 
     :raises ValueError: if there is a validation error
     """
-    form = CollectionFileForm(dict(collection=collection, filename=file_path))
+
+    if not filename:
+        filename = filepath
+
+    form = CollectionFileForm(dict(collection=collection, filename=filename, filepath=filepath, url=url))
 
     if form.is_valid():
         collection_file = form.save()
