@@ -9,7 +9,8 @@ from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
 
 from process.exceptions import AlreadyExists
-from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Record, Release
+from process.models import (Collection, CollectionFile, CollectionFileItem,
+                            Data, PackageData, Record, Release)
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -150,15 +151,12 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
         package_data.save()
 
     # store individual items
-    counter = 0
-    for item in file_items:
-        # create and store item
-        collection_file_item = CollectionFileItem()
-        collection_file_item.collection_file = collection_file
-        collection_file_item.number = counter
-        counter += 1
-        collection_file_item.save()
+    collection_file_item = CollectionFileItem()
+    collection_file_item.collection_file = collection_file
+    collection_file_item.number = 0
+    collection_file_item.save()
 
+    for item in file_items:
         # upgrade to latest version if necessary
         if upgrade:
             # this is not the prettiest solution
