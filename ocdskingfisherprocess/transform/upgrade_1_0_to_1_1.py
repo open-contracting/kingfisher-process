@@ -23,8 +23,38 @@ class Upgrade10To11Transform(BaseTransform):
             return
 
         # Do the work ...
-        for file_model in self.database.get_all_files_in_collection(self.source_collection.database_id):
-            self.process_file(file_model)
+        with self.database.get_engine().connect() as connection:
+            release_rows = connection.execute(
+                sa.text("""
+                    SELECT r.id, filename, url, number, package_data_id, data_id
+                    FROM release r
+                    INNER JOIN collection_file_item cf ON cf.id = r.collection_file_item_id
+                    INNER JOIN collection_file f ON f.id = cf.collection_file_id
+                    LEFT JOIN transform_upgrade_1_0_to_1_1_status_release ON r.id = source_release_id
+                    WHERE r.collection_id = :collection_id AND source_release_id IS NULL
+                """), collection_id=self.source_collection.database_id
+            ).fetchall()
+
+        for row in release_rows:
+            self.process_row(row, 'release')
+            # Early return?
+            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
+                return
+
+        with self.database.get_engine().connect() as connection:
+            record_rows = connection.execute(
+                sa.text("""
+                    SELECT r.id, filename, url, number, package_data_id, data_id
+                    FROM record r
+                    INNER JOIN collection_file_item cf ON cf.id = r.collection_file_item_id
+                    INNER JOIN collection_file f ON f.id = cf.collection_file_id
+                    LEFT JOIN transform_upgrade_1_0_to_1_1_status_record ON r.id = source_record_id
+                    WHERE r.collection_id = :collection_id AND source_record_id IS NULL
+                """), collection_id=self.source_collection.database_id
+            ).fetchall()
+
+        for row in record_rows:
+            self.process_row(row, 'record')
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
@@ -43,114 +73,24 @@ class Upgrade10To11Transform(BaseTransform):
         if self.source_collection.store_end_at:
             self.database.mark_collection_store_done(self.destination_collection.database_id)
 
-    def process_file(self, file_model):
-        for file_item_model in self.database.get_all_files_items_in_file(file_model):
-            self.process_file_item(file_model, file_item_model)
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
-
-    def process_file_item(self, file_model, file_item_model):
-        with self.database.get_engine().begin() as connection:
-            release_rows = connection.execute(
-                self.database.release_table.select().where(
-                    self.database.release_table.c.collection_file_item_id == file_item_model.database_id)
-            )
-
-            release_ids = [x['id'] for x in release_rows]
-
-        for release_id in release_ids:
-            if not self.has_release_id_been_done(release_id):
-                self.process_release_id(file_model, file_item_model, release_id)
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
-
-        del release_rows
-
-        with self.database.get_engine().begin() as connection:
-            record_rows = connection.execute(
-                self.database.record_table.select().where(
-                    self.database.record_table.c.collection_file_item_id == file_item_model.database_id)
-            )
-
-            record_ids = [x['id'] for x in record_rows]
-
-        for record_id in record_ids:
-            if not self.has_record_id_been_done(record_id):
-                self.process_record_id(file_model, file_item_model, record_id)
-            # Early return?
-            if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
-                return
-
-    def process_release_id(self, file_model, file_item_model, release_id):
-        with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.release_table]) \
-                .where(self.database.release_table.c.id == release_id)
-            result = connection.execute(s)
-            release_row = result.fetchone()
-
-        package = self.database.get_package_data(release_row.package_data_id)
-        package['releases'] = [self.database.get_data(release_row.data_id)]
+    def process_row(self, row, type):
+        package = self.database.get_package_data(row['package_data_id'])
+        package[f'{type}s'] = [self.database.get_data(row['data_id'])]
         package = upgrade_10_11(package)
 
         def add_status(database, connection):
-            connection.execute(database.transform_upgrade_1_0_to_1_1_status_release_table.insert(), {
-                'source_release_id': release_row.id,
+            connection.execute(getattr(database, f'transform_upgrade_1_0_to_1_1_status_{type}_table').insert(), {
+                f'source_{type}_id': row['id'],
             })
 
         package_data = {}
         for key, value in package.items():
-            if key != 'releases':
+            if key != f'{type}s':
                 package_data[key] = value
 
         with DatabaseStore(database=self.database, collection_id=self.destination_collection.database_id,
-                           file_name=file_model.filename, number=file_item_model.number,
-                           url=file_model.url, before_db_transaction_ends_callback=add_status,
+                           file_name=row['filename'], number=row['number'],
+                           url=row['url'], before_db_transaction_ends_callback=add_status,
                            allow_existing_collection_file_item_table_row=True) as store:
 
-            store.insert_release(package['releases'][0], package_data)
-
-    def process_record_id(self, file_model, file_item_model, record_id):
-        with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.record_table]) \
-                .where(self.database.record_table.c.id == record_id)
-            result = connection.execute(s)
-            record_row = result.fetchone()
-
-        package = self.database.get_package_data(record_row.package_data_id)
-        package['records'] = [self.database.get_data(record_row.data_id)]
-        package = upgrade_10_11(package)
-
-        def add_status(database, connection):
-            connection.execute(database.transform_upgrade_1_0_to_1_1_status_record_table.insert(), {
-                'source_record_id': record_row.id,
-            })
-
-        package_data = {}
-        for key, value in package.items():
-            if key != 'records':
-                package_data[key] = value
-
-        with DatabaseStore(database=self.database, collection_id=self.destination_collection.database_id,
-                           file_name=file_model.filename, number=file_item_model.number,
-                           url=file_model.url, before_db_transaction_ends_callback=add_status,
-                           allow_existing_collection_file_item_table_row=True) as store:
-
-            store.insert_record(package['records'][0], package_data)
-
-    def has_release_id_been_done(self, release_id):
-        with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.transform_upgrade_1_0_to_1_1_status_release_table]) \
-                .where(
-                    self.database.transform_upgrade_1_0_to_1_1_status_release_table.c.source_release_id == release_id
-                )
-            result = connection.execute(s)
-            return result.rowcount == 1
-
-    def has_record_id_been_done(self, record_id):
-        with self.database.get_engine().begin() as connection:
-            s = sa.sql.select([self.database.transform_upgrade_1_0_to_1_1_status_record_table]) \
-                .where(self.database.transform_upgrade_1_0_to_1_1_status_record_table.c.source_record_id == record_id)
-            result = connection.execute(s)
-            return result.rowcount == 1
+            getattr(store, f'insert_{type}')(package[f'{type}s'][0], package_data)
