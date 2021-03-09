@@ -1,3 +1,5 @@
+import logging
+
 from ocdskingfisherprocess.store import Store
 
 
@@ -14,6 +16,7 @@ class BaseTransform():
         self.store = Store(config, database)
         self.store.set_collection(destination_collection)
         self.run_until_timestamp = run_until_timestamp
+        self.logger = logging.getLogger('ocdskingfisher.transform')
 
     def process(self):
         # This is an "abstract" method - child classes should implement it!

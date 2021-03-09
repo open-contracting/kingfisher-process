@@ -912,6 +912,7 @@ class DatabaseStore:
                  allow_existing_collection_file_item_table_row=False, warnings=None):
         self.database = database
         self.collection_id = collection_id
+        self.collection = None
         self.file_name = file_name
         self.url = url
         self.number = number
@@ -926,6 +927,8 @@ class DatabaseStore:
     def __enter__(self):
         self.connection = self.database.get_engine().connect()
         self.transaction = self.connection.begin()
+
+        self.collection = self.database.get_collection(self.collection_id)
 
         # Collection File!
         s = sa.sql.select([self.database.collection_file_table]) \
@@ -991,12 +994,12 @@ class DatabaseStore:
 
             self.connection.close()
 
-            KINGFISHER_SIGNALS\
-                .signal('collection-data-store-finished')\
-                .send('anonymous',
-                      collection_id=self.collection_id,
-                      collection_file_item_id=self.collection_file_item_id
-                      )
+            # XXX The code otherwise uselessly sends messages that do no work.
+            if self.collection.check_data:
+              KINGFISHER_SIGNALS.signal('collection-data-store-finished').send('anonymous',
+                  collection_id=self.collection_id,
+                  collection_file_item_id=self.collection_file_item_id
+              )
 
     def insert_record(self, row, package_data):
         ocid = row.get('ocid', '')
