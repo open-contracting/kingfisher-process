@@ -28,6 +28,7 @@ class CompileReleasesTransform(BaseTransform):
 
         # Do the work ...
         for ocid in self._get_ocids():
+            self.logger.info(f'compile-releases to collection {self.destination_collection.database_id} OCID {ocid}')
             self._process_ocid(ocid)
             # Early return?
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():

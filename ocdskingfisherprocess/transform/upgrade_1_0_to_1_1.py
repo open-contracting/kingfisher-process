@@ -74,7 +74,7 @@ class Upgrade10To11Transform(BaseTransform):
             self.database.mark_collection_store_done(self.destination_collection.database_id)
 
     def process_row(self, row, type):
-        self.logger.info(f"upgrade-1-0-to-1-1 {type} {row['id']}")
+        self.logger.info(f"upgrade-1-0-to-1-1 to collection {self.destination_collection.database_id} {type} ID {row['id']}")
         package = self.database.get_package_data(row['package_data_id'])
         package[f'{type}s'] = [self.database.get_data(row['data_id'])]
         package = upgrade_10_11(package)
