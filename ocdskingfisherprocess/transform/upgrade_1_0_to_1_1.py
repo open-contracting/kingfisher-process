@@ -79,11 +79,6 @@ class Upgrade10To11Transform(BaseTransform):
         package[f'{type}s'] = [self.database.get_data(row['data_id'])]
         package = upgrade_10_11(package)
 
-        def add_status(database, connection):
-            connection.execute(getattr(database, f'transform_upgrade_1_0_to_1_1_status_{type}_table').insert(), {
-                f'source_{type}_id': row['id'],
-            })
-
         package_data = {}
         for key, value in package.items():
             if key != f'{type}s':
@@ -91,7 +86,8 @@ class Upgrade10To11Transform(BaseTransform):
 
         with DatabaseStore(database=self.database, collection_id=self.destination_collection.database_id,
                            file_name=row['filename'], number=row['number'],
-                           url=row['url'], before_db_transaction_ends_callback=add_status,
-                           allow_existing_collection_file_item_table_row=True) as store:
+                           url=row['url'], allow_existing_collection_file_item_table_row=True) as database_store:
 
-            getattr(store, f'insert_{type}')(package[f'{type}s'][0], package_data)
+            getattr(database_store, f'insert_{type}')(package[f'{type}s'][0], package_data)
+            table = getattr(self.database, f'transform_upgrade_1_0_to_1_1_status_{type}_table')
+            database_store.connection.execute(table.insert(), {f'source_{type}_id': row['id']})

@@ -912,7 +912,7 @@ class DataBase:
 
 class DatabaseStore:
 
-    def __init__(self, database, collection_id, file_name, number, url='', before_db_transaction_ends_callback=None,
+    def __init__(self, database, collection_id, file_name, number, url='',
                  allow_existing_collection_file_item_table_row=False, warnings=None):
         self.database = database
         self.collection_id = collection_id
@@ -920,7 +920,6 @@ class DatabaseStore:
         self.file_name = file_name
         self.url = url
         self.number = number
-        self.before_db_transaction_ends_callback = before_db_transaction_ends_callback
         self.connection = None
         self.transaction = None
         self.collection_file_id = None
@@ -1008,9 +1007,6 @@ class DatabaseStore:
             self.transaction.rollback()
             self.connection.close()
         else:
-            if self.before_db_transaction_ends_callback:
-                self.before_db_transaction_ends_callback(database=self.database, connection=self.connection)
-
             self.transaction.commit()
             self.connection.close()
 

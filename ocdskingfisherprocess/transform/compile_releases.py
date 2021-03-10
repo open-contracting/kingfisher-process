@@ -223,4 +223,3 @@ class CompileReleasesTransform(BaseTransform):
             self.store.store_file_item(ocid+'.json', '', 'compiled_release', data, 1, warnings=warnings)
         except DuplicateFileItemRowError as e:
             self.logger.warning(str(e))
-            pass
