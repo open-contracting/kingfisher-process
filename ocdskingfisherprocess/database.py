@@ -915,7 +915,7 @@ class DataBase:
 class DatabaseStore:
 
     def __init__(self, database, collection_id, file_name, number, url='',
-                 allow_existing_collection_file_item_table_row=False, warnings=None):
+                 allow_existing_collection_file_item_table_row=False, warnings=None, ignore_duplicate_key=False):
         self.database = database
         self.collection_id = collection_id
         self.collection = None
@@ -928,6 +928,7 @@ class DatabaseStore:
         self.collection_file_item_id = None
         self.allow_existing_collection_file_item_table_row = allow_existing_collection_file_item_table_row
         self.warnings = warnings
+        self.ignore_duplicate_key = ignore_duplicate_key
 
     def __enter__(self):
         self.connection = self.database.get_engine().connect()
@@ -1008,6 +1009,9 @@ class DatabaseStore:
         if type:
             self.transaction.rollback()
             self.connection.close()
+
+            # https://docs.python.org/3/reference/datamodel.html#object.__exit__
+            return isinstance(value, sa.exc.IntegrityError) and self.ignore_duplicate_key
         else:
             self.transaction.commit()
             self.connection.close()

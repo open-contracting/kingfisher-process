@@ -85,8 +85,9 @@ class Upgrade10To11Transform(BaseTransform):
                 package_data[key] = value
 
         with DatabaseStore(database=self.database, collection_id=self.destination_collection.database_id,
-                           file_name=row['filename'], number=row['number'],
-                           url=row['url'], allow_existing_collection_file_item_table_row=True) as database_store:
+                           file_name=row['filename'], number=row['number'], url=row['url'],
+                           allow_existing_collection_file_item_table_row=True,
+                           ignore_duplicate_key=True) as database_store:
 
             getattr(database_store, f'insert_{type}')(package[f'{type}s'][0], package_data)
             table = getattr(self.database, f'transform_upgrade_1_0_to_1_1_status_{type}_table')
