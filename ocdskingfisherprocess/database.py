@@ -971,27 +971,42 @@ class DatabaseStore:
             self.collection_file_item_id = value.inserted_primary_key[0]
 
         # DB queries that will be used repeatably, we pre-build and reuse for speed
-        self.database_get_existing_data = \
-            sa.sql.expression.text("SELECT id FROM data WHERE hash_md5 = :hash_md5")
-        self.database_get_existing_package_data = \
-            sa.sql.expression.text("SELECT id FROM package_data WHERE hash_md5 = :hash_md5")
+        self.database_get_existing_data = sa.sql.expression.text("""
+            WITH ins AS (
+                INSERT INTO data (hash_md5, data)
+                VALUES (:hash_md5, :data)
+                ON CONFLICT(hash_md5) DO NOTHING
+                RETURNING id
+            )
+            SELECT COALESCE(
+                (SELECT id FROM ins),
+                (SELECT id FROM data WHERE hash_md5 = :hash_md5)
+            ) AS id
+        """)
+        self.database_get_existing_package_data = sa.sql.expression.text("""
+            WITH ins AS (
+                INSERT INTO package_data (hash_md5, data)
+                VALUES (:hash_md5, :data)
+                ON CONFLICT(hash_md5) DO NOTHING
+                RETURNING id
+            )
+            SELECT COALESCE(
+                (SELECT id FROM ins),
+                (SELECT id FROM package_data WHERE hash_md5 = :hash_md5)
+            ) AS id
+        """)
 
         return self
 
     def __exit__(self, type, value, traceback):
-
         if type:
-
             self.transaction.rollback()
-
             self.connection.close()
-
         else:
             if self.before_db_transaction_ends_callback:
                 self.before_db_transaction_ends_callback(database=self.database, connection=self.connection)
 
             self.transaction.commit()
-
             self.connection.close()
 
             # XXX The code otherwise uselessly sends messages that do no work.
@@ -1038,28 +1053,18 @@ class DatabaseStore:
             'data_id': data_id,
         })
 
-    def get_id_for_package_data(self, package_data):
-
-        hash_md5 = get_hash_md5_for_data(package_data)
-        result = self.connection.execute(self.database_get_existing_package_data, {'hash_md5': hash_md5})
-        existing_table_row = result.fetchone()
-        if existing_table_row:
-            return existing_table_row.id
-        else:
-            return self.connection.execute(self.database.package_data_table.insert(), {
-                'hash_md5': hash_md5,
-                'data': package_data,
-            }).inserted_primary_key[0]
+    def get_id_for_package_data(self, data):
+        hash_md5 = get_hash_md5_for_data(data)
+        result = self.connection.execute(self.database_get_existing_package_data, {
+            'hash_md5': hash_md5,
+            'data': json.dumps(data),
+        })
+        return result.fetchone().id
 
     def get_id_for_data(self, data):
-
         hash_md5 = get_hash_md5_for_data(data)
-        result = self.connection.execute(self.database_get_existing_data, {'hash_md5': hash_md5})
-        existing_table_row = result.fetchone()
-        if existing_table_row:
-            return existing_table_row.id
-        else:
-            return self.connection.execute(self.database.data_table.insert(), {
-                'hash_md5': hash_md5,
-                'data': data,
-            }).inserted_primary_key[0]
+        result = self.connection.execute(self.database_get_existing_data, {
+            'hash_md5': hash_md5,
+            'data': json.dumps(data),
+        })
+        return result.fetchone().id
