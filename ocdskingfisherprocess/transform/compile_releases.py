@@ -44,13 +44,13 @@ class CompileReleasesTransform(BaseTransform):
         # get ocids from releases
         with self.database.get_engine().begin() as engine:
             query = engine.execute(
-                sa.text(
-                    " SELECT r.ocid FROM release AS r" +
-                    " LEFT JOIN compiled_release AS cr ON " +
-                    " cr.ocid = r.ocid and cr.collection_id = :destination_collection_id" +
-                    " WHERE r.collection_id = :collection_id and cr.ocid is NULL" +
-                    " GROUP BY r.ocid "
-                ),
+                sa.text("""
+                    SELECT r.ocid
+                    FROM release r
+                    LEFT JOIN compiled_release cr ON cr.ocid = r.ocid AND cr.collection_id = :destination_collection_id
+                    WHERE r.collection_id = :collection_id AND cr.ocid IS NULL
+                    GROUP BY r.ocid
+                """),
                 collection_id=self.source_collection.database_id,
                 destination_collection_id=self.destination_collection.database_id
             )
@@ -60,13 +60,13 @@ class CompileReleasesTransform(BaseTransform):
         # get ocids from records
         with self.database.get_engine().begin() as engine:
             query = engine.execute(
-                sa.text(
-                    " SELECT r.ocid FROM record AS r" +
-                    " LEFT JOIN compiled_release AS cr ON " +
-                    " cr.ocid = r.ocid and cr.collection_id = :destination_collection_id" +
-                    " WHERE r.collection_id = :collection_id and cr.ocid is NULL" +
-                    " GROUP BY r.ocid "
-                ),
+                sa.text("""
+                    SELECT r.ocid
+                    FROM record r
+                    LEFT JOIN compiled_release cr ON cr.ocid = r.ocid AND cr.collection_id = :destination_collection_id
+                    WHERE r.collection_id = :collection_id AND cr.ocid IS NULL
+                    GROUP BY r.ocid
+                """),
                 collection_id=self.source_collection.database_id,
                 destination_collection_id=self.destination_collection.database_id
             )
@@ -77,34 +77,25 @@ class CompileReleasesTransform(BaseTransform):
         return ocids
 
     def _process_ocid(self, ocid):
-
-        # Load Records
-        records = []
         with self.database.get_engine().begin() as engine:
-            query = engine.execute(sa.text(
-                " SELECT record.* FROM record " +
-                " WHERE record.collection_id = :collection_id AND record.ocid = :ocid "
-            ), collection_id=self.source_collection.database_id, ocid=ocid)
-
-            records = [self.database.get_data(row['data_id']) for row in query]
+            records = [row['data'] for row in engine.execute(sa.text("""
+                SELECT data
+                FROM record r
+                INNER JOIN data ON r.data_id = data.id
+                WHERE collection_id = :collection_id AND ocid = :ocid
+            """), collection_id=self.source_collection.database_id, ocid=ocid)]
 
         # Decide what to do .....
         if len(records) > 1:
-
-            warning = 'There are multiple records for this OCID! ' + \
-                    'The record to pass through was selected arbitrarily.'
+            warning = 'There are multiple records for this OCID! The record to pass through was selected arbitrarily.'
             self._process_record(ocid, records[0], warnings=[warning])
 
         elif len(records) == 1:
-
             self._process_record(ocid, records[0])
-
         else:
-
             self._process_releases(ocid)
 
     def _process_record(self, ocid, record, warnings=None):
-
         if not warnings:
             warnings = []
 
@@ -133,15 +124,15 @@ class CompileReleasesTransform(BaseTransform):
         # Is there a compiledRelease?
         compiled_release = record.get('compiledRelease')
         if compiled_release:
-
             warnings.append('This already had a compiledRelease in the record! ' +
                             'It was passed through this transform unchanged.')
             self._store_result(ocid, compiled_release, warnings=warnings)
             return
 
         # Is there a release tagged 'compiled'?
-        releases_compiled = \
-            [x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']]
+        releases_compiled = [
+            x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']
+        ]
 
         if len(releases_compiled) > 1:
             # If more than one, pick one at random. and log that.
@@ -165,20 +156,18 @@ class CompileReleasesTransform(BaseTransform):
             )
 
     def _process_releases(self, ocid):
-
-        releases = []
-
         with self.database.get_engine().begin() as engine:
-            query = engine.execute(sa.text(
-                " SELECT release.* FROM release " +
-                " WHERE release.collection_id = :collection_id AND release.ocid = :ocid "
-            ), collection_id=self.source_collection.database_id, ocid=ocid)
-
-            releases = [self.database.get_data(row['data_id']) for row in query]
+            releases = [row['data'] for row in engine.execute(sa.text("""
+                SELECT data
+                FROM release r
+                INNER JOIN data ON r.data_id = data.id
+                WHERE collection_id = :collection_id AND ocid = :ocid
+            """), collection_id=self.source_collection.database_id, ocid=ocid)]
 
         # Are any releases already compiled? https://github.com/open-contracting/kingfisher-process/issues/147
-        releases_compiled = \
-            [x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']]
+        releases_compiled = [
+            x for x in releases if 'tag' in x and isinstance(x['tag'], list) and 'compiled' in x['tag']
+        ]
 
         if len(releases_compiled) > 1:
             # If more than one, pick one at random. and log that.
@@ -194,7 +183,6 @@ class CompileReleasesTransform(BaseTransform):
             # There is no compiled release - we will try to do it ourselves.
             releases_with_date, releases_without_date = self._check_dates_in_releases(releases)
             if releases_with_date:
-
                 warnings = []
                 if releases_without_date:
                     warnings.append('This OCID had some releases without a date element. ' +
@@ -227,7 +215,6 @@ class CompileReleasesTransform(BaseTransform):
             )
 
     def _store_result(self, ocid, data, warnings=None):
-
         # In the occurrence of a race condition where two concurrent transforms have run the same ocid
         # we rely on the fact that collection_id and filename are unique in the file_item table.
         # Therefore this will error with a violation of unique key constraint and not cause duplicate entries.
