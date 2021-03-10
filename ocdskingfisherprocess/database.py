@@ -21,6 +21,10 @@ class SetEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+class DuplicateFileItemRowError(Exception):
+    pass
+
+
 class DataBase:
 
     def __init__(self, config):
@@ -959,9 +963,10 @@ class DatabaseStore:
         if collection_file_item_table_row:
             self.collection_file_item_id = collection_file_item_table_row['id']
             if not self.allow_existing_collection_file_item_table_row:
-                raise Exception("DatabaseStore class tried to insert a duplicate collection_file_item row! " +
-                                "collection_file_id = {} number = {} existing row id = {}"
-                                .format(self.collection_file_id, self.number, self.collection_file_item_id))
+                raise DuplicateFileItemRowError(
+                    "DatabaseStore class tried to insert a duplicate collection_file_item row! "
+                    "collection_file_id = {} number = {} existing row id = {}" .format(
+                        self.collection_file_id, self.number, self.collection_file_item_id))
         else:
             value = self.connection.execute(self.database.collection_file_item_table.insert(), {
                 'collection_file_id': self.collection_file_id,

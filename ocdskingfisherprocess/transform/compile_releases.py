@@ -4,6 +4,7 @@ import ocdsmerge
 import sqlalchemy as sa
 from ocdskit.util import is_linked_release
 
+from ocdskingfisherprocess.database import DuplicateFileItemRowError
 from ocdskingfisherprocess.transform.base import BaseTransform
 
 
@@ -218,5 +219,8 @@ class CompileReleasesTransform(BaseTransform):
         # In the occurrence of a race condition where two concurrent transforms have run the same ocid
         # we rely on the fact that collection_id and filename are unique in the file_item table.
         # Therefore this will error with a violation of unique key constraint and not cause duplicate entries.
-        self.store.store_file_item(ocid+'.json', '', 'compiled_release', data, 1, warnings=warnings,
-                                   allow_existing_collection_file_item_table_row=True)
+        try:
+            self.store.store_file_item(ocid+'.json', '', 'compiled_release', data, 1, warnings=warnings)
+        except DuplicateFileItemRowError as e:
+            self.logger.warning(str(e))
+            pass
