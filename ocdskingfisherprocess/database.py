@@ -725,7 +725,7 @@ class DataBase:
         # We execute every SQL statement in it's own transaction, to try and keep the size of the transactions small
         # It doesn't matter if we re-do a delete, so it doesn't matter if there is a problem half way through!
         with self.get_engine().begin() as connection:
-            connection.execute(sa.sql.expression.text(sql), data)
+            connection.execute(sa.text(sql), data)
 
     def _delete_collection_run_sql_in_blocks(self, label, select_sql, collection_id, delete_from_table):
         logger = logging.getLogger('ocdskingfisher.database.delete-collection')
@@ -734,11 +734,11 @@ class DataBase:
         while True:
             with self.get_engine().begin() as connection:
                 ids_to_delete = [str(row['id'])
-                                 for row in connection.execute(sa.sql.expression.text(select_sql), data_get)]
+                                 for row in connection.execute(sa.text(select_sql), data_get)]
                 if len(ids_to_delete) == 0:
                     return
                 connection.execute(
-                    sa.sql.expression.text(
+                    sa.text(
                         "DELETE FROM " + delete_from_table + " WHERE id IN (" + ",".join(ids_to_delete) + ")"),
                     {}
                 )
@@ -763,11 +763,11 @@ class DataBase:
         while True:
             with self.get_engine().begin() as connection:
                 ids_to_delete = [str(row['id'])
-                                 for row in connection.execute(sa.sql.expression.text(sql_get), data_get)]
+                                 for row in connection.execute(sa.text(sql_get), data_get)]
                 if len(ids_to_delete) == 0:
                     return
                 connection.execute(
-                    sa.sql.expression.text("DELETE FROM data WHERE id IN (" + ",".join(ids_to_delete) + ")"),
+                    sa.text("DELETE FROM data WHERE id IN (" + ",".join(ids_to_delete) + ")"),
                     {}
                 )
 
@@ -784,11 +784,11 @@ class DataBase:
         logger.debug("Deleting package_data")
         while True:
             with self.get_engine().begin() as connection:
-                ids_to_delete = [row['id'] for row in connection.execute(sa.sql.text(sql_get))]
+                ids_to_delete = [row['id'] for row in connection.execute(sa.text(sql_get))]
                 if not ids_to_delete:
                     return
                 connection.execute(
-                    sa.sql.text("DELETE FROM package_data WHERE id IN :ids"),
+                    sa.text("DELETE FROM package_data WHERE id IN :ids"),
                     ids=tuple(ids_to_delete)
                 )
 
@@ -832,14 +832,14 @@ class DataBase:
         sql, data = self._get_check_query('release', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
-            query = sa.sql.expression.text(sql)
+            query = sa.text(sql)
             return connection.execute(query, data)
 
     def get_records_to_check(self, collection_id, override_schema_version=''):
         sql, data = self._get_check_query('record', collection_id, override_schema_version)
 
         with self.get_engine().begin() as connection:
-            query = sa.sql.expression.text(sql)
+            query = sa.text(sql)
             return connection.execute(query, data)
 
     def add_collection_note(self, collection_id, note):
@@ -875,7 +875,7 @@ class DataBase:
 
     def update_collection_cached_columns(self, collection_id):
         with self.get_engine().begin() as connection:
-            s = sa.sql.expression.text(
+            s = sa.text(
                 "SELECT count(*) as release_count FROM release WHERE collection_id = :collection_id")
             result = connection.execute(s, {"collection_id": collection_id})
             data = result.fetchone()
@@ -887,7 +887,7 @@ class DataBase:
             )
 
         with self.get_engine().begin() as connection:
-            s = sa.sql.expression.text(
+            s = sa.text(
                 "SELECT count(*) as record_count FROM record WHERE collection_id = :collection_id")
             result = connection.execute(s, {"collection_id": collection_id})
             data = result.fetchone()
@@ -899,7 +899,7 @@ class DataBase:
             )
 
         with self.get_engine().begin() as connection:
-            s = sa.sql.expression.text(
+            s = sa.text(
                 "SELECT count(*) as compiled_release_count FROM compiled_release " +
                 "WHERE collection_id = :collection_id")
             result = connection.execute(s, {"collection_id": collection_id})
@@ -978,7 +978,7 @@ class DatabaseStore:
             self.collection_file_item_id = value.inserted_primary_key[0]
 
         # DB queries that will be used repeatably, we pre-build and reuse for speed
-        self.database_get_existing_data = sa.sql.expression.text("""
+        self.database_get_existing_data = sa.text("""
             WITH ins AS (
                 INSERT INTO data (hash_md5, data)
                 VALUES (:hash_md5, :data)
@@ -990,7 +990,7 @@ class DatabaseStore:
                 (SELECT id FROM data WHERE hash_md5 = :hash_md5)
             ) AS id
         """)
-        self.database_get_existing_package_data = sa.sql.expression.text("""
+        self.database_get_existing_package_data = sa.text("""
             WITH ins AS (
                 INSERT INTO package_data (hash_md5, data)
                 VALUES (:hash_md5, :data)
