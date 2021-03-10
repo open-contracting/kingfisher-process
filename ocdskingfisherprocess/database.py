@@ -372,8 +372,8 @@ class DataBase:
             })
             collection_id = value.inserted_primary_key[0]
 
-            KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection_id,
-                                                                     ocds_version=ocds_version)
+        KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection_id,
+                                                                 ocds_version=ocds_version)
 
         return collection_id
 
