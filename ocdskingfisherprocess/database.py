@@ -350,17 +350,43 @@ class DataBase:
     def get_or_create_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None,
                                     transform_type='', ocds_version='1.1'):
 
-        collection_id = self.get_collection_id(
-            source_id,
-            data_version,
-            sample,
-            transform_from_collection_id=transform_from_collection_id,
-            transform_type=transform_type)
-        if collection_id:
-            return collection_id
-
+        # XXX This is ugly, but all this code is being replaced by the django branch soon anyway.
         with self.get_engine().begin() as connection:
-            value = connection.execute(self.collection_table.insert(), {
+            result = connection.execute(sa.text("""
+                WITH ins AS (
+                    INSERT INTO collection (
+                        source_id,
+                        data_version,
+                        sample,
+                        transform_type,
+                        transform_from_collection_id,
+                        store_start_at,
+                        check_data,
+                        check_older_data_with_schema_version_1_1
+                    )
+                    VALUES (
+                        :source_id,
+                        :data_version,
+                        :sample,
+                        :transform_type,
+                        :transform_from_collection_id,
+                        :store_start_at,
+                        :check_data,
+                        :check_older_data_with_schema_version_1_1
+                    )
+                    ON CONFLICT(source_id, data_version, sample) WHERE transform_type = '' DO NOTHING
+                    RETURNING id
+                )
+                SELECT COALESCE(
+                    (SELECT id FROM ins),
+                    (SELECT id FROM collection
+                     WHERE source_id = :source_id
+                       AND data_version = :data_version
+                       AND sample = :sample
+                       AND transform_type = :transform_type
+                       AND COALESCE(transform_from_collection_id, 0) = COALESCE(:transform_from_collection_id, 0))
+                ) AS id, EXISTS (SELECT id FROM ins) AS created
+            """), {
                 'source_id': source_id,
                 'data_version': data_version,
                 'sample': sample,
@@ -370,12 +396,14 @@ class DataBase:
                 'check_data': False,
                 'check_older_data_with_schema_version_1_1': False,
             })
-            collection_id = value.inserted_primary_key[0]
 
-        KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection_id,
-                                                                 ocds_version=ocds_version)
+            collection = result.fetchone()
 
-        return collection_id
+        if collection['created']:
+            KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection['id'],
+                                                                     ocds_version=ocds_version)
+
+        return collection['id']
 
     def get_all_collections(self):
         with self.get_engine().begin() as connection:
