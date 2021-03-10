@@ -21,23 +21,26 @@ def setup_signals(config, database):
         KINGFISHER_SIGNALS.signal('collection-store-finished').connect(collection_store_finished_to_redis)
 
 
-def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, **kwargs):
+def run_standard_pipeline_on_new_collection_created(sender, collection_id=None, ocds_version='1.1', **kwargs):
     global our_database
     collection = our_database.get_collection(collection_id)
     if not collection.transform_from_collection_id:
-        # Create the transforms we want
-        second_collection_id = our_database.get_or_create_collection_id(
-            collection.source_id,
-            collection.data_version,
-            collection.sample,
-            transform_from_collection_id=collection.database_id,
-            transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
-        )
+        if ocds_version == '1.1':
+            collection_id_to_compile = collection.database_id
+        else:
+            # Create the transforms we want
+            collection_id_to_compile = our_database.get_or_create_collection_id(
+                collection.source_id,
+                collection.data_version,
+                collection.sample,
+                transform_from_collection_id=collection.database_id,
+                transform_type=TRANSFORM_TYPE_UPGRADE_1_0_TO_1_1
+            )
 
         our_database.get_or_create_collection_id(collection.source_id,
                                                  collection.data_version,
                                                  collection.sample,
-                                                 transform_from_collection_id=second_collection_id,
+                                                 transform_from_collection_id=collection_id_to_compile,
                                                  transform_type=TRANSFORM_TYPE_COMPILE_RELEASES)
 
         # Turn on the checks we want

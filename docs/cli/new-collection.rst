@@ -7,6 +7,7 @@ This command creates a new collection in the system.
 
     python ocdskingfisher-process-cli new-collection my-own-source-id  "2019-01-20 10:00:12"
     python ocdskingfisher-process-cli new-collection my-own-source-id  "2019-01-20 10:00:12" --sample
+    python ocdskingfisher-process-cli new-collection my-own-source-id  "2019-01-20 10:00:12" --sample --ocds-version 1.0
 
 
 You may not need to run this; collections will be created at certain points automatically for you.

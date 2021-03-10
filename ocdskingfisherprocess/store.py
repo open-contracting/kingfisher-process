@@ -30,11 +30,12 @@ class Store:
         self.collection = None
         self.database = database
 
-    def load_collection(self, collection_source, collection_data_version, collection_sample):
+    def load_collection(self, collection_source, collection_data_version, collection_sample, collection_ocds_version='1.1'):
         self.collection_id = self.database.get_or_create_collection_id(
             collection_source,
             collection_data_version,
-            collection_sample)
+            collection_sample,
+            ocds_version=collection_ocds_version)
 
     def set_collection(self, collection):
         self.collection = collection

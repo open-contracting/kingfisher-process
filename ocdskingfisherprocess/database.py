@@ -347,8 +347,8 @@ class DataBase:
             if collection:
                 return collection['id']
 
-    def get_or_create_collection_id(self, source_id, data_version, sample,
-                                    transform_from_collection_id=None, transform_type=''):
+    def get_or_create_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None,
+                                    transform_type='', ocds_version='1.1'):
 
         collection_id = self.get_collection_id(
             source_id,
@@ -372,7 +372,9 @@ class DataBase:
             })
             collection_id = value.inserted_primary_key[0]
 
-        KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection_id)
+            KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection_id,
+                                                                     ocds_version=ocds_version)
+
         return collection_id
 
     def get_all_collections(self):

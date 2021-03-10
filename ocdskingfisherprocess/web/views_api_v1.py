@@ -37,6 +37,8 @@ class BaseAPIViewAuthAndCollectionNeeded(views.View):
         # get sample (No test because if it's not there it is read as False and that's fine)
         self.collection_sample = parse_string_to_boolean(request.form.get('collection_sample', False))
 
+        self.collection_ocds_version = request.form.get('collection_ocds_version', '1.1')
+
         # all passed so ...
         return True
 
@@ -59,6 +61,7 @@ class SubmitEndCollectionStoreView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_source,
             self.collection_data_version,
             self.collection_sample,
+            self.collection_ocds_version,
         )
 
         current_app.kingfisher_web_logger.info("End Collection API V1 Store called for collection " +
@@ -89,6 +92,7 @@ class SubmitFileView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_source,
             self.collection_data_version,
             self.collection_sample,
+            self.collection_ocds_version,
         )
 
         current_app.kingfisher_web_logger.info("Submit File API V1 called for collection " + str(store.collection_id))
@@ -146,6 +150,7 @@ class SubmitItemView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_source,
             self.collection_data_version,
             self.collection_sample,
+            self.collection_ocds_version,
         )
 
         current_app.kingfisher_web_logger.info("Submit Item API V1 called for collection " + str(store.collection_id))
@@ -191,6 +196,7 @@ class SubmitFileErrorsView(BaseAPIViewAuthAndCollectionNeeded):
             self.collection_source,
             self.collection_data_version,
             self.collection_sample,
+            self.collection_ocds_version,
         )
 
         current_app.kingfisher_web_logger.info("Submit File Error API V1 called for collection " +
