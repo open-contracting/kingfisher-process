@@ -10,8 +10,19 @@ class TestStandardPipelineOn(BaseDataBaseTest):
         self.config.run_standard_pipeline = True
 
     def test_check_on(self):
-
         self.database.get_or_create_collection_id("test", datetime.datetime.now(), False)
+
+        collections = self.database.get_all_collections()
+        assert 2 == len(collections)
+
+        assert collections[0].transform_type == ''
+        assert collections[0].transform_from_collection_id is None
+
+        assert TRANSFORM_TYPE_COMPILE_RELEASES == collections[1].transform_type
+        assert collections[0].database_id == collections[1].transform_from_collection_id
+
+    def test_version_10(self):
+        self.database.get_or_create_collection_id("test", datetime.datetime.now(), False, ocds_version='1.0')
 
         collections = self.database.get_all_collections()
         assert 3 == len(collections)
