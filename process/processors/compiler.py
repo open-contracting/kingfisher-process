@@ -222,7 +222,6 @@ def _save_compiled_release(compiled_release_data, collection, ocid):
     compiled_collection_file = CollectionFile()
     compiled_collection_file.collection = collection
     compiled_collection_file.filename = "{}.json".format(ocid)
-    compiled_collection_file.filepath = "{}.json".format(ocid)
     compiled_collection_file.save()
     logger.debug("Created new collection_file {}".format(compiled_collection_file))
 
