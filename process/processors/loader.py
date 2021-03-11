@@ -7,7 +7,7 @@ from process.models import Collection, ProcessingStep
 logger = logging.getLogger("processor.loader")
 
 
-def create_collection_file(collection, file_path=None, errors=None):
+def create_collection_file(collection, file_path=None, url=None, errors=None):
     """
     Creates file for a collection and steps for this file.
 
@@ -20,7 +20,7 @@ def create_collection_file(collection, file_path=None, errors=None):
 
     :raises ValueError: if there is a validation error
     """
-    form = CollectionFileForm(dict(collection=collection, filename=file_path))
+    form = CollectionFileForm(dict(collection=collection, filename=file_path, url=url))
 
     if form.is_valid():
         collection_file = form.save()
