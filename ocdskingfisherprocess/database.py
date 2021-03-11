@@ -300,26 +300,26 @@ class DataBase:
         return self._engine
 
     def delete_tables(self):
-        engine = self.get_engine()
-        engine.execute("drop table if exists transform_upgrade_1_0_to_1_1_status_record cascade")
-        engine.execute("drop table if exists transform_upgrade_1_0_to_1_1_status_release cascade")
-        engine.execute("drop table if exists record_check cascade")
-        engine.execute("drop table if exists record_check_error cascade")
-        engine.execute("drop table if exists release_check cascade")
-        engine.execute("drop table if exists release_check_error cascade")
-        engine.execute("drop table if exists record cascade")
-        engine.execute("drop table if exists release cascade")
-        engine.execute("drop table if exists compiled_release cascade")
-        engine.execute("drop table if exists package_data cascade")
-        engine.execute("drop table if exists data cascade")
-        engine.execute("drop table if exists collection_file_item")
-        engine.execute("drop table if exists collection_file_status cascade")  # This is the old table name
-        engine.execute("drop table if exists collection_file cascade")
-        engine.execute("drop table if exists source_session_file_status cascade")  # This is the old table name
-        engine.execute("drop table if exists collection_note cascade")
-        engine.execute("drop table if exists collection cascade")
-        engine.execute("drop table if exists source_session cascade")  # This is the old table name
-        engine.execute("drop table if exists alembic_version cascade")
+        with self.get_engine().connect() as connection:
+            connection.execute("drop table if exists transform_upgrade_1_0_to_1_1_status_record cascade")
+            connection.execute("drop table if exists transform_upgrade_1_0_to_1_1_status_release cascade")
+            connection.execute("drop table if exists record_check cascade")
+            connection.execute("drop table if exists record_check_error cascade")
+            connection.execute("drop table if exists release_check cascade")
+            connection.execute("drop table if exists release_check_error cascade")
+            connection.execute("drop table if exists record cascade")
+            connection.execute("drop table if exists release cascade")
+            connection.execute("drop table if exists compiled_release cascade")
+            connection.execute("drop table if exists package_data cascade")
+            connection.execute("drop table if exists data cascade")
+            connection.execute("drop table if exists collection_file_item")
+            connection.execute("drop table if exists collection_file_status cascade")  # This is the old table name
+            connection.execute("drop table if exists collection_file cascade")
+            connection.execute("drop table if exists source_session_file_status cascade")  # This is the old table name
+            connection.execute("drop table if exists collection_note cascade")
+            connection.execute("drop table if exists collection cascade")
+            connection.execute("drop table if exists source_session cascade")  # This is the old table name
+            connection.execute("drop table if exists alembic_version cascade")
 
     def create_tables(self):
         # Note this DOES NOT work with self.config!
