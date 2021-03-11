@@ -5,11 +5,13 @@ from os.path import isfile
 import pika
 from django.db import transaction
 from django.db.models.functions import Now
-from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
+from django.http.response import (HttpResponse, HttpResponseBadRequest,
+                                  HttpResponseServerError, JsonResponse)
 from django.views.decorators.csrf import csrf_exempt
 
 from process.models import Collection, CollectionNote
-from process.processors.loader import create_collection_file as loader_create_collection_file
+from process.processors.loader import \
+    create_collection_file as loader_create_collection_file
 from process.processors.loader import create_collections
 from process.util import get_env_id, get_rabbit_channel, json_dumps
 
