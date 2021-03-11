@@ -54,7 +54,7 @@ def process_file(collection_file_id):
             )
 
         # read the file data
-        file_items, file_package_data = _read_data_from_file(collection_file.filepath, data_type)
+        file_items, file_package_data = _read_data_from_file(collection_file.filename, data_type)
 
         # store data for a current collection
         _store_data(collection_file, file_items, file_package_data, data_type, False)
@@ -79,7 +79,7 @@ def process_file(collection_file_id):
         raise AlreadyExists("Item {} already exists".format(collection_file_id)) from e
 
 
-def _read_data_from_file(filepath, data_type):
+def _read_data_from_file(filename, data_type):
     key = ""
     package_key = ""
     # is there an aray with data?
@@ -94,10 +94,10 @@ def _read_data_from_file(filepath, data_type):
         key = key + "releases"
     else:
         raise ValueError(
-            "Unsupported format {} for {}, must be one of {}".format(data_type, filepath, SUPPORTED_FORMATS)
+            "Unsupported format {} for {}, must be one of {}".format(data_type, filename, SUPPORTED_FORMATS)
         )
 
-    with open(filepath, "rb") as f:
+    with open(filename, "rb") as f:
         file_items = []
         package_data_object = None
         builder_object = ObjectBuilder()
@@ -207,7 +207,7 @@ def _get_data_type(collection_file):
     """
     collection = collection_file.collection
     if not collection.data_type:
-        detected_format = detect_format(collection_file.filepath)
+        detected_format = detect_format(collection_file.filename)
         collection.set_data_type(detected_format)
         collection.save()
         upgraded_collection = collection.get_upgraded_collection()
@@ -254,7 +254,6 @@ def _create_upgraded_collection_file(collection_file, upgraded_collection):
     """
     upgraded_collection_file = CollectionFile()
     upgraded_collection_file.collection = upgraded_collection
-    upgraded_collection_file.filepath = collection_file.filepath
     upgraded_collection_file.filename = collection_file.filename
     upgraded_collection_file.url = collection_file.url
     upgraded_collection_file.save()

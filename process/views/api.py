@@ -122,10 +122,8 @@ def create_collection_file(request):
 
             with transaction.atomic():
                 collection_file = loader_create_collection_file(collection,
-                                                                filepath=input.get("path", None),
-                                                                errors=input.get("errors", None),
-                                                                filename=input.get("file_name", None),
-                                                                url=input.get("url", None))
+                                                                file_path=input.get("path", None),
+                                                                errors=input.get("errors", None))
 
                 message = {"collection_file_id": collection_file.id}
 

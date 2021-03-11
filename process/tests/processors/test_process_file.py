@@ -1,7 +1,6 @@
 from django.test import TransactionTestCase
 
-from process.models import (CollectionFile, CollectionFileItem, PackageData,
-                            Release)
+from process.models import CollectionFile, CollectionFileItem, PackageData, Release
 from process.processors.file_loader import process_file
 
 
@@ -25,7 +24,6 @@ class ProcessFileTests(TransactionTestCase):
     def test_happy_day(self):
         collection_file = CollectionFile.objects.get(id=1)
         collection_file.filename = "process/tests/fixtures/collection_file.json"
-        collection_file.filepath = "process/tests/fixtures/collection_file.json"
         collection_file.save()
 
         CollectionFileItem.objects.filter(collection_file=collection_file).delete()
@@ -39,8 +37,8 @@ class ProcessFileTests(TransactionTestCase):
         self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
         self.assertEqual(upgraded_collection_file.collection.parent.id, collection_file.collection.id)
 
-        self.assertEqual(CollectionFileItem.objects.filter(collection_file=collection_file).count(), 1)
-        self.assertEqual(CollectionFileItem.objects.filter(collection_file=upgraded_collection_file).count(), 1)
+        self.assertEqual(CollectionFileItem.objects.filter(collection_file=collection_file).count(), 100)
+        self.assertEqual(CollectionFileItem.objects.filter(collection_file=upgraded_collection_file).count(), 100)
 
         self.assertEqual(
             PackageData.objects.filter(release__collection_file_item__collection_file=collection_file)

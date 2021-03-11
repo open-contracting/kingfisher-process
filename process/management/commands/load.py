@@ -141,12 +141,12 @@ class Command(BaseWorker):
 
         self._debug("Processing path {}".format(options["PATH"]))
 
-        for filepath in walk(options["PATH"]):
+        for file_path in walk(options["PATH"]):
             # note - keep transaction here, not "higher" around the whole cycle
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
-                self._debug("Storing file {}".format(filepath))
-                collection_file = create_collection_file(collection, filename=filepath, filepath=filepath)
+                self._debug("Storing file {}".format(file_path))
+                collection_file = create_collection_file(collection, file_path=file_path)
 
             message = {"collection_file_id": collection_file.id}
 
