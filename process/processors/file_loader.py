@@ -9,8 +9,7 @@ from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
 
 from process.exceptions import AlreadyExists
-from process.models import (Collection, CollectionFile, CollectionFileItem,
-                            Data, PackageData, Record, Release)
+from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Record, Release
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -240,11 +239,13 @@ def get_upgraded_collection(collection_file):
             parent=collection_file.collection
         )
     except Collection.DoesNotExist:
-        raise ValueError(
+        logger.debug(
             "There is no upgrade collection for collection {} (via collection_file {})".format(
                 collection_file.collection, collection_file
             )
         )
+
+        return None
     return upgraded_collection
 
 

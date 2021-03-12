@@ -18,9 +18,7 @@ class GetUpgradedCollectionTests(TransactionTestCase):
 
     def test_no_such_collection_input(self):
         collection_file = CollectionFile.objects.get(id=3)
-        with self.assertRaises(ValueError) as e:
-            get_upgraded_collection(collection_file)
-        self.assertTrue(str(e.exception).startswith("There is no upgrade collection for collection"))
+        self.assertIsNone(get_upgraded_collection(collection_file))
 
     def test_happy_day(self):
         collection_file = CollectionFile.objects.get(id=1)

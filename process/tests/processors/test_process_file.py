@@ -37,8 +37,8 @@ class ProcessFileTests(TransactionTestCase):
         self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
         self.assertEqual(upgraded_collection_file.collection.parent.id, collection_file.collection.id)
 
-        self.assertEqual(CollectionFileItem.objects.filter(collection_file=collection_file).count(), 100)
-        self.assertEqual(CollectionFileItem.objects.filter(collection_file=upgraded_collection_file).count(), 100)
+        self.assertEqual(CollectionFileItem.objects.filter(collection_file=collection_file).count(), 1)
+        self.assertEqual(CollectionFileItem.objects.filter(collection_file=upgraded_collection_file).count(), 1)
 
         self.assertEqual(
             PackageData.objects.filter(release__collection_file_item__collection_file=collection_file)
