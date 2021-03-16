@@ -349,6 +349,14 @@ class DataBase:
 
     def get_or_create_collection_id(self, source_id, data_version, sample, transform_from_collection_id=None,
                                     transform_type='', ocds_version='1.1'):
+        collection_id = self.get_collection_id(
+            source_id,
+            data_version,
+            sample,
+            transform_from_collection_id=transform_from_collection_id,
+            transform_type=transform_type)
+        if collection_id:
+            return collection_id
 
         # XXX This is ugly, but all this code is being replaced by the django branch soon anyway.
         with self.get_engine().begin() as connection:
@@ -1006,7 +1014,8 @@ class DatabaseStore:
             self.collection_file_item_id = value.inserted_primary_key[0]
 
         # DB queries that will be used repeatably, we pre-build and reuse for speed
-        self.database_get_existing_data = sa.text("""
+        self.database_get_data = sa.text("SELECT id FROM data WHERE hash_md5 = :hash_md5")
+        self.database_insert_data = sa.text("""
             WITH ins AS (
                 INSERT INTO data (hash_md5, data)
                 VALUES (:hash_md5, :data)
@@ -1018,7 +1027,8 @@ class DatabaseStore:
                 (SELECT id FROM data WHERE hash_md5 = :hash_md5)
             ) AS id
         """)
-        self.database_get_existing_package_data = sa.text("""
+        self.database_get_package_data = sa.text("SELECT id FROM package_data WHERE hash_md5 = :hash_md5")
+        self.database_insert_package_data = sa.text("""
             WITH ins AS (
                 INSERT INTO package_data (hash_md5, data)
                 VALUES (:hash_md5, :data)
@@ -1090,16 +1100,23 @@ class DatabaseStore:
 
     def get_id_for_package_data(self, data):
         hash_md5 = get_hash_md5_for_data(data)
-        result = self.connection.execute(self.database_get_existing_package_data, {
+
+        row = self.connection.execute(self.database_get_package_data, {'hash_md5': hash_md5}).fetchone()
+        if row:
+          return row.id
+
+        return self.connection.execute(self.database_insert_package_data, {
             'hash_md5': hash_md5,
             'data': json.dumps(data),
-        })
-        return result.fetchone().id
+        }).fetchone().id
 
     def get_id_for_data(self, data):
         hash_md5 = get_hash_md5_for_data(data)
-        result = self.connection.execute(self.database_get_existing_data, {
+        row = self.connection.execute(self.database_get_data, {'hash_md5': hash_md5}).fetchone()
+        if row:
+          return row.id
+
+        return self.connection.execute(self.database_insert_data, {
             'hash_md5': hash_md5,
             'data': json.dumps(data),
-        })
-        return result.fetchone().id
+        }).fetchone().id
