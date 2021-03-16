@@ -147,7 +147,10 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
         package_data = PackageData()
         package_data.data = file_package_data
         package_data.hash_md5 = package_hash
-        package_data.save()
+        try:
+            package_data.save()
+        except IntegrityError:
+            package_data = PackageData.objects.get(hash_md5=package_hash)
 
     # store individual items
     collection_file_item = CollectionFileItem()
@@ -173,7 +176,10 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
             data = Data()
             data.data = item
             data.hash_md5 = item_hash
+            try:
             data.save()
+        except IntegrityError:
+            data = Data.objects.get(hash_md5=item_hash)
 
         if data_type["format"] == "record package":
             # store record
