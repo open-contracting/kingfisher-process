@@ -1103,7 +1103,7 @@ class DatabaseStore:
 
         row = self.connection.execute(self.database_get_package_data, {'hash_md5': hash_md5}).fetchone()
         if row:
-          return row.id
+            return row.id
 
         return self.connection.execute(self.database_insert_package_data, {
             'hash_md5': hash_md5,
@@ -1114,7 +1114,7 @@ class DatabaseStore:
         hash_md5 = get_hash_md5_for_data(data)
         row = self.connection.execute(self.database_get_data, {'hash_md5': hash_md5}).fetchone()
         if row:
-          return row.id
+            return row.id
 
         return self.connection.execute(self.database_insert_data, {
             'hash_md5': hash_md5,
