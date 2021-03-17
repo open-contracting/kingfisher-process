@@ -179,3 +179,7 @@ class BaseWorker(BaseCommand):
         collection_note.code = code
         collection_note.note = note
         collection_note.save()
+
+    def _get_input(self, message):
+        """Gets user input"""
+        return input(message)
