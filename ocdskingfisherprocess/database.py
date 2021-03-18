@@ -1123,7 +1123,7 @@ class DatabaseStore:
             'data': json.dumps(data),
         }).fetchone()
         if row:
-          return row.id
+            return row.id
 
         return self.connection.execute(self.database_get_package_data, {'hash_md5': hash_md5}).fetchone().id
 
