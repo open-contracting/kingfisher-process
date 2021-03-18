@@ -76,26 +76,31 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "standard",
         },
+        "logfile": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "/tmp/kp_logfile",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "INFO",
         },
         "django.server": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "INFO",
         },
         "django.db.backends": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "INFO",
         },
         "worker": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "DEBUG",
         },
         "processor": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "DEBUG",
         },
     },
