@@ -358,6 +358,9 @@ class DataBase:
         if collection_id:
             return collection_id
 
+        # If another transaction is performing the same operation at the same time, this will return an empty result.
+        # https://stackoverflow.com/a/42217872/244258
+        # https://stackoverflow.com/a/15950324/244258
         # XXX This is ugly, but all this code is being replaced by the django branch soon anyway.
         with self.get_engine().begin() as connection:
             result = connection.execute(sa.text("""
@@ -407,11 +410,18 @@ class DataBase:
 
             collection = result.fetchone()
 
-        if collection['created']:
-            KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection['id'],
-                                                                     ocds_version=ocds_version)
+        if collection['id']:
+            if collection['created']:
+                KINGFISHER_SIGNALS.signal('new_collection_created').send('anonymous', collection_id=collection['id'],
+                                                                         ocds_version=ocds_version)
+            return collection['id']
 
-        return collection['id']
+        return self.get_collection_id(
+            source_id,
+            data_version,
+            sample,
+            transform_from_collection_id=transform_from_collection_id,
+            transform_type=transform_type)
 
     def get_all_collections(self):
         with self.get_engine().begin() as connection:
@@ -1105,10 +1115,17 @@ class DatabaseStore:
         if row:
             return row.id
 
-        return self.connection.execute(self.database_insert_package_data, {
+        # If another transaction is performing the same operation at the same time, this will return an empty result.
+        # https://stackoverflow.com/a/42217872/244258
+        # https://stackoverflow.com/a/15950324/244258
+        row = self.connection.execute(self.database_insert_package_data, {
             'hash_md5': hash_md5,
             'data': json.dumps(data),
-        }).fetchone().id
+        }).fetchone()
+        if row:
+          return row.id
+
+        return self.connection.execute(self.database_get_package_data, {'hash_md5': hash_md5}).fetchone().id
 
     def get_id_for_data(self, data):
         hash_md5 = get_hash_md5_for_data(data)
@@ -1116,7 +1133,14 @@ class DatabaseStore:
         if row:
             return row.id
 
-        return self.connection.execute(self.database_insert_data, {
+        # If another transaction is performing the same operation at the same time, this will return an empty result.
+        # https://stackoverflow.com/a/42217872/244258
+        # https://stackoverflow.com/a/15950324/244258
+        row = self.connection.execute(self.database_insert_data, {
             'hash_md5': hash_md5,
             'data': json.dumps(data),
-        }).fetchone().id
+        }).fetchone()
+        if row:
+            return row.id
+
+        return self.connection.execute(self.database_get_data, {'hash_md5': hash_md5}).fetchone().id
