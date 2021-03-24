@@ -76,7 +76,7 @@ def close_collection(request):
                     upgraded_collection.store_end_at = Now()
                     upgraded_collection.save()
 
-                if "reason" in input:
+                if "reason" in input and input["reason"]:
                     collection_note = CollectionNote()
                     collection_note.collection = collection
                     collection_note.code = CollectionNote.Codes.INFO
@@ -88,6 +88,23 @@ def close_collection(request):
                         collection_note.collection = upgraded_collection
                         collection_note.code = CollectionNote.Codes.INFO
                         collection_note.note = "Spider close reason: {}".format(input["reason"])
+                        collection_note.save()
+
+                if "stats" in input and input["stats"]:
+                    collection_note = CollectionNote()
+                    collection_note.collection = collection
+                    collection_note.code = CollectionNote.Codes.INFO
+                    collection_note.note = "Spider stats"
+                    collection_note.data = format(input["stats"])
+
+                    collection_note.save()
+
+                    if upgraded_collection:
+                        collection_note = CollectionNote()
+                        collection_note.collection = upgraded_collection
+                        collection_note.code = CollectionNote.Codes.INFO
+                        collection_note.note = "Spider stats"
+                        collection_note.data = format(input["stats"])
                         collection_note.save()
 
             return HttpResponse("Collection closed")

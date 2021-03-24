@@ -261,6 +261,7 @@ class CollectionNote(models.Model):
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
+    data = JSONField(encoder=DjangoJSONEncoder, null=True, blank=True)
     stored_at = models.DateTimeField(auto_now_add=True)
 
     class Codes(models.TextChoices):
