@@ -95,7 +95,7 @@ def close_collection(request):
                     collection_note.collection = collection
                     collection_note.code = CollectionNote.Codes.INFO
                     collection_note.note = "Spider stats"
-                    collection_note.data = format(input["stats"])
+                    collection_note.data = input["stats"]
 
                     collection_note.save()
 
@@ -104,7 +104,7 @@ def close_collection(request):
                         collection_note.collection = upgraded_collection
                         collection_note.code = CollectionNote.Codes.INFO
                         collection_note.note = "Spider stats"
-                        collection_note.data = format(input["stats"])
+                        collection_note.data = input["stats"]
                         collection_note.save()
 
             return HttpResponse("Collection closed")
