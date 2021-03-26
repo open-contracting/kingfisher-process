@@ -9,7 +9,6 @@ from django.http.response import HttpResponse, HttpResponseBadRequest, HttpRespo
 from django.views.decorators.csrf import csrf_exempt
 
 from process.models import Collection, CollectionNote
-from process.processors.loader import create_collection_file as loader_create_collection_file
 from process.processors.loader import create_collections
 from process.util import get_env_id, get_rabbit_channel, json_dumps
 
@@ -133,31 +132,9 @@ def create_collection_file(request):
             return HttpResponseBadRequest("{} is not a file".format(input["path"]))
 
         try:
-            collection = Collection.objects.get(id=input["collection_id"])
+            _publish(json_dumps(input))
 
-            with transaction.atomic():
-                collection_file = loader_create_collection_file(collection,
-                                                                file_path=input.get("path", None),
-                                                                url=input.get("url", None),
-                                                                errors=input.get("errors", None))
-
-                message = {"collection_file_id": collection_file.id}
-
-                if input.get("close", False):
-                    collection = Collection.objects.get(id=input["collection_id"])
-                    collection.store_end_at = Now()
-                    collection.save()
-
-                    upgraded_collection = collection.get_upgraded_collection()
-                    if upgraded_collection:
-                        upgraded_collection.store_end_at = Now()
-                        upgraded_collection.save()
-
-            if "errors" not in input:
-                # only files without errors will be further processed
-                _publish(json_dumps(message))
-
-            return JsonResponse(message)
+            return HttpResponse("Collection file creation planned.")
         except Collection.DoesNotExist:
             error = "Collection file with id {} not found".format(input["collection_id"])
             logger.error(error)
