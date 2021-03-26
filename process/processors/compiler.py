@@ -1,6 +1,7 @@
 import logging
 
-import ocdsmerge
+from ocdskit.combine import merge
+from ocdskit.exceptions import InconsistentVersionError, MissingOcidKeyError
 from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
@@ -76,8 +77,7 @@ def compile_release(collection_id, ocid):
         releases_data.append(release.data.data)
 
     # merge data into into single compiled release
-
-    compiled_release_data = _compile_releases_by_ocdsmerge(ocid, releases_data)
+    compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_data)
 
     return _save_compiled_release(compiled_release_data, collection, ocid)
 
@@ -158,7 +158,7 @@ def compile_record(collection_id, ocid):
                 )
             )
 
-        compiled_release_data = _compile_releases_by_ocdsmerge(ocid, releases_with_date)
+        compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_with_date)
         return _save_compiled_release(compiled_release_data, collection, ocid)
 
     if releases_without_date:
@@ -322,10 +322,10 @@ def _check_dates_in_releases(releases):
     return releases_with_date, releases_without_date
 
 
-def _compile_releases_by_ocdsmerge(ocid, releases):
+def _compile_releases_by_ocdskit(ocid, releases):
     try:
-        merger = ocdsmerge.Merger()
-        out = merger.create_compiled_release(releases)
+        out = merge(releases)
         return out
-    except ocdsmerge.exceptions.OCDSMergeError as e:
+    except (InconsistentVersionError, MissingOcidKeyError) as e:
         logger.exception("OCID {} could not be compiled because merge library threw an error: ".format(ocid), e)
+        raise e
