@@ -49,8 +49,8 @@ class Command(BaseWorker):
 
         except Collection.DoesNotExist:
             self._exception("Collection with id {} not found".format(input["collection_id"]))
-        except Exception as e:
-            self._exception("Unable to create collection_file", e)
+        except Exception:
+            self._exception("Unable to create collection_file")
 
         # confirm message processing
         channel.basic_ack(delivery_tag=method.delivery_tag)

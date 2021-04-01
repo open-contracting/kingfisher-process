@@ -1,6 +1,8 @@
 import logging
 
-from ocdskit.combine import merge
+import ocdsmerge
+from django.conf import settings
+from ocdsextensionregistry.profile_builder import ProfileBuilder
 from ocdskit.exceptions import InconsistentVersionError, MissingOcidKeyError
 from ocdskit.util import is_linked_release
 
@@ -64,6 +66,7 @@ def compile_release(collection_id, ocid):
         Release.objects.filter(collection_file_item__collection_file__collection=collection.parent)
         .filter(ocid=ocid)
         .order_by()  # avoid default order
+        .prefetch_related("package_data")
         .prefetch_related("data")
     )
 
@@ -73,11 +76,16 @@ def compile_release(collection_id, ocid):
 
     # create array with all the data for releases
     releases_data = []
+    extensions = []
     for release in releases:
         releases_data.append(release.data.data)
 
+        # collect all extensions used
+        if release.package_data:
+            extensions = list(set(extensions + release.package_data.data.get("extensions", [])))
+
     # merge data into into single compiled release
-    compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_data)
+    compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_data, extensions)
 
     return _save_compiled_release(compiled_release_data, collection, ocid)
 
@@ -133,7 +141,8 @@ def compile_record(collection_id, ocid):
     try:
         record = (
             Record.objects.filter(collection_file_item__collection_file__collection=collection.parent)
-            .prefetch_related("data")
+            .select_related("data")
+            .select_related("package_data__data")
             .get(ocid=ocid)
         )
     except Record.DoesNotExist:
@@ -158,7 +167,8 @@ def compile_record(collection_id, ocid):
                 )
             )
 
-        compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_with_date)
+        extensions = record.package_data.data.get("extensions", [])
+        compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_with_date, extensions)
         return _save_compiled_release(compiled_release_data, collection, ocid)
 
     if releases_without_date:
@@ -322,9 +332,12 @@ def _check_dates_in_releases(releases):
     return releases_with_date, releases_without_date
 
 
-def _compile_releases_by_ocdskit(ocid, releases):
+def _compile_releases_by_ocdskit(ocid, releases, extensions):
     try:
-        out = merge(releases)
+        builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, extensions)
+        schema = builder.patched_release_schema()
+        merger = ocdsmerge.Merger(schema)
+        out = merger.create_compiled_release(releases)
         return out
     except (InconsistentVersionError, MissingOcidKeyError) as e:
         logger.exception("OCID {} could not be compiled because merge library threw an error: ".format(ocid), e)
