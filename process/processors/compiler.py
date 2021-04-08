@@ -339,6 +339,6 @@ def _compile_releases_by_ocdskit(ocid, releases, extensions):
         merger = ocdsmerge.Merger(schema)
         out = merger.create_compiled_release(releases)
         return out
-    except (InconsistentVersionError, MissingOcidKeyError) as e:
+    except Exception as e:
         logger.exception("OCID {} could not be compiled because merge library threw an error: ".format(ocid), e)
         raise e
