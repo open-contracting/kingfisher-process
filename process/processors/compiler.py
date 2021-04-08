@@ -3,7 +3,6 @@ import logging
 import ocdsmerge
 from django.conf import settings
 from ocdsextensionregistry.profile_builder import ProfileBuilder
-from ocdskit.exceptions import InconsistentVersionError, MissingOcidKeyError
 from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
