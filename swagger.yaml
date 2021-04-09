@@ -20,68 +20,68 @@ paths:
       summary: Submits a file to store
       description: A collection will automatically be created for this file.
       responses:
-        '200':
+        "200":
           description: file stored
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/File'
+              $ref: "#/components/schemas/File"
   /submit/item/:
     post:
       operationId: submitItem
       summary: Submits an item in a file to store
       description: A collection and file will automatically be created for this item.
       responses:
-        '200':
+        "200":
           description: item stored
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Item'
+              $ref: "#/components/schemas/Item"
   /submit/file_errors/:
     post:
       operationId: submitFileErrors
       summary: Submit the errors preventing file retrieval
       description: Errors might include HTTP errors, request timeouts, connection errors, too many redirects, etc.
       responses:
-        '200':
+        "200":
           description: file errors stored
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/FileErrors'
+              $ref: "#/components/schemas/FileErrors"
   /submit/end_collection_store/:
     post:
       operationId: endCollectionStore
       summary: Indicate that no more files or items will be submitted for the collection.
       description: A request must be made to this endpoint when data submission is complete.
       responses:
-        '200':
+        "200":
           description: collection ended
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CollectionParameters'
+              $ref: "#/components/schemas/CollectionParameters"
 components:
   securitySchemes:
     apiKeyAuth:
@@ -96,25 +96,25 @@ components:
     File:
       type: object
       allOf:
-        - $ref: '#/components/schemas/CollectionParameters'
-        - $ref: '#/components/schemas/CollectionNoteParameter'
-        - $ref: '#/components/schemas/FileParameters'
-        - $ref: '#/components/schemas/DataTypeParameter'
+        - $ref: "#/components/schemas/CollectionParameters"
+        - $ref: "#/components/schemas/CollectionNoteParameter"
+        - $ref: "#/components/schemas/FileParameters"
+        - $ref: "#/components/schemas/DataTypeParameter"
       oneOf:
         - required:
-          - local_file_name
+            - local_file_name
         - required:
-          - file
+            - file
       properties:
         encoding:
           description: The encoding of the file on the API server
           type: string
-          example: 'iso-8859-1'
-          default: 'utf-8'
+          example: "iso-8859-1"
+          default: "utf-8"
         local_file_name:
           description: Path to the file on the API server
           type: string
-          example: '/path/to/file.json'
+          example: "/path/to/file.json"
         file:
           description: The multipart-encoded contents of the file
           type: string
@@ -122,10 +122,10 @@ components:
     Item:
       type: object
       allOf:
-        - $ref: '#/components/schemas/CollectionParameters'
-        - $ref: '#/components/schemas/CollectionNoteParameter'
-        - $ref: '#/components/schemas/FileParameters'
-        - $ref: '#/components/schemas/DataTypeParameter'
+        - $ref: "#/components/schemas/CollectionParameters"
+        - $ref: "#/components/schemas/CollectionNoteParameter"
+        - $ref: "#/components/schemas/FileParameters"
+        - $ref: "#/components/schemas/DataTypeParameter"
       required:
         - number
         - data
@@ -141,8 +141,8 @@ components:
     FileErrors:
       type: object
       allOf:
-        - $ref: '#/components/schemas/CollectionParameters'
-        - $ref: '#/components/schemas/FileParameters'
+        - $ref: "#/components/schemas/CollectionParameters"
+        - $ref: "#/components/schemas/FileParameters"
       required:
         - errors
       properties:
@@ -160,26 +160,26 @@ components:
         collection_source:
           description: Collection name
           type: string
-          example: 'canada_buyandsell'
+          example: "canada_buyandsell"
         collection_data_version:
           description: Datetime at which the collection was created
           type: string
-          example: '2016-01-02 01:23:45'
+          example: "2016-01-02 01:23:45"
         collection_sample:
           description: Whether the collection samples the source
           type: string
-          example: 'True'
+          example: "True"
           enum:
-            - 'True'
-            - 'False'
-          default: 'False'
+            - "True"
+            - "False"
+          default: "False"
     CollectionNoteParameter:
       type: object
       properties:
         collection_note:
           description: An analyst's note about the collection
           type: string
-          example: 'For M&E reporting. Morgan'
+          example: "For M&E reporting. Morgan"
     FileParameters:
       type: object
       required:
@@ -189,11 +189,11 @@ components:
         file_name:
           description: The file's name
           type: string
-          example: '14-15.json'
+          example: "14-15.json"
         url:
           description: The file's URL
           type: string
-          example: 'https://buyandsell.gc.ca/cds/public/ocds/tpsgc-pwgsc_ocds_EF-FY-14-15.json'
+          example: "https://buyandsell.gc.ca/cds/public/ocds/tpsgc-pwgsc_ocds_EF-FY-14-15.json"
           format: uri
     DataTypeParameter:
       type: object
@@ -203,7 +203,7 @@ components:
         data_type:
           description: The [file's type](https://kingfisher-process.readthedocs.io/en/latest/data-model.html#file-types)
           type: string
-          example: 'release_package'
+          example: "release_package"
           enum:
             - record
             - release
