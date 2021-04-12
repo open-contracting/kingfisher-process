@@ -40,7 +40,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "kingfisher",  # Or path to database file if using sqlite3.
         "USER": "postgres",  # Not used with sqlite3.
         "PASSWORD": "kingfisher",  # Not used with sqlite3.
