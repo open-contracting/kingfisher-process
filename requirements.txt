@@ -76,7 +76,9 @@ libcoveocds==0.9.1
 lxml==4.6.2
     # via flattentool
 ocdsextensionregistry==0.0.24
-    # via ocdskit
+    # via
+    #   -r requirements.in
+    #   ocdskit
 ocdskit==0.2.18
     # via -r requirements.in
 ocdsmerge==0.6.4
