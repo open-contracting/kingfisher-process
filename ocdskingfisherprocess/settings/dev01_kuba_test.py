@@ -34,7 +34,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "kingfisher_test",  # Or path to database file if using sqlite3.
         "USER": "postgres",  # Not used with sqlite3.
         "PASSWORD": "kingfisher",  # Not used with sqlite3.
