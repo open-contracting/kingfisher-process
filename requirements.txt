@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-asgiref==3.2.6
+asgiref==3.3.4
     # via django
 attrs==20.3.0
     # via jsonschema
@@ -34,7 +34,7 @@ django-cors-headers==3.6.0
     # via -r requirements.in
 django-tastypie==0.14.3
     # via -r requirements.in
-django==3.0.4
+django==3.2
     # via
     #   -r requirements.in
     #   django-cors-headers

@@ -1,5 +1,5 @@
 dj-database-url
-Django<3.1
+Django==3.2
 orjson
 pika
 psycopg2-binary
