@@ -152,6 +152,6 @@ SILENCED_SYSTEM_CHECKS = [
     "models.E034",
 ]
 
-DEFAULT_STEPS = ["file_worker"]
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 COMPILER_OCDS_VERSION = "1__1__5"

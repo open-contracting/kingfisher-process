@@ -1,8 +1,7 @@
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, transaction
-from django.db.models import Q
+from django.db.models import JSONField, Q
 from django.utils.translation import gettext_lazy as _
 
 # # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
