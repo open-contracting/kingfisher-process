@@ -141,7 +141,7 @@ def compile_record(collection_id, ocid):
         record = (
             Record.objects.filter(collection_file_item__collection_file__collection=collection.parent)
             .select_related("data")
-            .select_related("package_data__data")
+            .select_related("package_data")
             .get(ocid=ocid)
         )
     except Record.DoesNotExist:
