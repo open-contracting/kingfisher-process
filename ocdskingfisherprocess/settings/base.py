@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     "process.apps.ProcessConfig",
     # 'django.contrib.staticfiles',
     # 'django.contrib.admin',
-    "tastypie",
 ]
 
 MIDDLEWARE = [
@@ -155,3 +154,5 @@ SILENCED_SYSTEM_CHECKS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 COMPILER_OCDS_VERSION = "1__1__5"
+
+API_VERSION = "1.0"
