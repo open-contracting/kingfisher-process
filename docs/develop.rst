@@ -1,7 +1,7 @@
 Contributing
 ============
 
-Working on Kingfisher Process requires a good understanding of Django and RabbitMQ. It is recommended to be familiar with all  `Django tutorials <https://docs.djangoproject.com/en/3.1/intro/>`__ and `RabbitMQ tutorials <https://www.rabbitmq.com/getstarted.html>`__.
+Working on Kingfisher Process requires a good understanding of Django and RabbitMQ. It is recommended to be familiar with all  `Django tutorials <https://docs.djangoproject.com/en/3.2/intro/>`__ and `RabbitMQ tutorials <https://www.rabbitmq.com/getstarted.html>`__.
 
 Django
 ------
@@ -13,22 +13,22 @@ Documentation
 
 Here are quick links to relevant pages, when needed. Each page has its table of contents in the sidebar.
 
--  `Topics <https://docs.djangoproject.com/en/3.1/topics/>`__ is the best way into a new concept.
+-  `Topics <https://docs.djangoproject.com/en/3.2/topics/>`__ is the best way into a new concept.
 
-   -  `Database access optimization <https://docs.djangoproject.com/en/3.1/topics/db/optimization/>`__ is useful, because it is more about not being slow than about being fast.
+   -  `Database access optimization <https://docs.djangoproject.com/en/3.2/topics/db/optimization/>`__ is useful, because it is more about not being slow than about being fast.
 
--  `How-to <https://docs.djangoproject.com/en/3.1/howto/>`__
+-  `How-to <https://docs.djangoproject.com/en/3.2/howto/>`__
 
-   -  `Writing custom django-admin commands <https://docs.djangoproject.com/en/3.1/howto/custom-management-commands/>`__
-   -  `Integrating Django with a legacy database <https://docs.djangoproject.com/en/3.1/howto/legacy-databases/>`__
-   -  `Deploying Django <https://docs.djangoproject.com/en/3.1/howto/deployment/>`__
+   -  `Writing custom django-admin commands <https://docs.djangoproject.com/en/3.2/howto/custom-management-commands/>`__
+   -  `Integrating Django with a legacy database <https://docs.djangoproject.com/en/3.2/howto/legacy-databases/>`__
+   -  `Deploying Django <https://docs.djangoproject.com/en/3.2/howto/deployment/>`__
 
--  `Reference <https://docs.djangoproject.com/en/3.1/ref/>`__
+-  `Reference <https://docs.djangoproject.com/en/3.2/ref/>`__
 
-   -  `Model field reference <https://docs.djangoproject.com/en/3.1/ref/models/fields/>`__
-   -  `Model instance reference <https://docs.djangoproject.com/en/3.1/ref/models/instances/>`__
-   -  `Model index reference <https://docs.djangoproject.com/en/3.1/ref/models/indexes/>`__
-   -  `Constraints reference <https://docs.djangoproject.com/en/3.1/ref/models/constraints/>`__
+   -  `Model field reference <https://docs.djangoproject.com/en/3.2/ref/models/fields/>`__
+   -  `Model instance reference <https://docs.djangoproject.com/en/3.2/ref/models/instances/>`__
+   -  `Model index reference <https://docs.djangoproject.com/en/3.2/ref/models/indexes/>`__
+   -  `Constraints reference <https://docs.djangoproject.com/en/3.2/ref/models/constraints/>`__
 
 Please feel free to add links to this section.
 
@@ -46,7 +46,7 @@ You can compare ``models.py`` to the output of:
 
    env DATABASE_URL=postgresql://user@host/dbname ./manage.py inspectdb
 
-To avoid an error when migrating from the SQLAlchemy-managed database to the Django-managed database, `run <https://docs.djangoproject.com/en/3.1/topics/migrations/#initial-migrations>`__:
+To avoid an error when migrating from the SQLAlchemy-managed database to the Django-managed database, `run <https://docs.djangoproject.com/en/3.2/topics/migrations/#initial-migrations>`__:
 
 .. code-block:: shell
 
@@ -67,12 +67,12 @@ To access the default database:
 
    ./manage.py dbshell
 
-Learn more about `manage.py <https://docs.djangoproject.com/en/3.1/ref/django-admin/>`__.
+Learn more about `manage.py <https://docs.djangoproject.com/en/3.2/ref/django-admin/>`__.
 
 System checks
 ^^^^^^^^^^^^^
 
-If we decide to add `system checks <https://docs.djangoproject.com/en/3.1/topics/checks/>`__ in a ``process/checks.py`` file, we need to add this to ``apps.py``:
+If we decide to add `system checks <https://docs.djangoproject.com/en/3.2/topics/checks/>`__ in a ``process/checks.py`` file, we need to add this to ``apps.py``:
 
 .. code-block:: python
 
