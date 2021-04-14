@@ -32,8 +32,6 @@ dj-database-url==0.5.0
     # via -r requirements.in
 django-cors-headers==3.6.0
     # via -r requirements.in
-django-tastypie==0.14.3
-    # via -r requirements.in
 django==3.2
     # via
     #   -r requirements.in
@@ -101,10 +99,6 @@ pyparsing==2.4.7
     # via packaging
 pyrsistent==0.17.3
     # via jsonschema
-python-dateutil==2.8.1
-    # via django-tastypie
-python-mimeparse==1.6.0
-    # via django-tastypie
 pytz==2019.3
     # via
     #   django
@@ -132,7 +126,6 @@ six==1.15.0
     # via
     #   bleach
     #   jsonschema
-    #   python-dateutil
 sqlalchemy==1.3.22
     # via ocdskit
 sqlparse==0.3.1
