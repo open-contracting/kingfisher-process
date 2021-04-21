@@ -104,7 +104,7 @@ def _read_data_from_file(filename, data_type):
 
         build_object = False
         build_package = False
-        for prefix, event, value in ijson.parse(f):
+        for prefix, event, value in ijson.parse(f, use_float=True):
 
             if prefix == package_key and event == "start_map":
                 # collection of package data started
