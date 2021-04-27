@@ -46,10 +46,10 @@ jobs:
       - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
       - run: pytest /tmp/test_requirements.py
       - run: coverage run --source ocdskingfisherprocess,process manage.py test --settings ocdskingfisherprocess.settings.test
+        if: always()
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
           AMQP_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
-        if: always()
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
