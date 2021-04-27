@@ -35,10 +35,10 @@ jobs:
       - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
       - run: STANDARD_MAINTENANCE_SCRIPTS_IGNORE=psycopg2 pytest /tmp/test_requirements.py
       - run: pytest --cov ocdskingfisherprocess
+        if: always()
         env:
           KINGFISHER_PROCESS_DB_URI: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
           KINGFISHER_PROCESS_WEB_API_KEYS: 1234
-        if: always()
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
