@@ -159,7 +159,7 @@ strict-rfc3339==0.7
     #   ocdskit
 typing-extensions==3.7.4.3
     # via asgiref
-urllib3==1.25.7
+urllib3==1.25.11
     # via
     #   requests
     #   sentry-sdk

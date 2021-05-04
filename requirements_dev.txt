@@ -277,7 +277,7 @@ typing-extensions==3.7.4.3
     # via
     #   -r requirements.txt
     #   asgiref
-urllib3==1.25.7
+urllib3==1.25.11
     # via
     #   -r requirements.txt
     #   requests
