@@ -61,13 +61,10 @@ dj-database-url==0.5.0
     # via -r requirements.txt
 django-cors-headers==3.6.0
     # via -r requirements.txt
-django-filter==2.4.0
-    # via -r requirements.txt
 django==3.2
     # via
     #   -r requirements.txt
     #   django-cors-headers
-    #   django-filter
     #   djangorestframework
     #   libcoveocds
 djangorestframework==3.12.4
@@ -139,8 +136,6 @@ lxml==4.6.2
     # via
     #   -r requirements.txt
     #   flattentool
-markdown==3.3.4
-    # via -r requirements.txt
 mccabe==0.6.1
     # via flake8
 ocdsextensionregistry==0.0.24
