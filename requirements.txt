@@ -32,11 +32,17 @@ dj-database-url==0.5.0
     # via -r requirements.in
 django-cors-headers==3.6.0
     # via -r requirements.in
+django-filter==2.4.0
+    # via -r requirements.in
 django==3.2
     # via
     #   -r requirements.in
     #   django-cors-headers
+    #   django-filter
+    #   djangorestframework
     #   libcoveocds
+djangorestframework==3.12.4
+    # via -r requirements.in
 et-xmlfile==1.0.1
     # via openpyxl
 flattentool==0.15.2
@@ -73,6 +79,8 @@ libcoveocds==0.9.1
     # via -r requirements.in
 lxml==4.6.2
     # via flattentool
+markdown==3.3.4
+    # via -r requirements.in
 ocdsextensionregistry==0.0.24
     # via
     #   -r requirements.in

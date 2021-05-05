@@ -50,8 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "corsheaders",
     "process.apps.ProcessConfig",
-    # 'django.contrib.staticfiles',
-    # 'django.contrib.admin',
+    "rest_framework"
 ]
 
 MIDDLEWARE = [
@@ -156,3 +155,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 COMPILER_OCDS_VERSION = "1__1__5"
 
 API_VERSION = "v1"
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}

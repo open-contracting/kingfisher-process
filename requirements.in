@@ -11,3 +11,6 @@ ocdskit
 ocdsextensionregistry
 django-cors-headers
 simplejson
+djangorestframework
+markdown
+django-filter
