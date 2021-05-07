@@ -12,3 +12,4 @@ ocdsextensionregistry
 django-cors-headers
 simplejson
 djangorestframework
+django-filter

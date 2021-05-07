@@ -61,10 +61,13 @@ dj-database-url==0.5.0
     # via -r requirements.txt
 django-cors-headers==3.6.0
     # via -r requirements.txt
+django-filter==2.4.0
+    # via -r requirements.txt
 django==3.2
     # via
     #   -r requirements.txt
     #   django-cors-headers
+    #   django-filter
     #   djangorestframework
     #   libcoveocds
 djangorestframework==3.12.4

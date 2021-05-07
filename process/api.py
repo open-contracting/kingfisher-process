@@ -1,9 +1,12 @@
-from rest_framework import serializers, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.generics import ListAPIView
+from rest_framework.serializers import ModelSerializer
+from rest_framework.viewsets import ViewSetMixin
 
 from process.models import Collection
 
 
-class CollectionSerializer(serializers.HyperlinkedModelSerializer):
+class CollectionSerializer(ModelSerializer):
     class Meta:
         model = Collection
         fields = ["source_id",
@@ -25,6 +28,8 @@ class CollectionSerializer(serializers.HyperlinkedModelSerializer):
                   "deleted_at"]
 
 
-class CollectionViewSet(viewsets.ModelViewSet):
+class CollectionViewSet(ViewSetMixin, ListAPIView):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["source_id", "data_version", "store_start_at", "store_end_at"]
