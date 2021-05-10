@@ -74,6 +74,7 @@ class Collection(models.Model):
 
     # Deprecated
     check_data = models.BooleanField(default=False)
+
     # Obsolete
     check_older_data_with_schema_version_1_1 = models.BooleanField(default=False)
 
@@ -98,6 +99,7 @@ class Collection(models.Model):
     store_start_at = models.DateTimeField(auto_now_add=True)
     store_end_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return "{source_id}:{data_version} (id: {id})".format_map(

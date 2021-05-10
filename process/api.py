@@ -44,6 +44,7 @@ class CollectionSerializer(ModelSerializer):
                   "store_start_at",
                   "store_end_at",
                   "deleted_at",
+                  "completed_at",
                   "steps_remaining_LOAD",
                   "steps_remaining_UPGRADE",
                   "steps_remaining_COMPILE",
@@ -80,4 +81,9 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
 
     serializer_class = CollectionSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["source_id", "data_version", "store_start_at", "store_end_at", "transform_type"]
+    filterset_fields = ["source_id",
+                        "data_version",
+                        "store_start_at",
+                        "store_end_at",
+                        "transform_type",
+                        "completed_at"]

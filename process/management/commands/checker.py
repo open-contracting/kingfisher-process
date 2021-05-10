@@ -46,6 +46,13 @@ class Command(BaseWorker):
                 self._info("Collection file {} is not checkable. Skip.".format(collection_file))
 
             self._deleteStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
+
+            message = {
+                "collection_file": collection_file.id,
+                "collection_id": input_message["collection_file_id"],
+            }
+
+            self._publish(json.dumps(message))
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
