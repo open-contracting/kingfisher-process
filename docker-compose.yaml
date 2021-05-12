@@ -48,7 +48,7 @@ services:
     volumes:
       - /data:/data
     scale: 2
-    finisher:
+  finisher:
       image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
       command: "manage.py finisher --settings ocdskingfisherprocess.settings.amy01"
       network_mode: "host"
