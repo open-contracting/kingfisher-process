@@ -30,7 +30,10 @@ def completable(collection_id):
             logger.warning("Collection {} already marked as completed".format(collection))
             return False
 
-        if collection.store_end_at is not None:
+        if (collection.store_end_at is not None or
+                (collection.store_end_at is None and
+                 collection.transform_type == Collection.Transforms.COMPILE_RELEASES)):
+
             processing_step_count = ProcessingStep.objects.filter(collection=collection).count()
 
             if processing_step_count == 0:

@@ -41,3 +41,10 @@ class CompletableTests(TransactionTestCase):
 
     def test_happy_day(self):
         self.assertEqual(completable(2), True)
+
+    def test_happy_day_compiled(self):
+        collection = Collection.objects.get(id=2)
+        collection.transform_type = Collection.Transforms.COMPILE_RELEASES
+        collection.store_end_at = None
+        collection.save()
+        self.assertEqual(completable(2), True)

@@ -49,7 +49,7 @@ class Command(BaseWorker):
 
             message = {
                 "collection_file": collection_file.id,
-                "collection_id": input_message["collection_file_id"],
+                "collection_id": collection_file.collection.id,
             }
 
             self._publish(json.dumps(message))
