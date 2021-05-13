@@ -14,6 +14,7 @@ attrs==19.3.0
     # via
     #   -r requirements.txt
     #   jsonschema
+    #   markdown-it-py
     #   pytest
 bleach==3.3.0
     # via
@@ -25,7 +26,6 @@ cached-property==1.5.1
     # via
     #   -r requirements.txt
     #   libcove
-    #   libcoveocds
 certifi==2019.11.28
     # via
     #   -r requirements.txt
@@ -45,7 +45,6 @@ commonmark==0.9.1
     # via
     #   -r requirements.txt
     #   libcove
-    #   libcoveocds
 contextlib2==0.6.0.post1
     # via
     #   -r requirements.txt
@@ -131,12 +130,13 @@ jsonschema==3.2.0
     # via
     #   -r requirements.txt
     #   libcove
+    #   libcoveocds
     #   ocdskit
 libcove==0.22.0
     # via
     #   -r requirements.txt
     #   libcoveocds
-libcoveocds==0.9.1
+libcoveocds==0.10.2
     # via -r requirements.txt
 lxml==4.6.3
     # via
@@ -146,6 +146,10 @@ mako==1.1.0
     # via
     #   -r requirements.txt
     #   alembic
+markdown-it-py==1.1.0
+    # via
+    #   -r requirements.txt
+    #   libcoveocds
 markupsafe==1.1.1
     # via
     #   -r requirements.txt
@@ -277,6 +281,7 @@ typing-extensions==3.7.4.3
     # via
     #   -r requirements.txt
     #   asgiref
+    #   markdown-it-py
 urllib3==1.25.11
     # via
     #   -r requirements.txt
