@@ -149,14 +149,15 @@ class Checks:
             if self.run_until_timestamp and self.run_until_timestamp < datetime.datetime.utcnow().timestamp():
                 return
 
-    def _handle_package(self, package):
+    def _handle_package(self, package, **kwargs):
         cove_temp_folder = tempfile.mkdtemp(prefix='ocdskingfisher-cove-', dir=tempfile.gettempdir())
         try:
             output = ocds_json_output(cove_temp_folder, None, None,
                                       convert=False,
                                       lib_cove_ocds_config=self.libcoveocds_config,
                                       file_type='json',
-                                      json_data=package)
+                                      json_data=package,
+                                      **kwargs)
             output.pop('releases_aggregates', None)
             output.pop('records_aggregates', None)
             return output
@@ -205,7 +206,7 @@ class Checks:
         if override_schema_version:
             package['version'] = override_schema_version
         try:
-            cove_output = self._handle_package(package)
+            cove_output = self._handle_package(package, record_pkg=True)
             checks = [{
                 'record_id': record_row.id,
                 'cove_output': cove_output,
