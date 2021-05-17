@@ -1,6 +1,8 @@
 from django.db.models import Case, Count, IntegerField, When
+from django.http.response import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.viewsets import ViewSetMixin
 
@@ -87,3 +89,38 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
                         "store_end_at",
                         "transform_type",
                         "completed_at"]
+
+
+class TreeSerializer(ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = '__all__'
+
+
+class TreeViewSet(ViewSetMixin, RetrieveAPIView):
+    queryset = Collection.objects.filter(parent__isnull=True)
+
+    def retrieve(self, request, pk=None):
+        result = Collection.objects.raw("""
+            WITH RECURSIVE tree(id, parent, root, deep) AS (
+                SELECT c.id, c.transform_from_collection_id AS parent, id AS root, 1 AS deep
+                FROM collection c
+                WHERE c.transform_from_collection_id IS NULL
+            UNION ALL
+                SELECT c.id, c.transform_from_collection_id, t.root, t.deep + 1
+                FROM collection c, tree t
+                WHERE c.transform_from_collection_id = t.id
+            )
+            SELECT c.*
+            FROM tree t
+            JOIN collection c on (t.id = c.id)
+            WHERE t.root = %s
+            ORDER BY deep ASC;
+        """, [pk])
+
+        if not result:
+            raise Http404
+
+        serialized = TreeSerializer(result, many=True)
+
+        return Response(serialized.data)
