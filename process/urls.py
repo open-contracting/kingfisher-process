@@ -2,11 +2,12 @@ from django.conf import settings
 from django.urls import include, path
 from rest_framework import routers
 
-from process.api import CollectionViewSet
+from process.api import CollectionViewSet, TreeViewSet
 from process.views import api
 
 router = routers.DefaultRouter()
 router.register(r'collections', CollectionViewSet)
+router.register(r'tree', TreeViewSet, basename="tree")
 
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
