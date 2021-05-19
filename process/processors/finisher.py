@@ -34,8 +34,19 @@ def completable(collection_id):
                 (collection.store_end_at is None and
                  collection.transform_type == Collection.Transforms.COMPILE_RELEASES)):
 
-            processing_step_count = ProcessingStep.objects.filter(collection=collection).count()
+            if (collection.transform_type == Collection.Transforms.COMPILE_RELEASES
+                    and not collection.compilation_started):
 
+                # special case when the collection should be compiled and
+                # waits for compilation to be planned
+                # in such case, no processing steps will be available yet
+                logger.debug(
+                    "Compilation of collection {} not started yet".format(collection)
+                )
+
+                return False
+
+            processing_step_count = ProcessingStep.objects.filter(collection=collection).count()
             if processing_step_count == 0:
                 return True
             else:
