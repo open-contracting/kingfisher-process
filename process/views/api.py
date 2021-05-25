@@ -106,6 +106,12 @@ def close_collection(request):
                         collection_note.data = input["stats"]
                         collection_note.save()
 
+            message = """{"collection_id": {} }"""
+
+            _publish(message.format(collection.id), "collection_closed")
+            if upgraded_collection:
+                _publish(message.format(upgraded_collection.id), "collection_closed")
+
             return HttpResponse("Collection closed")
         except Collection.DoesNotExist:
             error = "Collection with id {} not found".format(input["collection_id"])
