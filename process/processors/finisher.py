@@ -32,7 +32,8 @@ def completable(collection_id):
 
         if (collection.store_end_at is not None or
                 (collection.store_end_at is None and
-                 collection.transform_type == Collection.Transforms.COMPILE_RELEASES)):
+                 collection.transform_type == Collection.Transforms.COMPILE_RELEASES and
+                 collection.get_root_parent().store_end_at is not None)):
 
             if (collection.transform_type == Collection.Transforms.COMPILE_RELEASES
                     and not collection.compilation_started):
