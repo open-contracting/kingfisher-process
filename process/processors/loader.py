@@ -36,7 +36,7 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
             collection_note = CollectionNote()
             collection_note.collection = collection
             collection_note.code = CollectionNote.Codes.ERROR,
-            collection_note.note = "Errors when downloading collection_file_id {} \n{}".format(errors)
+            collection_note.note = "Errors when downloading collection_file_id {} \n{}".format(collection_file, errors)
             collection_note.save()
 
         return collection_file

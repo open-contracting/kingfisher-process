@@ -106,7 +106,7 @@ def close_collection(request):
                         collection_note.data = input["stats"]
                         collection_note.save()
 
-            message = """{"collection_id": {} }"""
+            message = """{{ "collection_id": {} }}"""
 
             _publish(message.format(collection.id), "collection_closed")
             if upgraded_collection:
@@ -138,7 +138,7 @@ def create_collection_file(request):
             return HttpResponseBadRequest("{} is not a file".format(input["path"]))
 
         try:
-            _publish(json_dumps(input))
+            _publish(json_dumps(input), "api")
 
             return HttpResponse("Collection file creation planned.")
         except Collection.DoesNotExist:
@@ -152,7 +152,7 @@ def create_collection_file(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
-def _publish(message):
+def _publish(message, key):
     """Publish message with work for a next part of process"""
     # build exchange name
     rabbit_exchange = "kingfisher_process_{}".format(get_env_id())
@@ -160,7 +160,7 @@ def _publish(message):
     rabbit_channel = get_rabbit_channel(rabbit_exchange)
 
     # build publish key
-    rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(get_env_id(), "api")
+    rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(get_env_id(), key)
 
     rabbit_channel.basic_publish(
         exchange=rabbit_exchange,

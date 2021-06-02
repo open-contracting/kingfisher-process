@@ -174,7 +174,7 @@ def compile_record(collection_id, ocid):
         logger.warning("This OCID had some releases without a date element.")
 
     # Is there a compiledRelease?
-    compiled_release = record.get("compiledRelease")
+    compiled_release = record.data.data.get("compiledRelease", [])
     if compiled_release:
         logger.warning(
             """
