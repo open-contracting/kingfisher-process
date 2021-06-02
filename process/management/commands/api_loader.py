@@ -46,6 +46,10 @@ class Command(BaseWorker):
             if "errors" not in input_message:
                 # only files without errors will be further processed
                 self._publish(json_dumps(message))
+            else:
+                self._info("""Collection file {} contains errors {}, not sending to further processing.""".format(
+                        collection_file,
+                        input_message.get("errors", None)))
 
         except Collection.DoesNotExist:
             self._exception("Collection with id {} not found".format(input["collection_id"]))
