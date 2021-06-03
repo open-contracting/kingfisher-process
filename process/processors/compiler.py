@@ -317,7 +317,7 @@ def compilable(collection_id):
                 )
                 return False
         else:
-            logger.debug("Collection {} not completely stored yet.".format(collection))
+            logger.debug("Collection {} not completely stored yet. (store_end_at not set)".format(collection))
             return False
 
     except Collection.DoesNotExist:
