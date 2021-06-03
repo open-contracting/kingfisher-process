@@ -34,7 +34,7 @@ class Command(BaseWorker):
 
                 if input_message.get("close", False):
                     # close collections as well
-                    collection = Collection.objects.get(id=input["collection_id"])
+                    collection = Collection.objects.select_for_update().get(id=input["collection_id"])
                     collection.store_end_at = Now()
                     collection.save()
 

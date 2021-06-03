@@ -34,7 +34,7 @@ class Command(BaseWorker):
 
             with transaction.atomic():
                 if completable(collection_id):
-                    collection = Collection.objects.get(id=input_message["collection_id"])
+                    collection = Collection.objects.select_for_update().get(id=input_message["collection_id"])
                     if collection.transform_type == Collection.Transforms.COMPILE_RELEASES:
                         collection.store_end_at = Now()
 

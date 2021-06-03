@@ -101,7 +101,7 @@ class Command(BaseWorker):
             )
 
     def _publish_records(self, collection_file):
-        compiled_collection = Collection.objects.filter(
+        compiled_collection = Collection.objects.select_for_update().filter(
             transform_type__exact=Collection.Transforms.COMPILE_RELEASES
         ).get(parent=collection_file.collection)
 

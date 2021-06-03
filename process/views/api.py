@@ -3,6 +3,7 @@ import logging
 from os.path import isfile
 
 import pika
+from django.db import transaction
 from django.db.models.functions import Now
 from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -62,47 +63,48 @@ def close_collection(request):
             )
 
         try:
-            collection = Collection.objects.get(id=input["collection_id"])
-            collection.store_end_at = Now()
-            collection.save()
-            logger.debug("Collection {} set store_ent_at={}".format(collection, collection.store_end_at))
-            upgraded_collection = collection.get_upgraded_collection()
-            if upgraded_collection:
-                upgraded_collection.store_end_at = Now()
-                upgraded_collection.save()
-                logger.debug("Upgraded collection {} set store_ent_at={}".format(upgraded_collection,
-                                                                                 upgraded_collection.store_end_at))
-
-            if "reason" in input and input["reason"]:
-                collection_note = CollectionNote()
-                collection_note.collection = collection
-                collection_note.code = CollectionNote.Codes.INFO
-                collection_note.note = "Spider close reason: {}".format(input["reason"])
-                collection_note.save()
-
+            with transaction.atomic():
+                collection = Collection.objects.select_for_update().get(id=input["collection_id"])
+                collection.store_end_at = Now()
+                collection.save()
+                logger.debug("Collection {} set store_end_at={}".format(collection, collection.store_end_at))
+                upgraded_collection = collection.get_upgraded_collection()
                 if upgraded_collection:
+                    upgraded_collection.store_end_at = Now()
+                    upgraded_collection.save()
+                    logger.debug("Upgraded collection {} set store_end_at={}".format(upgraded_collection,
+                                                                                     upgraded_collection.store_end_at))
+
+                if "reason" in input and input["reason"]:
                     collection_note = CollectionNote()
-                    collection_note.collection = upgraded_collection
+                    collection_note.collection = collection
                     collection_note.code = CollectionNote.Codes.INFO
                     collection_note.note = "Spider close reason: {}".format(input["reason"])
                     collection_note.save()
 
-            if "stats" in input and input["stats"]:
-                collection_note = CollectionNote()
-                collection_note.collection = collection
-                collection_note.code = CollectionNote.Codes.INFO
-                collection_note.note = "Spider stats"
-                collection_note.data = input["stats"]
+                    if upgraded_collection:
+                        collection_note = CollectionNote()
+                        collection_note.collection = upgraded_collection
+                        collection_note.code = CollectionNote.Codes.INFO
+                        collection_note.note = "Spider close reason: {}".format(input["reason"])
+                        collection_note.save()
 
-                collection_note.save()
-
-                if upgraded_collection:
+                if "stats" in input and input["stats"]:
                     collection_note = CollectionNote()
-                    collection_note.collection = upgraded_collection
+                    collection_note.collection = collection
                     collection_note.code = CollectionNote.Codes.INFO
                     collection_note.note = "Spider stats"
                     collection_note.data = input["stats"]
+
                     collection_note.save()
+
+                    if upgraded_collection:
+                        collection_note = CollectionNote()
+                        collection_note.collection = upgraded_collection
+                        collection_note.code = CollectionNote.Codes.INFO
+                        collection_note.note = "Spider stats"
+                        collection_note.data = input["stats"]
+                        collection_note.save()
 
             message = """{{ "collection_id": {} }}"""
 
