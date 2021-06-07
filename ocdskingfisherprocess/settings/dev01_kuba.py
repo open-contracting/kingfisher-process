@@ -98,5 +98,9 @@ LOGGING = {
             "handlers": ["console"],
             "level": "DEBUG",
         },
+        "views": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
     },
 }
