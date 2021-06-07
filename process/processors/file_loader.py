@@ -214,11 +214,11 @@ def _get_data_type(collection_file):
     if not collection.data_type:
         detected_format = detect_format(collection_file.filename)
         collection.set_data_type(detected_format)
-        collection.save()
+        collection.save(update_fields=["data_type"])
         upgraded_collection = collection.get_upgraded_collection()
         if upgraded_collection:
             upgraded_collection.set_data_type(detected_format)
-            upgraded_collection.save()
+            upgraded_collection.save(update_fields=["data_type"])
 
     return collection.data_type
 
