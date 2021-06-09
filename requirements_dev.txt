@@ -86,6 +86,8 @@ flattentool==0.15.2
     # via
     #   -r requirements.txt
     #   libcove
+gunicorn==20.1.0
+    # via -r requirements.txt
 idna==2.9
     # via
     #   -r requirements.txt

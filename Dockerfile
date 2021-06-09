@@ -7,4 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["python"]
+RUN mkdir /data
+RUN mkdir /data/kingfisher-process
+RUN mkdir /data/kingfisher-process/logs
+
+ENTRYPOINT [ "" ]

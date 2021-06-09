@@ -113,7 +113,12 @@ def close_collection(request):
 
             if upgraded_collection:
                 _publish(message.format(upgraded_collection.id), "collection_closed")
-                logger.debug("Published close message for upgraded collection {}".format(collection))
+                logger.debug("Published close message for upgraded collection {}".format(upgraded_collection))
+
+            compiled_collection = collection.get_compiled_collection()
+            if compiled_collection:
+                _publish(message.format(compiled_collection.id), "collection_closed")
+                logger.debug("Published close message for compiled collection {}".format(compiled_collection))
 
             return HttpResponse("Collection closed")
         except Collection.DoesNotExist:

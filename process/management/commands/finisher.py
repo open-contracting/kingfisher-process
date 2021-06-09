@@ -18,7 +18,7 @@ class Command(BaseWorker):
 
     worker_name = "finisher"
 
-    consume_keys = ["checker", "release_compiler", "record_compiler", "file_loader"]
+    consume_keys = ["checker", "release_compiler", "record_compiler", "file_loader", "collection_closed"]
 
     def __init__(self):
         super().__init__(self.worker_name)

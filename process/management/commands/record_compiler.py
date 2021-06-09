@@ -40,15 +40,18 @@ class Command(BaseWorker):
                 release = compile_record(collection_id, ocid)
 
             self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=collection_id, ocid=ocid)
-            # publish message about processed item
-            if release:
-                message = {
-                    "ocid": ocid,
-                    "compiled_release_id": release.pk,
-                    "collection_id": release.collection.id,
-                }
 
-                self._publish(json.dumps(message))
+            release_id = None
+            if release:
+                release_id = release.pk
+            # publish message about processed item
+            message = {
+                "ocid": ocid,
+                "compiled_release_id": release_id,
+                "collection_id": release.collection.id,
+            }
+
+            self._publish(json.dumps(message))
 
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
