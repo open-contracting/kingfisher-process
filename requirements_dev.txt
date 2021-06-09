@@ -59,7 +59,7 @@ defusedxml==0.6.0
     # via
     #   -r requirements.txt
     #   odfpy
-django==3.2
+django==3.2.4
     # via
     #   -r requirements.txt
     #   libcoveocds
