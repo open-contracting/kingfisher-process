@@ -81,7 +81,12 @@ def compile_release(collection_id, ocid):
 
         # collect all extensions used
         if release.package_data:
-            extensions = list(set(extensions + release.package_data.data.get("extensions", [])))
+            package_data_extensions = release.package_data.data.get("extensions", [])
+            if isinstance(package_data_extensions, list):
+                extensions = list(set(extensions + package_data_extensions))
+            else:
+                logger.error("Package data for release {} contains malformed extensions {}, skipping.".format(release,
+                             package_data_extensions))
 
     # merge data into into single compiled release
     compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_data, extensions)
