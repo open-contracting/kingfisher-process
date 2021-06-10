@@ -37,8 +37,17 @@ class Command(BaseWorker):
 
             if compilable(collection.id):
                 if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-                    # plans compilation of the whole collection (everything is stored yet)
-                    self._publish_releases(collection)
+                    real_files_count = CollectionFile.objects.filter(collection=collection).count()
+                    if collection.expected_files_count <= real_files_count:
+                        # plans compilation of the whole collection (everything is stored yet)
+                        self._publish_releases(collection)
+                    else:
+                        self._debug("Collection {} is not compilable yet. There are (probably) some"
+                                    "unprocessed messages in the queue with the new items"
+                                    " - expected files count {} real files count {}".format(
+                                        collection,
+                                        collection.expected_files_count,
+                                        real_files_count))
 
                 if (collection.data_type and
                         collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and collection_file):

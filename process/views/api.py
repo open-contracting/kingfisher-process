@@ -66,10 +66,16 @@ def close_collection(request):
             with transaction.atomic():
                 collection = Collection.objects.select_for_update().get(id=input["collection_id"])
                 collection.store_end_at = Now()
+
+                if "stats" in input and input["stats"]:
+                    # this value is used later on to detect, whether all collection has been processed yet
+                    collection.expected_files_count = input["stats"]["kingfisher_process_items_sent_rabbit"]
+
                 collection.save()
                 logger.debug("Collection {} set store_end_at={}".format(collection, collection.store_end_at))
                 upgraded_collection = collection.get_upgraded_collection()
                 if upgraded_collection:
+                    upgraded_collection.expected_files_count = collection.expected_files_count
                     upgraded_collection.store_end_at = Now()
                     upgraded_collection.save()
                     logger.debug("Upgraded collection {} set store_end_at={}".format(upgraded_collection,
