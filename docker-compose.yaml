@@ -1,65 +1,81 @@
 version: "2.2"
 services:
   api_loader:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py api_loader --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py api_loader --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 2
   file_worker:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py file_worker --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py file_worker --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 2
   checker:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py checker --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py checker --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 2
   compiler:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py compiler --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py compiler --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 2
   release_compiler:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py release_compiler --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py release_compiler --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 2
   record_compiler:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py record_compiler --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py record_compiler --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 2
   finisher:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "python manage.py finisher --settings ocdskingfisherprocess.settings.amy01"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py finisher --settings ocdskingfisherprocess.settings.docker"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data
     scale: 1
   django:
-    image: "170654793963.dkr.ecr.eu-central-1.amazonaws.com/kp:production"
-    command: "./gunicorn_runner.sh"
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "./gunicorn_runner.sh 8000"
     network_mode: "host"
+    env_file:
+      - kingfisher-process.env
     restart: unless-stopped
     volumes:
       - /data:/data

@@ -50,7 +50,7 @@ def completable(collection_id):
             processing_step_count = ProcessingStep.objects.filter(collection=collection).count()
             if processing_step_count == 0:
                 real_files_count = CollectionFile.objects.filter(collection=collection).count()
-                if collection.expected_files_count > real_files_count:
+                if collection.expected_files_count and collection.expected_files_count > real_files_count:
                     logger.debug("Collection {} is not completable yet. There are (probably) some"
                                  "unprocessed messages in the queue with the new items"
                                  " - expected files count {} real files count {}".format(

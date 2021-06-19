@@ -38,7 +38,7 @@ class Command(BaseWorker):
             if compilable(collection.id):
                 if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
                     real_files_count = CollectionFile.objects.filter(collection=collection).count()
-                    if collection.expected_files_count <= real_files_count:
+                    if collection.expected_files_count and collection.expected_files_count <= real_files_count:
                         # plans compilation of the whole collection (everything is stored yet)
                         self._publish_releases(collection)
                     else:

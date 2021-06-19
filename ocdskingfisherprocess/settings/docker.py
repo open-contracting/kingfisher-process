@@ -14,8 +14,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-ENV_NAME = "dev01_kuba"
-ENV_VERSION = "1.0"
+ENV_NAME = os.getenv("ENV_NAME")
+ENV_VERSION = os.getenv("ENV_VERSION")
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,35 +25,26 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY", "^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4")
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.getenv("SECRET_KEY", "sadgfdfshtwbsxsadf4")
 
 ALLOWED_HOSTS = ["*"]
-
-VUE_APP_HOST = "http://localhost:22062"
-
-CORS_ORIGIN_WHITELIST = [VUE_APP_HOST]
-
-CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "kingfisher",  # Or path to database file if using sqlite3.
-        "USER": "postgres",  # Not used with sqlite3.
-        "PASSWORD": "kingfisher",  # Not used with sqlite3.
-        "HOST": "localhost",  # Set to empty string for localhost. Not used with sqlite3.
-        "PORT": "22060",  # Set to empty string for default. Not used with sqlite3.
+        "NAME": os.getenv("DB_NAME"),  # Or path to database file if using sqlite3.
+        "USER": os.getenv("DB_USER"),  # Not used with sqlite3.
+        "PASSWORD": os.getenv("DB_PASSWORD"),  # Not used with sqlite3.
+        "HOST": os.getenv("DB_HOST"),  # Set to empty string for localhost. Not used with sqlite3.
+        "PORT": os.getenv("DB_PORT"),  # Set to empty string for default. Not used with sqlite3.
     }
 }
 
 RABBITMQ = {
-    "username": "rabbit",
-    "password": "rabbit",
-    "host": "localhost",
-    "port": "29000",
+    "host": os.getenv("RABBIT_HOST"),
+    "port": os.getenv("RABBIT_PORT"),
+    "username": os.getenv("RABBIT_USERNAME"),
+    "password": os.getenv("RABBIT_PASSWORD"),
 }
 
 # The schema in the older version had index names longer than 30 characters.
@@ -76,30 +67,35 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "standard",
         },
+        "logfile": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "/tmp/kp_logfile",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "INFO",
         },
         "django.server": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "INFO",
         },
         "django.db.backends": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "INFO",
         },
         "worker": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "DEBUG",
         },
         "processor": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "DEBUG",
         },
         "views": {
-            "handlers": ["console"],
+            "handlers": ["console", "logfile"],
             "level": "DEBUG",
         },
     },
