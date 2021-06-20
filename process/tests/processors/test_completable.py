@@ -46,5 +46,6 @@ class CompletableTests(TransactionTestCase):
         collection = Collection.objects.get(id=2)
         collection.transform_type = Collection.Transforms.COMPILE_RELEASES
         collection.store_end_at = None
+        collection.compilation_started = True
         collection.save()
         self.assertEqual(completable(2), True)
