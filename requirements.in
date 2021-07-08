@@ -14,3 +14,4 @@ simplejson
 djangorestframework
 django-filter
 gunicorn
+sentry-sdk

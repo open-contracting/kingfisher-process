@@ -1,5 +1,8 @@
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 from .base import *  # noqa: F403,F401
 
 """
@@ -20,9 +23,12 @@ ENV_VERSION = os.getenv("ENV_VERSION")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+if os.getenv("SENTRY_DNS", False):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DNS"),
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=os.getenv("SENTRY_SAMPLE_RATE", 1.0),
+    )
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "sadgfdfshtwbsxsadf4")
