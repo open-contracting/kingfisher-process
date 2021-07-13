@@ -4,7 +4,6 @@ import sys
 
 import pgpasslib
 
-
 """This holds configuration information for Kingfisher.
 Whatever tool is calling it - CLI or other code - should create one of these, set it up as required and pass it around.
 """
