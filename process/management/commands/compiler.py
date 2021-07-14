@@ -58,12 +58,22 @@ class Command(BaseWorker):
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
-                collection = Collection.objects.get(collectionfile__id=input_message["collection_file_id"])
+                if "collection_id" in input_message:
+                    # received message form collection closed api endpoint
+                    collection = Collection.objects.get(pk=input_message["collection_id"])
+                else:
+                    # received message from regular file processing
+                    collection_file = CollectionFile.objects.prefetch_related("collection").get(
+                        pk=input_message["collection_file_id"]
+                    )
+
+                    collection = collection_file.collection
+
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
-                    "Unable to process collection_file_id {} \n{}".format(
-                        input_message["collection_file_id"], traceback.format_exc()
+                    "Unable to process message {} \n{}".format(
+                        input_message, traceback.format_exc()
                     ),
                 )
             except Exception:
