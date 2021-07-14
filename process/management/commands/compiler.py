@@ -24,6 +24,9 @@ class Command(BaseWorker):
         try:
             self._debug("Received message {}".format(input_message))
 
+            collection = None
+            collection_file = None
+
             if "collection_id" in input_message:
                 # received message form collection closed api endpoint
                 collection = Collection.objects.get(pk=input_message["collection_id"])
@@ -49,7 +52,7 @@ class Command(BaseWorker):
                                         collection.expected_files_count,
                                         real_files_count))
 
-                if (collection.data_type and
+                if (collection_file and collection.data_type and
                         collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and collection_file):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(collection_file)
