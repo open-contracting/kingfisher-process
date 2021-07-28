@@ -48,7 +48,7 @@ class Command(BaseWorker):
             message = {
                 "ocid": ocid,
                 "compiled_release_id": release_id,
-                "collection_id": release.collection.id,
+                "collection_id": collection_id,
             }
 
             self._publish(json.dumps(message))
