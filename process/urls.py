@@ -17,5 +17,9 @@ urlpatterns = [
         "api/{}/create_collection_file".format(settings.API_VERSION),
         api.create_collection_file, name="create_collection_file"
     ),
+    path(
+        "api/{}/wipe_collection".format(settings.API_VERSION),
+        api.wipe_collection, name="wipe_collection"
+    ),
     path("api/{}/".format(settings.API_VERSION), include(router.urls)),
 ]

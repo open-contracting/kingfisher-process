@@ -166,6 +166,31 @@ def create_collection_file(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
+@csrf_exempt
+def wipe_collection(request):
+    if request.method == "POST":
+        input = json.loads(request.body)
+
+        if "collection_id" not in input:
+            return HttpResponseBadRequest(
+                'Unable to parse input. Please provide {"collection_id":<some_number>}'
+            )
+
+        try:
+            collection = Collection.objects.select_for_update().get(id=input["collection_id"])
+            logger.debug("Deleting collection {}".format(collection))
+            collection.delete()
+        except Collection.DoesNotExist:
+            error = "Collection with id {} not found".format(input["collection_id"])
+            logger.error(error)
+            return HttpResponseServerError(error)
+        except Exception as e:
+            response = HttpResponseServerError(e)
+            logger.exception("Unable to wipe collection", e)
+            return response
+    return HttpResponseBadRequest("Only POST requests accepted")
+
+
 def _publish(message, key):
     """Publish message with work for a next part of process"""
     # build exchange name
