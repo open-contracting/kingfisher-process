@@ -179,6 +179,7 @@ def wipe_collection(request):
         try:
             collection = Collection.objects.select_for_update().get(id=input["collection_id"])
             logger.debug("Deleting collection {}".format(collection))
+
             collection.delete()
         except Collection.DoesNotExist:
             error = "Collection with id {} not found".format(input["collection_id"])
