@@ -45,8 +45,8 @@ def get_rabbit_channel(rabbit_exchange):
             host=settings.RABBITMQ["host"],
             port=settings.RABBITMQ["port"],
             credentials=credentials,
-            blocked_connection_timeout=1800,
-            heartbeat=0,
+            blocked_connection_timeout=3600,
+            heartbeat=5,
         )
     )
 

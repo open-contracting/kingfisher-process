@@ -38,6 +38,9 @@ class Command(BaseWorker):
 
                 collection = collection_file.collection
 
+            # next phase can be runnng for hours, ack processing of this message to avoid potential netwrok issues
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+
             if compilable(collection.id):
                 if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
                     real_files_count = CollectionFile.objects.filter(collection=collection).count()
@@ -82,7 +85,6 @@ class Command(BaseWorker):
             except Exception:
                 self._exception("Failed saving collection note")
 
-        channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def _publish_releases(self, collection):
         try:
