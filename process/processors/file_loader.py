@@ -3,7 +3,8 @@ from collections import OrderedDict
 
 import ijson
 import simplejson as json
-from django.db.utils import IntegrityError, transaction
+from django.db import transaction
+from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
