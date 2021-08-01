@@ -219,7 +219,7 @@ def compile_record(collection_id, ocid):
 
     else:
         # We can't process this ocid. Warn of that.
-        logger.error(
+        logger.warning(
             """
             Record {} could not be compiled because at least one release in the releases array is
             a linked release or there are no releases with dates, and the record has
