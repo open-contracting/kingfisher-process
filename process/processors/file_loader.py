@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import ijson
 import simplejson as json
-from django.db.utils import IntegrityError
+from django.db.utils import IntegrityError, transaction
 from ijson.common import ObjectBuilder
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
@@ -148,7 +148,9 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
         package_data.data = file_package_data
         package_data.hash_md5 = package_hash
         try:
-            package_data.save()
+            with transaction.atomic():
+                # another transaction needed here as integrity error will "broke" the upper one
+                package_data.save()
         except IntegrityError:
             package_data = PackageData.objects.get(hash_md5=package_hash)
 
