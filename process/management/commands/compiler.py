@@ -43,7 +43,7 @@ class Command(BaseWorker):
                     real_files_count = CollectionFile.objects.filter(collection=collection).count()
                     if collection.expected_files_count and collection.expected_files_count <= real_files_count:
                         # plans compilation of the whole collection (everything is stored yet)
-                        self._publish_releases(collection)
+                        self._publish_releases(connection, channel, collection)
                     else:
                         self._debug("Collection {} is not compilable yet. There are (probably) some"
                                     "unprocessed messages in the queue with the new items"
@@ -55,11 +55,9 @@ class Command(BaseWorker):
                 if (collection_file and collection.data_type and
                         collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and collection_file):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
-                    self._publish_records(collection_file)
+                    self._publish_records(connection, channel, collection_file)
             else:
                 self._debug("Collection {} is not compilable.".format(collection))
-
-            self._ack(connection, channel, delivery_tag)
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
@@ -84,7 +82,9 @@ class Command(BaseWorker):
             except Exception:
                 self._exception("Failed saving collection note")
 
-    def _publish_releases(self, collection):
+            self._ack(connection, channel, delivery_tag)
+
+    def _publish_releases(self, connection, channel, collection):
         try:
             with transaction.atomic():
                 compiled_collection = (
@@ -115,7 +115,7 @@ class Command(BaseWorker):
                 }
 
                 self._createStep(ProcessingStep.Types.COMPILE, collection_id=collection.id, ocid=item["ocid"])
-                self._publish(json.dumps(message), "compiler_release")
+                self._publish(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self._warning(
                 """"Tried to plan compilation for already "planned" collection.
