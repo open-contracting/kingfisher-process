@@ -84,7 +84,6 @@ class Command(BaseWorker):
             except Exception:
                 self._exception("Failed saving collection note")
 
-
     def _publish_releases(self, connection, channel, collection):
         try:
             with transaction.atomic():
