@@ -181,6 +181,8 @@ def wipe_collection(request):
             logger.debug("Deleting collection {}".format(collection))
 
             collection.delete()
+
+            return HttpResponse("Collection successfully wiped.")
         except Collection.DoesNotExist:
             error = "Collection with id {} not found".format(input["collection_id"])
             logger.error(error)
@@ -189,6 +191,7 @@ def wipe_collection(request):
             response = HttpResponseServerError(e)
             logger.exception("Unable to wipe collection", e)
             return response
+
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
