@@ -91,7 +91,7 @@ class BaseWorker(BaseCommand):
         else:
             publish_routing_key = self.rabbit_publish_routing_key
 
-        if not self.rabbit_channel.is_open():
+        if not self.rabbit_channel.is_open:
             # recover timed out connections
             self._warning("Rabbit connection timeout, reinit.")
             self._initMessaging()
