@@ -18,7 +18,7 @@ class Command(BaseWorker):
     def __init__(self):
         super().__init__(self.worker_name)
 
-    def process(self, channel, method, properties, body):
+    def process(self, connection, channel, delivery_tag, body):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
 
@@ -33,16 +33,16 @@ class Command(BaseWorker):
                 self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
             self._createStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
-            self._publish(json.dumps(input_message))
+            self._publish_async(connection, channel, json.dumps(input_message))
 
             # send upgraded collection file to further processing
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
                 self._createStep(ProcessingStep.Types.CHECK, collection_file_id=upgraded_collection_file_id)
-                self._publish(json_dumps(message))
+                self._publish_async(connection, channel, json_dumps(message))
 
             # confirm message processing
-            channel.basic_ack(delivery_tag=method.delivery_tag)
+            self._ack(connection, channel, delivery_tag)
         except IntegrityError:
             self._exception(
                 """ This should be a very rare exception, most probably one worker stored
@@ -53,7 +53,7 @@ class Command(BaseWorker):
             )
 
             # return message to queue
-            channel.basic_nack(delivery_tag=method.delivery_tag)
+            self._nack(connection, channel, delivery_tag)
         except Exception:
             collection_file_id = input_message["collection_file_id"]
 
@@ -73,4 +73,4 @@ class Command(BaseWorker):
             self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
             # confirm message processing
-            channel.basic_ack(delivery_tag=method.delivery_tag)
+            self._ack(connection, channel, delivery_tag)

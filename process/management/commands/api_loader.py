@@ -18,7 +18,7 @@ class Command(BaseWorker):
     def __init__(self):
         super().__init__(self.worker_name)
 
-    def process(self, channel, method, properties, body):
+    def process(self, connection, channel, delivery_tag, body):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
 
@@ -45,7 +45,7 @@ class Command(BaseWorker):
 
             if "errors" not in input_message:
                 # only files without errors will be further processed
-                self._publish(json_dumps(message))
+                self._publish_async(connection, channel, json_dumps(message))
             else:
                 self._info("""Collection file {} contains errors {}, not sending to further processing.""".format(
                         collection_file,
@@ -57,4 +57,4 @@ class Command(BaseWorker):
             self._exception("Unable to create collection_file")
 
         # confirm message processing
-        channel.basic_ack(delivery_tag=method.delivery_tag)
+        self._ack(connection, channel, delivery_tag)

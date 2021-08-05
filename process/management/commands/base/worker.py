@@ -104,18 +104,45 @@ class BaseWorker(BaseCommand):
     def _ack_message(self, channel, delivery_tag):
         channel.basic_ack(delivery_tag)
 
-    def _publish(self, connection, channel, message, routing_key=None):
+    def _nack(self, connection, channel, delivery_tag):
+        self._debug("NACK message from channel {} with delivery tag {}".format(channel, delivery_tag))
+        cb = functools.partial(self._nack_message, channel, delivery_tag)
+        connection.add_callback_threadsafe(cb)
+
+    def _nack_message(self, channel, delivery_tag):
+        channel.basic_nack(delivery_tag)
+
+    def _publish(self, message, routing_key=None):
         """Publish message with work for a next part of process"""
         if routing_key:
             publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, routing_key)
         else:
             publish_routing_key = self.rabbit_publish_routing_key
 
-        cb = functools.partial(self._publish_async, channel, message, publish_routing_key)
+        self.rabbit_channel.basic_publish(
+            exchange=self.rabbit_exchange,
+            routing_key=publish_routing_key,
+            body=message,
+            properties=pika.BasicProperties(delivery_mode=2),
+        )
 
+        self._debug(
+            "Published message to exchange {} with routing key {}. Message: {}".format(
+                self.rabbit_exchange, self.rabbit_publish_routing_key, message
+            )
+        )
+
+    def _publish_async(self, connection, channel, message, routing_key=None):
+        """Publish message with work for a next part of process"""
+        cb = functools.partial(self._publish_async_callback, channel, message, routing_key)
         connection.add_callback_threadsafe(cb)
 
-    def _publish_async(self, channel, message, publish_routing_key):
+    def _publish_async_callback(self, channel, message, routing_key):
+        if routing_key:
+            publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, routing_key)
+        else:
+            publish_routing_key = self.rabbit_publish_routing_key
+
         channel.basic_publish(
             exchange=self.rabbit_exchange,
             routing_key=publish_routing_key,

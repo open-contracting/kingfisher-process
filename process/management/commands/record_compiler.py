@@ -24,7 +24,7 @@ class Command(BaseWorker):
     def __init__(self):
         super().__init__(self.worker_name)
 
-    def process(self, channel, method, properties, body):
+    def process(self, connection, channel, delivery_tag, body):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
 
@@ -51,7 +51,7 @@ class Command(BaseWorker):
                 "collection_id": collection_id,
             }
 
-            self._publish(json.dumps(message))
+            self._publish_async(connection, channel, json.dumps(message))
 
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
@@ -67,4 +67,4 @@ class Command(BaseWorker):
             except Exception:
                 self._exception("Failed saving collection note")
 
-        channel.basic_ack(delivery_tag=method.delivery_tag)
+        self._ack(connection, channel, delivery_tag)

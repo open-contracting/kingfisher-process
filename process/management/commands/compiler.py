@@ -115,14 +115,14 @@ class Command(BaseWorker):
                 }
 
                 self._createStep(ProcessingStep.Types.COMPILE, collection_id=collection.id, ocid=item["ocid"])
-                self._publish(connection, channel, json.dumps(message), "compiler_release")
+                self._publish_async(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self._warning(
                 """"Tried to plan compilation for already "planned" collection.
                 This can rarely happen in multi worker environments."""
             )
 
-    def _publish_records(self, collection_file):
+    def _publish_records(self, connection, channel, collection_file):
         with transaction.atomic():
             compiled_collection = Collection.objects.select_for_update().filter(
                 transform_type__exact=Collection.Transforms.COMPILE_RELEASES
@@ -152,4 +152,4 @@ class Command(BaseWorker):
             self._createStep(ProcessingStep.Types.COMPILE,
                              collection_id=collection_file.collection.id,
                              ocid=item["ocid"])
-            self._publish(json.dumps(message), "compiler_record")
+            self._publish_async(connection, channel, json.dumps(message), "compiler_record")
