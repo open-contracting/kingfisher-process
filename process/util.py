@@ -36,11 +36,11 @@ def get_hash(data):
     return hashlib.md5(data.encode("utf-8")).hexdigest()
 
 
-def get_rabbit_channel(rabbit_exchange):
+def get_rabbit_channel(rabbit_exchange_name):
     # connect to messaging
     credentials = pika.PlainCredentials(settings.RABBITMQ["username"], settings.RABBITMQ["password"])
 
-    connection = pika.BlockingConnection(
+    rabbit_connection = pika.BlockingConnection(
         pika.ConnectionParameters(
             host=settings.RABBITMQ["host"],
             port=settings.RABBITMQ["port"],
@@ -50,12 +50,12 @@ def get_rabbit_channel(rabbit_exchange):
         )
     )
 
-    rabbit_channel = connection.channel()
+    rabbit_channel = rabbit_connection.channel()
 
     # declare durable exchange
-    rabbit_channel.exchange_declare(exchange=rabbit_exchange, durable="true", exchange_type="direct")
+    rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable="true", exchange_type="direct")
 
-    return rabbit_channel
+    return rabbit_channel, rabbit_connection
 
 
 def get_env_id():

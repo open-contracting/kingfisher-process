@@ -17,7 +17,7 @@ class Command(BaseWorker):
     def __init__(self):
         super().__init__(self.worker_name)
 
-    def process(self, channel, method, properties, body):
+    def process(self, connection, channel, delivery_tag, body):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
 
@@ -37,9 +37,6 @@ class Command(BaseWorker):
                 )
 
                 collection = collection_file.collection
-
-            # next phase can be runnng for hours, ack processing of this message to avoid potential netwrok issues
-            channel.basic_ack(delivery_tag=method.delivery_tag)
 
             if compilable(collection.id):
                 if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
@@ -61,6 +58,8 @@ class Command(BaseWorker):
                     self._publish_records(collection_file)
             else:
                 self._debug("Collection {} is not compilable.".format(collection))
+
+            self._ack(connection, channel, delivery_tag)
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:

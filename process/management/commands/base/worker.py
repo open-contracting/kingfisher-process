@@ -1,6 +1,8 @@
 import argparse
+import functools
 import logging
 import os
+import threading
 
 import pika
 from django.conf import settings
@@ -20,6 +22,8 @@ class BaseWorker(BaseCommand):
     rabbit_exchange = None
 
     rabbit_channel = None
+
+    rabbit_connection = None
 
     rabbit_consume_routing_keys = []
 
@@ -60,11 +64,11 @@ class BaseWorker(BaseCommand):
         # build exchange name
         self.rabbit_exchange = "kingfisher_process_{}".format(self.env_id)
 
-        self.rabbit_channel = get_rabbit_channel(self.rabbit_exchange)
+        self.rabbit_channel, self.rabbit_connection = get_rabbit_channel(self.rabbit_exchange)
 
         self._info("RabbitMQ connection established")
 
-    def _consume(self, callback):
+    def _consume(self, target_callback):
         """Define which messages to consume and queue for this worker"""
         # declare queue to store unprocessed messages
         self.rabbit_channel.queue_declare(queue=self.rabbit_consume_queue, durable=True)
@@ -80,9 +84,25 @@ class BaseWorker(BaseCommand):
             )
 
             self.rabbit_channel.basic_qos(prefetch_count=1)
-            self.rabbit_channel.basic_consume(queue=self.rabbit_consume_queue, on_message_callback=callback)
+
+            def on_message(channel, method_frame, header_frame, body, args):
+                (connection, target_callback) = args
+                delivery_tag = method_frame.delivery_tag
+                t = threading.Thread(target=target_callback, args=(connection, channel, delivery_tag, body))
+                t.start()
+
+            on_message_callback = functools.partial(on_message, args=(self.rabbit_connection, target_callback))
+            self.rabbit_channel.basic_consume(queue=self.rabbit_consume_queue, on_message_callback=on_message_callback)
 
         self.rabbit_channel.start_consuming()
+
+    def _ack(self, connection, channel, delivery_tag):
+        self._debug("ACK message from channel {} with delivery tag {}".format(channel, delivery_tag))
+        cb = functools.partial(self._ack_message, channel, delivery_tag)
+        connection.add_callback_threadsafe(cb)
+
+    def _ack_message(self, channel, delivery_tag):
+        channel.basic_ack(delivery_tag)
 
     def _publish(self, message, routing_key=None):
         """Publish message with work for a next part of process"""
@@ -91,10 +111,6 @@ class BaseWorker(BaseCommand):
         else:
             publish_routing_key = self.rabbit_publish_routing_key
 
-        if not self.rabbit_channel.is_open:
-            # recover timed out connections
-            self._warning("Rabbit connection timeout, reinit.")
-            self._initMessaging()
         self.rabbit_channel.basic_publish(
             exchange=self.rabbit_exchange,
             routing_key=publish_routing_key,
