@@ -93,7 +93,7 @@ class BaseWorker(BaseCommand):
 
         if not self.rabbit_channel.is_open():
             # recover timed out connections
-
+            self._warning("Rabbit connection timeout, reinit.")
             self._initMessaging()
         self.rabbit_channel.basic_publish(
             exchange=self.rabbit_exchange,
