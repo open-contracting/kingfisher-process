@@ -21,7 +21,7 @@ class Command(BaseWorker):
 
             collection_id = input_message["collection_id"]
 
-            collection = Collection.objects.get(collection_id)
+            collection = Collection.objects.get(pk=collection_id)
             self._debug("Deleting collection {}".format(collection))
 
             collection.delete()
