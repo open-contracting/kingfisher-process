@@ -193,7 +193,7 @@ def _publish(message, key):
     # build exchange name
     rabbit_exchange = "kingfisher_process_{}".format(get_env_id())
 
-    rabbit_channel = get_rabbit_channel(rabbit_exchange)
+    rabbit_channel, rabbit_connection = get_rabbit_channel(rabbit_exchange)
 
     # build publish key
     rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(get_env_id(), key)
