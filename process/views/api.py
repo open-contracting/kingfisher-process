@@ -177,16 +177,9 @@ def wipe_collection(request):
             )
 
         try:
-            collection = Collection.objects.get(id=input["collection_id"])
-            logger.debug("Deleting collection {}".format(collection))
+            _publish(json_dumps(input), "wiper")
 
-            collection.delete()
-
-            return HttpResponse("Collection successfully wiped.")
-        except Collection.DoesNotExist:
-            error = "Collection with id {} not found".format(input["collection_id"])
-            logger.error(error)
-            return HttpResponseServerError(error)
+            return HttpResponse("Wipe collection {} successfully planned.")
         except Exception as e:
             response = HttpResponseServerError(e)
             logger.exception("Unable to wipe collection", e)
