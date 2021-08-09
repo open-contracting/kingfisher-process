@@ -28,7 +28,7 @@ class Command(BaseWorker):
 
             self._info("Collection {} successfully wiped.".format(collection))
         except Collection.DoesNotExist:
-            error = "Collection with id {} not found".format(input["collection_id"])
+            error = "Collection with id {} not found".format(input_message["collection_id"])
             self._error(error)
 
         self._ack(connection, channel, delivery_tag)
