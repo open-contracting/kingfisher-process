@@ -58,3 +58,4 @@ class Command(BaseWorker):
 
         # confirm message processing
         self._ack(connection, channel, delivery_tag)
+        self._clean_thread_resources()

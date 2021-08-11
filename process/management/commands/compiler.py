@@ -83,6 +83,7 @@ class Command(BaseWorker):
                 )
             except Exception:
                 self._exception("Failed saving collection note")
+        self._clean_thread_resources()
 
     def _publish_releases(self, connection, channel, collection):
         try:

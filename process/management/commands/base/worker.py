@@ -7,6 +7,7 @@ import threading
 import pika
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import connection as django_db_connection
 from django.utils.translation import gettext as t
 
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
@@ -155,6 +156,13 @@ class BaseWorker(BaseCommand):
                 self.rabbit_exchange, self.rabbit_publish_routing_key, message
             )
         )
+
+    def _clean_thread_resources(self):
+        """
+            Cleans thread resources, which are not cleaned by default and automatically
+            i.e. django db connections.
+        """
+        django_db_connection.close()
 
     def _createStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
         """Creates processing step"""

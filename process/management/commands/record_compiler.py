@@ -68,3 +68,4 @@ class Command(BaseWorker):
                 self._exception("Failed saving collection note")
 
         self._ack(connection, channel, delivery_tag)
+        self._clean_thread_resources()
