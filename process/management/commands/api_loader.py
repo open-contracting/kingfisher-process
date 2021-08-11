@@ -21,6 +21,8 @@ class Command(BaseWorker):
     def process(self, connection, channel, delivery_tag, body):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
+        if input_message.get("errors", None) and not input_message.get("path", None):
+            input_message["path"] = input_message.get("url", None)
 
         try:
             collection = Collection.objects.get(id=input_message["collection_id"])

@@ -98,7 +98,7 @@ class BaseWorker(BaseCommand):
         self.rabbit_channel.start_consuming()
 
     def _ack(self, connection, channel, delivery_tag):
-        self._debug("ACK message from channel {} with delivery tag {}".format(channel, delivery_tag))
+        self._debug("ACK message with delivery tag {}".format(delivery_tag))
         cb = functools.partial(self._ack_message, channel, delivery_tag)
         connection.add_callback_threadsafe(cb)
 
