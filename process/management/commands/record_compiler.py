@@ -41,14 +41,19 @@ class Command(BaseWorker):
 
             self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=collection_id, ocid=ocid)
 
+            compiled_collection = Collection.objects.get(id=input_message["collection_id"])
+
             release_id = None
+            release_collection_id = None
+
             if release:
                 release_id = release.pk
+
             # publish message about processed item
             message = {
                 "ocid": ocid,
                 "compiled_release_id": release_id,
-                "collection_id": collection_id,
+                "collection_id": compiled_collection.id,
             }
 
             self._publish_async(connection, channel, json.dumps(message))
