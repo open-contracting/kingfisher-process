@@ -33,18 +33,19 @@ class Command(BaseWorker):
 
             ocid = input_message["ocid"]
             collection_id = input_message["collection_id"]
+            compiled_collection_id = input_message["compiled_collection_id"]
 
             with transaction.atomic():
                 self._info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_release(collection_id, ocid)
 
-            self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=collection_id, ocid=ocid)
+            self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
 
             # publish message about processed item
             message = {
                 "ocid": ocid,
                 "compiled_release_id": release.pk,
-                "collection_id": release.collection.id,
+                "collection_id": compiled_collection_id,
             }
 
             self._publish_async(connection, channel, json.dumps(message))

@@ -43,7 +43,7 @@ class Command(BaseWorker):
                     collection.save()
                     self._debug("Processing of collection_id: {} finished. Set as completed.".format(collection_id))
                 else:
-                    self._debug("Processing of collection_id: {} not finished yet".format(collection_id))
+                    self._debug("Processing of collection_id: {} not completable".format(collection_id))
 
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))

@@ -113,9 +113,10 @@ class Command(BaseWorker):
                 message = {
                     "ocid": item["ocid"],
                     "collection_id": collection.id,
+                    "compiled_collection_id": compiled_collection.id,
                 }
 
-                self._createStep(ProcessingStep.Types.COMPILE, collection_id=collection.id, ocid=item["ocid"])
+                self._createStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection.id, ocid=item["ocid"])
                 self._publish_async(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self._warning(
@@ -148,9 +149,10 @@ class Command(BaseWorker):
             message = {
                 "ocid": item["ocid"],
                 "collection_id": collection_file.collection.id,
+                "compiled_collection_id": compiled_collection.id,
             }
 
             self._createStep(ProcessingStep.Types.COMPILE,
-                             collection_id=collection_file.collection.id,
+                             collection_id=compiled_collection.id,
                              ocid=item["ocid"])
             self._publish_async(connection, channel, json.dumps(message), "compiler_record")
