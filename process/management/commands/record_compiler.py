@@ -44,7 +44,6 @@ class Command(BaseWorker):
             compiled_collection = Collection.objects.get(id=input_message["collection_id"])
 
             release_id = None
-            release_collection_id = None
 
             if release:
                 release_id = release.pk
