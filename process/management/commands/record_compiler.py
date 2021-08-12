@@ -41,7 +41,7 @@ class Command(BaseWorker):
 
             self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=collection_id, ocid=ocid)
 
-            compiled_collection = Collection.objects.get(id=input_message["collection_id"])
+            compiled_collection = Collection.objects.get(id=input_message["collection_id"]).get_compiled_collection()
 
             release_id = None
 
