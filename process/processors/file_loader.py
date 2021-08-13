@@ -180,7 +180,9 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
             data.data = item
             data.hash_md5 = item_hash
             try:
-                data.save()
+                with transaction.atomic():
+                    # another transaction needed here as integrity error will "broke" the upper one
+                    data.save()
             except IntegrityError:
                 data = Data.objects.get(hash_md5=item_hash)
 
