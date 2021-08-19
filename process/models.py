@@ -256,9 +256,6 @@ class CollectionNote(models.Model):
         indexes = [
             models.Index(name="collection_note_collection_id_idx", fields=["collection"]),
         ]
-        constraints = [
-            models.UniqueConstraint(name="unique_collection_note_identifiers", fields=["collection", "note"]),
-        ]
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
