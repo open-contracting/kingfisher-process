@@ -27,6 +27,7 @@ class Command(BaseWorker):
     def process(self, connection, channel, delivery_tag, body):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
+        release_id = None
 
         try:
 
@@ -40,22 +41,8 @@ class Command(BaseWorker):
                 self._info("Compiling record collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_record(collection_id, ocid)
 
-            self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
-
-            release_id = None
-
             if release:
                 release_id = release.pk
-
-            # publish message about processed item
-            message = {
-                "ocid": ocid,
-                "compiled_release_id": release_id,
-                "collection_id": compiled_collection_id,
-            }
-
-            self._publish_async(connection, channel, json.dumps(message))
-
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
@@ -69,6 +56,18 @@ class Command(BaseWorker):
                 )
             except Exception:
                 self._exception("Failed saving collection note")
+
+        # delete processing step
+        self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
+
+        # publish message about processed item
+        message = {
+            "ocid": ocid,
+            "compiled_release_id": release_id,
+            "collection_id": compiled_collection_id,
+        }
+
+        self._publish_async(connection, channel, json.dumps(message))
 
         self._ack(connection, channel, delivery_tag)
         self._clean_thread_resources()

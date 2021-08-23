@@ -28,6 +28,8 @@ class Command(BaseWorker):
         # parse input message
         input_message = json.loads(body.decode("utf8"))
 
+        release_id = None
+
         try:
             self._debug("Received message {}".format(input_message))
 
@@ -39,17 +41,8 @@ class Command(BaseWorker):
                 self._info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
                 release = compile_release(collection_id, ocid)
 
-            self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
-
-            # publish message about processed item
-            message = {
-                "ocid": ocid,
-                "compiled_release_id": release.pk,
-                "collection_id": compiled_collection_id,
-            }
-
-            self._publish_async(connection, channel, json.dumps(message))
-
+                if release:
+                    release_id = release.pk
         except Exception:
             self._exception("Something went wrong when processing {}".format(body))
             try:
@@ -63,6 +56,17 @@ class Command(BaseWorker):
                 )
             except Exception:
                 self._exception("Failed saving collection note")
+
+        self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
+
+        # publish message about processed item
+        message = {
+            "ocid": ocid,
+            "compiled_release_id": release_id,
+            "collection_id": compiled_collection_id,
+        }
+
+        self._publish_async(connection, channel, json.dumps(message))
 
         self._ack(connection, channel, delivery_tag)
         self._clean_thread_resources()
