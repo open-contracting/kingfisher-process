@@ -192,7 +192,7 @@ class BaseWorker(BaseCommand):
 
         processing_steps = processing_steps.filter(name=step_type)
 
-        if processing_steps.len() > 0:
+        if len(processing_steps) > 0:
             for processing_step in processing_steps:
                 processing_step.delete()
         else:
