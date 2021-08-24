@@ -190,11 +190,13 @@ class BaseWorker(BaseCommand):
         if collection_id:
             processing_steps = processing_steps.filter(collection__id=collection_id)
 
-        try:
-            processing_step = processing_steps.get(name=step_type)
-            processing_step.delete()
-        except ProcessingStep.DoesNotExist:
-            self._error("""No such processing step found
+        processing_steps = processing_steps.filter(name=step_type)
+
+        if processing_steps.len() > 0:
+            for processing_step in processing_steps:
+                processing_step.delete()
+        else:
+            self._warning("""No such processing step found
                            step_type:{} collection_id:{} collection_file_id:{} ocid:{}
                         """.format(step_type, collection_id, collection_file_id, ocid))
 
