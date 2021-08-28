@@ -71,15 +71,15 @@ services:
       - /data:/data
     scale: 1
   wiper:
-      image: "ghcr.io/open-contracting/kingfisher-process:latest"
-      command: "python manage.py wiper --settings ocdskingfisherprocess.settings.docker"
-      network_mode: "host"
-      env_file:
-        - kingfisher-process.env
-      restart: unless-stopped
-      volumes:
-        - /data:/data
-      scale: 1
+    image: "ghcr.io/open-contracting/kingfisher-process:latest"
+    command: "python manage.py wiper --settings ocdskingfisherprocess.settings.docker"
+    network_mode: "host"
+    env_file:
+      - kingfisher-process.env
+    restart: unless-stopped
+    volumes:
+      - /data:/data
+    scale: 1
   django:
     image: "ghcr.io/open-contracting/kingfisher-process:latest"
     command: "./gunicorn_runner.sh 8000"
