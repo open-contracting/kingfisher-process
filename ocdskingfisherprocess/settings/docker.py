@@ -35,17 +35,6 @@ SECRET_KEY = os.getenv("SECRET_KEY", "sadgfdfshtwbsxsadf4")
 
 ALLOWED_HOSTS = ["*"]
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),  # Or path to database file if using sqlite3.
-        "USER": os.getenv("DB_USER"),  # Not used with sqlite3.
-        "PASSWORD": os.getenv("DB_PASSWORD"),  # Not used with sqlite3.
-        "HOST": os.getenv("DB_HOST"),  # Set to empty string for localhost. Not used with sqlite3.
-        "PORT": os.getenv("DB_PORT"),  # Set to empty string for default. Not used with sqlite3.
-    }
-}
-
 RABBITMQ = {
     "host": os.getenv("RABBIT_HOST"),
     "port": os.getenv("RABBIT_PORT"),
