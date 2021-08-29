@@ -1,6 +1,7 @@
 import hashlib
 import os
 from textwrap import fill
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 import orjson
 import pika
@@ -37,23 +38,14 @@ def get_hash(data):
 
 
 def get_rabbit_channel(rabbit_exchange_name):
-    # connect to messaging
-    credentials = pika.PlainCredentials(settings.RABBITMQ["username"], settings.RABBITMQ["password"])
+    parsed = urlsplit(settings.RABBIT_URL)
+    query = parse_qs(parsed.query)
+    query.update({"blocked_connection_timeout": 3600, "heartbeat": 5})
 
-    rabbit_connection = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host=settings.RABBITMQ["host"],
-            port=settings.RABBITMQ["port"],
-            credentials=credentials,
-            blocked_connection_timeout=3600,
-            heartbeat=5,
-        )
-    )
+    connection = pika.BlockingConnection(pika.URLParameters(parsed._replace(query=urlencode(query)).geturl()))
 
     rabbit_channel = rabbit_connection.channel()
-
-    # declare durable exchange
-    rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable="true", exchange_type="direct")
+    rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable=True, exchange_type="direct")
 
     return rabbit_channel, rabbit_connection
 

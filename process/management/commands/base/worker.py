@@ -35,7 +35,7 @@ class BaseWorker(BaseCommand):
     def __init__(self, name, *args, **kwargs):
         self.logger_instance = logging.getLogger("worker.{}".format(name))
         self.env_id = get_env_id()
-        if settings.RABBITMQ:
+        if settings.RABBIT_URL:
             self._initMessaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
 

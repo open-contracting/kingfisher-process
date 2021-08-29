@@ -35,12 +35,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "sadgfdfshtwbsxsadf4")
 
 ALLOWED_HOSTS = ["*"]
 
-RABBITMQ = {
-    "host": os.getenv("RABBIT_HOST"),
-    "port": os.getenv("RABBIT_PORT"),
-    "username": os.getenv("RABBIT_USERNAME"),
-    "password": os.getenv("RABBIT_PASSWORD"),
-}
+RABBIT_URL = os.getenv("RABBIT_URL")
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [

@@ -20,8 +20,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-RABBITMQ = {
-}
+RABBIT_URL = ""
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
