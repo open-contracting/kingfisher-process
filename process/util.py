@@ -44,10 +44,10 @@ def get_rabbit_channel(rabbit_exchange_name):
 
     connection = pika.BlockingConnection(pika.URLParameters(parsed._replace(query=urlencode(query)).geturl()))
 
-    rabbit_channel = rabbit_connection.channel()
+    rabbit_channel = connection.channel()
     rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable=True, exchange_type="direct")
 
-    return rabbit_channel, rabbit_connection
+    return rabbit_channel, connection
 
 
 def get_env_id():
