@@ -5,3 +5,4 @@ flake8
 ipython
 isort
 pip-tools
+psycopg2-binary

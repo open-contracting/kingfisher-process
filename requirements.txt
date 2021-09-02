@@ -105,7 +105,7 @@ packaging==20.8
     # via bleach
 pika==1.1.0
     # via -r requirements.in
-psycopg2-binary==2.8.6
+psycopg2==2.9.1
     # via -r requirements.in
 pyparsing==2.4.7
     # via packaging
