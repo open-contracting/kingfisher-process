@@ -167,7 +167,7 @@ openpyxl==3.0.5
     # via
     #   -r requirements.txt
     #   flattentool
-orjson==2.6.1
+orjson==3.6.1
     # via -r requirements.txt
 packaging==20.8
     # via
