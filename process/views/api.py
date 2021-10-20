@@ -69,7 +69,7 @@ def close_collection(request):
 
                 if "stats" in input and input["stats"]:
                     # this value is used later on to detect, whether all collection has been processed yet
-                    collection.expected_files_count = input["stats"]["kingfisher_process_items_sent_rabbit"]
+                    collection.expected_files_count = input["stats"].get("kingfisher_process_items_sent_rabbit", 0)
 
                 collection.save()
                 logger.debug("Collection {} set store_end_at={}".format(collection, collection.store_end_at))
