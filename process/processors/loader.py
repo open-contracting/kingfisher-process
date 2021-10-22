@@ -4,7 +4,7 @@ from process.forms import CollectionFileForm, CollectionForm, CollectionNote, Co
 from process.models import Collection, ProcessingStep
 
 # Get an instance of a logger
-logger = logging.getLogger("processor.loader")
+logger = logging.getLogger(__name__)
 
 
 def create_collection_file(collection, file_path=None, url=None, errors=None):

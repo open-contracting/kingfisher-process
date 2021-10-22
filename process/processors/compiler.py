@@ -11,7 +11,7 @@ from process.models import (Collection, CollectionFile, CollectionFileItem, Comp
 from process.util import get_hash
 
 # Get an instance of a logger
-logger = logging.getLogger("processor.compiler")
+logger = logging.getLogger(__name__)
 
 
 def compile_release(collection_id, ocid):

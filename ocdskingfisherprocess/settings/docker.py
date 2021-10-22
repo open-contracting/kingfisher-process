@@ -76,15 +76,7 @@ LOGGING = {
             "handlers": ["console", "logfile"],
             "level": "INFO",
         },
-        "worker": {
-            "handlers": ["console", "logfile"],
-            "level": "DEBUG",
-        },
-        "processor": {
-            "handlers": ["console", "logfile"],
-            "level": "DEBUG",
-        },
-        "views": {
+        "process": {
             "handlers": ["console", "logfile"],
             "level": "DEBUG",
         },

@@ -7,7 +7,7 @@ from process.exceptions import AlreadyExists
 from process.models import Collection, CollectionFile, Record, RecordCheck, Release, ReleaseCheck
 
 # Get an instance of a logger
-logger = logging.getLogger("processor.checker")
+logger = logging.getLogger(__name__)
 
 
 def check_collection_file(collection_file):

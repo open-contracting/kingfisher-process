@@ -3,7 +3,7 @@ import logging
 from process.models import Collection, CollectionFile, ProcessingStep
 
 # Get an instance of a logger
-logger = logging.getLogger("processor.checker")
+logger = logging.getLogger(__name__)
 
 
 def completable(collection_id):

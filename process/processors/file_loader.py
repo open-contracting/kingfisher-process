@@ -14,7 +14,7 @@ from process.models import Collection, CollectionFile, CollectionFileItem, Data,
 from process.util import get_hash
 
 # Get an instance of a logger
-logger = logging.getLogger("processor.file_loader")
+logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = ["release package", "record package"]
 

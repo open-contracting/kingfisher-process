@@ -12,7 +12,7 @@ from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
 from process.util import get_env_id, get_rabbit_channel, json_dumps
 
-logger = logging.getLogger("views.api")
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt

@@ -33,7 +33,7 @@ class BaseWorker(BaseCommand):
     rabbit_consume_queue = None
 
     def __init__(self, name, *args, **kwargs):
-        self.logger_instance = logging.getLogger("worker.{}".format(name))
+        self.logger_instance = logging.getLogger("process.management.commands.{}".format(name))
         self.env_id = get_env_id()
         if settings.RABBIT_URL:
             self._initMessaging()
