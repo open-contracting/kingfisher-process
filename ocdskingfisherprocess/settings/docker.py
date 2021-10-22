@@ -46,38 +46,23 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "standard": {
-            "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            "datefmt": "%d/%b/%Y %H:%M:%S",
+        "console": {
+            "format": "%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(message)s",
         },
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "standard",
-        },
-        "logfile": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": "/tmp/kp_logfile",
+            "formatter": "console",
         },
     },
     "loggers": {
-        "django": {
-            "handlers": ["console", "logfile"],
-            "level": "INFO",
-        },
-        "django.server": {
-            "handlers": ["console", "logfile"],
-            "level": "INFO",
-        },
-        "django.db.backends": {
-            "handlers": ["console", "logfile"],
+        "": {
+            "handlers": ["console"],
             "level": "INFO",
         },
         "process": {
-            "handlers": ["console", "logfile"],
+            "handlers": ["console"],
             "level": "DEBUG",
         },
     },
