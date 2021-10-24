@@ -13,9 +13,7 @@ The diagram below excludes the :ref:`release, record and compiled_release views 
    :target: _static/database-tables.png
 
 ..
-   The database-tables.png file is generated with http://schemaspy.org/
-
-   The resulting image is edited by hand to remove the row count, which may confuse users.
+   To update the diagram, see https://ocp-software-handbook.readthedocs.io/en/latest/services/postgresql.html#entity-relationship-diagram
 
 collection table
 ----------------
