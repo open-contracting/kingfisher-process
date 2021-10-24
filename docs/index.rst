@@ -5,4 +5,5 @@ OCDS Kingfisher Process
    :maxdepth: 2
    :caption: Contents:
 
-   rabbitmq
+   get-started
+   develop

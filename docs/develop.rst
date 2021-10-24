@@ -1,7 +1,7 @@
 Contributing
 ============
 
-Working on Kingfisher Process requires a good understanding of Django and RabbitMQ. It is recommended to be familiar with all  `Django tutorials <https://docs.djangoproject.com/en/3.2/intro/>`__ and `RabbitMQ tutorials <https://www.rabbitmq.com/getstarted.html>`__.
+Working on Kingfisher Process requires a good understanding of Django. It is recommended to be familiar with all  `Django tutorials <https://docs.djangoproject.com/en/3.2/intro/>`__.
 
 Django
 ------
@@ -82,28 +82,7 @@ If we decide to add `system checks <https://docs.djangoproject.com/en/3.2/topics
 RabbitMQ
 --------
 
-The shortest explanation of RabbitMQ is the `AMQP 0-9-1 Model in Brief <https://www.rabbitmq.com/tutorials/amqp-concepts.html#amqp-model>`__:
-
--  Multiple *publishers* can publish messages to *exchanges*
--  An *exchange* routes the messages it receives to one or more *queues*, using rules called *bindings*
--  Multiple *consumers* can subscribe to one or more *queues*
-
-We use the `pika <https://pika.readthedocs.io/en/stable/>`__ library to interact with RabbitMQ directly. We don't use Celery, because its abstractions adds inefficiencies, requiring `complex workarounds <http://blog.untrod.com/2015/03/how-celery-chord-synchronization-works.html>`__.
-
-Documentation
-~~~~~~~~~~~~~
-
-`Full documentation <https://www.rabbitmq.com/documentation.html>`__
-
-Here are quick links to relevant pages, if you are working on ``broker.py``.
-
--  `AMQP 0-9-1 Model Explained <https://www.rabbitmq.com/tutorials/amqp-concepts.html>`__
--  `Reliability Guide <https://www.rabbitmq.com/reliability.html>`__
-
-Examples
-^^^^^^^^
-
--  Pika examples `in documentation <https://pika.readthedocs.io/en/stable/examples.html>`__ and `on GitHub <https://github.com/pika/pika/tree/master/examples>`__
+See the `Software Development Handbook <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html>`__.
 
 PostgreSQL
 ----------
