@@ -33,7 +33,9 @@ jobs:
       - run: curl -s -S --retry 3 $BASEDIR/tests/install.sh | bash -
       - run: pip install -r requirements_dev.txt
       - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
-      - run: STANDARD_MAINTENANCE_SCRIPTS_IGNORE=psycopg2 pytest /tmp/test_requirements.py
+      - env:
+          STANDARD_MAINTENANCE_SCRIPTS_IGNORE: psycopg2
+        run: pytest /tmp/test_requirements.py
       - run: pytest --cov ocdskingfisherprocess
         if: always()
         env:
