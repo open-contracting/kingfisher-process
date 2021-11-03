@@ -144,7 +144,7 @@ def close_collection(request):
 def create_collection_file(request):
     if request.method == "POST":
         input = json.loads(request.body)
-        input["path"] = os.path.join(settings.FILES_STORE, input['path'])
+        input["path"] = os.path.join(settings.FILES_STORE, input["path"])
 
         if "collection_id" not in input or not ("path" in input or "errors" in input):
             return HttpResponseBadRequest(

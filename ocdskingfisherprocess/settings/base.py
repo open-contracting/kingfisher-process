@@ -147,8 +147,9 @@ SCRAPYD = {
     "project": "kingfisher",
 }
 
-# Kingfisher Collect scraped files
-FILES_STORE = os.getenv("FILES_STORE", '/data')
+# The directory from which to read the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher
+# Process share a filesystem, this will be the same value for both services.
+FILES_STORE = os.getenv("FILES_STORE", "/data")
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
