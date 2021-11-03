@@ -1,6 +1,6 @@
 FROM python:3.8
 
-ARG DATA_PATH=/data/storage/kingfisher-collect
+ARG DATA_PATH=/data
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
