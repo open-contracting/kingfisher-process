@@ -147,6 +147,9 @@ SCRAPYD = {
     "project": "kingfisher",
 }
 
+# Kingfisher Collect scraped files
+FILES_STORE = os.getenv("FILES_STORE", '/data')
+
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
     "models.E034",
