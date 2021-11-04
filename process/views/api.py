@@ -1,8 +1,10 @@
 import json
 import logging
+import os
 from os.path import isfile
 
 import pika
+from django.conf import settings
 from django.db import transaction
 from django.db.models.functions import Now
 from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
@@ -142,6 +144,7 @@ def close_collection(request):
 def create_collection_file(request):
     if request.method == "POST":
         input = json.loads(request.body)
+        input["path"] = os.path.join(settings.FILES_STORE, input["path"])
 
         if "collection_id" not in input or not ("path" in input or "errors" in input):
             return HttpResponseBadRequest(
