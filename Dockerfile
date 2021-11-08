@@ -1,12 +1,15 @@
-FROM python:3
+FROM python:3.8
 
-WORKDIR /usr/src/app
+ARG DATA_PATH=/data
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY . .
+RUN groupadd -r runner && useradd --no-log-init -r -g runner runner
 
-RUN mkdir /data
+RUN mkdir -p $DATA_PATH
+RUN chown -R runner:runner $DATA_PATH
 
-ENTRYPOINT [ "" ]
+WORKDIR /workdir
+USER runner:runner
+COPY --chown=runner:runner . .
