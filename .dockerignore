@@ -22,3 +22,6 @@ setup.cfg
 # Testing
 **/tests
 pytest.ini
+
+# Generated files
+**/node_modules
