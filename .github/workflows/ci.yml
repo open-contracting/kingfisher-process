@@ -1,14 +1,41 @@
 name: CI
 on: [push, pull_request]
-env:
-  BASEDIR: https://raw.githubusercontent.com/open-contracting/standard-maintenance-scripts/main
 jobs:
   build:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', 'setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - run: pip install -r requirements.txt
+      # Check requirements.txt contains production requirements.
+      - run: ./manage.py --help
+      - run: pip install -r requirements_dev.txt
+      - name: Run checks and tests
+        env:
+          PYTHONWARNINGS: error
+          DJANGO_SETTINGS_MODULE: ocdskingfisherprocess.settings.test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
+          AMQP_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
+        run: |
+          ./manage.py migrate
+          ./manage.py makemigrations --check --dry-run
+          ./manage.py check --fail-level WARNING
+          coverage run --source ocdskingfisherprocess,process manage.py test
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls --service=github
     services:
       postgres:
-        image: postgres:11
+        image: postgres:13
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -27,52 +54,28 @@ jobs:
           --health-retries 5
         ports:
           - 5672/tcp
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.6
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements_dev.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      # Check requirements.txt contains production requirements.
-      - run: pip install -r requirements.txt
-      - run: ./manage.py --help
-      - run: curl -s -S --retry 3 $BASEDIR/tests/install.sh | bash -
-      - run: pip install -r requirements_dev.txt
-      - run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
-      - run: STANDARD_MAINTENANCE_SCRIPTS_IGNORE=gunicorn,psycopg2 pytest /tmp/test_requirements.py
-      - run: coverage run --source ocdskingfisherprocess,process manage.py test --settings ocdskingfisherprocess.settings.test
-        if: always()
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
-          AMQP_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --service=github
 
   docker:
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - name: Get the tag name
-        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Log in to GitHub Docker Registry
-        uses: docker/login-action@v1
+      - run: echo "TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
+      - uses: actions/checkout@v2
+      # https://github.com/docker/login-action#github-container-registry
+      - uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build container image
-        uses: docker/build-push-action@v2
+      # https://github.com/docker/setup-buildx-action#usage
+      - uses: docker/setup-buildx-action@v1
+      # https://github.com/docker/build-push-action#usage
+      - uses: docker/build-push-action@v2
         with:
           push: true
           tags: |
-            ghcr.io/open-contracting/kingfisher-process:latest
-            ghcr.io/open-contracting/kingfisher-process:${{ env.TAG }}
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
