@@ -13,6 +13,6 @@ RUN chown -R runner:runner $DATA_PATH
 WORKDIR /workdir
 USER runner:runner
 COPY --chown=runner:runner . .
-EXPOSE 8000
 
+EXPOSE 8000
 CMD exec gunicorn --bind 0.0.0.0:8000 ocdskingfisherprocess.docker_wsgi --timeout 980 -c gunicorn_docker.py
