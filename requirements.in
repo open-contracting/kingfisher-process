@@ -13,5 +13,5 @@ django-cors-headers
 simplejson
 djangorestframework
 django-filter
-gunicorn
+gunicorn[setproctitle]
 sentry-sdk
