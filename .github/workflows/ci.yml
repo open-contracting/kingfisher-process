@@ -22,9 +22,8 @@ jobs:
       - name: Run checks and tests
         env:
           PYTHONWARNINGS: error
-          DJANGO_SETTINGS_MODULE: ocdskingfisherprocess.settings.test
           DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
-          AMQP_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
+          RABBIT_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
         run: |
           ./manage.py migrate
           ./manage.py makemigrations --check --dry-run
