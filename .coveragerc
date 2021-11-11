@@ -1,5 +1,0 @@
-[run]
-omit =
-    */tests/*
-    ocdskingfisherprocess/settings/dev*
-    ocdskingfisherprocess/settings/dqt*
