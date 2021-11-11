@@ -6,7 +6,6 @@ from process.models import Collection
 
 
 class CollectionCommand(BaseWorker):
-
     def __init__(self, worker_name):
         super().__init__(worker_name)
 
@@ -14,7 +13,7 @@ class CollectionCommand(BaseWorker):
         """
         Adds default arguments to the command.
         """
-        parser.add_argument('collection_id', help=_('the ID of the collection'))
+        parser.add_argument("collection_id", help=_("the ID of the collection"))
         self.add_collection_arguments(parser)
 
     def add_collection_arguments(self, parser):
@@ -27,12 +26,12 @@ class CollectionCommand(BaseWorker):
         """
         Gets the collection.
         """
-        collection_id = options['collection_id']
+        collection_id = options["collection_id"]
 
         try:
             collection = Collection.objects.get(pk=collection_id)
         except Collection.DoesNotExist:
-            raise CommandError(_('Collection %(id)s does not exist') % {'id': collection_id})
+            raise CommandError(_("Collection %(id)s does not exist") % {"id": collection_id})
 
         self.handle_collection(collection, *args, **options)
 
@@ -40,4 +39,4 @@ class CollectionCommand(BaseWorker):
         """
         Runs the command.
         """
-        raise NotImplementedError('collection commands must implement handle_collection()')
+        raise NotImplementedError("collection commands must implement handle_collection()")

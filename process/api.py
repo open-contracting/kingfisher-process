@@ -29,79 +29,92 @@ class CollectionSerializer(ModelSerializer):
 
     class Meta:
         model = Collection
-        fields = ["source_id",
-                  "data_version",
-                  "sample",
-                  "steps",
-                  "options",
-                  "expected_files_count",
-                  "compilation_started",
-                  "check_older_data_with_schema_version_1_1",
-                  "parent",
-                  "transform_type",
-                  "data_type",
-                  "cached_releases_count",
-                  "cached_records_count",
-                  "cached_compiled_releases_count",
-                  "store_start_at",
-                  "store_end_at",
-                  "deleted_at",
-                  "completed_at",
-                  "steps_remaining_LOAD",
-                  "steps_remaining_UPGRADE",
-                  "steps_remaining_COMPILE",
-                  "steps_remaining_CHECK",
-                  ]
+        fields = [
+            "source_id",
+            "data_version",
+            "sample",
+            "steps",
+            "options",
+            "expected_files_count",
+            "compilation_started",
+            "check_older_data_with_schema_version_1_1",
+            "parent",
+            "transform_type",
+            "data_type",
+            "cached_releases_count",
+            "cached_records_count",
+            "cached_compiled_releases_count",
+            "store_start_at",
+            "store_end_at",
+            "deleted_at",
+            "completed_at",
+            "steps_remaining_LOAD",
+            "steps_remaining_UPGRADE",
+            "steps_remaining_COMPILE",
+            "steps_remaining_CHECK",
+        ]
 
 
 class CollectionViewSet(ViewSetMixin, ListAPIView):
-    queryset = Collection.objects.annotate(
-                                    steps_remaining_LOAD=Count(
-                                        Case(
-                                            When(processing_steps__name=ProcessingStep.Types.LOAD, then=1),
-                                            output_field=IntegerField(),
-                                        )
-                                    )).annotate(
-                                    steps_remaining_UPGRADE=Count(
-                                        Case(
-                                            When(processing_steps__name=ProcessingStep.Types.UPGRADE, then=1),
-                                            output_field=IntegerField(),
-                                        )
-                                    )).annotate(
-                                    steps_remaining_COMPILE=Count(
-                                        Case(
-                                            When(processing_steps__name=ProcessingStep.Types.COMPILE, then=1),
-                                            output_field=IntegerField(),
-                                        )
-                                    )).annotate(
-                                    steps_remaining_CHECK=Count(
-                                        Case(
-                                           When(processing_steps__name=ProcessingStep.Types.CHECK, then=1),
-                                           output_field=IntegerField(),
-                                        )
-                                    ))
+    queryset = (
+        Collection.objects.annotate(
+            steps_remaining_LOAD=Count(
+                Case(
+                    When(processing_steps__name=ProcessingStep.Types.LOAD, then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+        .annotate(
+            steps_remaining_UPGRADE=Count(
+                Case(
+                    When(processing_steps__name=ProcessingStep.Types.UPGRADE, then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+        .annotate(
+            steps_remaining_COMPILE=Count(
+                Case(
+                    When(processing_steps__name=ProcessingStep.Types.COMPILE, then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+        .annotate(
+            steps_remaining_CHECK=Count(
+                Case(
+                    When(processing_steps__name=ProcessingStep.Types.CHECK, then=1),
+                    output_field=IntegerField(),
+                )
+            )
+        )
+    )
 
     serializer_class = CollectionSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["source_id",
-                        "data_version",
-                        "store_start_at",
-                        "store_end_at",
-                        "transform_type",
-                        "completed_at"]
+    filterset_fields = [
+        "source_id",
+        "data_version",
+        "store_start_at",
+        "store_end_at",
+        "transform_type",
+        "completed_at",
+    ]
 
 
 class TreeSerializer(ModelSerializer):
     class Meta:
         model = Collection
-        fields = '__all__'
+        fields = "__all__"
 
 
 class TreeViewSet(ViewSetMixin, RetrieveAPIView):
     queryset = Collection.objects.filter(parent__isnull=True)
 
     def retrieve(self, request, pk=None):
-        result = Collection.objects.raw("""
+        result = Collection.objects.raw(
+            """
             WITH RECURSIVE tree(id, parent, root, deep) AS (
                 SELECT c.id, c.transform_from_collection_id AS parent, id AS root, 1 AS deep
                 FROM collection c
@@ -116,7 +129,9 @@ class TreeViewSet(ViewSetMixin, RetrieveAPIView):
             JOIN collection c on (t.id = c.id)
             WHERE t.root = %s
             ORDER BY deep ASC;
-        """, [pk])
+        """,
+            [pk],
+        )
 
         if not result:
             raise Http404

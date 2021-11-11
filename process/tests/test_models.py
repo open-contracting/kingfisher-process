@@ -3,8 +3,17 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from process.models import (Collection, CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data,
-                            PackageData, Record, Release)
+from process.models import (
+    Collection,
+    CollectionFile,
+    CollectionFileItem,
+    CollectionNote,
+    CompiledRelease,
+    Data,
+    PackageData,
+    Record,
+    Release,
+)
 from process.tests.fixtures import collection
 
 

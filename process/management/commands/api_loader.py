@@ -27,10 +27,12 @@ class Command(BaseWorker):
         try:
             collection = Collection.objects.get(id=input_message["collection_id"])
             with transaction.atomic():
-                collection_file = create_collection_file(collection,
-                                                         file_path=input_message.get("path", None),
-                                                         url=input_message.get("url", None),
-                                                         errors=input_message.get("errors", None))
+                collection_file = create_collection_file(
+                    collection,
+                    file_path=input_message.get("path", None),
+                    url=input_message.get("url", None),
+                    errors=input_message.get("errors", None),
+                )
 
                 message = {"collection_file_id": collection_file.id}
 
@@ -49,9 +51,11 @@ class Command(BaseWorker):
                 # only files without errors will be further processed
                 self._publish_async(connection, channel, json_dumps(message))
             else:
-                self._info("""Collection file {} contains errors {}, not sending to further processing.""".format(
-                        collection_file,
-                        input_message.get("errors", None)))
+                self._info(
+                    """Collection file {} contains errors {}, not sending to further processing.""".format(
+                        collection_file, input_message.get("errors", None)
+                    )
+                )
 
         except Collection.DoesNotExist:
             self._exception("Collection with id {} not found".format(input["collection_id"]))

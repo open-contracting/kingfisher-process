@@ -6,8 +6,16 @@ from ocdsextensionregistry.profile_builder import ProfileBuilder
 from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
-from process.models import (Collection, CollectionFile, CollectionFileItem, CompiledRelease, Data, ProcessingStep,
-                            Record, Release)
+from process.models import (
+    Collection,
+    CollectionFile,
+    CollectionFileItem,
+    CompiledRelease,
+    Data,
+    ProcessingStep,
+    Record,
+    Release,
+)
 from process.util import get_hash
 
 # Get an instance of a logger
@@ -85,8 +93,11 @@ def compile_release(collection_id, ocid):
             if isinstance(package_data_extensions, list):
                 extensions = list(set(extensions + package_data_extensions))
             else:
-                logger.error("Package data for release {} contains malformed extensions {}, skipping.".format(release,
-                             package_data_extensions))
+                logger.error(
+                    "Package data for release {} contains malformed extensions {}, skipping.".format(
+                        release, package_data_extensions
+                    )
+                )
 
     # merge data into into single compiled release
     compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_data, extensions)

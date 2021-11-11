@@ -2,7 +2,7 @@
 line-length = 119
 exclude = 'migrations'
 
-[isort]
+[tool.isort]
 profile = 'black'
 line_length = 119
 skip = 'migrations'

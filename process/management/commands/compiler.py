@@ -47,15 +47,20 @@ class Command(BaseWorker):
                         # plans compilation of the whole collection (everything is stored yet)
                         self._publish_releases(connection, channel, collection)
                     else:
-                        self._debug("Collection {} is not compilable yet. There are (probably) some"
-                                    "unprocessed messages in the queue with the new items"
-                                    " - expected files count {} real files count {}".format(
-                                        collection,
-                                        collection.expected_files_count,
-                                        real_files_count))
+                        self._debug(
+                            "Collection {} is not compilable yet. There are (probably) some"
+                            "unprocessed messages in the queue with the new items"
+                            " - expected files count {} real files count {}".format(
+                                collection, collection.expected_files_count, real_files_count
+                            )
+                        )
 
-                if (collection_file and collection.data_type and
-                        collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and collection_file):
+                if (
+                    collection_file
+                    and collection.data_type
+                    and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
+                    and collection_file
+                ):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(connection, channel, collection_file)
             else:
@@ -77,9 +82,7 @@ class Command(BaseWorker):
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
-                    "Unable to process message {} \n{}".format(
-                        input_message, traceback.format_exc()
-                    ),
+                    "Unable to process message {} \n{}".format(input_message, traceback.format_exc()),
                 )
             except Exception:
                 self._exception("Failed saving collection note")
@@ -126,9 +129,11 @@ class Command(BaseWorker):
 
     def _publish_records(self, connection, channel, collection_file):
         with transaction.atomic():
-            compiled_collection = Collection.objects.select_for_update().filter(
-                transform_type__exact=Collection.Transforms.COMPILE_RELEASES
-            ).get(parent=collection_file.collection)
+            compiled_collection = (
+                Collection.objects.select_for_update()
+                .filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
+                .get(parent=collection_file.collection)
+            )
 
             if not compiled_collection.compilation_started:
                 compiled_collection.compilation_started = True
@@ -152,7 +157,5 @@ class Command(BaseWorker):
                 "compiled_collection_id": compiled_collection.id,
             }
 
-            self._createStep(ProcessingStep.Types.COMPILE,
-                             collection_id=compiled_collection.id,
-                             ocid=item["ocid"])
+            self._createStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection.id, ocid=item["ocid"])
             self._publish_async(connection, channel, json.dumps(message), "compiler_record")

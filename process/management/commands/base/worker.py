@@ -159,8 +159,8 @@ class BaseWorker(BaseCommand):
 
     def _clean_thread_resources(self):
         """
-            Cleans thread resources, which are not cleaned by default and automatically
-            i.e. django db connections.
+        Cleans thread resources, which are not cleaned by default and automatically
+        i.e. django db connections.
         """
         django_db_connection.close()
 
@@ -196,9 +196,13 @@ class BaseWorker(BaseCommand):
             for processing_step in processing_steps:
                 processing_step.delete()
         else:
-            self._warning("""No such processing step found
+            self._warning(
+                """No such processing step found
                            step_type:{} collection_id:{} collection_file_id:{} ocid:{}
-                        """.format(step_type, collection_id, collection_file_id, ocid))
+                        """.format(
+                    step_type, collection_id, collection_file_id, ocid
+                )
+            )
 
     def _file_or_directory(self, string):
         """Checks whether the path is existing file or directory. Raises an exception if not"""

@@ -23,8 +23,7 @@ class WipeTests(TransactionTestCase):
         message = "--collection dfds is not an int value"
         self.assertEqual(str(e.exception), message)
 
-    @patch('process.management.commands.base.worker.BaseWorker._get_input',
-           return_value='Y')
+    @patch("process.management.commands.base.worker.BaseWorker._get_input", return_value="Y")
     def test_ok(self, mocked):
         source = collection()
         source.save()

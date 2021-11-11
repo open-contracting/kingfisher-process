@@ -30,20 +30,21 @@ def completable(collection_id):
             logger.warning("Collection {} already marked as completed".format(collection))
             return False
 
-        if (collection.store_end_at is not None or
-                (collection.store_end_at is None and
-                 collection.transform_type == Collection.Transforms.COMPILE_RELEASES and
-                 collection.get_root_parent().store_end_at is not None)):
+        if collection.store_end_at is not None or (
+            collection.store_end_at is None
+            and collection.transform_type == Collection.Transforms.COMPILE_RELEASES
+            and collection.get_root_parent().store_end_at is not None
+        ):
 
-            if (collection.transform_type == Collection.Transforms.COMPILE_RELEASES
-                    and not collection.compilation_started):
+            if (
+                collection.transform_type == Collection.Transforms.COMPILE_RELEASES
+                and not collection.compilation_started
+            ):
 
                 # special case when the collection should be compiled and
                 # waits for compilation to be planned
                 # in such case, no processing steps will be available yet
-                logger.debug(
-                    "Compilation of collection {} not started yet".format(collection)
-                )
+                logger.debug("Compilation of collection {} not started yet".format(collection))
 
                 return False
 
@@ -51,12 +52,13 @@ def completable(collection_id):
             if processing_step_count == 0:
                 real_files_count = CollectionFile.objects.filter(collection=collection).count()
                 if collection.expected_files_count and collection.expected_files_count > real_files_count:
-                    logger.debug("Collection {} is not completable yet. There are (probably) some"
-                                 "unprocessed messages in the queue with the new items"
-                                 " - expected files count {} real files count {}".format(
-                                    collection,
-                                    collection.expected_files_count,
-                                    real_files_count))
+                    logger.debug(
+                        "Collection {} is not completable yet. There are (probably) some"
+                        "unprocessed messages in the queue with the new items"
+                        " - expected files count {} real files count {}".format(
+                            collection, collection.expected_files_count, real_files_count
+                        )
+                    )
                     return False
 
                 return True

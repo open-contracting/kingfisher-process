@@ -13,18 +13,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', '^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4')
+SECRET_KEY = os.getenv("SECRET_KEY", "^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 RABBIT_URL = ""
 
 # The schema in the older version had index names longer than 30 characters.
 SILENCED_SYSTEM_CHECKS = [
-    'models.E034',
+    "models.E034",
 ]
 
 LOGGING = {

@@ -318,11 +318,9 @@ class ProcessingStep(models.Model):
         COMPILE = "COMPILE"
         CHECK = "CHECK"
 
-    collection = models.ForeignKey(Collection,
-                                   null=True,
-                                   on_delete=models.CASCADE,
-                                   db_index=True,
-                                   related_name="processing_steps")
+    collection = models.ForeignKey(
+        Collection, null=True, on_delete=models.CASCADE, db_index=True, related_name="processing_steps"
+    )
 
     collection_file = models.ForeignKey(CollectionFile, null=True, on_delete=models.CASCADE, db_index=True)
     ocid = models.TextField(null=True)

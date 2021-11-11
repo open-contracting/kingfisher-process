@@ -9,7 +9,7 @@ def configured():
     :returns: whether the connection to Scrapyd is configured
     :rtype: bool
     """
-    return bool(settings.SCRAPYD['url'])
+    return bool(settings.SCRAPYD["url"])
 
 
 def spiders():
@@ -18,7 +18,7 @@ def spiders():
     :rtype: list
     """
     # https://scrapyd.readthedocs.io/en/stable/api.html#listspiders-json
-    url = urljoin(settings.SCRAPYD['url'], '/listspiders.json?project=' + settings.SCRAPYD['project'])
+    url = urljoin(settings.SCRAPYD["url"], "/listspiders.json?project=" + settings.SCRAPYD["project"])
     response = requests.get(url)
     response.raise_for_status()
-    return response.json()['spiders']
+    return response.json()["spiders"]

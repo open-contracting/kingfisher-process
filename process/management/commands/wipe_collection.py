@@ -11,8 +11,12 @@ from process.util import wrap as w
 
 
 class Command(BaseWorker):
-    help = w(t("""Wipes collection (and its ancestors) - COMPLETELY and IRREVERSIBLY.
-                  Items in data and package_data tables remains untouched."""))
+    help = w(
+        t(
+            """Wipes collection (and its ancestors) - COMPLETELY and IRREVERSIBLY.
+                  Items in data and package_data tables remains untouched."""
+        )
+    )
 
     worker_name = "wiper"
 

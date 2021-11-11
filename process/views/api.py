@@ -60,9 +60,7 @@ def close_collection(request):
         input = json.loads(request.body)
 
         if "collection_id" not in input:
-            return HttpResponseBadRequest(
-                'Unable to parse input. Please provide {"collection_id":"<collection_id>"}'
-            )
+            return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id":"<collection_id>"}')
 
         try:
             with transaction.atomic():
@@ -80,8 +78,11 @@ def close_collection(request):
                     upgraded_collection.expected_files_count = collection.expected_files_count
                     upgraded_collection.store_end_at = Now()
                     upgraded_collection.save()
-                    logger.debug("Upgraded collection {} set store_end_at={}".format(upgraded_collection,
-                                                                                     upgraded_collection.store_end_at))
+                    logger.debug(
+                        "Upgraded collection {} set store_end_at={}".format(
+                            upgraded_collection, upgraded_collection.store_end_at
+                        )
+                    )
 
                 if "reason" in input and input["reason"]:
                     collection_note = CollectionNote()
@@ -175,9 +176,7 @@ def wipe_collection(request):
         input = json.loads(request.body)
 
         if "collection_id" not in input:
-            return HttpResponseBadRequest(
-                'Unable to parse input. Please provide {"collection_id":<some_number>}'
-            )
+            return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id":<some_number>}')
 
         try:
             _publish(json_dumps(input), "wiper")
