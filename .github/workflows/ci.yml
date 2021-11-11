@@ -28,7 +28,7 @@ jobs:
           ./manage.py migrate
           ./manage.py makemigrations --check --dry-run
           ./manage.py check --fail-level WARNING
-          coverage run --source ocdskingfisherprocess,process manage.py test
+          coverage run --source core,process manage.py test
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
