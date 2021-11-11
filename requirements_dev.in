@@ -1,5 +1,6 @@
 -r requirements.txt
 black
+coverage
 coveralls
 flake8
 ipython

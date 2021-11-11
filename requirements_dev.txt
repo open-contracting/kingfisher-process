@@ -51,7 +51,9 @@ contextlib2==0.6.0.post1
     #   -r requirements.txt
     #   schema
 coverage==5.0.4
-    # via coveralls
+    # via
+    #   -r requirements_dev.in
+    #   coveralls
 coveralls==2.1.2
     # via -r requirements_dev.in
 decorator==4.4.2
