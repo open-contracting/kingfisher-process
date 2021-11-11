@@ -5,7 +5,7 @@ from django.core.management.base import CommandError
 from django.test import TransactionTestCase
 
 from process.models import Collection
-from process.tests.fixtures import collection
+from tests.fixtures import collection
 
 
 class WipeTests(TransactionTestCase):

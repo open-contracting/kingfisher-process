@@ -6,11 +6,11 @@ from django.core.management.base import CommandError
 from django.test import TransactionTestCase
 from django.test.utils import captured_stderr
 
-from process.tests.fixtures import collection
+from tests.fixtures import collection
 
 
 def path(filename):
-    return os.path.join("process", "tests", "fixtures", filename)
+    return os.path.join("tests", "fixtures", filename)
 
 
 class LoadTests(TransactionTestCase):

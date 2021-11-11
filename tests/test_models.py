@@ -14,7 +14,7 @@ from process.models import (
     Record,
     Release,
 )
-from process.tests.fixtures import collection
+from tests.fixtures import collection
 
 
 class CollectionTests(TestCase):

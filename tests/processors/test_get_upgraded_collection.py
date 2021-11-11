@@ -5,7 +5,7 @@ from process.processors.file_loader import get_upgraded_collection
 
 
 class GetUpgradedCollectionTests(TransactionTestCase):
-    fixtures = ["process/tests/fixtures/complete_db.json"]
+    fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_malformed_input(self):
         with self.assertRaises(TypeError) as e:

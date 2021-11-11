@@ -6,7 +6,7 @@ from process.processors.loader import create_collections
 
 
 class CreateCollectionsTests(TransactionTestCase):
-    fixtures = ["process/tests/fixtures/complete_db.json"]
+    fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_malformed_input(self):
         with self.assertRaises(ValueError) as e:

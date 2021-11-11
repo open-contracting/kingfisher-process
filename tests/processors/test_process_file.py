@@ -5,7 +5,7 @@ from process.processors.file_loader import process_file
 
 
 class ProcessFileTests(TransactionTestCase):
-    fixtures = ["process/tests/fixtures/complete_db.json"]
+    fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_malformed_input(self):
         with self.assertRaises(TypeError) as e:
@@ -23,7 +23,7 @@ class ProcessFileTests(TransactionTestCase):
 
     def test_happy_day(self):
         collection_file = CollectionFile.objects.get(id=1)
-        collection_file.filename = "process/tests/fixtures/collection_file.json"
+        collection_file.filename = "tests/fixtures/collection_file.json"
         collection_file.save()
 
         CollectionFileItem.objects.filter(collection_file=collection_file).delete()
@@ -34,7 +34,7 @@ class ProcessFileTests(TransactionTestCase):
         upgraded_collection_file = CollectionFile.objects.get(id=upgraded_collection_file_id)
 
         self.assertEqual(upgraded_collection_file.filename, collection_file.filename)
-        self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
+        self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")
         self.assertEqual(upgraded_collection_file.collection.parent.id, collection_file.collection.id)
 
         self.assertEqual(CollectionFileItem.objects.filter(collection_file=collection_file).count(), 1)
@@ -58,7 +58,7 @@ class ProcessFileTests(TransactionTestCase):
             Release.objects.filter(collection_file_item__collection_file=upgraded_collection_file).count(), 100
         )
 
-        self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
-        self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
-        self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
-        self.assertEqual(upgraded_collection_file.filename, "process/tests/fixtures/collection_file.json")
+        self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")
+        self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")
+        self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")
+        self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")

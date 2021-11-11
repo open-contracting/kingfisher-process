@@ -7,7 +7,7 @@ from process.processors.compiler import compile_release
 
 
 class CompileReleaseTests(TransactionTestCase):
-    fixtures = ["process/tests/fixtures/complete_db.json"]
+    fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_malformed_input(self):
         with self.assertRaises(TypeError) as e:
