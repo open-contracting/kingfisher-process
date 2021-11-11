@@ -1,8 +1,9 @@
 -r requirements.txt
-# https://github.com/nedbat/coveragepy/issues/862
+black
 coveralls
 flake8
 ipython
 isort
 pip-tools
+pre-commit
 psycopg2-binary
