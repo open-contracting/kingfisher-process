@@ -1,18 +1,25 @@
 FROM python:3.8
 
-ARG DATA_PATH=/data
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gettext \
+   && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 RUN groupadd -r runner && useradd --no-log-init -r -g runner runner
 
-RUN mkdir -p $DATA_PATH
-RUN chown -R runner:runner $DATA_PATH
+# Must match the settings.COLLECT_FILES_STORE default value.
+RUN mkdir -p /data && chown -R runner:runner /data
 
 WORKDIR /workdir
 USER runner:runner
 COPY --chown=runner:runner . .
 
+ENV DJANGO_ENV=production
+ENV WEB_CONCURRENCY=2
+
+RUN python manage.py compilemessages
+
 EXPOSE 8000
-CMD exec gunicorn --bind 0.0.0.0:8000 core.wsgi --timeout 980 -c gunicorn_docker.py
+CMD ["gunicorn", "core.wsgi", "--bind", "0.0.0.0:8000", "--worker-tmp-dir", "/dev/shm", "--threads", "2", "--name", "kingfisher-process"]

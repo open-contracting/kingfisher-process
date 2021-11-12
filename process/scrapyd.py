@@ -18,7 +18,7 @@ def spiders():
     :rtype: list
     """
     # https://scrapyd.readthedocs.io/en/stable/api.html#listspiders-json
-    url = urljoin(settings.SCRAPYD["url"], "/listspiders.json?project=" + settings.SCRAPYD["project"])
-    response = requests.get(url)
+    url = urljoin(settings.SCRAPYD["url"], "/listspiders.json")
+    response = requests.get(url, params={"project": settings.SCRAPYD["project"]})
     response.raise_for_status()
     return response.json()["spiders"]

@@ -240,16 +240,17 @@ ENV_NAME = os.getenv("ENV_NAME", "development")
 # The version of Kingfisher Process' messaging protocol, used in RabbitMQ exchange names and routing keys.
 ENV_VERSION = os.getenv("ENV_VERSION", "1.0")
 
-# The directory from which to read the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher
-# Process share a filesystem, this will be the same value for both services.
-FILES_STORE = os.getenv("FILES_STORE", "/data")
-
-# The version of OCDS with which to initialize the ProfileBuilder.
-COMPILER_OCDS_VERSION = "1__1__5"
 
 SCRAPYD = {
     # The base URL of Scrapyd. If not configured, then source_id is not validated.
-    "url": os.getenv("KINGFISHER_PROCESS_SCRAPYD_URL"),
+    "url": os.getenv("SCRAPYD_URL"),
     # The project within Scrapyd.
-    "project": "kingfisher",
+    "project": os.getenv("SCRAPYD_PROJECT", "kingfisher"),
 }
+# The directory from which to read the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher
+# Process share a filesystem, this will be the same value for both services.
+# WARNING: If you change the production default, update `Dockerfile` and `docker-compose.yaml` to match.
+COLLECT_FILES_STORE = os.getenv("COLLECT_FILES_STORE", "/data" if production else BASE_DIR / "data")
+
+# The version of OCDS with which to initialize the ProfileBuilder.
+COMPILER_OCDS_VERSION = "1__1__5"
