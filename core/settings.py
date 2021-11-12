@@ -233,6 +233,9 @@ FATHOM = {
 # An infix for API routes.
 API_VERSION = "v1"
 
+# The version of OCDS with which to initialize the ProfileBuilder.
+COMPILER_OCDS_VERSION = "1__1__5"
+
 # The connection string for RabbitMQ.
 RABBIT_URL = os.getenv("RABBIT_URL", "amqp://localhost")
 # The name of the environment, used in RabbitMQ exchange names and routing keys.
@@ -240,9 +243,9 @@ ENV_NAME = os.getenv("ENV_NAME", "development")
 # The version of Kingfisher Process' messaging protocol, used in RabbitMQ exchange names and routing keys.
 ENV_VERSION = os.getenv("ENV_VERSION", "1.0")
 
-
+# If these are not configured, then source_id is not validated.
 SCRAPYD = {
-    # The base URL of Scrapyd. If not configured, then source_id is not validated.
+    # The base URL of Scrapyd.
     "url": os.getenv("SCRAPYD_URL"),
     # The project within Scrapyd.
     "project": os.getenv("SCRAPYD_PROJECT", "kingfisher"),
@@ -251,6 +254,3 @@ SCRAPYD = {
 # Process share a filesystem, this will be the same value for both services.
 # WARNING: If you change the production default, update `Dockerfile` and `docker-compose.yaml` to match.
 COLLECT_FILES_STORE = os.getenv("COLLECT_FILES_STORE", "/data" if production else BASE_DIR / "data")
-
-# The version of OCDS with which to initialize the ProfileBuilder.
-COMPILER_OCDS_VERSION = "1__1__5"
