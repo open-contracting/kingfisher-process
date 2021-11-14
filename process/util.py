@@ -42,7 +42,9 @@ def get_rabbit_channel(rabbit_exchange_name):
     query = parse_qs(parsed.query)
     query.update({"blocked_connection_timeout": 3600, "heartbeat": 5})
 
-    connection = pika.BlockingConnection(pika.URLParameters(parsed._replace(query=urlencode(query)).geturl()))
+    connection = pika.BlockingConnection(
+        pika.URLParameters(parsed._replace(query=urlencode(query, doseq=True)).geturl())
+    )
 
     rabbit_channel = connection.channel()
     rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable=True, exchange_type="direct")
