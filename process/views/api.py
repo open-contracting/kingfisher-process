@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
-from process.util import get_env_id, get_rabbit_channel, json_dumps
+from process.util import get_rabbit_channel, json_dumps
 
 logger = logging.getLogger(__name__)
 
@@ -192,16 +192,12 @@ def wipe_collection(request):
 
 def _publish(message, key):
     """Publish message with work for a next part of process"""
-    # build exchange name
-    rabbit_exchange = "kingfisher_process_{}".format(get_env_id())
+    rabbit_channel, rabbit_connection = get_rabbit_channel(settings.RABBIT_EXCHANGE_NAME)
 
-    rabbit_channel, rabbit_connection = get_rabbit_channel(rabbit_exchange)
-
-    # build publish key
-    rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(get_env_id(), key)
+    rabbit_publish_routing_key = f"{settings.RABBIT_EXCHANGE_NAME}_{key}"
 
     rabbit_channel.basic_publish(
-        exchange=rabbit_exchange,
+        exchange=settings.RABBIT_EXCHANGE_NAME,
         routing_key=rabbit_publish_routing_key,
         body=message,
         properties=pika.BasicProperties(delivery_mode=2),

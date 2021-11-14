@@ -238,10 +238,8 @@ COMPILER_OCDS_VERSION = "1__1__5"
 
 # The connection string for RabbitMQ.
 RABBIT_URL = os.getenv("RABBIT_URL", "amqp://localhost")
-# The name of the environment, used in RabbitMQ exchange names and routing keys.
-ENV_NAME = os.getenv("ENV_NAME", "development")
-# The version of Kingfisher Process' messaging protocol, used in RabbitMQ exchange names and routing keys.
-ENV_VERSION = os.getenv("ENV_VERSION", "1.0")
+# The name of the RabbitMQ exchange. Follow the pattern `{project}_{service}_{environment}`.
+RABBIT_EXCHANGE_NAME = os.getenv("RABBIT_EXCHANGE_NAME", "kingfisher_process_development")
 
 # If these are not configured, then source_id is not validated.
 SCRAPYD = {

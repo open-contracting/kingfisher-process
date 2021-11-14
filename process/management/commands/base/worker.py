@@ -11,30 +11,19 @@ from django.db import connection as django_db_connection
 from django.utils.translation import gettext as t
 
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
-from process.util import get_env_id, get_rabbit_channel
+from process.util import get_rabbit_channel
 
 
 class BaseWorker(BaseCommand):
-
     logger_instance = None
-
-    env_id = None
-
-    rabbit_exchange = None
-
     rabbit_channel = None
-
     rabbit_connection = None
-
     rabbit_consume_routing_keys = []
-
     rabbit_publish_routing_key = None
-
     rabbit_consume_queue = None
 
     def __init__(self, name, *args, **kwargs):
         self.logger_instance = logging.getLogger("process.management.commands.{}".format(name))
-        self.env_id = get_env_id()
         if settings.RABBIT_URL:
             self._initMessaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
@@ -47,25 +36,17 @@ class BaseWorker(BaseCommand):
         """Connects to RabbitMQ and prepares all the necessities - exchange, proper names for queues etc."""
         self._debug("Connecting to RabbitMQ...")
 
-        # build queue name
-        self.rabbit_consume_queue = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
+        self.rabbit_consume_queue = f"{settings.RABBIT_EXCHANGE_NAME}_{self.worker_name}"
 
-        # build consume keys
         if hasattr(self, "consume_keys") and isinstance(self.consume_keys, list) and self.consume_keys:
-            # multiple keys to process
             for consumeKey in self.consume_keys:
-                self.rabbit_consume_routing_keys.append("kingfisher_process_{}_{}".format(self.env_id, consumeKey))
+                self.rabbit_consume_routing_keys.append(f"{settings.RABBIT_EXCHANGE_NAME}_{consumeKey}")
         else:
-            # undefined consume keys
             self._debug("No or improper defined consume keys, starting without listening to messages.")
 
-        # build publish key
-        self.rabbit_publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, self.worker_name)
+        self.rabbit_publish_routing_key = f"{settings.RABBIT_EXCHANGE_NAME}_{self.worker_name}"
 
-        # build exchange name
-        self.rabbit_exchange = "kingfisher_process_{}".format(self.env_id)
-
-        self.rabbit_channel, self.rabbit_connection = get_rabbit_channel(self.rabbit_exchange)
+        self.rabbit_channel, self.rabbit_connection = get_rabbit_channel(settings.RABBIT_EXCHANGE_NAME)
 
         self._info("RabbitMQ connection established")
 
@@ -77,11 +58,13 @@ class BaseWorker(BaseCommand):
         # bind consume keys to the queue
         for consumeKey in self.rabbit_consume_routing_keys:
             self.rabbit_channel.queue_bind(
-                exchange=self.rabbit_exchange, queue=self.rabbit_consume_queue, routing_key=consumeKey
+                exchange=settings.RABBIT_EXCHANGE_NAME, queue=self.rabbit_consume_queue, routing_key=consumeKey
             )
 
             self._debug(
-                "Consuming messages from exchange {} with routing key {}".format(self.rabbit_exchange, consumeKey)
+                "Consuming messages from exchange {} with routing key {}".format(
+                    settings.RABBIT_EXCHANGE_NAME, consumeKey
+                )
             )
 
             self.rabbit_channel.basic_qos(prefetch_count=1)
@@ -116,12 +99,12 @@ class BaseWorker(BaseCommand):
     def _publish(self, message, routing_key=None):
         """Publish message with work for a next part of process"""
         if routing_key:
-            publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, routing_key)
+            publish_routing_key = f"{settings.RABBIT_EXCHANGE_NAME}_{routing_key}"
         else:
             publish_routing_key = self.rabbit_publish_routing_key
 
         self.rabbit_channel.basic_publish(
-            exchange=self.rabbit_exchange,
+            exchange=settings.RABBIT_EXCHANGE_NAME,
             routing_key=publish_routing_key,
             body=message,
             properties=pika.BasicProperties(delivery_mode=2),
@@ -129,7 +112,7 @@ class BaseWorker(BaseCommand):
 
         self._debug(
             "Published message to exchange {} with routing key {}. Message: {}".format(
-                self.rabbit_exchange, self.rabbit_publish_routing_key, message
+                settings.RABBIT_EXCHANGE_NAME, self.rabbit_publish_routing_key, message
             )
         )
 
@@ -140,12 +123,12 @@ class BaseWorker(BaseCommand):
 
     def _publish_async_callback(self, channel, message, routing_key):
         if routing_key:
-            publish_routing_key = "kingfisher_process_{}_{}".format(self.env_id, routing_key)
+            publish_routing_key = f"{settings.RABBIT_EXCHANGE_NAME}_{routing_key}"
         else:
             publish_routing_key = self.rabbit_publish_routing_key
 
         channel.basic_publish(
-            exchange=self.rabbit_exchange,
+            exchange=settings.RABBIT_EXCHANGE_NAME,
             routing_key=publish_routing_key,
             body=message,
             properties=pika.BasicProperties(delivery_mode=2),
@@ -153,7 +136,7 @@ class BaseWorker(BaseCommand):
 
         self._debug(
             "Published message to exchange {} with routing key {}. Message: {}".format(
-                self.rabbit_exchange, self.rabbit_publish_routing_key, message
+                settings.RABBIT_EXCHANGE_NAME, self.rabbit_publish_routing_key, message
             )
         )
 

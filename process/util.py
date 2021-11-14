@@ -50,7 +50,3 @@ def get_rabbit_channel(rabbit_exchange_name):
     rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable=True, exchange_type="direct")
 
     return rabbit_channel, connection
-
-
-def get_env_id():
-    return "{}_{}".format(settings.ENV_NAME, settings.ENV_VERSION)
