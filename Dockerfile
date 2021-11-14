@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 RUN groupadd -r runner && useradd --no-log-init -r -g runner runner
 
-# Must match the settings.COLLECT_FILES_STORE default value.
+# Must match the settings.KINGFISHER_COLLECT_FILES_STORE default value.
 RUN mkdir -p /data && chown -R runner:runner /data
 
 WORKDIR /workdir
