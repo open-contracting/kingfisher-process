@@ -33,26 +33,23 @@ class Command(BaseWorker):
         try:
             collection_id = int(options["collection"])
         except ValueError:
-            raise CommandError(_("--collection {} is not an int value").format(options["collection"]))
+            raise CommandError(_("--collection %(id)s is not an int value") % options["collection"])
 
         try:
             collection = Collection.objects.get(id=collection_id)
         except Collection.DoesNotExist:
-            raise CommandError(_("A collection id: {} not found".format(collection_id)))
+            raise CommandError(_("Collection id=%(id)s not found") % {"id": collection_id})
 
         if collection.store_end_at:
-            raise CommandError(
-                _("A collection id: {} already closed at {}".format(options["collection"], collection.store_end_at))
-            )
+            raise CommandError(_("Collection id=%(id)s already closed at %(store_end_at)s") % collection.__dict__)
 
         if collection.parent:
             raise CommandError(
                 _(
-                    """A collection {} cannot be closed as its not
-                    the "parent/root" collection, Hint: Its child of {}""".format(
-                        collection, collection.parent
-                    )
+                    "Collection %(child)s cannot be closed as it's not the parent/root collection."
+                    "It's a child of %(parent)s."
                 )
+                % {"child": collection, "parent": collection.parent}
             )
 
         collection.store_end_at = Now()

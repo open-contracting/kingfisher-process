@@ -37,7 +37,7 @@ class Command(BaseWorker):
         try:
             collection_id = int(options["collection"])
         except ValueError:
-            raise CommandError(_("--collection {} is not an int value").format(options["collection"]))
+            raise CommandError(_("--collection %(id)s is not an int value") % options["collection"])
 
         # check whether data source exists
         mtimes = [os.path.getmtime(path) for path in walk(options["PATH"])]
@@ -45,14 +45,12 @@ class Command(BaseWorker):
             raise CommandError(_("No files found"))
 
         try:
-            collection = Collection.objects.get(id=options["collection"])
+            collection = Collection.objects.get(id=collection_id)
         except Collection.DoesNotExist:
-            raise CommandError(_("A collection id: %(id)s not found") % {"id": collection_id})
+            raise CommandError(_("Collection id=%(id)s not found") % {"id": collection_id})
 
         if collection.store_end_at:
-            raise CommandError(
-                _("A collection id: {} already closed at {}".format(collection_id, collection.store_end_at))
-            )
+            raise CommandError(_("Collection id=%(id)s already closed at %(store_end_at)s") % collection.__dict__)
 
         self._debug("Processing path %s", options["PATH"])
 

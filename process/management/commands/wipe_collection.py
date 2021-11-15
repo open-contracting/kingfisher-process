@@ -28,7 +28,7 @@ class Command(BaseWorker):
         parser.add_argument(
             "-c",
             "--collection",
-            help=_("the id of collection to wipe"),
+            help=_("the ID of collection to wipe"),
         )
 
     def handle(self, *args, **options):
@@ -38,12 +38,12 @@ class Command(BaseWorker):
         try:
             collection_id = int(options["collection"])
         except ValueError:
-            raise CommandError(_("--collection {} is not an int value").format(options["collection"]))
+            raise CommandError(_("--collection %(id)s is not an int value") % options["collection"])
 
         try:
-            collection = Collection.objects.get(id=options["collection"])
+            collection = Collection.objects.get(id=collection_id)
         except Collection.DoesNotExist:
-            raise CommandError(_("A collection id: {} not found".format(collection_id)))
+            raise CommandError(_("Collection id=%(id)s not found") % {"id": collection_id})
 
         confirm = self._get_input("Collection {} will be WIPED, confirm with Y: ".format(collection))
         if confirm != "Y":
