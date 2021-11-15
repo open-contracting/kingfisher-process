@@ -38,7 +38,7 @@ class Command(BaseWorker):
         try:
             collection_id = int(options["collection"])
         except ValueError:
-            raise CommandError(_("--collection %(id)s is not an int value") % options["collection"])
+            raise CommandError(_("--collection %(id)s is not an int value") % {"id": options["collection"]})
 
         try:
             collection = Collection.objects.get(id=collection_id)

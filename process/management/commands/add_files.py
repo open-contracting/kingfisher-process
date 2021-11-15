@@ -37,7 +37,7 @@ class Command(BaseWorker):
         try:
             collection_id = int(options["collection"])
         except ValueError:
-            raise CommandError(_("--collection %(id)s is not an int value") % options["collection"])
+            raise CommandError(_("--collection %(id)s is not an int value") % {"id": options["collection"]})
 
         # check whether data source exists
         mtimes = [os.path.getmtime(path) for path in walk(options["PATH"])]
