@@ -115,7 +115,7 @@ def close_collection(request):
                         collection_note.data = input["stats"]
                         collection_note.save()
 
-            message = """{{ "collection_id": {}, "source": "collection_closed" }}"""
+            message = '{{ "collection_id": {}, "source": "collection_closed" }}'
 
             _publish(message.format(collection.id), "collection_closed")
             logger.debug("Published close message for collection %s", collection)
