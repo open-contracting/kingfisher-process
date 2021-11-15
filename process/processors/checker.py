@@ -24,7 +24,7 @@ def check_collection_file(collection_file):
     if not isinstance(collection_file, CollectionFile):
         raise TypeError("collection_file is not a CollectionFile value")
 
-    logger.info("Checking data for collection file {}".format(collection_file))
+    logger.info("Checking data for collection file %s", collection_file)
 
     items_key = None
     if (
@@ -42,10 +42,10 @@ def check_collection_file(collection_file):
         )
 
     for item in items:
-        logger.debug("Checking {} form item {}".format(items_key, item))
+        logger.debug("Checking %s form item %s", items_key, item)
         data_to_check = item.data.data
         if item.package_data:
-            logger.debug("Repacking for key {} object {}".format(items_key, item))
+            logger.debug("Repacking for key %s object %s", items_key, item)
             data_to_check = item.package_data.data
             data_to_check[items_key] = item.data.data
 

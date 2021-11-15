@@ -45,7 +45,7 @@ def compile_release(collection_id, ocid):
     if not isinstance(ocid, str):
         raise TypeError("ocid is not a string value")
 
-    logger.info("Compiling release collection_id: {} ocid: {}".format(collection_id, ocid))
+    logger.info("Compiling release collection_id: %s ocid: %s", collection_id, ocid)
 
     # retrieve collection including its parent from db
     try:
@@ -66,7 +66,7 @@ def compile_release(collection_id, ocid):
         )
     except CompiledRelease.DoesNotExist:
         # happy day - compiled release should not exist
-        logger.debug("compiled_release with ocid {} does not exist, we can compile that and store it".format(ocid))
+        logger.debug("compiled_release with ocid %s does not exist, we can compile that and store it", ocid)
 
     # get all releases for given ocid
     releases = (
@@ -94,9 +94,9 @@ def compile_release(collection_id, ocid):
                 extensions = list(set(extensions + package_data_extensions))
             else:
                 logger.error(
-                    "Package data for release {} contains malformed extensions {}, skipping.".format(
-                        release, package_data_extensions
-                    )
+                    "Package data for release %s contains malformed extensions %s, skipping.",
+                    release,
+                    package_data_extensions,
                 )
 
     # merge data into into single compiled release
@@ -128,7 +128,7 @@ def compile_record(collection_id, ocid):
     if not isinstance(ocid, str):
         raise TypeError("ocid is not a string value")
 
-    logger.info("Compiling record collection_id: {} ocid: {}".format(collection_id, ocid))
+    logger.info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
 
     # retrieve collection including its parent from db
     try:
@@ -150,7 +150,7 @@ def compile_record(collection_id, ocid):
         )
     except CompiledRelease.DoesNotExist:
         # happy day - compiled release should not exist
-        logger.debug("compiled_release with ocid {} does not exist, we can compile that and store it".format(ocid))
+        logger.debug("compiled_release with ocid %s does not exist, we can compile that and store it", ocid)
 
     # get records for given ocid
     try:
@@ -177,9 +177,7 @@ def compile_record(collection_id, ocid):
         #  so we still have some data)
         if releases_without_date:
             logger.warning(
-                "This OCID {} had some releases without a date element. We have compiled all other releases.".format(
-                    ocid
-                )
+                "This OCID %s had some releases without a date element. We have compiled all other releases.", ocid
             )
 
         extensions = record.package_data.data.get("extensions", [])
@@ -193,11 +191,9 @@ def compile_record(collection_id, ocid):
     compiled_release = record.data.data.get("compiledRelease", [])
     if compiled_release:
         logger.warning(
-            """
-            This record {} already had a compiledRelease in the record!
-            It was passed through this transform unchanged.""".format(
-                record
-            )
+            "This record %s already had a compiledRelease in the record! "
+            "It was passed through this transform unchanged.",
+            record,
         )
 
         return _save_compiled_release(compiled_release, collection, ocid)
@@ -208,22 +204,18 @@ def compile_record(collection_id, ocid):
     if len(releases_compiled) > 1:
         # If more than one, pick one at random. and log that.
         logger.warning(
-            """
-            This record {} already has multiple compiled releases in the releases array!
-            The compiled release to pass through was selected arbitrarily.""".format(
-                record
-            )
+            "This record %s already has multiple compiled releases in the releases array!"
+            "The compiled release to pass through was selected arbitrarily.",
+            record,
         )
         return _save_compiled_release(releases_compiled[0], collection, ocid)
 
     elif len(releases_compiled) == 1:
         # There is just one compiled release - pass it through unchanged, and log that.
         logger.warning(
-            """
-            This record {} already has multiple compiled releases in the releases array!
-            It was passed through this transform unchanged.""".format(
-                record
-            )
+            "This record %s already has multiple compiled releases in the releases array!"
+            "It was passed through this transform unchanged.",
+            record,
         )
 
         return _save_compiled_release(releases_compiled[0], collection, ocid)
@@ -231,12 +223,10 @@ def compile_record(collection_id, ocid):
     else:
         # We can't process this ocid. Warn of that.
         logger.warning(
-            """
-            Record {} could not be compiled because at least one release in the releases array is
-            a linked release or there are no releases with dates, and the record has
-            neither a compileRelease nor a release with a tag of "compiled".""".format(
-                record
-            )
+            "Record %s could not be compiled because at least one release in the releases array is a linked release "
+            "or there are no releases with dates, and the record has neither a compileRelease nor a release with a "
+            "tag of 'compiled'.",
+            record,
         )
 
     return None
@@ -248,14 +238,14 @@ def _save_compiled_release(compiled_release_data, collection, ocid):
     compiled_collection_file.collection = collection
     compiled_collection_file.filename = "{}.json".format(ocid)
     compiled_collection_file.save()
-    logger.debug("Created new collection_file {}".format(compiled_collection_file))
+    logger.debug("Created new collection_file %s", compiled_collection_file)
 
     # create new collection file item
     collection_file_item = CollectionFileItem()
     collection_file_item.collection_file = compiled_collection_file
     collection_file_item.number = 0
     collection_file_item.save()
-    logger.debug("Created new collection_file_item {}".format(collection_file_item))
+    logger.debug("Created new collection_file_item %s", collection_file_item)
 
     # calculate hash to retrieve data
     compiled_release_hash = get_hash(str(compiled_release_data))
@@ -263,14 +253,14 @@ def _save_compiled_release(compiled_release_data, collection, ocid):
     try:
         # is this item already saved?
         data = Data.objects.get(hash_md5=compiled_release_hash)
-        logger.debug("Found data item {} with hash: {}".format(data, compiled_release_hash))
+        logger.debug("Found data item %s with hash: %s", data, compiled_release_hash)
     except (Data.DoesNotExist, Data.MultipleObjectsReturned):
         # not saved yet, create new one
         data = Data()
         data.data = compiled_release_data
         data.hash_md5 = compiled_release_hash
         data.save()
-        logger.debug("Created new data item {}".format(data))
+        logger.debug("Created new data item %s", data)
 
     # create and store release
     release = CompiledRelease()
@@ -280,7 +270,7 @@ def _save_compiled_release(compiled_release_data, collection, ocid):
     release.ocid = ocid
     release.save()
 
-    logger.debug("Stored compiled release {}".format(release))
+    logger.debug("Stored compiled release %s", release)
 
     return release
 
@@ -327,17 +317,15 @@ def compilable(collection_id):
                     return True
             else:
                 logger.debug(
-                    "Load not finished yet for collection {} - remaining {} steps.".format(
-                        collection, processing_step_count
-                    )
+                    "Load not finished yet for collection %s - remaining %s steps.", collection, processing_step_count
                 )
                 return False
         else:
-            logger.debug("Collection {} not completely stored yet. (store_end_at not set)".format(collection))
+            logger.debug("Collection %s not completely stored yet. (store_end_at not set)", collection)
             return False
 
     except Collection.DoesNotExist:
-        logger.info("Collection (with steps including compile) id {} not found".format(collection_id))
+        logger.info("Collection (with steps including compile) id %s not found", collection_id)
         return False
 
 
@@ -356,7 +344,7 @@ def _compile_releases_by_ocdskit(ocid, releases, extensions):
             out = merger.create_compiled_release(releases)
             return out
         except Exception as e:
-            logger.warning("Unable to compile with extensions, trying without them. Root exception {}".format(e))
+            logger.warning("Unable to compile with extensions, trying without them. Root exception %s", e)
 
             builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, [])
             schema = builder.patched_release_schema()
@@ -365,6 +353,6 @@ def _compile_releases_by_ocdskit(ocid, releases, extensions):
             return out
 
     except Exception as e:
-        logger.exception("OCID {} could not be compiled because merge library threw an error: ".format(ocid), e)
+        logger.exception("OCID %s could not be compiled because merge library threw an error: ", ocid)
 
         raise e

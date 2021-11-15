@@ -31,20 +31,20 @@ class Command(BaseWorker):
 
         try:
 
-            self._debug("Received message {}".format(input_message))
+            self._debug("Received message %s", input_message)
 
             ocid = input_message["ocid"]
             collection_id = input_message["collection_id"]
             compiled_collection_id = input_message["compiled_collection_id"]
 
             with transaction.atomic():
-                self._info("Compiling record collection_id: {} ocid: {}".format(collection_id, ocid))
+                self._info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
                 release = compile_record(collection_id, ocid)
 
             if release:
                 release_id = release.pk
         except Exception:
-            self._exception("Something went wrong when processing {}".format(body))
+            self._exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(id=input_message["collection_id"])
                 self._save_note(

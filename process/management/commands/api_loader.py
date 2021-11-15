@@ -52,13 +52,13 @@ class Command(BaseWorker):
                 self._publish_async(connection, channel, json_dumps(message))
             else:
                 self._info(
-                    """Collection file {} contains errors {}, not sending to further processing.""".format(
-                        collection_file, input_message.get("errors", None)
-                    )
+                    "Collection file %s contains errors %s, not sending to further processing.",
+                    collection_file,
+                    input_message.get("errors", None),
                 )
 
         except Collection.DoesNotExist:
-            self._exception("Collection with id {} not found".format(input["collection_id"]))
+            self._exception("Collection with id %s not found", input["collection_id"])
         except Exception:
             self._exception("Unable to create collection_file")
 

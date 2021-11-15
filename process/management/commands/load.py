@@ -139,13 +139,13 @@ class Command(BaseWorker):
         except ValueError as error:
             raise CommandError(error)
 
-        self._debug("Processing path {}".format(options["PATH"]))
+        self._debug("Processing path %s", options["PATH"])
 
         for file_path in walk(options["PATH"]):
             # note - keep transaction here, not "higher" around the whole cycle
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
-                self._debug("Storing file {}".format(file_path))
+                self._debug("Storing file %s", file_path)
                 collection_file = create_collection_file(collection, file_path=file_path)
 
             message = {"collection_file_id": collection_file.id}

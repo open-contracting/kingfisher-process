@@ -62,9 +62,7 @@ class BaseWorker(BaseCommand):
             )
 
             self._debug(
-                "Consuming messages from exchange {} with routing key {}".format(
-                    settings.RABBIT_EXCHANGE_NAME, consumeKey
-                )
+                "Consuming messages from exchange %s with routing key %s", settings.RABBIT_EXCHANGE_NAME, consumeKey
             )
 
             self.rabbit_channel.basic_qos(prefetch_count=1)
@@ -81,7 +79,7 @@ class BaseWorker(BaseCommand):
         self.rabbit_channel.start_consuming()
 
     def _ack(self, connection, channel, delivery_tag):
-        self._debug("ACK message with delivery tag {}".format(delivery_tag))
+        self._debug("ACK message with delivery tag %s", delivery_tag)
         cb = functools.partial(self._ack_message, channel, delivery_tag)
         connection.add_callback_threadsafe(cb)
 
@@ -89,7 +87,7 @@ class BaseWorker(BaseCommand):
         channel.basic_ack(delivery_tag)
 
     def _nack(self, connection, channel, delivery_tag):
-        self._debug("NACK message from channel {} with delivery tag {}".format(channel, delivery_tag))
+        self._debug("NACK message from channel %s with delivery tag %s", channel, delivery_tag)
         cb = functools.partial(self._nack_message, channel, delivery_tag)
         connection.add_callback_threadsafe(cb)
 
@@ -111,9 +109,10 @@ class BaseWorker(BaseCommand):
         )
 
         self._debug(
-            "Published message to exchange {} with routing key {}. Message: {}".format(
-                settings.RABBIT_EXCHANGE_NAME, self.rabbit_publish_routing_key, message
-            )
+            "Published message to exchange %s with routing key %s. Message: %s",
+            settings.RABBIT_EXCHANGE_NAME,
+            self.rabbit_publish_routing_key,
+            message,
         )
 
     def _publish_async(self, connection, channel, message, routing_key=None):
@@ -135,9 +134,10 @@ class BaseWorker(BaseCommand):
         )
 
         self._debug(
-            "Published message to exchange {} with routing key {}. Message: {}".format(
-                settings.RABBIT_EXCHANGE_NAME, self.rabbit_publish_routing_key, message
-            )
+            "Published message to exchange %s with routing key %s. Message: %s",
+            settings.RABBIT_EXCHANGE_NAME,
+            self.rabbit_publish_routing_key,
+            message,
         )
 
     def _clean_thread_resources(self):
@@ -180,11 +180,11 @@ class BaseWorker(BaseCommand):
                 processing_step.delete()
         else:
             self._warning(
-                """No such processing step found
-                           step_type:{} collection_id:{} collection_file_id:{} ocid:{}
-                        """.format(
-                    step_type, collection_id, collection_file_id, ocid
-                )
+                "No such processing step found: step_type=%s collection_id=%s collection_file_id=%s ocid=%s",
+                step_type,
+                collection_id,
+                collection_file_id,
+                ocid,
             )
 
     def _file_or_directory(self, string):
@@ -197,29 +197,29 @@ class BaseWorker(BaseCommand):
         """Returns initialised logger instance"""
         return self.logger_instance
 
-    def _debug(self, message):
+    def _debug(self, message, *args, **kwargs):
         """Shortcut function to logging facility"""
-        self._logger().debug(message)
+        self._logger().debug(message, *args, **kwargs)
 
-    def _info(self, message):
+    def _info(self, message, *args, **kwargs):
         """Shortcut function to logging facility"""
-        self._logger().info(message)
+        self._logger().info(message, *args, **kwargs)
 
-    def _warning(self, message):
+    def _warning(self, message, *args, **kwargs):
         """Shortcut function to logging facility"""
-        self._logger().warning(message)
+        self._logger().warning(message, *args, **kwargs)
 
-    def _error(self, message):
+    def _error(self, message, *args, **kwargs):
         """Shortcut function to logging facility"""
-        self._logger().error(message)
+        self._logger().error(message, *args, **kwargs)
 
-    def _critical(self, message):
+    def _critical(self, message, *args, **kwargs):
         """Shortcut function to logging facility"""
-        self._logger().critical(message)
+        self._logger().critical(message, *args, **kwargs)
 
-    def _exception(self, message):
+    def _exception(self, message, *args, **kwargs):
         """Shortcut function to logging facility"""
-        self._logger().exception(message)
+        self._logger().exception(message, *args, **kwargs)
 
     def _save_note(self, collection, code, note):
         """Shortcut to save note to collection"""

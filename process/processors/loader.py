@@ -24,14 +24,14 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
 
     if form.is_valid():
         collection_file = form.save()
-        logger.debug("Create collection file {}".format(collection_file))
+        logger.debug("Create collection file %s", collection_file)
         if not errors:
             processing_step = ProcessingStep()
             processing_step.collection = collection
             processing_step.collection_file = collection_file
             processing_step.name = ProcessingStep.Types.LOAD
             processing_step.save()
-            logger.debug("Created processing step {}".format(processing_step))
+            logger.debug("Created processing step %s", processing_step)
         else:
             collection_note = CollectionNote()
             collection_note.collection = collection

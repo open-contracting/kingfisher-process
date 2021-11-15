@@ -41,7 +41,7 @@ def process_file(collection_file_id):
 
     try:
         collection_file = CollectionFile.objects.prefetch_related("collection").get(pk=collection_file_id)
-        logger.info("Loading data for collection file {}".format(collection_file))
+        logger.info("Loading data for collection file %s", collection_file)
 
         # detect format and check, whether its supported
         data_type = _get_data_type(collection_file)
@@ -249,9 +249,9 @@ def get_upgraded_collection(collection_file):
         )
     except Collection.DoesNotExist:
         logger.debug(
-            "There is no upgrade collection for collection {} (via collection_file {})".format(
-                collection_file.collection, collection_file
-            )
+            "There is no upgrade collection for collection %s (via collection_file %s)",
+            collection_file.collection,
+            collection_file,
         )
 
         return None

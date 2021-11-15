@@ -72,16 +72,16 @@ def close_collection(request):
                     collection.expected_files_count = input["stats"].get("kingfisher_process_items_sent_rabbit", 0)
 
                 collection.save()
-                logger.debug("Collection {} set store_end_at={}".format(collection, collection.store_end_at))
+                logger.debug("Collection %s set store_end_at=%s", collection, collection.store_end_at)
                 upgraded_collection = collection.get_upgraded_collection()
                 if upgraded_collection:
                     upgraded_collection.expected_files_count = collection.expected_files_count
                     upgraded_collection.store_end_at = Now()
                     upgraded_collection.save()
                     logger.debug(
-                        "Upgraded collection {} set store_end_at={}".format(
-                            upgraded_collection, upgraded_collection.store_end_at
-                        )
+                        "Upgraded collection %s set store_end_at=%s",
+                        upgraded_collection,
+                        upgraded_collection.store_end_at,
                     )
 
                 if "reason" in input and input["reason"]:
@@ -118,16 +118,16 @@ def close_collection(request):
             message = """{{ "collection_id": {}, "source": "collection_closed" }}"""
 
             _publish(message.format(collection.id), "collection_closed")
-            logger.debug("Published close message for collection {}".format(collection))
+            logger.debug("Published close message for collection %s", collection)
 
             if upgraded_collection:
                 _publish(message.format(upgraded_collection.id), "collection_closed")
-                logger.debug("Published close message for upgraded collection {}".format(upgraded_collection))
+                logger.debug("Published close message for upgraded collection %s", upgraded_collection)
 
             compiled_collection = collection.get_compiled_collection()
             if compiled_collection:
                 _publish(message.format(compiled_collection.id), "collection_closed")
-                logger.debug("Published close message for compiled collection {}".format(compiled_collection))
+                logger.debug("Published close message for compiled collection %s", compiled_collection)
 
             return HttpResponse("Collection closed")
         except Collection.DoesNotExist:

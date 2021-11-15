@@ -27,7 +27,7 @@ def completable(collection_id):
 
         if collection.completed_at:
             # already marked as completed in a past
-            logger.warning("Collection {} already marked as completed".format(collection))
+            logger.warning("Collection %s already marked as completed", collection)
             return False
 
         if collection.store_end_at is not None or (
@@ -44,7 +44,7 @@ def completable(collection_id):
                 # special case when the collection should be compiled and
                 # waits for compilation to be planned
                 # in such case, no processing steps will be available yet
-                logger.debug("Compilation of collection {} not started yet".format(collection))
+                logger.debug("Compilation of collection %s not started yet", collection)
 
                 return False
 
@@ -53,26 +53,27 @@ def completable(collection_id):
                 real_files_count = CollectionFile.objects.filter(collection=collection).count()
                 if collection.expected_files_count and collection.expected_files_count > real_files_count:
                     logger.debug(
-                        "Collection {} is not completable yet. There are (probably) some"
+                        "Collection %s is not completable yet. There are (probably) some"
                         "unprocessed messages in the queue with the new items"
-                        " - expected files count {} real files count {}".format(
-                            collection, collection.expected_files_count, real_files_count
-                        )
+                        " - expected files count %s real files count %s",
+                        collection,
+                        collection.expected_files_count,
+                        real_files_count,
                     )
                     return False
 
                 return True
             else:
                 logger.debug(
-                    "Processing not finished yet for collection {} - remaining {} steps.".format(
-                        collection, processing_step_count
-                    )
+                    "Processing not finished yet for collection %s - remaining %s steps.",
+                    collection,
+                    processing_step_count,
                 )
                 return False
         else:
-            logger.debug("Collection {} not completely stored yet.".format(collection))
+            logger.debug("Collection %s not completely stored yet.", collection)
             return False
 
     except Collection.DoesNotExist:
-        logger.info("Collection id {} not found".format(collection_id))
+        logger.info("Collection id %s not found", collection_id)
         return False

@@ -23,7 +23,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self._debug("Received message {}".format(input_message))
+            self._debug("Received message %s", input_message)
 
             collection_file_id = input_message["collection_file_id"]
             upgraded_collection_file_id = None
@@ -45,11 +45,9 @@ class Command(BaseWorker):
             self._ack(connection, channel, delivery_tag)
         except IntegrityError:
             self._exception(
-                """ This should be a very rare exception, most probably one worker stored
-                    data item during processing the very same data in current worker.
-                    Message body {}""".format(
-                    body
-                )
+                "This should be a very rare exception, most probably one worker stored data item during processing "
+                "the very same data in current worker. Message body %s",
+                body,
             )
 
             # return message to queue
@@ -57,7 +55,7 @@ class Command(BaseWorker):
         except Exception:
             collection_file_id = input_message["collection_file_id"]
 
-            self._exception("Something went wrong when processing {}".format(body))
+            self._exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(collectionfile__id=collection_file_id)
                 self._save_note(

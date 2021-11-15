@@ -22,7 +22,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self._debug("Received message {}".format(input_message))
+            self._debug("Received message %s", input_message)
 
             collection = None
             collection_file = None
@@ -48,11 +48,12 @@ class Command(BaseWorker):
                         self._publish_releases(connection, channel, collection)
                     else:
                         self._debug(
-                            "Collection {} is not compilable yet. There are (probably) some"
+                            "Collection %s is not compilable yet. There are (probably) some"
                             "unprocessed messages in the queue with the new items"
-                            " - expected files count {} real files count {}".format(
-                                collection, collection.expected_files_count, real_files_count
-                            )
+                            " - expected files count %s real files count %s",
+                            collection,
+                            collection.expected_files_count,
+                            real_files_count,
                         )
 
                 if (
@@ -64,9 +65,9 @@ class Command(BaseWorker):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(connection, channel, collection_file)
             else:
-                self._debug("Collection {} is not compilable.".format(collection))
+                self._debug("Collection %s is not compilable.", collection)
         except Exception:
-            self._exception("Something went wrong when processing {}".format(body))
+            self._exception("Something went wrong when processing %s", body)
             try:
                 if "collection_id" in input_message:
                     # received message form collection closed api endpoint
@@ -101,7 +102,7 @@ class Command(BaseWorker):
                 compiled_collection.compilation_started = True
                 compiled_collection.save()
 
-            self._info("Planning release compilation for {}".format(compiled_collection))
+            self._info("Planning release compilation for %s", compiled_collection)
 
             # get all ocids for collection
             ocids = (
@@ -123,8 +124,8 @@ class Command(BaseWorker):
                 self._publish_async(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self._warning(
-                """"Tried to plan compilation for already "planned" collection.
-                This can rarely happen in multi worker environments."""
+                "Tried to plan compilation for already 'planned' collection."
+                "This can rarely happen in multi worker environments."
             )
 
     def _publish_records(self, connection, channel, collection_file):
@@ -139,7 +140,7 @@ class Command(BaseWorker):
                 compiled_collection.compilation_started = True
                 compiled_collection.save()
 
-        self._info("Planning records compilation for {} file {}".format(compiled_collection, collection_file))
+        self._info("Planning records compilation for %s file %s", compiled_collection, collection_file)
 
         # get all ocids for collection
         ocids = (
