@@ -22,7 +22,7 @@ jobs:
       - name: Run checks and tests
         env:
           PYTHONWARNINGS: error
-          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres?application_name=kingfisher-process
+          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
           RABBIT_URL: amqp://localhost:${{ job.services.rabbitmq.ports[5672] }}
         run: |
           ./manage.py migrate
