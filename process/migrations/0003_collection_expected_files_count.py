@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0002_auto_20191220_2055'),
+        ("process", "0002_auto_20191220_2055"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='collection',
-            name='expected_files_count',
+            model_name="collection",
+            name="expected_files_count",
             field=models.IntegerField(blank=True, null=True),
         ),
     ]

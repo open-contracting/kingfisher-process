@@ -1,5 +1,7 @@
 import json
+import os.path
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models.functions import Now
 
@@ -23,6 +25,8 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
         if input_message.get("errors", None) and not input_message.get("path", None):
             input_message["path"] = input_message.get("url", None)
+        else:
+            input_message["path"] = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
 
         try:
             collection = Collection.objects.get(id=input_message["collection_id"])

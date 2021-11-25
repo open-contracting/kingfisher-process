@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0016_auto_20210217_1233'),
+        ("process", "0016_auto_20210217_1233"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='processingstep',
-            name='unique_collection_file_item_name',
+            model_name="processingstep",
+            name="unique_collection_file_item_name",
         ),
     ]

@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0023_collection_completed_at'),
+        ("process", "0023_collection_completed_at"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='collectionnote',
-            name='unique_collection_note_identifiers',
+            model_name="collectionnote",
+            name="unique_collection_note_identifiers",
         ),
     ]

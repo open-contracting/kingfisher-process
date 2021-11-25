@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0007_auto_20210115_1429'),
+        ("process", "0007_auto_20210115_1429"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='collection',
-            name='data_type',
-            field=models.TextField(blank=True, choices=[('releases', 'Releases'), ('records', 'Records')], null=True),
+            model_name="collection",
+            name="data_type",
+            field=models.TextField(blank=True, choices=[("releases", "Releases"), ("records", "Records")], null=True),
         ),
     ]

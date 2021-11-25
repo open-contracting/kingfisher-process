@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0011_collectionnote_code'),
+        ("process", "0011_collectionnote_code"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='collectionfilestep',
-            name='name',
-            field=models.TextField(blank=True, choices=[('UPGRADE', 'Upgrade'), ('COMPILE', 'Compile'), ('CHECK', 'Check')]),
+            model_name="collectionfilestep",
+            name="name",
+            field=models.TextField(
+                blank=True, choices=[("UPGRADE", "Upgrade"), ("COMPILE", "Compile"), ("CHECK", "Check")]
+            ),
         ),
     ]

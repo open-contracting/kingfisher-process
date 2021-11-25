@@ -7,28 +7,32 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0018_auto_20210217_1351'),
+        ("process", "0018_auto_20210217_1351"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='processingstep',
-            name='collection',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
+            model_name="processingstep",
+            name="collection",
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"),
         ),
         migrations.AlterField(
-            model_name='processingstep',
-            name='collection_file',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFile'),
+            model_name="processingstep",
+            name="collection_file",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFile"
+            ),
         ),
         migrations.AlterField(
-            model_name='processingstep',
-            name='name',
-            field=models.TextField(choices=[('LOAD', 'Load'), ('UPGRADE', 'Upgrade'), ('COMPILE', 'Compile'), ('CHECK', 'Check')]),
+            model_name="processingstep",
+            name="name",
+            field=models.TextField(
+                choices=[("LOAD", "Load"), ("UPGRADE", "Upgrade"), ("COMPILE", "Compile"), ("CHECK", "Check")]
+            ),
         ),
         migrations.AlterField(
-            model_name='processingstep',
-            name='ocid',
+            model_name="processingstep",
+            name="ocid",
             field=models.TextField(null=True),
         ),
     ]

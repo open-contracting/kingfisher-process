@@ -7,13 +7,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0006_auto_20201230_1038'),
+        ("process", "0006_auto_20201230_1038"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='collection',
-            name='steps',
+            model_name="collection",
+            name="steps",
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict, null=True),
         ),
     ]

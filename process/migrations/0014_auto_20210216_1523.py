@@ -6,32 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0013_auto_20210216_1522'),
+        ("process", "0013_auto_20210216_1522"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='processingstep',
-            name='collection_file_step_collection_file_id_idx',
+            model_name="processingstep",
+            name="collection_file_step_collection_file_id_idx",
         ),
         migrations.RemoveIndex(
-            model_name='processingstep',
-            name='collection_file_step_name_idx',
+            model_name="processingstep",
+            name="collection_file_step_name_idx",
         ),
         migrations.AddIndex(
-            model_name='processingstep',
-            index=models.Index(fields=['collection_file'], name='processing_step_collection_file_id_idx'),
+            model_name="processingstep",
+            index=models.Index(fields=["collection_file"], name="processing_step_collection_file_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='processingstep',
-            index=models.Index(fields=['ocid'], name='processing_step_ocid_idx'),
+            model_name="processingstep",
+            index=models.Index(fields=["ocid"], name="processing_step_ocid_idx"),
         ),
         migrations.AddIndex(
-            model_name='processingstep',
-            index=models.Index(fields=['name'], name='processing_step_name_idx'),
+            model_name="processingstep",
+            index=models.Index(fields=["name"], name="processing_step_name_idx"),
         ),
         migrations.AlterModelTable(
-            name='processingstep',
-            table='processing_step',
+            name="processingstep",
+            table="processing_step",
         ),
     ]

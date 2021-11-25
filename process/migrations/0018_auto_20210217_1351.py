@@ -7,18 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0017_auto_20210217_1340'),
+        ("process", "0017_auto_20210217_1340"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='processingstep',
-            name='collection',
-            field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='process.Collection'),
+            model_name="processingstep",
+            name="collection",
+            field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to="process.Collection"),
         ),
         migrations.AlterField(
-            model_name='processingstep',
-            name='collection_file',
-            field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFile'),
+            model_name="processingstep",
+            name="collection_file",
+            field=models.ForeignKey(
+                blank=True, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFile"
+            ),
         ),
     ]
