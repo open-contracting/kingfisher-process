@@ -18,7 +18,7 @@ certifi==2019.11.28
     # via
     #   requests
     #   sentry-sdk
-chardet==3.0.4
+charset-normalizer==2.0.8
     # via requests
 click==7.1.2
     # via libcoveocds
@@ -111,7 +111,7 @@ pytz==2019.3
     # via
     #   django
     #   flattentool
-requests==2.23.0
+requests==2.26.0
     # via
     #   -r requirements.in
     #   libcove
@@ -146,7 +146,7 @@ strict-rfc3339==0.7
     # via
     #   libcove
     #   ocdskit
-urllib3==1.25.11
+urllib3==1.26.7
     # via
     #   requests
     #   sentry-sdk
