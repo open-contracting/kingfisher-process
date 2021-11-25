@@ -21,7 +21,7 @@ backports.entry-points-selectable==1.1.1
     # via virtualenv
 black==21.10b0
     # via -r requirements_dev.in
-bleach==3.2.1
+bleach==4.1.0
     # via
     #   -r requirements.txt
     #   libcoveocds
@@ -68,7 +68,7 @@ distlib==0.3.3
     # via virtualenv
 dj-database-url==0.5.0
     # via -r requirements.txt
-django==3.2
+django==3.2.9
     # via
     #   -r requirements.txt
     #   django-cors-headers
@@ -150,7 +150,7 @@ libcove==0.26.0
     #   libcoveocds
 libcoveocds==0.11.0
     # via -r requirements.txt
-lxml==4.6.2
+lxml==4.6.4
     # via
     #   -r requirements.txt
     #   flattentool
@@ -298,9 +298,9 @@ tomli==1.2.2
     #   pep517
 traitlets==4.3.3
     # via ipython
-typing-extensions==3.10.0.2
+typing-extensions==4.0.0
     # via black
-urllib3==1.25.8
+urllib3==1.25.11
     # via
     #   -r requirements.txt
     #   requests
