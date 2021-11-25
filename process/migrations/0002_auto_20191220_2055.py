@@ -7,18 +7,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0001_initial'),
+        ("process", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='collection',
-            name='options',
+            model_name="collection",
+            name="options",
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict),
         ),
         migrations.AddField(
-            model_name='collection',
-            name='steps',
+            model_name="collection",
+            name="steps",
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict),
         ),
     ]

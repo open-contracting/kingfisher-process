@@ -9,41 +9,52 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0004_auto_20200110_2217'),
+        ("process", "0004_auto_20200110_2217"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='data',
-            name='data',
-            field=django.contrib.postgres.fields.jsonb.JSONField(encoder=django.core.serializers.json.DjangoJSONEncoder),
+            model_name="data",
+            name="data",
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                encoder=django.core.serializers.json.DjangoJSONEncoder
+            ),
         ),
         migrations.AlterField(
-            model_name='packagedata',
-            name='data',
-            field=django.contrib.postgres.fields.jsonb.JSONField(encoder=django.core.serializers.json.DjangoJSONEncoder),
+            model_name="packagedata",
+            name="data",
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                encoder=django.core.serializers.json.DjangoJSONEncoder
+            ),
         ),
         migrations.CreateModel(
-            name='CollectionFileStep',
+            name="CollectionFileStep",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=64)),
-                ('collection_file', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFile')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=64)),
+                (
+                    "collection_file",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFile"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'collection_file_step',
+                "db_table": "collection_file_step",
             },
         ),
         migrations.AddIndex(
-            model_name='collectionfilestep',
-            index=models.Index(fields=['collection_file'], name='collection_file_step_collection_file_id_idx'),
+            model_name="collectionfilestep",
+            index=models.Index(fields=["collection_file"], name="collection_file_step_collection_file_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='collectionfilestep',
-            index=models.Index(fields=['name'], name='collection_file_step_name_idx'),
+            model_name="collectionfilestep",
+            index=models.Index(fields=["name"], name="collection_file_step_name_idx"),
         ),
         migrations.AddConstraint(
-            model_name='collectionfilestep',
-            constraint=models.UniqueConstraint(fields=('collection_file', 'name'), name='unique_collection_file_item_name'),
+            model_name="collectionfilestep",
+            constraint=models.UniqueConstraint(
+                fields=("collection_file", "name"), name="unique_collection_file_item_name"
+            ),
         ),
     ]

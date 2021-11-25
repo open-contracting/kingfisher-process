@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0009_auto_20210121_1318'),
+        ("process", "0009_auto_20210121_1318"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='collection',
-            name='compilation_started',
+            model_name="collection",
+            name="compilation_started",
             field=models.BooleanField(default=False),
         ),
     ]

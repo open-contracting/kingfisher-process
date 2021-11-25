@@ -7,18 +7,26 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0021_auto_20210413_1046'),
+        ("process", "0021_auto_20210413_1046"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='processingstep',
-            name='collection',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='processing_steps', to='process.collection'),
+            model_name="processingstep",
+            name="collection",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="processing_steps",
+                to="process.collection",
+            ),
         ),
         migrations.AlterField(
-            model_name='processingstep',
-            name='name',
-            field=models.TextField(choices=[('LOAD', 'Load'), ('UPGRADE', 'Upgrade'), ('COMPILE', 'Compile'), ('CHECK', 'Check')], db_index=True),
+            model_name="processingstep",
+            name="name",
+            field=models.TextField(
+                choices=[("LOAD", "Load"), ("UPGRADE", "Upgrade"), ("COMPILE", "Compile"), ("CHECK", "Check")],
+                db_index=True,
+            ),
         ),
     ]

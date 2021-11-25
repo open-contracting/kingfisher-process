@@ -7,35 +7,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('process', '0012_auto_20210216_1511'),
+        ("process", "0012_auto_20210216_1511"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProcessingStep',
+            name="ProcessingStep",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ocid', models.TextField(blank=True)),
-                ('name', models.TextField(blank=True, choices=[('LOAD', 'Load'), ('UPGRADE', 'Upgrade'), ('COMPILE', 'Compile'), ('CHECK', 'Check')])),
-                ('collection_file', models.ForeignKey(db_index=False, on_delete=django.db.models.deletion.CASCADE, to='process.CollectionFile')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("ocid", models.TextField(blank=True)),
+                (
+                    "name",
+                    models.TextField(
+                        blank=True,
+                        choices=[("LOAD", "Load"), ("UPGRADE", "Upgrade"), ("COMPILE", "Compile"), ("CHECK", "Check")],
+                    ),
+                ),
+                (
+                    "collection_file",
+                    models.ForeignKey(
+                        db_index=False, on_delete=django.db.models.deletion.CASCADE, to="process.CollectionFile"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'processing_step',
+                "db_table": "processing_step",
             },
         ),
         migrations.DeleteModel(
-            name='CollectionFileStep',
+            name="CollectionFileStep",
         ),
         migrations.AddIndex(
-            model_name='processingstep',
-            index=models.Index(fields=['collection_file'], name='collection_file_step_collection_file_id_idx'),
+            model_name="processingstep",
+            index=models.Index(fields=["collection_file"], name="collection_file_step_collection_file_id_idx"),
         ),
         migrations.AddIndex(
-            model_name='processingstep',
-            index=models.Index(fields=['name'], name='collection_file_step_name_idx'),
+            model_name="processingstep",
+            index=models.Index(fields=["name"], name="collection_file_step_name_idx"),
         ),
         migrations.AddConstraint(
-            model_name='processingstep',
-            constraint=models.UniqueConstraint(fields=('collection_file', 'name'), name='unique_collection_file_item_name'),
+            model_name="processingstep",
+            constraint=models.UniqueConstraint(
+                fields=("collection_file", "name"), name="unique_collection_file_item_name"
+            ),
         ),
     ]
