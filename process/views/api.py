@@ -145,15 +145,15 @@ def close_collection(request):
 def create_collection_file(request):
     if request.method == "POST":
         input = json.loads(request.body)
-        input["path"] = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input["path"])
 
         if "collection_id" not in input or not ("path" in input or "errors" in input):
             return HttpResponseBadRequest(
                 'Unable to parse input. Please provide {"path":"<some_path>", "collection_id":<some_number>}'
             )
 
-        if not isfile(input["path"]):
-            return HttpResponseBadRequest("{} is not a file".format(input["path"]))
+        input_path = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input["path"])
+        if not isfile(input_path):
+            return HttpResponseBadRequest("{} is not a file".format(input_path))
 
         try:
             _publish(json_dumps(input), "api")
