@@ -22,6 +22,8 @@ class BaseWorker(BaseCommand):
     rabbit_publish_routing_key = None
     rabbit_consume_queue = None
 
+    prefetch_count = 1
+
     def __init__(self, name, *args, **kwargs):
         self.logger_instance = logging.getLogger("process.management.commands.{}".format(name))
         if settings.RABBIT_URL:
@@ -65,7 +67,7 @@ class BaseWorker(BaseCommand):
                 "Consuming messages from exchange %s with routing key %s", settings.RABBIT_EXCHANGE_NAME, consumeKey
             )
 
-            self.rabbit_channel.basic_qos(prefetch_count=1)
+            self.rabbit_channel.basic_qos(prefetch_count=self.prefetch_count)
 
             def on_message(channel, method_frame, header_frame, body, args):
                 (connection, target_callback) = args

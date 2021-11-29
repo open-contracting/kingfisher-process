@@ -12,10 +12,9 @@ from process.util import json_dumps
 
 
 class Command(BaseWorker):
-
     worker_name = "api_loader"
-
     consume_keys = ["api"]
+    prefetch_count = 10
 
     def __init__(self):
         super().__init__(self.worker_name)
