@@ -177,9 +177,8 @@ class BaseWorker(BaseCommand):
 
         processing_steps = processing_steps.filter(name=step_type)
 
-        if len(processing_steps) > 0:
-            for processing_step in processing_steps:
-                processing_step.delete()
+        if processing_steps.count() > 0:
+            processing_steps.delete()
         else:
             self._warning(
                 "No such processing step found: step_type=%s collection_id=%s collection_file_id=%s ocid=%s",
