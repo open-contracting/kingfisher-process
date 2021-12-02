@@ -19,7 +19,7 @@ class Command(BaseWorker):
 
     worker_name = "release_compiler"
     consume_keys = ["compiler_release"]
-    prefetch_count = 10
+    prefetch_count = 20
 
     def __init__(self):
         super().__init__(self.worker_name)
