@@ -57,7 +57,7 @@ def compile_release(collection_id, ocid):
 
     # check, whether the ocid wasnt already compiled
     try:
-        compiled_release = CompiledRelease.objects.filter(ocid__exact=ocid).get(
+        compiled_release = CompiledRelease.objects.filter(ocid=ocid).get(
             collection_file_item__collection_file__collection=collection
         )
         raise AlreadyExists(
@@ -139,7 +139,7 @@ def compile_record(collection_id, ocid):
 
     # check, whether the ocid wasnt already compiled
     try:
-        compiled_release = CompiledRelease.objects.filter(ocid__exact=ocid).get(
+        compiled_release = CompiledRelease.objects.filter(ocid=ocid).get(
             collection_file_item__collection_file__collection=collection
         )
 

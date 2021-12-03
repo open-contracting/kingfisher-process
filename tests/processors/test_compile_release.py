@@ -38,7 +38,7 @@ class CompileReleaseTests(TransactionTestCase):
     def test_happy_day(self):
         ocid = "ocds-px0z7d-5052-5001-1"
         with transaction.atomic():
-            compiled_release = CompiledRelease.objects.filter(ocid__exact=ocid).get(
+            compiled_release = CompiledRelease.objects.filter(ocid=ocid).get(
                 collection_file_item__collection_file__collection__id=3
             )
             compiled_release.collection_file_item.collection_file.delete()

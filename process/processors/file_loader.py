@@ -242,7 +242,7 @@ def get_upgraded_collection(collection_file):
         raise TypeError("collection_file is not an instance of CollectionFile")
 
     try:
-        upgraded_collection = Collection.objects.filter(transform_type__exact=Collection.Transforms.UPGRADE_10_11).get(
+        upgraded_collection = Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(
             parent=collection_file.collection
         )
     except Collection.DoesNotExist:

@@ -181,9 +181,7 @@ class Collection(models.Model):
         :rtype: Collection
         """
         try:
-            return Collection.objects.filter(transform_type__exact=Collection.Transforms.UPGRADE_10_11).get(
-                parent=self
-            )
+            return Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(parent=self)
         except Collection.DoesNotExist:
             return None
 
@@ -195,9 +193,7 @@ class Collection(models.Model):
         :rtype: Collection
         """
         try:
-            return Collection.objects.filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES).get(
-                parent=self
-            )
+            return Collection.objects.filter(transform_type=Collection.Transforms.COMPILE_RELEASES).get(parent=self)
         except Collection.DoesNotExist:
             return None
 

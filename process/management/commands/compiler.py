@@ -111,7 +111,7 @@ class Command(BaseWorker):
             with transaction.atomic():
                 compiled_collection = (
                     Collection.objects.select_for_update()
-                    .filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
+                    .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
                     .filter(compilation_started=False)
                     .get(parent=collection)
                 )
@@ -149,7 +149,7 @@ class Command(BaseWorker):
         with transaction.atomic():
             compiled_collection = (
                 Collection.objects.select_for_update()
-                .filter(transform_type__exact=Collection.Transforms.COMPILE_RELEASES)
+                .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
                 .get(parent=collection_file.collection)
             )
 
