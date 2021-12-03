@@ -20,7 +20,6 @@ class Command(BaseWorker):
         super().__init__(self.worker_name)
 
     def process(self, connection, channel, delivery_tag, body):
-        # parse input message
         input_message = json.loads(body.decode("utf8"))
         if input_message.get("errors", None) and not input_message.get("path", None):
             input_message["path"] = input_message.get("url", None)
@@ -41,7 +40,7 @@ class Command(BaseWorker):
 
                 if input_message.get("close", False):
                     # close collections as well
-                    collection = Collection.objects.select_for_update().get(id=input["collection_id"])
+                    collection = Collection.objects.select_for_update().get(id=input_message["collection_id"])
                     collection.store_end_at = Now()
                     collection.save()
 
@@ -61,7 +60,7 @@ class Command(BaseWorker):
                 )
 
         except Collection.DoesNotExist:
-            self._exception("Collection with id %s not found", input["collection_id"])
+            self._exception("Collection with id %s not found", input_message["collection_id"])
         except Exception:
             self._exception("Unable to create collection_file")
 
