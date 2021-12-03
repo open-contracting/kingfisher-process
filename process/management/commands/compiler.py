@@ -20,25 +20,35 @@ class Command(BaseWorker):
     def process(self, connection, channel, delivery_tag, body):
         input_message = json.loads(body.decode("utf8"))
 
-        try:
-            self.logger.debug("Received message %s", input_message)
+        self.logger.debug("Received message %s", input_message)
 
-            collection = None
-            collection_file = None
+        collection = None
+        collection_file = None
 
-            if "collection_id" in input_message:
-                # received message from collection closed api endpoint
+        if "collection_id" in input_message:
+            # received message from collection closed api endpoint
+            try:
                 collection = Collection.objects.get(pk=input_message["collection_id"])
-            else:
-                # received message from regular file processing
+            except Collection.DoesNotExist:
+                self.logger.exception("Collection not found. It might have been deleted.")
+                self._clean_thread_resources()
+                return
+        else:
+            # received message from regular file processing
+            try:
                 collection_file = CollectionFile.objects.prefetch_related("collection").get(
                     pk=input_message["collection_file_id"]
                 )
+            except CollectionFile.DoesNotExist:
+                self.logger.exception("CollectionFile not found. It might have been deleted.")
+                self._clean_thread_resources()
+                return
 
-                collection = collection_file.collection
+            collection = collection_file.collection
 
-            self._ack(connection, channel, delivery_tag)
+        self._ack(connection, channel, delivery_tag)
 
+        try:
             if compilable(collection.id):
                 if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
                     real_files_count = CollectionFile.objects.filter(collection=collection).count()
