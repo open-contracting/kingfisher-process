@@ -178,7 +178,7 @@ class BaseWorker(BaseCommand):
 
         processing_steps = processing_steps.filter(name=step_type)
 
-        if processing_steps.count() > 0:
+        if processing_steps.exists():
             processing_steps.delete()
         else:
             self._warning(

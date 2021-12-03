@@ -299,13 +299,13 @@ def compilable(collection_id):
             return True
 
         if collection.store_end_at is not None:
-            processing_step_count = (
+            has_remaining_steps = (
                 ProcessingStep.objects.filter(collection_file__collection=collection.get_root_parent())
                 .filter(name=ProcessingStep.Types.LOAD)
-                .count()
+                .exists()
             )
 
-            if processing_step_count == 0:
+            if not has_remaining_steps:
                 compiled_collection = collection.get_compiled_collection()
                 if compiled_collection.compilation_started:
                     # the compilation was already started
@@ -313,9 +313,7 @@ def compilable(collection_id):
                 else:
                     return True
             else:
-                logger.debug(
-                    "Load not finished yet for collection %s - remaining %s steps.", collection, processing_step_count
-                )
+                logger.debug("Load not finished yet for collection %s - >= 1 remaining steps.", collection)
                 return False
         else:
             logger.debug("Collection %s not completely stored yet. (store_end_at not set)", collection)

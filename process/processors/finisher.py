@@ -47,8 +47,8 @@ def completable(collection_id):
 
                 return False
 
-            processing_step_count = ProcessingStep.objects.filter(collection=collection).count()
-            if processing_step_count == 0:
+            has_steps_remaining = ProcessingStep.objects.filter(collection=collection).exists()
+            if not has_steps_remaining:
                 real_files_count = CollectionFile.objects.filter(collection=collection).count()
                 if collection.expected_files_count and collection.expected_files_count > real_files_count:
                     logger.debug(
@@ -63,11 +63,7 @@ def completable(collection_id):
 
                 return True
             else:
-                logger.debug(
-                    "Processing not finished yet for collection %s - remaining %s steps.",
-                    collection,
-                    processing_step_count,
-                )
+                logger.debug("Processing not finished yet for collection %s - >= 1 remaining steps.", collection)
                 return False
         else:
             logger.debug("Collection %s not completely stored yet.", collection)
