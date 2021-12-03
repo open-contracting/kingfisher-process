@@ -122,12 +122,7 @@ class Command(BaseWorker):
             self.logger.info("Planning release compilation for %s", compiled_collection)
 
             # get all ocids for collection
-            ocids = (
-                Release.objects.filter(collection_file_item__collection_file__collection=collection)
-                .order_by()
-                .values("ocid")
-                .distinct()
-            )
+            ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
 
             for item in ocids:
                 # send message to a next phase

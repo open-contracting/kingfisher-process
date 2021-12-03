@@ -57,9 +57,7 @@ def compile_release(collection_id, ocid):
 
     # check, whether the ocid wasnt already compiled
     try:
-        compiled_release = CompiledRelease.objects.filter(ocid=ocid).get(
-            collection_file_item__collection_file__collection=collection
-        )
+        compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
         raise AlreadyExists(
             "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
         )
@@ -69,8 +67,7 @@ def compile_release(collection_id, ocid):
 
     # get all releases for given ocid
     releases = (
-        Release.objects.filter(collection_file_item__collection_file__collection=collection.parent)
-        .filter(ocid=ocid)
+        Release.objects.filter(collection=collection.parent, ocid=ocid)
         .order_by()  # avoid default order
         .prefetch_related("package_data")
         .prefetch_related("data")
@@ -139,9 +136,7 @@ def compile_record(collection_id, ocid):
 
     # check, whether the ocid wasnt already compiled
     try:
-        compiled_release = CompiledRelease.objects.filter(ocid=ocid).get(
-            collection_file_item__collection_file__collection=collection
-        )
+        compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
 
         raise AlreadyExists(
             "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
@@ -153,7 +148,7 @@ def compile_record(collection_id, ocid):
     # get records for given ocid
     try:
         record = (
-            Record.objects.filter(collection_file_item__collection_file__collection=collection.parent)
+            Record.objects.filter(collection=collection.parent)
             .select_related("data")
             .select_related("package_data")
             .get(ocid=ocid)
@@ -300,7 +295,7 @@ def compilable(collection_id):
 
         if collection.store_end_at is not None:
             has_remaining_steps = (
-                ProcessingStep.objects.filter(collection_file__collection=collection.get_root_parent())
+                ProcessingStep.objects.filter(collection=collection.get_root_parent())
                 .filter(name=ProcessingStep.Types.LOAD)
                 .exists()
             )
