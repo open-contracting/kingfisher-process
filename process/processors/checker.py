@@ -20,7 +20,6 @@ def check_collection_file(collection_file):
     :raises AlreadyExists: if the check for a particular release already exists
     """
 
-    # validate input
     if not isinstance(collection_file, CollectionFile):
         raise TypeError("collection_file is not a CollectionFile value")
 
