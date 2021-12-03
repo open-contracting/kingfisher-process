@@ -35,7 +35,6 @@ def process_file(collection_file_id):
     :raises AlreadyExists: if the collection file (or other items) already exists
     """
 
-    # validate input
     if not isinstance(collection_file_id, int):
         raise TypeError("collection_file_id is not an int value")
 
@@ -239,7 +238,6 @@ def get_upgraded_collection(collection_file):
     :raises TypeError: if there arent integers provided on input
     :raises ValueError: if there is no such collection
     """
-    # validate input
     if not isinstance(collection_file, CollectionFile):
         raise TypeError("collection_file is not an instance of CollectionFile")
 

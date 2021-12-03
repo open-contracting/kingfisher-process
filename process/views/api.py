@@ -20,21 +20,21 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def create_collection(request):
     if request.method == "POST":
-        input = json.loads(request.body)
-        if "source_id" not in input or "data_version" not in input:
+        input_message = json.loads(request.body)
+        if "source_id" not in input_message or "data_version" not in input_message:
             return HttpResponseBadRequest(
                 'Unable to parse input. Please provide {"source_id":"<source_id>", "data_version":"<data_version>"}'
             )
 
         try:
             collection, upgraded_collection, compiled_collection = create_collections(
-                input["source_id"],
-                input["data_version"],
-                note=(input.get("note")),
-                upgrade=(input.get("upgrade", False)),
-                compile=(input.get("compile", False)),
-                check=(input.get("check", False)),
-                sample=(input.get("sample", False)),
+                input_message["source_id"],
+                input_message["data_version"],
+                note=(input_message.get("note")),
+                upgrade=(input_message.get("upgrade", False)),
+                compile=(input_message.get("compile", False)),
+                check=(input_message.get("check", False)),
+                sample=(input_message.get("sample", False)),
             )
 
             result = {}
@@ -57,19 +57,21 @@ def create_collection(request):
 @csrf_exempt
 def close_collection(request):
     if request.method == "POST":
-        input = json.loads(request.body)
+        input_message = json.loads(request.body)
 
-        if "collection_id" not in input:
+        if "collection_id" not in input_message:
             return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id":"<collection_id>"}')
 
         try:
             with transaction.atomic():
-                collection = Collection.objects.select_for_update().get(id=input["collection_id"])
+                collection = Collection.objects.select_for_update().get(id=input_message["collection_id"])
                 collection.store_end_at = Now()
 
-                if "stats" in input and input["stats"]:
+                if "stats" in input_message and input_message["stats"]:
                     # this value is used later on to detect, whether all collection has been processed yet
-                    collection.expected_files_count = input["stats"].get("kingfisher_process_items_sent_rabbit", 0)
+                    collection.expected_files_count = input_message["stats"].get(
+                        "kingfisher_process_items_sent_rabbit", 0
+                    )
 
                 collection.save()
                 logger.debug("Collection %s set store_end_at=%s", collection, collection.store_end_at)
@@ -84,26 +86,26 @@ def close_collection(request):
                         upgraded_collection.store_end_at,
                     )
 
-                if "reason" in input and input["reason"]:
+                if "reason" in input_message and input_message["reason"]:
                     collection_note = CollectionNote()
                     collection_note.collection = collection
                     collection_note.code = CollectionNote.Codes.INFO
-                    collection_note.note = "Spider close reason: {}".format(input["reason"])
+                    collection_note.note = "Spider close reason: {}".format(input_message["reason"])
                     collection_note.save()
 
                     if upgraded_collection:
                         collection_note = CollectionNote()
                         collection_note.collection = upgraded_collection
                         collection_note.code = CollectionNote.Codes.INFO
-                        collection_note.note = "Spider close reason: {}".format(input["reason"])
+                        collection_note.note = "Spider close reason: {}".format(input_message["reason"])
                         collection_note.save()
 
-                if "stats" in input and input["stats"]:
+                if "stats" in input_message and input_message["stats"]:
                     collection_note = CollectionNote()
                     collection_note.collection = collection
                     collection_note.code = CollectionNote.Codes.INFO
                     collection_note.note = "Spider stats"
-                    collection_note.data = input["stats"]
+                    collection_note.data = input_message["stats"]
 
                     collection_note.save()
 
@@ -112,7 +114,7 @@ def close_collection(request):
                         collection_note.collection = upgraded_collection
                         collection_note.code = CollectionNote.Codes.INFO
                         collection_note.note = "Spider stats"
-                        collection_note.data = input["stats"]
+                        collection_note.data = input_message["stats"]
                         collection_note.save()
 
             message = '{{ "collection_id": {}, "source": "collection_closed" }}'
@@ -131,7 +133,7 @@ def close_collection(request):
 
             return HttpResponse("Collection closed")
         except Collection.DoesNotExist:
-            error = "Collection with id {} not found".format(input["collection_id"])
+            error = "Collection with id {} not found".format(input_message["collection_id"])
             logger.error(error)
             return HttpResponseServerError(error)
         except Exception as e:
@@ -144,23 +146,23 @@ def close_collection(request):
 @csrf_exempt
 def create_collection_file(request):
     if request.method == "POST":
-        input = json.loads(request.body)
+        input_message = json.loads(request.body)
 
-        if "collection_id" not in input or not ("path" in input or "errors" in input):
+        if "collection_id" not in input_message or not ("path" in input_message or "errors" in input_message):
             return HttpResponseBadRequest(
                 'Unable to parse input. Please provide {"path":"<some_path>", "collection_id":<some_number>}'
             )
 
-        input_path = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input["path"])
+        input_path = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
         if not isfile(input_path):
             return HttpResponseBadRequest("{} is not a file".format(input_path))
 
         try:
-            _publish(json_dumps(input), "api")
+            _publish(json_dumps(input_message), "api")
 
             return HttpResponse("Collection file creation planned.")
         except Collection.DoesNotExist:
-            error = "Collection file with id {} not found".format(input["collection_id"])
+            error = "Collection file with id {} not found".format(input_message["collection_id"])
             logger.error(error)
             return HttpResponseServerError(error)
         except Exception as e:
@@ -173,13 +175,13 @@ def create_collection_file(request):
 @csrf_exempt
 def wipe_collection(request):
     if request.method == "POST":
-        input = json.loads(request.body)
+        input_message = json.loads(request.body)
 
-        if "collection_id" not in input:
+        if "collection_id" not in input_message:
             return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id":<some_number>}')
 
         try:
-            _publish(json_dumps(input), "wiper")
+            _publish(json_dumps(input_message), "wiper")
 
             return HttpResponse("Wipe collection {} successfully planned.")
         except Exception as e:

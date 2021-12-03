@@ -24,7 +24,6 @@ class Command(BaseWorker):
         super().__init__(self.worker_name)
 
     def process(self, connection, channel, delivery_tag, body):
-        # parse input message
         input_message = json.loads(body.decode("utf8"))
 
         try:

@@ -39,7 +39,6 @@ def compile_release(collection_id, ocid):
     :raises ValueError: if there are no releases to compile in the source/parent collection
     """
 
-    # validate input
     if not isinstance(collection_id, int):
         raise TypeError("collection_id is not an int value")
     if not isinstance(ocid, str):
@@ -122,7 +121,6 @@ def compile_record(collection_id, ocid):
     :raises ValueError: if there are no records to compile in the source/parent collection
     """
 
-    # validate input
     if not isinstance(collection_id, int):
         raise TypeError("collection_id is not an int value")
     if not isinstance(ocid, str):
@@ -290,7 +288,6 @@ def compilable(collection_id):
     :raises ValueError: if there is no collection with such collection_id or
     """
 
-    # validate input
     if not isinstance(collection_id, int):
         raise TypeError("collection_id is not an int value")
 
