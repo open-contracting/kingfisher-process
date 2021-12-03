@@ -15,7 +15,6 @@ from process.util import get_rabbit_channel
 
 
 class BaseWorker(BaseCommand):
-    logger_instance = None
     rabbit_channel = None
     rabbit_connection = None
     rabbit_consume_routing_keys = []
@@ -25,18 +24,18 @@ class BaseWorker(BaseCommand):
     prefetch_count = 1
 
     def __init__(self, name, *args, **kwargs):
-        self.logger_instance = logging.getLogger("process.management.commands.{}".format(name))
+        self.logger = logging.getLogger("process.management.commands.{}".format(name))
         if settings.RABBIT_URL:
             self._initMessaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
 
     def handle(self, *args, **options):
-        self._logger().debug("Worker started")
+        self.logger.debug("Worker started")
         self._consume(self.process)
 
     def _initMessaging(self):
         """Connects to RabbitMQ and prepares all the necessities - exchange, proper names for queues etc."""
-        self._debug("Connecting to RabbitMQ...")
+        self.logger.debug("Connecting to RabbitMQ...")
 
         self.rabbit_consume_queue = f"{settings.RABBIT_EXCHANGE_NAME}_{self.worker_name}"
 
@@ -44,13 +43,13 @@ class BaseWorker(BaseCommand):
             for consumeKey in self.consume_keys:
                 self.rabbit_consume_routing_keys.append(f"{settings.RABBIT_EXCHANGE_NAME}_{consumeKey}")
         else:
-            self._debug("No or improper defined consume keys, starting without listening to messages.")
+            self.logger.debug("No or improper defined consume keys, starting without listening to messages.")
 
         self.rabbit_publish_routing_key = f"{settings.RABBIT_EXCHANGE_NAME}_{self.worker_name}"
 
         self.rabbit_channel, self.rabbit_connection = get_rabbit_channel(settings.RABBIT_EXCHANGE_NAME)
 
-        self._info("RabbitMQ connection established")
+        self.logger.info("RabbitMQ connection established")
 
     def _consume(self, target_callback):
         """Define which messages to consume and queue for this worker"""
@@ -63,7 +62,7 @@ class BaseWorker(BaseCommand):
                 exchange=settings.RABBIT_EXCHANGE_NAME, queue=self.rabbit_consume_queue, routing_key=consumeKey
             )
 
-            self._debug(
+            self.logger.debug(
                 "Consuming messages from exchange %s with routing key %s", settings.RABBIT_EXCHANGE_NAME, consumeKey
             )
 
@@ -81,7 +80,7 @@ class BaseWorker(BaseCommand):
         self.rabbit_channel.start_consuming()
 
     def _ack(self, connection, channel, delivery_tag):
-        self._debug("ACK message with delivery tag %s", delivery_tag)
+        self.logger.debug("ACK message with delivery tag %s", delivery_tag)
         cb = functools.partial(self._ack_message, channel, delivery_tag)
         connection.add_callback_threadsafe(cb)
 
@@ -89,7 +88,7 @@ class BaseWorker(BaseCommand):
         channel.basic_ack(delivery_tag)
 
     def _nack(self, connection, channel, delivery_tag):
-        self._debug("NACK message from channel %s with delivery tag %s", channel, delivery_tag)
+        self.logger.debug("NACK message from channel %s with delivery tag %s", channel, delivery_tag)
         cb = functools.partial(self._nack_message, channel, delivery_tag)
         connection.add_callback_threadsafe(cb)
 
@@ -110,7 +109,7 @@ class BaseWorker(BaseCommand):
             properties=pika.BasicProperties(delivery_mode=2),
         )
 
-        self._debug(
+        self.logger.debug(
             "Published message to exchange %s with routing key %s. Message: %s",
             settings.RABBIT_EXCHANGE_NAME,
             self.rabbit_publish_routing_key,
@@ -135,7 +134,7 @@ class BaseWorker(BaseCommand):
             properties=pika.BasicProperties(delivery_mode=2),
         )
 
-        self._debug(
+        self.logger.debug(
             "Published message to exchange %s with routing key %s. Message: %s",
             settings.RABBIT_EXCHANGE_NAME,
             self.rabbit_publish_routing_key,
@@ -181,7 +180,7 @@ class BaseWorker(BaseCommand):
         if processing_steps.exists():
             processing_steps.delete()
         else:
-            self._warning(
+            self.logger.warning(
                 "No such processing step found: step_type=%s collection_id=%s collection_file_id=%s ocid=%s",
                 step_type,
                 collection_id,
@@ -194,34 +193,6 @@ class BaseWorker(BaseCommand):
         if not os.path.exists(string):
             raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": string})
         return string
-
-    def _logger(self):
-        """Returns initialised logger instance"""
-        return self.logger_instance
-
-    def _debug(self, message, *args, **kwargs):
-        """Shortcut function to logging facility"""
-        self._logger().debug(message, *args, **kwargs)
-
-    def _info(self, message, *args, **kwargs):
-        """Shortcut function to logging facility"""
-        self._logger().info(message, *args, **kwargs)
-
-    def _warning(self, message, *args, **kwargs):
-        """Shortcut function to logging facility"""
-        self._logger().warning(message, *args, **kwargs)
-
-    def _error(self, message, *args, **kwargs):
-        """Shortcut function to logging facility"""
-        self._logger().error(message, *args, **kwargs)
-
-    def _critical(self, message, *args, **kwargs):
-        """Shortcut function to logging facility"""
-        self._logger().critical(message, *args, **kwargs)
-
-    def _exception(self, message, *args, **kwargs):
-        """Shortcut function to logging facility"""
-        self._logger().exception(message, *args, **kwargs)
 
     def _save_note(self, collection, code, note):
         """Shortcut to save note to collection"""

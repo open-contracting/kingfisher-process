@@ -49,8 +49,8 @@ class Command(BaseWorker):
         if confirm != "Y":
             sys.exit()
 
-        self._debug("Wiping collection %s", collection)
+        self.logger.debug("Wiping collection %s", collection)
 
         collection.delete()
 
-        self._info("Wipe command completed")
+        self.logger.info("Wipe command completed")

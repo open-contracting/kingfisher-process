@@ -21,7 +21,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self._debug("Received message %s", input_message)
+            self.logger.debug("Received message %s", input_message)
 
             collection_file_id = input_message["collection_file_id"]
             upgraded_collection_file_id = None
@@ -42,7 +42,7 @@ class Command(BaseWorker):
             # confirm message processing
             self._ack(connection, channel, delivery_tag)
         except IntegrityError:
-            self._exception(
+            self.logger.exception(
                 "This should be a very rare exception, most probably one worker stored data item during processing "
                 "the very same data in current worker. Message body %s",
                 body,
@@ -53,7 +53,7 @@ class Command(BaseWorker):
         except Exception:
             collection_file_id = input_message["collection_file_id"]
 
-            self._exception("Something went wrong when processing %s", body)
+            self.logger.exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(collectionfile__id=collection_file_id)
                 self._save_note(
@@ -64,7 +64,7 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self._exception("Failed saving collection note")
+                self.logger.exception("Failed saving collection note")
 
             self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 

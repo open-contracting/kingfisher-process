@@ -30,20 +30,20 @@ class Command(BaseWorker):
 
         try:
 
-            self._debug("Received message %s", input_message)
+            self.logger.debug("Received message %s", input_message)
 
             ocid = input_message["ocid"]
             collection_id = input_message["collection_id"]
             compiled_collection_id = input_message["compiled_collection_id"]
 
             with transaction.atomic():
-                self._info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
+                self.logger.info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
                 release = compile_record(collection_id, ocid)
 
             if release:
                 release_id = release.pk
         except Exception:
-            self._exception("Something went wrong when processing %s", body)
+            self.logger.exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(id=input_message["collection_id"])
                 self._save_note(
@@ -54,7 +54,7 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self._exception("Failed saving collection note")
+                self.logger.exception("Failed saving collection note")
 
         # delete processing step
         self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)

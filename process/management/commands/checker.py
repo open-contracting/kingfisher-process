@@ -22,7 +22,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
         try:
 
-            self._debug("Received message %s", input_message)
+            self.logger.debug("Received message %s", input_message)
 
             collection_file = CollectionFile.objects.select_related("collection").get(
                 pk=input_message["collection_file_id"]
@@ -33,16 +33,16 @@ class Command(BaseWorker):
                     with transaction.atomic():
                         check_collection_file(collection_file)
                 except AlreadyExists:
-                    self._exception("Checks already calculated for collection file %s", collection_file)
+                    self.logger.exception("Checks already calculated for collection file %s", collection_file)
                     self._save_note(
                         collection_file.collection,
                         CollectionNote.Codes.WARNING,
                         "Checks already calculated for collection file {}".format(collection_file),
                     )
 
-                self._info("Checks calculated for collection file %s", collection_file)
+                self.logger.info("Checks calculated for collection file %s", collection_file)
             else:
-                self._info("Collection file %s is not checkable. Skip.", collection_file)
+                self.logger.info("Collection file %s is not checkable. Skip.", collection_file)
 
             self._deleteStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
 
@@ -53,7 +53,7 @@ class Command(BaseWorker):
 
             self._publish_async(connection, channel, json.dumps(message))
         except Exception:
-            self._exception("Something went wrong when processing %s", body)
+            self.logger.exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(collectionfile__id=input_message["collection_file_id"])
                 self._save_note(
@@ -64,7 +64,7 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self._exception("Failed saving collection note")
+                self.logger.exception("Failed saving collection note")
 
         self._ack(connection, channel, delivery_tag)
         self._clean_thread_resources()

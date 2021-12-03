@@ -52,17 +52,17 @@ class Command(BaseWorker):
         if collection.store_end_at:
             raise CommandError(_("Collection id=%(id)s already closed at %(store_end_at)s") % collection.__dict__)
 
-        self._debug("Processing path %s", options["PATH"])
+        self.logger.debug("Processing path %s", options["PATH"])
 
         for file_path in walk(options["PATH"]):
             # note - keep transaction here, not "higher" around the whole cycle
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
-                self._debug("Storing file %s", file_path)
+                self.logger.debug("Storing file %s", file_path)
                 collection_file = create_collection_file(collection, file_path)
 
             message = {"collection_file_id": collection_file.id}
 
             self._publish(json_dumps(message))
 
-        self._info("Load command completed")
+        self.logger.info("Load command completed")

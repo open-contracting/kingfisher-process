@@ -53,16 +53,16 @@ class Command(BaseWorker):
                 # only files without errors will be further processed
                 self._publish_async(connection, channel, json_dumps(message))
             else:
-                self._info(
+                self.logger.info(
                     "Collection file %s contains errors %s, not sending to further processing.",
                     collection_file,
                     input_message.get("errors", None),
                 )
 
         except Collection.DoesNotExist:
-            self._exception("Collection with id %s not found", input_message["collection_id"])
+            self.logger.exception("Collection with id %s not found", input_message["collection_id"])
         except Exception:
-            self._exception("Unable to create collection_file")
+            self.logger.exception("Unable to create collection_file")
 
         # confirm message processing
         self._ack(connection, channel, delivery_tag)

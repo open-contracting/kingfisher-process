@@ -21,13 +21,13 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self._debug("Received message %s", input_message)
+            self.logger.debug("Received message %s", input_message)
 
             collection = None
             collection_file = None
 
             if "collection_id" in input_message:
-                # received message form collection closed api endpoint
+                # received message from collection closed api endpoint
                 collection = Collection.objects.get(pk=input_message["collection_id"])
             else:
                 # received message from regular file processing
@@ -46,7 +46,7 @@ class Command(BaseWorker):
                         # plans compilation of the whole collection (everything is stored yet)
                         self._publish_releases(connection, channel, collection)
                     else:
-                        self._debug(
+                        self.logger.debug(
                             "Collection %s is not compilable yet. There are (probably) some"
                             "unprocessed messages in the queue with the new items"
                             " - expected files count %s real files count %s",
@@ -64,9 +64,9 @@ class Command(BaseWorker):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(connection, channel, collection_file)
             else:
-                self._debug("Collection %s is not compilable.", collection)
+                self.logger.debug("Collection %s is not compilable.", collection)
         except Exception:
-            self._exception("Something went wrong when processing %s", body)
+            self.logger.exception("Something went wrong when processing %s", body)
             try:
                 if "collection_id" in input_message:
                     # received message form collection closed api endpoint
@@ -85,7 +85,7 @@ class Command(BaseWorker):
                     "Unable to process message {} \n{}".format(input_message, traceback.format_exc()),
                 )
             except Exception:
-                self._exception("Failed saving collection note")
+                self.logger.exception("Failed saving collection note")
         self._clean_thread_resources()
 
     def _publish_releases(self, connection, channel, collection):
@@ -101,7 +101,7 @@ class Command(BaseWorker):
                 compiled_collection.compilation_started = True
                 compiled_collection.save()
 
-            self._info("Planning release compilation for %s", compiled_collection)
+            self.logger.info("Planning release compilation for %s", compiled_collection)
 
             # get all ocids for collection
             ocids = (
@@ -122,7 +122,7 @@ class Command(BaseWorker):
                 self._createStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection.id, ocid=item["ocid"])
                 self._publish_async(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
-            self._warning(
+            self.logger.warning(
                 "Tried to plan compilation for already 'planned' collection."
                 "This can rarely happen in multi worker environments."
             )
@@ -139,7 +139,7 @@ class Command(BaseWorker):
                 compiled_collection.compilation_started = True
                 compiled_collection.save()
 
-        self._info("Planning records compilation for %s file %s", compiled_collection, collection_file)
+        self.logger.info("Planning records compilation for %s file %s", compiled_collection, collection_file)
 
         # get all ocids for collection
         ocids = (

@@ -61,4 +61,4 @@ class Command(BaseWorker):
             upgraded_collection.store_end_at = Now()
             upgraded_collection.save()
 
-        self._info("Load command completed")
+        self.logger.info("Load command completed")

@@ -27,7 +27,7 @@ class Command(BaseWorker):
         input_message = json.loads(body.decode("utf8"))
 
         try:
-            self._debug("Received message %s", input_message)
+            self.logger.debug("Received message %s", input_message)
 
             collection_id = input_message["collection_id"]
 
@@ -40,12 +40,12 @@ class Command(BaseWorker):
                     collection.completed_at = Now()
 
                     collection.save()
-                    self._debug("Processing of collection_id: %s finished. Set as completed.", collection_id)
+                    self.logger.debug("Processing of collection_id: %s finished. Set as completed.", collection_id)
                 else:
-                    self._debug("Processing of collection_id: %s not completable", collection_id)
+                    self.logger.debug("Processing of collection_id: %s not completable", collection_id)
 
         except Exception:
-            self._exception("Something went wrong when processing %s", body)
+            self.logger.exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(id=input_message["collection_id"])
                 self._save_note(
@@ -56,7 +56,7 @@ class Command(BaseWorker):
                     ),
                 )
             except Exception:
-                self._exception("Failed saving collection note")
+                self.logger.exception("Failed saving collection note")
 
         self._ack(connection, channel, delivery_tag)
 

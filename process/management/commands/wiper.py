@@ -16,18 +16,18 @@ class Command(BaseWorker):
     def process(self, connection, channel, delivery_tag, body):
         input_message = json.loads(body.decode("utf8"))
         try:
-            self._debug("Received message %s", input_message)
+            self.logger.debug("Received message %s", input_message)
 
             collection_id = input_message["collection_id"]
 
             collection = Collection.objects.get(pk=collection_id)
-            self._debug("Deleting collection %s", collection)
+            self.logger.debug("Deleting collection %s", collection)
 
             collection.delete()
 
-            self._info("Collection %s successfully wiped.", collection)
+            self.logger.info("Collection %s successfully wiped.", collection)
         except Collection.DoesNotExist:
             error = "Collection with id {} not found".format(input_message["collection_id"])
-            self._error(error)
+            self.logger.error(error)
 
         self._ack(connection, channel, delivery_tag)
