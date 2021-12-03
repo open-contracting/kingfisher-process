@@ -30,7 +30,8 @@ class Command(BaseWorker):
             try:
                 collection = Collection.objects.get(pk=input_message["collection_id"])
             except Collection.DoesNotExist:
-                self.logger.exception("Collection not found. It might have been deleted.")
+                self.logger.exception("Collection not found. It might have been deleted. Message skipped!")
+                self._ack(connection, channel, delivery_tag)
                 self._clean_thread_resources()
                 return
         else:
@@ -40,7 +41,8 @@ class Command(BaseWorker):
                     pk=input_message["collection_file_id"]
                 )
             except CollectionFile.DoesNotExist:
-                self.logger.exception("CollectionFile not found. It might have been deleted.")
+                self.logger.exception("CollectionFile not found. It might have been deleted. Message skipped!")
+                self._ack(connection, channel, delivery_tag)
                 self._clean_thread_resources()
                 return
 
