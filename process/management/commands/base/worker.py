@@ -7,7 +7,7 @@ import threading
 import pika
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import close_old_connections
+from django.db import connections
 from django.utils.translation import gettext as t
 
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
@@ -147,7 +147,8 @@ class BaseWorker(BaseCommand):
         Cleans thread resources, which are not cleaned by default and automatically
         i.e. django db connections.
         """
-        close_old_connections()
+        for conn in connections.all():
+            conn.close()
 
     def _createStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
         """Creates processing step"""
