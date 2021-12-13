@@ -19,7 +19,7 @@ backcall==0.1.0
     # via ipython
 backports.entry-points-selectable==1.1.1
     # via virtualenv
-black==21.10b0
+black==21.12b0
     # via -r requirements_dev.in
 bleach==4.1.0
     # via
@@ -237,8 +237,6 @@ pytz==2019.3
     #   flattentool
 pyyaml==6.0
     # via pre-commit
-regex==2021.11.10
-    # via black
 requests==2.26.0
     # via
     #   -r requirements.txt
