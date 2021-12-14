@@ -77,7 +77,7 @@ libcove==0.26.0
     # via libcoveocds
 libcoveocds==0.11.0
     # via -r requirements.in
-lxml==4.6.4
+lxml==4.7.1
     # via flattentool
 markdown-it-py==1.1.0
     # via libcoveocds
