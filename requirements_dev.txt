@@ -210,9 +210,9 @@ pre-commit==2.15.0
     # via -r requirements_dev.in
 prompt-toolkit==3.0.4
     # via ipython
-psycopg2==2.9.1
+psycopg2==2.9.2
     # via -r requirements.txt
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.2
     # via -r requirements_dev.in
 ptyprocess==0.6.0
     # via pexpect
