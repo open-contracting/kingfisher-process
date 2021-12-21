@@ -45,7 +45,7 @@ class Command(BaseWorker):
         except Exception:
             self.logger.exception("Something went wrong when processing %s", body)
             try:
-                collection = Collection.objects.get(id=input_message["collection_id"])
+                collection = Collection.objects.get(pk=input_message["collection_id"])
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,

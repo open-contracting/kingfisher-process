@@ -103,7 +103,7 @@ class Collection(models.Model):
 
     def __str__(self):
         return "{source_id}:{data_version} (id: {id})".format_map(
-            Default(source_id=self.source_id, data_version=self.data_version, id=self.id)
+            Default(source_id=self.source_id, data_version=self.data_version, id=self.pk)
         )
 
     @transaction.atomic()
@@ -248,7 +248,7 @@ class CollectionNote(models.Model):
     code = models.TextField(blank=True, choices=Codes.choices)
 
     def __str__(self):
-        return "{note} (id: {id})".format_map(Default(note=self.note, id=self.id))
+        return "{note} (id: {id})".format_map(Default(note=self.note, id=self.pk))
 
 
 class CollectionFile(models.Model):
@@ -274,7 +274,7 @@ class CollectionFile(models.Model):
     errors = JSONField(null=True, blank=True)
 
     def __str__(self):
-        return "{filename} (id: {id})".format_map(Default(filename=self.filename, id=self.id))
+        return "{filename} (id: {id})".format_map(Default(filename=self.filename, id=self.pk))
 
 
 class ProcessingStep(models.Model):
@@ -329,7 +329,7 @@ class CollectionFileItem(models.Model):
     errors = JSONField(null=True, blank=True)
 
     def __str__(self):
-        return "step no. {number} (id: {id})".format_map(Default(number=self.number, id=self.id))
+        return "step no. {number} (id: {id})".format_map(Default(number=self.number, id=self.pk))
 
 
 class Data(models.Model):
@@ -394,7 +394,7 @@ class Release(models.Model):
 
     def __str__(self):
         return "{ocid}:{release_id} (id: {id})".format_map(
-            Default(ocid=self.ocid, release_id=self.release_id, id=self.id)
+            Default(ocid=self.ocid, release_id=self.release_id, id=self.pk)
         )
 
 
@@ -422,7 +422,7 @@ class Record(models.Model):
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
 
     def __str__(self):
-        return "{ocid} (id: {id})".format_map(Default(ocid=self.ocid, id=self.id))
+        return "{ocid} (id: {id})".format_map(Default(ocid=self.ocid, id=self.pk))
 
 
 class CompiledRelease(models.Model):
@@ -447,7 +447,7 @@ class CompiledRelease(models.Model):
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
 
     def __str__(self):
-        return "{ocid} (id: {id})".format_map(Default(ocid=self.ocid, id=self.id))
+        return "{ocid} (id: {id})".format_map(Default(ocid=self.ocid, id=self.pk))
 
 
 class ReleaseCheck(models.Model):

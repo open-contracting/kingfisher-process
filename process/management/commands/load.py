@@ -148,7 +148,7 @@ class Command(BaseWorker):
                 self.logger.debug("Storing file %s", file_path)
                 collection_file = create_collection_file(collection, file_path=file_path)
 
-            message = {"collection_file_id": collection_file.id}
+            message = {"collection_file_id": collection_file.pk}
 
             self._publish(json_dumps(message))
 

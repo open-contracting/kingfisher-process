@@ -29,7 +29,7 @@ class Command(BaseWorker):
         collection_id = input_message["collection_id"]
 
         try:
-            collection = Collection.objects.get(id=collection_id)
+            collection = Collection.objects.get(pk=collection_id)
             with transaction.atomic():
                 collection_file = create_collection_file(
                     collection,
@@ -38,11 +38,11 @@ class Command(BaseWorker):
                     errors=input_message.get("errors", None),
                 )
 
-                message = {"collection_id": collection_id, "collection_file_id": collection_file.id}
+                message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
 
                 if input_message.get("close", False):
                     # close collections as well
-                    collection = Collection.objects.select_for_update().get(id=collection_id)
+                    collection = Collection.objects.select_for_update().get(pk=collection_id)
                     collection.store_end_at = Now()
                     collection.save()
 

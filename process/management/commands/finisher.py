@@ -33,7 +33,7 @@ class Command(BaseWorker):
 
             with transaction.atomic():
                 if completable(collection_id):
-                    collection = Collection.objects.select_for_update().get(id=input_message["collection_id"])
+                    collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
                     if collection.transform_type == Collection.Transforms.COMPILE_RELEASES:
                         collection.store_end_at = Now()
 
@@ -47,7 +47,7 @@ class Command(BaseWorker):
         except Exception:
             self.logger.exception("Something went wrong when processing %s", body)
             try:
-                collection = Collection.objects.get(id=input_message["collection_id"])
+                collection = Collection.objects.get(pk=input_message["collection_id"])
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,

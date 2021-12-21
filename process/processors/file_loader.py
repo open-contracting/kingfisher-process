@@ -66,7 +66,7 @@ def process_file(collection_file_id):
             _store_data(upgraded_collection_file, file_items, file_package_data, data_type, True)
 
             # return upgraded file
-            return upgraded_collection_file.id
+            return upgraded_collection_file.pk
 
         # not upgrading, return None
         return None

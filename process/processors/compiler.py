@@ -285,7 +285,7 @@ def compilable(collection_id):
         raise TypeError("collection_id is not an int value")
 
     try:
-        collection = Collection.objects.filter(id=collection_id).get(steps__contains="compile")
+        collection = Collection.objects.filter(pk=collection_id).get(steps__contains="compile")
 
         if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
             # records can be processed immediately

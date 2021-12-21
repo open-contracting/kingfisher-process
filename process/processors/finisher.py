@@ -22,7 +22,7 @@ def completable(collection_id):
         raise TypeError("collection_id is not an int value")
 
     try:
-        collection = Collection.objects.get(id=collection_id)
+        collection = Collection.objects.get(pk=collection_id)
 
         if collection.completed_at:
             # already marked as completed in a past

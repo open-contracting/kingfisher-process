@@ -44,18 +44,18 @@ class Command(BaseWorker):
             else:
                 self.logger.info("Collection file %s is not checkable. Skip.", collection_file)
 
-            self._delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
+            self._delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file.pk)
 
             message = {
-                "collection_file": collection_file.id,
-                "collection_id": collection_file.collection.id,
+                "collection_file": collection_file.pk,
+                "collection_id": collection_file.collection.pk,
             }
 
             self._publish_async(connection, channel, json.dumps(message))
         except Exception:
             self.logger.exception("Something went wrong when processing %s", body)
             try:
-                collection = Collection.objects.get(collectionfile__id=input_message["collection_file_id"])
+                collection = Collection.objects.get(collectionfile__pk=input_message["collection_file_id"])
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,

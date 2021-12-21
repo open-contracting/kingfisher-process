@@ -38,13 +38,13 @@ def create_collection(request):
             )
 
             result = {}
-            result["collection_id"] = collection.id
+            result["collection_id"] = collection.pk
 
             if upgraded_collection:
-                result["upgraded_collection_id"] = upgraded_collection.id
+                result["upgraded_collection_id"] = upgraded_collection.pk
 
             if compiled_collection:
-                result["compiled_collection_id"] = compiled_collection.id
+                result["compiled_collection_id"] = compiled_collection.pk
 
             return JsonResponse(result)
         except Exception as e:
@@ -64,7 +64,7 @@ def close_collection(request):
 
         try:
             with transaction.atomic():
-                collection = Collection.objects.select_for_update().get(id=input_message["collection_id"])
+                collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
                 collection.store_end_at = Now()
 
                 if "stats" in input_message and input_message["stats"]:
@@ -119,16 +119,16 @@ def close_collection(request):
 
             message = '{{ "collection_id": {}, "source": "collection_closed" }}'
 
-            _publish(message.format(collection.id), "collection_closed")
+            _publish(message.format(collection.pk), "collection_closed")
             logger.debug("Published close message for collection %s", collection)
 
             if upgraded_collection:
-                _publish(message.format(upgraded_collection.id), "collection_closed")
+                _publish(message.format(upgraded_collection.pk), "collection_closed")
                 logger.debug("Published close message for upgraded collection %s", upgraded_collection)
 
             compiled_collection = collection.get_compiled_collection()
             if compiled_collection:
-                _publish(message.format(compiled_collection.id), "collection_closed")
+                _publish(message.format(compiled_collection.pk), "collection_closed")
                 logger.debug("Published close message for compiled collection %s", compiled_collection)
 
             return HttpResponse("Collection closed")

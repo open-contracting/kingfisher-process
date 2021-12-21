@@ -36,7 +36,7 @@ class Command(BaseWorker):
             raise CommandError(_("--collection %(id)s is not an int value") % {"id": options["collection"]})
 
         try:
-            collection = Collection.objects.get(id=collection_id)
+            collection = Collection.objects.get(pk=collection_id)
         except Collection.DoesNotExist:
             raise CommandError(_("Collection id=%(id)s not found") % {"id": collection_id})
 
