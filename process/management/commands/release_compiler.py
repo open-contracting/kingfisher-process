@@ -56,7 +56,7 @@ class Command(BaseWorker):
             except Exception:
                 self.logger.exception("Failed saving collection note")
 
-        self._deleteStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
+        self._delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
 
         # publish message about processed item
         message = {

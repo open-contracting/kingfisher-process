@@ -30,15 +30,15 @@ class Command(BaseWorker):
             with transaction.atomic():
                 upgraded_collection_file_id = process_file(collection_file_id)
 
-                self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
+                self._delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
-            self._createStep(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
+            self._create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
             self._publish_async(connection, channel, json.dumps(input_message))
 
             # send upgraded collection file to further processing
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
-                self._createStep(
+                self._create_step(
                     ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
                 )
                 self._publish_async(connection, channel, json_dumps(message))
@@ -66,7 +66,7 @@ class Command(BaseWorker):
             except Exception:
                 self.logger.exception("Failed saving collection note")
 
-            self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
+            self._delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
             # confirm message processing
             self._ack(connection, channel, delivery_tag)

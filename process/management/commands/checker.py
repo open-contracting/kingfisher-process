@@ -44,7 +44,7 @@ class Command(BaseWorker):
             else:
                 self.logger.info("Collection file %s is not checkable. Skip.", collection_file)
 
-            self._deleteStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
+            self._delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file.id)
 
             message = {
                 "collection_file": collection_file.id,

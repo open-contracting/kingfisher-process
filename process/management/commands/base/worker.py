@@ -26,14 +26,14 @@ class BaseWorker(BaseCommand):
     def __init__(self, name, *args, **kwargs):
         self.logger = logging.getLogger("process.management.commands.{}".format(name))
         if settings.RABBIT_URL:
-            self._initMessaging()
+            self._init_messaging()
         super(BaseWorker, self).__init__(*args, **kwargs)
 
     def handle(self, *args, **options):
         self.logger.debug("Worker started")
         self._consume(self.process)
 
-    def _initMessaging(self):
+    def _init_messaging(self):
         """Connects to RabbitMQ and prepares all the necessities - exchange, proper names for queues etc."""
         self.logger.debug("Connecting to RabbitMQ...")
 
@@ -149,12 +149,12 @@ class BaseWorker(BaseCommand):
         for conn in connections.all():
             conn.close()
 
-    def _createStep(self, name, collection_id, **kwargs):
+    def _create_step(self, name, collection_id, **kwargs):
         """Creates processing step"""
         processing_step = ProcessingStep(name=name, collection_id=collection_id, **kwargs)
         processing_step.save()
 
-    def _deleteStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
+    def _delete_step(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
         """Delete processing step"""
         processing_steps = ProcessingStep.objects.all()
 

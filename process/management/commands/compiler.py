@@ -132,7 +132,7 @@ class Command(BaseWorker):
                     "compiled_collection_id": compiled_collection.id,
                 }
 
-                self._createStep(ProcessingStep.Types.COMPILE, compiled_collection.id, ocid=item["ocid"])
+                self._create_step(ProcessingStep.Types.COMPILE, compiled_collection.id, ocid=item["ocid"])
                 self._publish_async(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self.logger.warning(
@@ -170,5 +170,5 @@ class Command(BaseWorker):
                 "compiled_collection_id": compiled_collection.id,
             }
 
-            self._createStep(ProcessingStep.Types.COMPILE, compiled_collection.id, ocid=item["ocid"])
+            self._create_step(ProcessingStep.Types.COMPILE, compiled_collection.id, ocid=item["ocid"])
             self._publish_async(connection, channel, json.dumps(message), "compiler_record")
