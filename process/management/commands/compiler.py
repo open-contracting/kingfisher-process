@@ -9,10 +9,9 @@ from process.processors.compiler import compilable
 
 
 class Command(BaseWorker):
-
     worker_name = "compiler"
-
     consume_keys = ["file_worker", "collection_closed"]
+    prefetch_count = 20
 
     def __init__(self):
         super().__init__(self.worker_name)

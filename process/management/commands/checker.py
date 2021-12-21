@@ -10,10 +10,9 @@ from process.processors.checker import check_collection_file
 
 
 class Command(BaseWorker):
-
     worker_name = "checker"
-
     consume_keys = ["file_worker"]
+    prefetch_count = 20
 
     def __init__(self):
         super().__init__(self.worker_name)
