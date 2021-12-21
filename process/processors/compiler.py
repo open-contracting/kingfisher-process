@@ -48,7 +48,7 @@ def compile_release(collection_id, ocid):
 
     # retrieve collection including its parent from db
     try:
-        collection = Collection.objects.filter(parent=collection_id).get(parent__steps__contains="compile")
+        collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
         if not collection:
             # no collection found
             raise ValueError("Compiled collection with parent collection id {} not found".format(collection_id))
@@ -67,10 +67,9 @@ def compile_release(collection_id, ocid):
 
     # get all releases for given ocid
     releases = (
-        Release.objects.filter(collection=collection.parent, ocid=ocid)
+        Release.objects.filter(collection_id=collection.parent_id, ocid=ocid)
         .order_by()  # avoid default order
-        .prefetch_related("package_data")
-        .prefetch_related("data")
+        .select_related("data", "package_data")
     )
 
     # raise ValueError if not such releases found
@@ -127,7 +126,7 @@ def compile_record(collection_id, ocid):
 
     # retrieve collection including its parent from db
     try:
-        collection = Collection.objects.filter(parent=collection_id).get(parent__steps__contains="compile")
+        collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
         if not collection:
             # no collection found
             raise ValueError("Compiled collection with parent collection id {} not found".format(collection_id))
@@ -148,9 +147,8 @@ def compile_record(collection_id, ocid):
     # get records for given ocid
     try:
         record = (
-            Record.objects.filter(collection=collection.parent)
-            .select_related("data")
-            .select_related("package_data")
+            Record.objects.filter(collection_id=collection.parent_id)
+            .select_related("data", "package_data")
             .get(ocid=ocid)
         )
     except Record.DoesNotExist:

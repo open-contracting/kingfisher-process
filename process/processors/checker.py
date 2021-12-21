@@ -31,13 +31,13 @@ def check_collection_file(collection_file):
         and collection_file.collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE
     ):
         items = Release.objects.filter(collection_file_item__collection_file=collection_file).select_related(
-            "package_data"
+            "data", "package_data"
         )
         items_key = "releases"
     else:
         items_key = "records"
         items = Record.objects.filter(collection_file_item__collection_file=collection_file).select_related(
-            "package_data"
+            "data", "package_data"
         )
 
     for item in items:

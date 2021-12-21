@@ -40,7 +40,7 @@ class Command(BaseWorker):
         else:
             # received message from regular file processing
             try:
-                collection_file = CollectionFile.objects.prefetch_related("collection").get(
+                collection_file = CollectionFile.objects.select_related("collection").get(
                     pk=input_message["collection_file_id"]
                 )
             except CollectionFile.DoesNotExist:
@@ -91,7 +91,7 @@ class Command(BaseWorker):
                     collection = Collection.objects.get(pk=input_message["collection_id"])
                 else:
                     # received message from regular file processing
-                    collection_file = CollectionFile.objects.prefetch_related("collection").get(
+                    collection_file = CollectionFile.objects.select_related("collection").get(
                         pk=input_message["collection_file_id"]
                     )
 
@@ -132,7 +132,7 @@ class Command(BaseWorker):
                     "compiled_collection_id": compiled_collection.id,
                 }
 
-                self._createStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection.id, ocid=item["ocid"])
+                self._createStep(ProcessingStep.Types.COMPILE, compiled_collection.id, ocid=item["ocid"])
                 self._publish_async(connection, channel, json.dumps(message), "compiler_release")
         except Collection.DoesNotExist:
             self.logger.warning(
@@ -145,7 +145,7 @@ class Command(BaseWorker):
             compiled_collection = (
                 Collection.objects.select_for_update()
                 .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
-                .get(parent=collection_file.collection)
+                .get(parent_id=collection_file.collection.id)
             )
 
             if not compiled_collection.compilation_started:
@@ -170,5 +170,5 @@ class Command(BaseWorker):
                 "compiled_collection_id": compiled_collection.id,
             }
 
-            self._createStep(ProcessingStep.Types.COMPILE, collection_id=compiled_collection.id, ocid=item["ocid"])
+            self._createStep(ProcessingStep.Types.COMPILE, compiled_collection.id, ocid=item["ocid"])
             self._publish_async(connection, channel, json.dumps(message), "compiler_record")

@@ -39,7 +39,7 @@ def process_file(collection_file_id):
         raise TypeError("collection_file_id is not an int value")
 
     try:
-        collection_file = CollectionFile.objects.prefetch_related("collection").get(pk=collection_file_id)
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
         logger.info("Loading data for collection file %s", collection_file)
 
         # detect format and check, whether its supported
@@ -243,7 +243,7 @@ def get_upgraded_collection(collection_file):
 
     try:
         upgraded_collection = Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(
-            parent=collection_file.collection
+            parent_id=collection_file.collection_id
         )
     except Collection.DoesNotExist:
         logger.debug(

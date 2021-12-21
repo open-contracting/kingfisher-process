@@ -26,8 +26,10 @@ class Command(BaseWorker):
         else:
             input_message["path"] = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
 
+        collection_id = input_message["collection_id"]
+
         try:
-            collection = Collection.objects.get(id=input_message["collection_id"])
+            collection = Collection.objects.get(id=collection_id)
             with transaction.atomic():
                 collection_file = create_collection_file(
                     collection,
@@ -36,11 +38,11 @@ class Command(BaseWorker):
                     errors=input_message.get("errors", None),
                 )
 
-                message = {"collection_file_id": collection_file.id}
+                message = {"collection_id": collection_id, "collection_file_id": collection_file.id}
 
                 if input_message.get("close", False):
                     # close collections as well
-                    collection = Collection.objects.select_for_update().get(id=input_message["collection_id"])
+                    collection = Collection.objects.select_for_update().get(id=collection_id)
                     collection.store_end_at = Now()
                     collection.save()
 
@@ -60,7 +62,7 @@ class Command(BaseWorker):
                 )
 
         except Collection.DoesNotExist:
-            self.logger.exception("Collection with id %s not found", input_message["collection_id"])
+            self.logger.exception("Collection with id %s not found", collection_id)
         except Exception:
             self.logger.exception("Unable to create collection_file")
 

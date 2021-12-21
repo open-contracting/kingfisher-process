@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.db import connections
 from django.utils.translation import gettext as t
 
-from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
+from process.models import CollectionNote, ProcessingStep
 from process.util import get_rabbit_channel
 
 
@@ -149,17 +149,9 @@ class BaseWorker(BaseCommand):
         for conn in connections.all():
             conn.close()
 
-    def _createStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
+    def _createStep(self, name, collection_id, **kwargs):
         """Creates processing step"""
-        processing_step = ProcessingStep()
-        processing_step.name = step_type
-        if collection_file_id:
-            processing_step.collection_file = CollectionFile.objects.get(id=collection_file_id)
-            processing_step.collection = processing_step.collection_file.collection
-        if ocid:
-            processing_step.ocid = ocid
-            processing_step.collection = Collection.objects.get(id=collection_id)
-
+        processing_step = ProcessingStep(name=name, collection_id=collection_id, **kwargs)
         processing_step.save()
 
     def _deleteStep(self, step_type=None, collection_id=None, collection_file_id=None, ocid=None):
@@ -167,13 +159,13 @@ class BaseWorker(BaseCommand):
         processing_steps = ProcessingStep.objects.all()
 
         if collection_file_id:
-            processing_steps = processing_steps.filter(collection_file=collection_file_id)
+            processing_steps = processing_steps.filter(collection_file_id=collection_file_id)
 
         if ocid:
             processing_steps = processing_steps.filter(ocid=ocid)
 
         if collection_id:
-            processing_steps = processing_steps.filter(collection__id=collection_id)
+            processing_steps = processing_steps.filter(collection_id=collection_id)
 
         processing_steps = processing_steps.filter(name=step_type)
 

@@ -43,7 +43,7 @@ class Command(BaseWorker):
         if collection.store_end_at:
             raise CommandError(_("Collection id=%(id)s already closed at %(store_end_at)s") % collection.__dict__)
 
-        if collection.parent:
+        if collection.parent_id:
             raise CommandError(
                 _(
                     "Collection %(child)s cannot be closed as it's not the parent/root collection."

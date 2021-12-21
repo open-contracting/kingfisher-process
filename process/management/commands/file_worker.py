@@ -20,23 +20,27 @@ class Command(BaseWorker):
     def process(self, connection, channel, delivery_tag, body):
         input_message = json.loads(body.decode("utf8"))
 
+        collection_id = input_message["collection_id"]
+        collection_file_id = input_message["collection_file_id"]
+
         try:
             self.logger.debug("Received message %s", input_message)
 
-            collection_file_id = input_message["collection_file_id"]
             upgraded_collection_file_id = None
             with transaction.atomic():
                 upgraded_collection_file_id = process_file(collection_file_id)
 
                 self._deleteStep(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
-            self._createStep(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
+            self._createStep(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
             self._publish_async(connection, channel, json.dumps(input_message))
 
             # send upgraded collection file to further processing
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
-                self._createStep(ProcessingStep.Types.CHECK, collection_file_id=upgraded_collection_file_id)
+                self._createStep(
+                    ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
+                )
                 self._publish_async(connection, channel, json_dumps(message))
 
             # confirm message processing
@@ -51,17 +55,13 @@ class Command(BaseWorker):
             # return message to queue
             self._nack(connection, channel, delivery_tag)
         except Exception:
-            collection_file_id = input_message["collection_file_id"]
-
             self.logger.exception("Something went wrong when processing %s", body)
             try:
                 collection = Collection.objects.get(collectionfile__id=collection_file_id)
                 self._save_note(
                     collection,
                     CollectionNote.Codes.ERROR,
-                    "Unable to process collection_file_id {} \n{}".format(
-                        input_message["collection_file_id"], traceback.format_exc()
-                    ),
+                    f"Unable to process collection_file_id {collection_file_id}\n{traceback.format_exc()}",
                 )
             except Exception:
                 self.logger.exception("Failed saving collection note")
