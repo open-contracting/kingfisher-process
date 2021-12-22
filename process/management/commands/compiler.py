@@ -76,7 +76,6 @@ class Command(BaseWorker):
                     collection_file
                     and collection.data_type
                     and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
-                    and collection_file
                 ):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(connection, channel, collection_file)
