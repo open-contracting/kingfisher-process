@@ -255,4 +255,4 @@ KINGFISHER_COLLECT_FILES_STORE = os.getenv(
     "KINGFISHER_COLLECT_FILES_STORE", "/data" if production else BASE_DIR / "data"
 )
 
-ENABLE_CHECKER = os.getenv("ENABLE_CHECKER", 'true').lower() in ('true', '1', 't', 'T')
+ENABLE_CHECKER = os.getenv("ENABLE_CHECKER", "true").lower() in ("true", "1", "t", "T")
