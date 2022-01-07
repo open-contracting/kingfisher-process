@@ -18,7 +18,7 @@ class Command(BaseWorker):
 
     worker_name = "finisher"
 
-    consume_keys = ["checker", "release_compiler", "record_compiler", "collection_closed"]
+    consume_keys = ["checker", "release_compiler", "record_compiler", "collection_closed", "file_worker"]
 
     def __init__(self):
         super().__init__(self.worker_name)
@@ -40,6 +40,13 @@ class Command(BaseWorker):
                     collection.completed_at = Now()
 
                     collection.save()
+
+                    # complete upgraded collection as well
+                    upgraded_collection = collection.get_upgraded_collection()
+                    if upgraded_collection:
+                        upgraded_collection.completed_at = Now()
+                        upgraded_collection.save()
+
                     self.logger.debug("Processing of collection_id: %s finished. Set as completed.", collection_id)
                 else:
                     self.logger.debug("Processing of collection_id: %s not completable", collection_id)

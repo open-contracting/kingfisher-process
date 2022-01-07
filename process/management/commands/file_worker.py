@@ -1,6 +1,7 @@
 import json
 import traceback
 
+from django.conf import settings
 from django.db import IntegrityError, transaction
 
 from process.management.commands.base.worker import BaseWorker
@@ -32,15 +33,20 @@ class Command(BaseWorker):
 
                 self._delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
-            self._create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
+            if settings.ENABLE_CHECKER:
+                self._create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
+
             self._publish_async(connection, channel, json.dumps(input_message))
 
             # send upgraded collection file to further processing
             if upgraded_collection_file_id:
                 message = {"collection_file_id": upgraded_collection_file_id}
-                self._create_step(
-                    ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
-                )
+
+                if settings.ENABLE_CHECKER:
+                    self._create_step(
+                        ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
+                    )
+
                 self._publish_async(connection, channel, json_dumps(message))
 
             # confirm message processing
