@@ -84,9 +84,10 @@ class Command(BaseWorker):
                 else:
                     self.logger.debug(
                         """
-                                        There is no collection_file avalable for %s,
-                                        Message probably comming from api endpoint collection_closed.
-                                        This log entry can be ignored for collections with record_packages.""",
+                            There is no collection_file avalable for %s,
+                            Message probably comming from api endpoint collection_closed.
+                            This log entry can be ignored for collections with record_packages.
+                        """,
                         collection,
                     )
 
