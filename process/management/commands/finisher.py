@@ -29,6 +29,8 @@ class Command(BaseWorker):
         try:
             self.logger.debug("Received message %s", input_message)
 
+            if "collection_id" not in input_message:
+                self.logger.debug("sfsdfsd")
             collection_id = input_message["collection_id"]
 
             with transaction.atomic():
