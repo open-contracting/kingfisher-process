@@ -82,10 +82,13 @@ class Command(BaseWorker):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(connection, channel, collection_file)
                 else:
-                    self.logger.debug("""
+                    self.logger.debug(
+                        """
                                         There is no collection_file avalable for %s,
                                         Message probably comming from api endpoint collection_closed.
-                                        This log entry can be ignored for collections with record_packages.""", collection)
+                                        This log entry can be ignored for collections with record_packages.""",
+                        collection,
+                    )
 
             else:
                 self.logger.debug("Collection %s is not compilable.", collection)
