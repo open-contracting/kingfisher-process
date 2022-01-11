@@ -31,7 +31,7 @@ class Command(BaseWorker):
 
             message = {
                 "collection_id": input_message["collection_id"],
-                "collection_file_id": input_message["collection_file_id"]
+                "collection_file_id": input_message["collection_file_id"],
             }
 
             with transaction.atomic():
