@@ -29,7 +29,10 @@ class Command(BaseWorker):
 
             upgraded_collection_file_id = None
 
-            message = input_message
+            message = {
+                "collection_id": input_message["collection_id"],
+                "collection_file_id": input_message["collection_file_id"]
+            }
 
             with transaction.atomic():
                 upgraded_collection_file_id = process_file(collection_file_id)
