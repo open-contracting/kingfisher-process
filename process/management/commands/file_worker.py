@@ -1,6 +1,7 @@
 import json
 import traceback
 
+from django.conf import settings
 from django.db import IntegrityError, transaction
 
 from process.management.commands.base.worker import BaseWorker
@@ -27,20 +28,31 @@ class Command(BaseWorker):
             self.logger.debug("Received message %s", input_message)
 
             upgraded_collection_file_id = None
+
+            message = {
+                "collection_id": input_message["collection_id"],
+                "collection_file_id": input_message["collection_file_id"],
+            }
+
             with transaction.atomic():
                 upgraded_collection_file_id = process_file(collection_file_id)
 
                 self._delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
 
-            self._create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
-            self._publish_async(connection, channel, json.dumps(input_message))
+            if settings.ENABLE_CHECKER:
+                self._create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
+
+            self._publish_async(connection, channel, json.dumps(message))
 
             # send upgraded collection file to further processing
             if upgraded_collection_file_id:
-                message = {"collection_file_id": upgraded_collection_file_id}
-                self._create_step(
-                    ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
-                )
+                message["collection_file_id"] = upgraded_collection_file_id
+
+                if settings.ENABLE_CHECKER:
+                    self._create_step(
+                        ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
+                    )
+
                 self._publish_async(connection, channel, json_dumps(message))
 
             # confirm message processing

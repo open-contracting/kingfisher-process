@@ -1,6 +1,8 @@
 import json
 import traceback
 
+from django.conf import settings
+from django.core.management.base import CommandError
 from django.db import transaction
 
 from process.exceptions import AlreadyExists
@@ -16,6 +18,9 @@ class Command(BaseWorker):
 
     def __init__(self):
         super().__init__(self.worker_name)
+
+        if not settings.ENABLE_CHECKER:
+            raise CommandError("Refusing to start as checker is disabled in settings - see ENABLE_CHECKER value.")
 
     def process(self, connection, channel, delivery_tag, body):
         input_message = json.loads(body.decode("utf8"))

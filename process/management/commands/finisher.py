@@ -18,7 +18,9 @@ class Command(BaseWorker):
 
     worker_name = "finisher"
 
-    consume_keys = ["checker", "release_compiler", "record_compiler", "collection_closed"]
+    # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
+    # compiling are performed, and if the "collection_closed" message is processed before the "file_worker" message.
+    consume_keys = ["file_worker", "checker", "release_compiler", "record_compiler", "collection_closed"]
 
     def __init__(self):
         super().__init__(self.worker_name)
@@ -38,8 +40,14 @@ class Command(BaseWorker):
                         collection.store_end_at = Now()
 
                     collection.completed_at = Now()
-
                     collection.save()
+
+                    # complete upgraded collection as well
+                    upgraded_collection = collection.get_upgraded_collection()
+                    if upgraded_collection:
+                        upgraded_collection.completed_at = Now()
+                        upgraded_collection.save()
+
                     self.logger.debug("Processing of collection_id: %s finished. Set as completed.", collection_id)
                 else:
                     self.logger.debug("Processing of collection_id: %s not completable", collection_id)

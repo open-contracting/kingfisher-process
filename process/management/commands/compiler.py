@@ -24,7 +24,7 @@ class Command(BaseWorker):
         collection = None
         collection_file = None
 
-        if "collection_id" in input_message:
+        if "source" in input_message and input_message["source"] == "collection_closed":
             # received message from collection closed api endpoint
             try:
                 collection = Collection.objects.get(pk=input_message["collection_id"])
@@ -57,6 +57,8 @@ class Command(BaseWorker):
 
         try:
             if compilable(collection.pk):
+                self.logger.debug("Collection %s is compilable.", collection)
+
                 if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
                     real_files_count = CollectionFile.objects.filter(collection=collection).count()
                     if collection.expected_files_count and collection.expected_files_count <= real_files_count:
@@ -79,6 +81,16 @@ class Command(BaseWorker):
                 ):
                     # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
                     self._publish_records(connection, channel, collection_file)
+                else:
+                    self.logger.debug(
+                        """
+                            There is no collection_file avalable for %s,
+                            Message probably comming from api endpoint collection_closed.
+                            This log entry can be ignored for collections with record_packages.
+                        """,
+                        collection,
+                    )
+
             else:
                 self.logger.debug("Collection %s is not compilable.", collection)
         except Exception:

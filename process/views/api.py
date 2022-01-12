@@ -27,6 +27,9 @@ def create_collection(request):
             )
 
         try:
+            if not settings.ENABLE_CHECKER and input_message.get("check"):
+                logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
+
             collection, upgraded_collection, compiled_collection = create_collections(
                 input_message["source_id"],
                 input_message["data_version"],

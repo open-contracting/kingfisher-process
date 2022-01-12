@@ -177,6 +177,7 @@ LOGGING = {
         "process": {
             "handlers": ["console"],
             "level": os.getenv("LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
     },
 }
@@ -254,3 +255,5 @@ SCRAPYD = {
 KINGFISHER_COLLECT_FILES_STORE = os.getenv(
     "KINGFISHER_COLLECT_FILES_STORE", "/data" if production else BASE_DIR / "data"
 )
+
+ENABLE_CHECKER = "ENABLE_CHECKER" in os.environ

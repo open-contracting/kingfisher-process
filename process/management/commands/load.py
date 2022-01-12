@@ -2,6 +2,7 @@ import argparse
 import os
 import time
 
+from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import transaction
 from django.db.models.functions import Now
@@ -112,6 +113,9 @@ class Command(BaseWorker):
             data_version = options["time"]
 
         try:
+            if not settings.ENABLE_CHECKER and options["check"]:
+                self.logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
+
             collection, upgraded_collection, compiled_collection = create_collections(
                 options["source"],
                 data_version,
