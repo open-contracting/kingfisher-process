@@ -96,11 +96,11 @@ odfpy==1.4.1
 openpyxl==3.0.5
     # via flattentool
 orjson==3.6.1
-    # via -r requirements.in
+    # via yapw
 packaging==20.8
     # via bleach
 pika==1.1.0
-    # via -r requirements.in
+    # via yapw
 psycopg2==2.9.2
     # via -r requirements.in
 pyparsing==2.4.7
@@ -154,6 +154,8 @@ webencodings==0.5.1
     # via bleach
 xmltodict==0.12.0
     # via flattentool
+yapw[perf]==0.0.6
+    # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

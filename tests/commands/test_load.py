@@ -78,7 +78,7 @@ class LoadTests(TransactionTestCase):
                     "an invalid date/time".format(value),
                 )
 
-    @patch("process.management.commands.base.worker.BaseWorker._publish")
+    @patch("yapw.methods.blocking.publish")
     def test_source_invalid(self, publish):
         with captured_stderr() as stderr:
             try:
@@ -118,7 +118,7 @@ class LoadTests(TransactionTestCase):
             )
 
     @patch("process.scrapyd.spiders")
-    @patch("process.management.commands.base.worker.BaseWorker._publish")
+    @patch("yapw.methods.blocking.publish")
     def test_source_invalid_scrapyd_force(self, spiders, publish):
         spiders.return_value = ["france"]
 
@@ -129,7 +129,7 @@ class LoadTests(TransactionTestCase):
                 self.fail("Unexpected exception {}".format(e))
 
     @patch("process.scrapyd.spiders")
-    @patch("process.management.commands.base.worker.BaseWorker._publish")
+    @patch("yapw.methods.blocking.publish")
     def test_source_local(self, spiders, publish):
         spiders.return_value = ["france"]
 

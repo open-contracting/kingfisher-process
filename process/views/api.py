@@ -3,7 +3,6 @@ import logging
 import os
 from os.path import isfile
 
-import pika
 from django.conf import settings
 from django.db import transaction
 from django.db.models.functions import Now
@@ -12,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
-from process.util import get_rabbit_channel, json_dumps
+from process.util import create_client
 
 logger = logging.getLogger(__name__)
 
@@ -120,18 +119,16 @@ def close_collection(request):
                         collection_note.data = input_message["stats"]
                         collection_note.save()
 
-            message = '{{ "collection_id": {}, "source": "collection_closed" }}'
-
-            _publish(message.format(collection.pk), "collection_closed")
+            _publish({"collection_id": collection.pk, "source": "collection_closed"}, "collection_closed")
             logger.debug("Published close message for collection %s", collection)
 
             if upgraded_collection:
-                _publish(message.format(upgraded_collection.pk), "collection_closed")
+                _publish({"collection_id": upgraded_collection.pk, "source": "collection_closed"}, "collection_closed")
                 logger.debug("Published close message for upgraded collection %s", upgraded_collection)
 
             compiled_collection = collection.get_compiled_collection()
             if compiled_collection:
-                _publish(message.format(compiled_collection.pk), "collection_closed")
+                _publish({"collection_id": compiled_collection.pk, "source": "collection_closed"}, "collection_closed")
                 logger.debug("Published close message for compiled collection %s", compiled_collection)
 
             return HttpResponse("Collection closed")
@@ -161,7 +158,7 @@ def create_collection_file(request):
             return HttpResponseBadRequest("{} is not a file".format(input_path))
 
         try:
-            _publish(json_dumps(input_message), "api")
+            _publish(input_message, "api")
 
             return HttpResponse("Collection file creation planned.")
         except Collection.DoesNotExist:
@@ -184,7 +181,7 @@ def wipe_collection(request):
             return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id":<some_number>}')
 
         try:
-            _publish(json_dumps(input_message), "wiper")
+            _publish(input_message, "wiper")
 
             return HttpResponse("Wipe collection {} successfully planned.")
         except Exception as e:
@@ -195,15 +192,6 @@ def wipe_collection(request):
     return HttpResponseBadRequest("Only POST requests accepted")
 
 
-def _publish(message, key):
+def _publish(message, routing_key):
     """Publish message with work for a next part of process"""
-    rabbit_channel, rabbit_connection = get_rabbit_channel(settings.RABBIT_EXCHANGE_NAME)
-
-    rabbit_publish_routing_key = f"{settings.RABBIT_EXCHANGE_NAME}_{key}"
-
-    rabbit_channel.basic_publish(
-        exchange=settings.RABBIT_EXCHANGE_NAME,
-        routing_key=rabbit_publish_routing_key,
-        body=message,
-        properties=pika.BasicProperties(delivery_mode=2),
-    )
+    create_client().publish(message, routing_key=routing_key)

@@ -1,184 +1,185 @@
-import json
+import logging
 import traceback
 
+from django.core.management.base import BaseCommand
 from django.db import transaction
+from yapw.methods.blocking import ack, publish
 
-from process.management.commands.base.worker import BaseWorker
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record, Release
 from process.processors.compiler import compilable
+from process.util import clean_thread_resources, create_client, create_step, save_note
+
+consume_routing_keys = ["file_worker", "collection_closed"]
+routing_key = "compiler"
+logger = logging.getLogger(__name__)
 
 
-class Command(BaseWorker):
-    worker_name = "compiler"
-    consume_keys = ["file_worker", "collection_closed"]
-    prefetch_count = 20
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys)
 
-    def __init__(self):
-        super().__init__(self.worker_name)
 
-    def process(self, connection, channel, delivery_tag, body):
-        input_message = json.loads(body.decode("utf8"))
+def callback(client_state, channel, method, properties, input_message):
+    collection = None
+    collection_file = None
 
-        self.logger.debug("Received message %s", input_message)
+    if "source" in input_message and input_message["source"] == "collection_closed":
+        # received message from collection closed api endpoint
+        try:
+            collection = Collection.objects.get(pk=input_message["collection_id"])
+        except Collection.DoesNotExist:
+            logger.warning(
+                "Collection %s not found. It might have been deleted. Message skipped!",
+                input_message["collection_id"],
+            )
+            ack(client_state, channel, method.delivery_tag)
+            clean_thread_resources()
+            return
+    else:
+        # received message from regular file processing
+        try:
+            collection_file = CollectionFile.objects.select_related("collection").get(
+                pk=input_message["collection_file_id"]
+            )
+        except CollectionFile.DoesNotExist:
+            logger.warning(
+                "CollectionFile %s not found. It might have been deleted. Message skipped!",
+                input_message["collection_file_id"],
+            )
+            ack(client_state, channel, method.delivery_tag)
+            clean_thread_resources()
+            return
 
-        collection = None
-        collection_file = None
+        collection = collection_file.collection
 
-        if "source" in input_message and input_message["source"] == "collection_closed":
-            # received message from collection closed api endpoint
-            try:
-                collection = Collection.objects.get(pk=input_message["collection_id"])
-            except Collection.DoesNotExist:
-                self.logger.warning(
-                    "Collection %s not found. It might have been deleted. Message skipped!",
-                    input_message["collection_id"],
+    ack(client_state, channel, method.delivery_tag)
+
+    try:
+        if compilable(collection.pk):
+            logger.debug("Collection %s is compilable.", collection)
+
+            if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+                real_files_count = CollectionFile.objects.filter(collection=collection).count()
+                if collection.expected_files_count and collection.expected_files_count <= real_files_count:
+                    # plans compilation of the whole collection (everything is stored yet)
+                    publish_releases(client_state, channel, collection)
+                else:
+                    logger.debug(
+                        "Collection %s is not compilable yet. There are (probably) some"
+                        "unprocessed messages in the queue with the new items"
+                        " - expected files count %s real files count %s",
+                        collection,
+                        collection.expected_files_count,
+                        real_files_count,
+                    )
+
+            if (
+                collection_file
+                and collection.data_type
+                and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
+            ):
+                # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
+                publish_records(client_state, channel, collection_file)
+            else:
+                logger.debug(
+                    """
+                        There is no collection_file avalable for %s,
+                        Message probably comming from api endpoint collection_closed.
+                        This log entry can be ignored for collections with record_packages.
+                    """,
+                    collection,
                 )
-                self._ack(connection, channel, delivery_tag)
-                self._clean_thread_resources()
-                return
+
         else:
-            # received message from regular file processing
-            try:
+            logger.debug("Collection %s is not compilable.", collection)
+    except Exception:
+        logger.exception("Something went wrong when processing %s", input_message)
+        try:
+            if "collection_id" in input_message:
+                # received message form collection closed api endpoint
+                collection = Collection.objects.get(pk=input_message["collection_id"])
+            else:
+                # received message from regular file processing
                 collection_file = CollectionFile.objects.select_related("collection").get(
                     pk=input_message["collection_file_id"]
                 )
-            except CollectionFile.DoesNotExist:
-                self.logger.warning(
-                    "CollectionFile %s not found. It might have been deleted. Message skipped!",
-                    input_message["collection_file_id"],
-                )
-                self._ack(connection, channel, delivery_tag)
-                self._clean_thread_resources()
-                return
 
-            collection = collection_file.collection
+                collection = collection_file.collection
 
-        self._ack(connection, channel, delivery_tag)
-
-        try:
-            if compilable(collection.pk):
-                self.logger.debug("Collection %s is compilable.", collection)
-
-                if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-                    real_files_count = CollectionFile.objects.filter(collection=collection).count()
-                    if collection.expected_files_count and collection.expected_files_count <= real_files_count:
-                        # plans compilation of the whole collection (everything is stored yet)
-                        self._publish_releases(connection, channel, collection)
-                    else:
-                        self.logger.debug(
-                            "Collection %s is not compilable yet. There are (probably) some"
-                            "unprocessed messages in the queue with the new items"
-                            " - expected files count %s real files count %s",
-                            collection,
-                            collection.expected_files_count,
-                            real_files_count,
-                        )
-
-                if (
-                    collection_file
-                    and collection.data_type
-                    and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
-                ):
-                    # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
-                    self._publish_records(connection, channel, collection_file)
-                else:
-                    self.logger.debug(
-                        """
-                            There is no collection_file avalable for %s,
-                            Message probably comming from api endpoint collection_closed.
-                            This log entry can be ignored for collections with record_packages.
-                        """,
-                        collection,
-                    )
-
-            else:
-                self.logger.debug("Collection %s is not compilable.", collection)
-        except Exception:
-            self.logger.exception("Something went wrong when processing %s", body)
-            try:
-                if "collection_id" in input_message:
-                    # received message form collection closed api endpoint
-                    collection = Collection.objects.get(pk=input_message["collection_id"])
-                else:
-                    # received message from regular file processing
-                    collection_file = CollectionFile.objects.select_related("collection").get(
-                        pk=input_message["collection_file_id"]
-                    )
-
-                    collection = collection_file.collection
-
-                self._save_note(
-                    collection,
-                    CollectionNote.Codes.ERROR,
-                    "Unable to process message {} \n{}".format(input_message, traceback.format_exc()),
-                )
-            except Exception:
-                self.logger.exception("Failed saving collection note")
-        self._clean_thread_resources()
-
-    def _publish_releases(self, connection, channel, collection):
-        try:
-            with transaction.atomic():
-                compiled_collection = (
-                    Collection.objects.select_for_update()
-                    .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
-                    .filter(compilation_started=False)
-                    .get(parent=collection)
-                )
-
-                compiled_collection.compilation_started = True
-                compiled_collection.save()
-
-            self.logger.info("Planning release compilation for %s", compiled_collection)
-
-            # get all ocids for collection
-            ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
-
-            for item in ocids:
-                # send message to a next phase
-                message = {
-                    "ocid": item["ocid"],
-                    "collection_id": collection.pk,
-                    "compiled_collection_id": compiled_collection.pk,
-                }
-
-                self._create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
-                self._publish_async(connection, channel, json.dumps(message), "compiler_release")
-        except Collection.DoesNotExist:
-            self.logger.warning(
-                "Tried to plan compilation for already 'planned' collection."
-                "This can rarely happen in multi worker environments."
+            save_note(
+                collection,
+                CollectionNote.Codes.ERROR,
+                "Unable to process message {} \n{}".format(input_message, traceback.format_exc()),
             )
+        except Exception:
+            logger.exception("Failed saving collection note")
+    clean_thread_resources()
 
-    def _publish_records(self, connection, channel, collection_file):
+
+def publish_releases(client_state, channel, collection):
+    try:
         with transaction.atomic():
             compiled_collection = (
                 Collection.objects.select_for_update()
                 .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
-                .get(parent_id=collection_file.collection.pk)
+                .filter(compilation_started=False)
+                .get(parent=collection)
             )
 
-            if not compiled_collection.compilation_started:
-                compiled_collection.compilation_started = True
-                compiled_collection.save()
+            compiled_collection.compilation_started = True
+            compiled_collection.save()
 
-        self.logger.info("Planning records compilation for %s file %s", compiled_collection, collection_file)
+        logger.info("Planning release compilation for %s", compiled_collection)
 
         # get all ocids for collection
-        ocids = (
-            Record.objects.filter(collection_file_item__collection_file=collection_file)
-            .order_by()
-            .values("ocid")
-            .distinct()
-        )
+        ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
 
         for item in ocids:
             # send message to a next phase
             message = {
                 "ocid": item["ocid"],
-                "collection_id": collection_file.collection.pk,
+                "collection_id": collection.pk,
                 "compiled_collection_id": compiled_collection.pk,
             }
 
-            self._create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
-            self._publish_async(connection, channel, json.dumps(message), "compiler_record")
+            create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
+            publish(client_state, channel, message, "compiler_release")
+    except Collection.DoesNotExist:
+        logger.warning(
+            "Tried to plan compilation for already 'planned' collection."
+            "This can rarely happen in multi worker environments."
+        )
+
+
+def publish_records(client_state, channel, collection_file):
+    with transaction.atomic():
+        compiled_collection = (
+            Collection.objects.select_for_update()
+            .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
+            .get(parent_id=collection_file.collection.pk)
+        )
+
+        if not compiled_collection.compilation_started:
+            compiled_collection.compilation_started = True
+            compiled_collection.save()
+
+    logger.info("Planning records compilation for %s file %s", compiled_collection, collection_file)
+
+    # get all ocids for collection
+    ocids = (
+        Record.objects.filter(collection_file_item__collection_file=collection_file)
+        .order_by()
+        .values("ocid")
+        .distinct()
+    )
+
+    for item in ocids:
+        # send message to a next phase
+        message = {
+            "ocid": item["ocid"],
+            "collection_id": collection_file.collection.pk,
+            "compiled_collection_id": compiled_collection.pk,
+        }
+
+        create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
+        publish(client_state, channel, message, "compiler_record")

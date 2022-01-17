@@ -1,22 +1,19 @@
 import argparse
+import logging
 
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models.functions import Now
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
-from process.management.commands.base.worker import BaseWorker
 from process.models import Collection
 from process.util import wrap as w
 
+logger = logging.getLogger(__name__)
 
-class Command(BaseWorker):
+
+class Command(BaseCommand):
     help = w(t("Close open collection."))
-
-    worker_name = "loader"
-
-    def __init__(self):
-        super().__init__(self.worker_name)
 
     def add_arguments(self, parser):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
@@ -60,4 +57,4 @@ class Command(BaseWorker):
             upgraded_collection.store_end_at = Now()
             upgraded_collection.save()
 
-        self.logger.info("Load command completed")
+        logger.info("Load command completed")

@@ -1,29 +1,27 @@
 import argparse
+import logging
 import os
 
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
-from process.management.commands.base.worker import BaseWorker
 from process.models import Collection
 from process.processors.loader import create_collection_file
-from process.util import json_dumps, walk
+from process.util import create_client, file_or_directory, walk
 from process.util import wrap as w
 
+logger = logging.getLogger(__name__)
+routing_key = "loader"
 
-class Command(BaseWorker):
+
+class Command(BaseCommand):
     help = w(t("Load data into a (open) collection, asynchronously"))
-
-    worker_name = "loader"
-
-    def __init__(self):
-        super().__init__(self.worker_name)
 
     def add_arguments(self, parser):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument("PATH", help=_("a file or directory to load"), nargs="+", type=self._file_or_directory)
+        parser.add_argument("PATH", help=_("a file or directory to load"), nargs="+", type=file_or_directory)
         parser.add_argument(
             "-c",
             "--collection",
@@ -52,17 +50,17 @@ class Command(BaseWorker):
         if collection.store_end_at:
             raise CommandError(_("Collection id=%(id)s already closed at %(store_end_at)s") % collection.__dict__)
 
-        self.logger.debug("Processing path %s", options["PATH"])
+        logger.debug("Processing path %s", options["PATH"])
+
+        client = create_client()
 
         for file_path in walk(options["PATH"]):
             # note - keep transaction here, not "higher" around the whole cycle
             # we want to keep relation commited/published as close as possible
             with transaction.atomic():
-                self.logger.debug("Storing file %s", file_path)
+                logger.debug("Storing file %s", file_path)
                 collection_file = create_collection_file(collection, file_path)
 
-            message = {"collection_file_id": collection_file.pk}
+            client.publish({"collection_file_id": collection_file.pk}, routing_key=routing_key)
 
-            self._publish(json_dumps(message))
-
-        self.logger.info("Load command completed")
+        logger.info("Load command completed")

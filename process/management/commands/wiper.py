@@ -1,33 +1,32 @@
-import json
+import logging
 
-from process.management.commands.base.worker import BaseWorker
+from django.core.management.base import BaseCommand
+from yapw.methods.blocking import ack
+
 from process.models import Collection
+from process.util import create_client
+
+consume_routing_keys = ["wiper"]
+routing_key = "wiper"
+logger = logging.getLogger(__name__)
 
 
-class Command(BaseWorker):
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        create_client().consume(callback, routing_key, consume_routing_keys)
 
-    worker_name = "wiper"
 
-    consume_keys = ["wiper"]
+def callback(client_state, channel, method, properties, input_message):
+    try:
+        collection_id = input_message["collection_id"]
 
-    def __init__(self):
-        super().__init__(self.worker_name)
+        collection = Collection.objects.get(pk=collection_id)
+        logger.debug("Deleting collection %s", collection)
 
-    def process(self, connection, channel, delivery_tag, body):
-        input_message = json.loads(body.decode("utf8"))
-        try:
-            self.logger.debug("Received message %s", input_message)
+        collection.delete()
 
-            collection_id = input_message["collection_id"]
+        logger.info("Collection %s deleted.", collection)
+    except Collection.DoesNotExist:
+        logger.error("Collection %d not found", input_message["collection_id"])
 
-            collection = Collection.objects.get(pk=collection_id)
-            self.logger.debug("Deleting collection %s", collection)
-
-            collection.delete()
-
-            self.logger.info("Collection %s successfully wiped.", collection)
-        except Collection.DoesNotExist:
-            error = "Collection with id {} not found".format(input_message["collection_id"])
-            self.logger.error(error)
-
-        self._ack(connection, channel, delivery_tag)
+    ack(client_state, channel, method.delivery_tag)

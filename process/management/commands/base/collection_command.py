@@ -1,14 +1,10 @@
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
-from process.management.commands.base.worker import BaseWorker
 from process.models import Collection
 
 
-class CollectionCommand(BaseWorker):
-    def __init__(self, worker_name):
-        super().__init__(worker_name)
-
+class CollectionCommand(BaseCommand):
     def add_arguments(self, parser):
         """
         Adds default arguments to the command.

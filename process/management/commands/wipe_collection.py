@@ -1,27 +1,24 @@
 import argparse
+import logging
 import sys
 
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
-from process.management.commands.base.worker import BaseWorker
 from process.models import Collection
 from process.util import wrap as w
 
+logger = logging.getLogger(__name__)
 
-class Command(BaseWorker):
+
+class Command(BaseCommand):
     help = w(
         t(
             "Wipes collection (and its ancestors) - COMPLETELY and IRREVERSIBLY. "
             "Items in data and package_data tables remains untouched."
         )
     )
-
-    worker_name = "wiper"
-
-    def __init__(self):
-        super().__init__(self.worker_name)
 
     def add_arguments(self, parser):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
@@ -45,12 +42,12 @@ class Command(BaseWorker):
         except Collection.DoesNotExist:
             raise CommandError(_("Collection id=%(id)s not found") % {"id": collection_id})
 
-        confirm = self._get_input("Collection {} will be WIPED, confirm with Y: ".format(collection))
+        confirm = input("Collection {} will be WIPED, confirm with Y: ".format(collection))
         if confirm != "Y":
             sys.exit()
 
-        self.logger.debug("Wiping collection %s", collection)
+        logger.debug("Wiping collection %s", collection)
 
         collection.delete()
 
-        self.logger.info("Wipe command completed")
+        logger.info("Wipe command completed")

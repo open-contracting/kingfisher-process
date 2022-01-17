@@ -1,18 +1,18 @@
+import argparse
+import functools
 import hashlib
+import logging
 import os
 from textwrap import fill
-from urllib.parse import parse_qs, urlencode, urlsplit
 
-import orjson
-import pika
 from django.conf import settings
+from django.db import connections
+from django.utils.translation import gettext as t
+from yapw import clients
 
+from process.models import CollectionNote, ProcessingStep
 
-def json_dumps(data):
-    """
-    Dumps JSON to a string, and returns it.
-    """
-    return orjson.dumps(data)
+logger = logging.getLogger(__name__)
 
 
 def wrap(string):
@@ -37,16 +37,66 @@ def get_hash(data):
     return hashlib.md5(data.encode("utf-8")).hexdigest()
 
 
-def get_rabbit_channel(rabbit_exchange_name):
-    parsed = urlsplit(settings.RABBIT_URL)
-    query = parse_qs(parsed.query)
-    query.update({"blocked_connection_timeout": 3600, "heartbeat": 5})
+class Client(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
+    pass
 
-    connection = pika.BlockingConnection(
-        pika.URLParameters(parsed._replace(query=urlencode(query, doseq=True)).geturl())
-    )
 
-    rabbit_channel = connection.channel()
-    rabbit_channel.exchange_declare(exchange=rabbit_exchange_name, durable=True, exchange_type="direct")
+@functools.lru_cache(maxsize=None)
+def create_client():
+    return Client(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME)
 
-    return rabbit_channel, connection
+
+def file_or_directory(string):
+    """Checks whether the path is existing file or directory. Raises an exception if not"""
+    if not os.path.exists(string):
+        raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": string})
+    return string
+
+
+def save_note(collection, code, note):
+    """Shortcut to save note to collection"""
+    collection_note = CollectionNote()
+    collection_note.collection = collection
+    collection_note.code = code
+    collection_note.note = note
+    collection_note.save()
+
+
+def create_step(name, collection_id, **kwargs):
+    processing_step = ProcessingStep(name=name, collection_id=collection_id, **kwargs)
+    processing_step.save()
+
+
+def delete_step(step_type=None, collection_id=None, collection_file_id=None, ocid=None):
+    processing_steps = ProcessingStep.objects.all()
+
+    if collection_file_id:
+        processing_steps = processing_steps.filter(collection_file_id=collection_file_id)
+
+    if ocid:
+        processing_steps = processing_steps.filter(ocid=ocid)
+
+    if collection_id:
+        processing_steps = processing_steps.filter(collection_id=collection_id)
+
+    processing_steps = processing_steps.filter(name=step_type)
+
+    if processing_steps.exists():
+        processing_steps.delete()
+    else:
+        logger.warning(
+            "No such processing step found: step_type=%s collection_id=%s collection_file_id=%s ocid=%s",
+            step_type,
+            collection_id,
+            collection_file_id,
+            ocid,
+        )
+
+
+def clean_thread_resources():
+    """
+    Cleans thread resources, which are not cleaned by default and automatically
+    i.e. django db connections.
+    """
+    for conn in connections.all():
+        conn.close()
