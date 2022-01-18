@@ -6,7 +6,6 @@ from libcoveocds.api import ocds_json_output
 from process.exceptions import AlreadyExists
 from process.models import Collection, Record, RecordCheck, Release, ReleaseCheck
 
-# Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 

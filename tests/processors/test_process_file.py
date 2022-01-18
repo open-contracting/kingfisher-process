@@ -7,18 +7,10 @@ from process.processors.file_loader import process_file
 class ProcessFileTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
-    def test_malformed_input(self):
-        with self.assertRaises(TypeError) as e:
-            process_file("")
-        self.assertEqual(str(e.exception), "collection_file_id is not an int value")
-
-        with self.assertRaises(ValueError) as e:
-            process_file(10000000)
-        self.assertEqual(str(e.exception), "Collection file id 10000000 not found")
-
     def test_file_not_found(self):
         with self.assertRaises(ValueError) as e:
-            process_file(5)
+            collection_file = CollectionFile.objects.select_related("collection").get(pk=5)
+            process_file(collection_file)
         self.assertEqual(str(e.exception), "File for collection file id:5 not found")
 
     def test_happy_day(self):
@@ -29,7 +21,8 @@ class ProcessFileTests(TransactionTestCase):
         CollectionFileItem.objects.filter(collection_file=collection_file).delete()
         CollectionFile.objects.get(id=3).delete()
 
-        upgraded_collection_file_id = process_file(1)
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=1)
+        upgraded_collection_file_id = process_file(collection_file)
 
         upgraded_collection_file = CollectionFile.objects.get(id=upgraded_collection_file_id)
 

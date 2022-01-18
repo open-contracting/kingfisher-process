@@ -9,22 +9,20 @@ from ijson.common import ObjectBuilder
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
 
-from process.exceptions import AlreadyExists
 from process.models import Collection, CollectionFile, CollectionFileItem, Data, PackageData, Record, Release
 from process.util import get_hash
 
-# Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = ["release package", "record package"]
 
 
-def process_file(collection_file_id):
+def process_file(collection_file):
     """
     Loads file for a given collection - created the whole collection_file, collection_file_item etc. structure.
     If the collection should be upgraded, creates the same structure for upgraded collection as well.
 
-    :param int collection_file_id: collection file id for which should be releases checked
+    :param collection_file: collection file for which should be releases checked
 
     :returns: upgraded collection file id or None (if there is no upgrade planned)
     :rtype: int
@@ -35,44 +33,36 @@ def process_file(collection_file_id):
     :raises AlreadyExists: if the collection file (or other items) already exists
     """
 
-    try:
-        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-        logger.info("Loading data for collection file %s", collection_file)
+    logger.info("Loading data for collection file %s", collection_file)
 
-        # detect format and check, whether its supported
-        data_type = _get_data_type(collection_file)
+    # detect format and check, whether its supported
+    data_type = _get_data_type(collection_file)
 
-        if data_type["format"] not in SUPPORTED_FORMATS:
-            raise ValueError(
-                "Unsupported data type '{}' for file {}. Must be one of {}".format(
-                    data_type, collection_file, SUPPORTED_FORMATS
-                )
+    if data_type["format"] not in SUPPORTED_FORMATS:
+        raise ValueError(
+            "Unsupported data type '{}' for file {}. Must be one of {}".format(
+                data_type, collection_file, SUPPORTED_FORMATS
             )
+        )
 
-        # read the file data
-        file_items, file_package_data = _read_data_from_file(collection_file.filename, data_type)
+    # read the file data
+    file_items, file_package_data = _read_data_from_file(collection_file.filename, data_type)
 
-        # store data for a current collection
-        _store_data(collection_file, file_items, file_package_data, data_type, False)
+    # store data for a current collection
+    _store_data(collection_file, file_items, file_package_data, data_type, False)
 
-        # should we store upgraded data as well?
-        upgraded_collection = get_upgraded_collection(collection_file)
+    # should we store upgraded data as well?
+    upgraded_collection = get_upgraded_collection(collection_file)
 
-        if upgraded_collection:
-            upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
-            _store_data(upgraded_collection_file, file_items, file_package_data, data_type, True)
+    if upgraded_collection:
+        upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
+        _store_data(upgraded_collection_file, file_items, file_package_data, data_type, True)
 
-            # return upgraded file
-            return upgraded_collection_file.pk
+        # return upgraded file
+        return upgraded_collection_file.pk
 
-        # not upgrading, return None
-        return None
-    except FileNotFoundError as e:
-        raise ValueError("File for collection file id:{} not found".format(collection_file_id)) from e
-    except CollectionFile.DoesNotExist:
-        raise ValueError("Collection file id {} not found".format(collection_file_id))
-    except IntegrityError as e:
-        raise AlreadyExists("Item {} already exists".format(collection_file_id)) from e
+    # not upgrading, return None
+    return None
 
 
 def _read_data_from_file(filename, data_type):

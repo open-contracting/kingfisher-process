@@ -2,7 +2,6 @@ import logging
 
 from process.models import Collection, CollectionFile, ProcessingStep
 
-# Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 

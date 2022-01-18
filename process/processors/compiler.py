@@ -18,7 +18,6 @@ from process.models import (
 )
 from process.util import get_hash
 
-# Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
