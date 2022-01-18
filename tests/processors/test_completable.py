@@ -8,11 +8,6 @@ from process.processors.finisher import completable
 class CompletableTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
-    def test_malformed_input(self):
-        with self.assertRaises(TypeError) as e:
-            completable("")
-        self.assertEqual(str(e.exception), "collection_id is not an int value")
-
     def test_nonexistent_input(self):
         self.assertEqual(completable(5), False)
 

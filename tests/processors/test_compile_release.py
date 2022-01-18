@@ -9,15 +9,6 @@ from process.processors.compiler import compile_release
 class CompileReleaseTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
-    def test_malformed_input(self):
-        with self.assertRaises(TypeError) as e:
-            compile_release("", "")
-        self.assertEqual(str(e.exception), "collection_id is not an int value")
-
-        with self.assertRaises(TypeError) as e:
-            compile_release(1, 1)
-        self.assertEqual(str(e.exception), "ocid is not a string value")
-
     def test_nonexistent_input(self):
         with self.assertRaises(ValueError) as e:
             compile_release(4, "")

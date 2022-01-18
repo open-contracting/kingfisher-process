@@ -26,11 +26,6 @@ def process_file(collection_file):
 
     :returns: upgraded collection file id or None (if there is no upgrade planned)
     :rtype: int
-
-    :raises TypeError: if there arent integers provided on input
-    :raises ValueError: if there is no item of such id
-    :raises ValueError: if there is no such "physical" file to load data from
-    :raises AlreadyExists: if the collection file (or other items) already exists
     """
 
     logger.info("Loading data for collection file %s", collection_file)

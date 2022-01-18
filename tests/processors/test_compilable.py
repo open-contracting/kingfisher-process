@@ -7,11 +7,6 @@ from process.processors.compiler import compilable
 class CompilableTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
-    def test_malformed_input(self):
-        with self.assertRaises(TypeError) as e:
-            compilable("")
-        self.assertEqual(str(e.exception), "collection_id is not an int value")
-
     def test_nonexistent_input(self):
         self.assertEqual(compilable(5), False)
 

@@ -19,7 +19,7 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
 
     :raises ValueError: if there is a validation error
     """
-    form = CollectionFileForm(dict(collection=collection, filename=file_path, url=url))
+    form = CollectionFileForm({"collection": collection, "filename": file_path, "url": url})
 
     if form.is_valid():
         collection_file = form.save()
@@ -124,7 +124,7 @@ def _save_note(collection, note):
     """
     Creates note for a given collection
     """
-    form = CollectionNoteForm(dict(collection=collection, note=note, code=CollectionNote.Codes.INFO))
+    form = CollectionNoteForm({"collection": collection, "note": note, "code": CollectionNote.Codes.INFO})
     if form.is_valid():
         return form.save()
     else:

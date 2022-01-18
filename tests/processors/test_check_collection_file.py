@@ -8,11 +8,6 @@ from process.processors.checker import check_collection_file
 class CheckCollectionFileTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
-    def test_malformed_input(self):
-        with self.assertRaises(TypeError) as e:
-            check_collection_file("")
-        self.assertEqual(str(e.exception), "collection_file is not a CollectionFile value")
-
     def test_already_compiled(self):
         with self.assertRaises(AlreadyExists):
             check_collection_file(CollectionFile.objects.get(id=2))

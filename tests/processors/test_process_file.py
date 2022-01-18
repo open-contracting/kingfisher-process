@@ -8,10 +8,10 @@ class ProcessFileTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_file_not_found(self):
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(FileNotFoundError) as e:
             collection_file = CollectionFile.objects.select_related("collection").get(pk=5)
             process_file(collection_file)
-        self.assertEqual(str(e.exception), "File for collection file id:5 not found")
+        self.assertEqual(str(e.exception), "[Errno 2] No such file or directory: 'ocds-px0z7d-10094-10001-1'")
 
     def test_happy_day(self):
         collection_file = CollectionFile.objects.get(id=1)
