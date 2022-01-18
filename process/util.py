@@ -42,8 +42,8 @@ class Client(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
 
 
 @functools.lru_cache(maxsize=None)
-def create_client():
-    return Client(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME)
+def create_client(prefetch_count=1):
+    return Client(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, prefetch_count=prefetch_count)
 
 
 def file_or_directory(string):
