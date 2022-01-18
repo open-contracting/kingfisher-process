@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import connections
 from django.utils.translation import gettext as t
 from yapw import clients
+from yapw.util import jsonlib
 
 from process.models import CollectionNote, ProcessingStep
 
@@ -41,9 +42,16 @@ class Client(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
     pass
 
 
+# Old messages didn't set `content_type`. This can be deleted once old messages are processed.
+def decode(body, content_type):
+    return jsonlib.loads(body)
+
+
 @functools.lru_cache(maxsize=None)
 def create_client(prefetch_count=1):
-    return Client(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, prefetch_count=prefetch_count)
+    return Client(
+        url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, prefetch_count=prefetch_count, decode=decode
+    )
 
 
 def file_or_directory(string):
