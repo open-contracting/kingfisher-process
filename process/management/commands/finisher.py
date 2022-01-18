@@ -45,8 +45,8 @@ def callback(client_state, channel, method, properties, input_message):
                 upgraded_collection.completed_at = Now()
                 upgraded_collection.save()
 
-            logger.debug("Processing of collection_id: %s finished. Set as completed.", collection_id)
+            logger.debug("Collection %s finished.", collection_id)
         else:
-            logger.debug("Processing of collection_id: %s not completable", collection_id)
+            logger.info("Collection %s not yet completable.", collection_id)
 
     ack(client_state, channel, method.delivery_tag)

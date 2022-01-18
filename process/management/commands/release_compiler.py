@@ -1,5 +1,3 @@
-import logging
-
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from yapw.methods.blocking import ack, publish
@@ -10,7 +8,6 @@ from process.util import create_client, decorator, delete_step
 
 consume_routing_keys = ["compiler_release"]
 routing_key = "release_compiler"
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -32,7 +29,6 @@ def callback(client_state, channel, method, properties, input_message):
     compiled_collection_id = input_message["compiled_collection_id"]
 
     with transaction.atomic():
-        logger.info("Compiling release collection_id: %s ocid: %s", collection_id, ocid)
         release = compile_release(collection_id, ocid)
 
     release_id = None

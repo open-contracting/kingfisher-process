@@ -1,4 +1,3 @@
-import logging
 import os.path
 
 from django.conf import settings
@@ -13,7 +12,6 @@ from process.util import create_client, decorator
 
 consume_routing_keys = ["api"]
 routing_key = "api_loader"
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -51,14 +49,8 @@ def callback(client_state, channel, method, properties, input_message):
                 upgraded_collection.store_end_at = Now()
                 upgraded_collection.save()
 
-    # only files without errors will be further processed
+    # FileError items from Kingfisher Collect are not processed further.
     if "errors" not in input_message:
         publish(client_state, channel, message, routing_key)
-    else:
-        logger.info(
-            "Collection file %s contains errors %s, not sending to further processing.",
-            collection_file,
-            input_message.get("errors", None),
-        )
 
     ack(client_state, channel, method.delivery_tag)

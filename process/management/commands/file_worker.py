@@ -1,5 +1,3 @@
-import logging
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -11,7 +9,6 @@ from process.util import create_client, create_step, decorator, delete_step
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

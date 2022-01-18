@@ -1,5 +1,3 @@
-import logging
-
 from django.core.management.base import BaseCommand
 from yapw.methods.blocking import ack
 
@@ -8,7 +6,6 @@ from process.util import create_client, decorator
 
 consume_routing_keys = ["wiper"]
 routing_key = "wiper"
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

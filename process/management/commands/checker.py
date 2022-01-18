@@ -24,7 +24,9 @@ class Command(BaseCommand):
 
 
 def callback(client_state, channel, method, properties, input_message):
-    collection_file = CollectionFile.objects.select_related("collection").get(pk=input_message["collection_file_id"])
+    collection_file_id = input_message["collection_file_id"]
+
+    collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
 
     if "check" in collection_file.collection.steps:
         try:
@@ -37,10 +39,6 @@ def callback(client_state, channel, method, properties, input_message):
                 CollectionNote.Codes.WARNING,
                 "Checks already calculated for collection file {}".format(collection_file),
             )
-
-        logger.info("Checks calculated for collection file %s", collection_file)
-    else:
-        logger.info("Collection file %s is not checkable. Skip.", collection_file)
 
     delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file.pk)
 
