@@ -99,7 +99,7 @@ orjson==3.6.1
     # via yapw
 packaging==20.8
     # via bleach
-pika==1.1.0
+pika==1.2.0
     # via yapw
 psycopg2==2.9.2
     # via -r requirements.in
