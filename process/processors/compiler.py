@@ -39,11 +39,6 @@ def compile_release(collection_id, ocid):
     :raises ValueError: if there are no releases to compile in the source/parent collection
     """
 
-    if not isinstance(collection_id, int):
-        raise TypeError("collection_id is not an int value")
-    if not isinstance(ocid, str):
-        raise TypeError("ocid is not a string value")
-
     logger.info("Compiling release collection_id: %s ocid: %s", collection_id, ocid)
 
     # retrieve collection including its parent from db
@@ -116,11 +111,6 @@ def compile_record(collection_id, ocid):
     :raises ValueError: if the compiled release already exists
     :raises ValueError: if there are no records to compile in the source/parent collection
     """
-
-    if not isinstance(collection_id, int):
-        raise TypeError("collection_id is not an int value")
-    if not isinstance(ocid, str):
-        raise TypeError("ocid is not a string value")
 
     logger.info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
 
@@ -280,9 +270,6 @@ def compilable(collection_id):
 
     :raises ValueError: if there is no collection with such collection_id or
     """
-
-    if not isinstance(collection_id, int):
-        raise TypeError("collection_id is not an int value")
 
     try:
         collection = Collection.objects.filter(pk=collection_id).get(steps__contains="compile")

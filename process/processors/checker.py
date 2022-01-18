@@ -4,7 +4,7 @@ from django.db.utils import IntegrityError
 from libcoveocds.api import ocds_json_output
 
 from process.exceptions import AlreadyExists
-from process.models import Collection, CollectionFile, Record, RecordCheck, Release, ReleaseCheck
+from process.models import Collection, Record, RecordCheck, Release, ReleaseCheck
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -19,9 +19,6 @@ def check_collection_file(collection_file):
     :raises TypeError: if there isnt CollectiionFile provided on input
     :raises AlreadyExists: if the check for a particular release already exists
     """
-
-    if not isinstance(collection_file, CollectionFile):
-        raise TypeError("collection_file is not a CollectionFile value")
 
     logger.info("Checking data for collection file %s", collection_file)
 

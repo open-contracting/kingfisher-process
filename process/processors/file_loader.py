@@ -35,9 +35,6 @@ def process_file(collection_file_id):
     :raises AlreadyExists: if the collection file (or other items) already exists
     """
 
-    if not isinstance(collection_file_id, int):
-        raise TypeError("collection_file_id is not an int value")
-
     try:
         collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
         logger.info("Loading data for collection file %s", collection_file)
@@ -238,9 +235,6 @@ def get_upgraded_collection(collection_file):
     :raises TypeError: if there arent integers provided on input
     :raises ValueError: if there is no such collection
     """
-    if not isinstance(collection_file, CollectionFile):
-        raise TypeError("collection_file is not an instance of CollectionFile")
-
     try:
         upgraded_collection = Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(
             parent_id=collection_file.collection_id

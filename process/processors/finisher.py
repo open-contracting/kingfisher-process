@@ -18,9 +18,6 @@ def completable(collection_id):
     :raises ValueError: if there is no collection with such collection_id
     """
 
-    if not isinstance(collection_id, int):
-        raise TypeError("collection_id is not an int value")
-
     try:
         collection = Collection.objects.get(pk=collection_id)
 
