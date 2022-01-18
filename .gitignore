@@ -3,4 +3,5 @@
 __pycache__
 /.coverage
 /docs/_build
+/extended_schema.json
 /htmlcov
