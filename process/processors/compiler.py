@@ -325,22 +325,16 @@ def _check_dates_in_releases(releases):
 
 def _compile_releases_by_ocdskit(ocid, releases, extensions):
     try:
-        try:
-            builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, extensions)
-            schema = builder.patched_release_schema()
-            merger = ocdsmerge.Merger(schema)
-            out = merger.create_compiled_release(releases)
-            return out
-        except Exception as e:
-            logger.warning("Unable to compile with extensions, trying without them. Root exception %s", e)
-
-            builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, [])
-            schema = builder.patched_release_schema()
-            merger = ocdsmerge.Merger(schema)
-            out = merger.create_compiled_release(releases)
-            return out
-
+        builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, extensions)
+        schema = builder.patched_release_schema()
+        merger = ocdsmerge.Merger(schema)
+        out = merger.create_compiled_release(releases)
+        return out
     except Exception as e:
-        logger.exception("OCID %s could not be compiled because merge library threw an error: ", ocid)
+        logger.warning("Unable to compile with extensions, trying without them. Root exception %s", e)
 
-        raise e
+        builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, [])
+        schema = builder.patched_release_schema()
+        merger = ocdsmerge.Merger(schema)
+        out = merger.create_compiled_release(releases)
+        return out

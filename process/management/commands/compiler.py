@@ -1,13 +1,12 @@
 import logging
-import traceback
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from yapw.methods.blocking import ack, publish
 
-from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record, Release
+from process.models import Collection, CollectionFile, ProcessingStep, Record, Release
 from process.processors.compiler import compilable
-from process.util import clean_thread_resources, create_client, create_step, save_note
+from process.util import clean_thread_resources, create_client, create_step
 
 consume_routing_keys = ["file_worker", "collection_closed"]
 routing_key = "compiler"
@@ -54,65 +53,43 @@ def callback(client_state, channel, method, properties, input_message):
 
     ack(client_state, channel, method.delivery_tag)
 
-    try:
-        if compilable(collection.pk):
-            logger.debug("Collection %s is compilable.", collection)
+    if compilable(collection.pk):
+        logger.debug("Collection %s is compilable.", collection)
 
-            if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-                real_files_count = CollectionFile.objects.filter(collection=collection).count()
-                if collection.expected_files_count and collection.expected_files_count <= real_files_count:
-                    # plans compilation of the whole collection (everything is stored yet)
-                    publish_releases(client_state, channel, collection)
-                else:
-                    logger.debug(
-                        "Collection %s is not compilable yet. There are (probably) some"
-                        "unprocessed messages in the queue with the new items"
-                        " - expected files count %s real files count %s",
-                        collection,
-                        collection.expected_files_count,
-                        real_files_count,
-                    )
-
-            if (
-                collection_file
-                and collection.data_type
-                and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
-            ):
-                # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
-                publish_records(client_state, channel, collection_file)
+        if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+            real_files_count = CollectionFile.objects.filter(collection=collection).count()
+            if collection.expected_files_count and collection.expected_files_count <= real_files_count:
+                # plans compilation of the whole collection (everything is stored yet)
+                publish_releases(client_state, channel, collection)
             else:
                 logger.debug(
-                    """
-                        There is no collection_file avalable for %s,
-                        Message probably comming from api endpoint collection_closed.
-                        This log entry can be ignored for collections with record_packages.
-                    """,
+                    "Collection %s is not compilable yet. There are (probably) some"
+                    "unprocessed messages in the queue with the new items"
+                    " - expected files count %s real files count %s",
                     collection,
+                    collection.expected_files_count,
+                    real_files_count,
                 )
 
+        if (
+            collection_file
+            and collection.data_type
+            and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
+        ):
+            # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
+            publish_records(client_state, channel, collection_file)
         else:
-            logger.debug("Collection %s is not compilable.", collection)
-    except Exception:
-        logger.exception("Something went wrong when processing %s", input_message)
-        try:
-            if "collection_id" in input_message:
-                # received message form collection closed api endpoint
-                collection = Collection.objects.get(pk=input_message["collection_id"])
-            else:
-                # received message from regular file processing
-                collection_file = CollectionFile.objects.select_related("collection").get(
-                    pk=input_message["collection_file_id"]
-                )
-
-                collection = collection_file.collection
-
-            save_note(
+            logger.debug(
+                """
+                    There is no collection_file avalable for %s,
+                    Message probably comming from api endpoint collection_closed.
+                    This log entry can be ignored for collections with record_packages.
+                """,
                 collection,
-                CollectionNote.Codes.ERROR,
-                "Unable to process message {} \n{}".format(input_message, traceback.format_exc()),
             )
-        except Exception:
-            logger.exception("Failed saving collection note")
+    else:
+        logger.debug("Collection %s is not compilable.", collection)
+
     clean_thread_resources()
 
 

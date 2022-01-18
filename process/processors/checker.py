@@ -25,15 +25,14 @@ def check_collection_file(collection_file):
 
     logger.info("Checking data for collection file %s", collection_file)
 
-    items_key = None
     if (
         collection_file.collection.data_type
         and collection_file.collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE
     ):
+        items_key = "releases"
         items = Release.objects.filter(collection_file_item__collection_file=collection_file).select_related(
             "data", "package_data"
         )
-        items_key = "releases"
     else:
         items_key = "records"
         items = Record.objects.filter(collection_file_item__collection_file=collection_file).select_related(

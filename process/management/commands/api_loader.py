@@ -29,43 +29,37 @@ def callback(client_state, channel, method, properties, input_message):
 
     collection_id = input_message["collection_id"]
 
-    try:
-        collection = Collection.objects.get(pk=collection_id)
-        with transaction.atomic():
-            collection_file = create_collection_file(
-                collection,
-                file_path=input_message.get("path", None),
-                url=input_message.get("url", None),
-                errors=input_message.get("errors", None),
-            )
+    collection = Collection.objects.get(pk=collection_id)
+    with transaction.atomic():
+        collection_file = create_collection_file(
+            collection,
+            file_path=input_message.get("path", None),
+            url=input_message.get("url", None),
+            errors=input_message.get("errors", None),
+        )
 
-            message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
+        message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
 
-            if input_message.get("close", False):
-                # close collections as well
-                collection = Collection.objects.select_for_update().get(pk=collection_id)
-                collection.store_end_at = Now()
-                collection.save()
+        if input_message.get("close", False):
+            # close collections as well
+            collection = Collection.objects.select_for_update().get(pk=collection_id)
+            collection.store_end_at = Now()
+            collection.save()
 
-                upgraded_collection = collection.get_upgraded_collection()
-                if upgraded_collection:
-                    upgraded_collection.store_end_at = Now()
-                    upgraded_collection.save()
+            upgraded_collection = collection.get_upgraded_collection()
+            if upgraded_collection:
+                upgraded_collection.store_end_at = Now()
+                upgraded_collection.save()
 
-        # only files without errors will be further processed
-        if "errors" not in input_message:
-            publish(client_state, channel, message, routing_key)
-        else:
-            logger.info(
-                "Collection file %s contains errors %s, not sending to further processing.",
-                collection_file,
-                input_message.get("errors", None),
-            )
-
-    except Collection.DoesNotExist:
-        logger.exception("Collection with id %s not found", collection_id)
-    except Exception:
-        logger.exception("Unable to create collection_file")
+    # only files without errors will be further processed
+    if "errors" not in input_message:
+        publish(client_state, channel, message, routing_key)
+    else:
+        logger.info(
+            "Collection file %s contains errors %s, not sending to further processing.",
+            collection_file,
+            input_message.get("errors", None),
+        )
 
     ack(client_state, channel, method.delivery_tag)
     clean_thread_resources()
