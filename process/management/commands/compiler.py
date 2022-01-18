@@ -6,7 +6,7 @@ from yapw.methods.blocking import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record, Release
 from process.processors.compiler import compilable
-from process.util import clean_thread_resources, create_client, create_step
+from process.util import create_client, create_step, decorator
 
 consume_routing_keys = ["file_worker", "collection_closed"]
 routing_key = "compiler"
@@ -15,40 +15,21 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys)
+        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
     collection = None
     collection_file = None
 
+    # received message from collection closed api endpoint
     if "source" in input_message and input_message["source"] == "collection_closed":
-        # received message from collection closed api endpoint
-        try:
-            collection = Collection.objects.get(pk=input_message["collection_id"])
-        except Collection.DoesNotExist:
-            logger.warning(
-                "Collection %s not found. It might have been deleted. Message skipped!",
-                input_message["collection_id"],
-            )
-            ack(client_state, channel, method.delivery_tag)
-            clean_thread_resources()
-            return
+        collection = Collection.objects.get(pk=input_message["collection_id"])
+    # received message from regular file processing
     else:
-        # received message from regular file processing
-        try:
-            collection_file = CollectionFile.objects.select_related("collection").get(
-                pk=input_message["collection_file_id"]
-            )
-        except CollectionFile.DoesNotExist:
-            logger.warning(
-                "CollectionFile %s not found. It might have been deleted. Message skipped!",
-                input_message["collection_file_id"],
-            )
-            ack(client_state, channel, method.delivery_tag)
-            clean_thread_resources()
-            return
-
+        collection_file = CollectionFile.objects.select_related("collection").get(
+            pk=input_message["collection_file_id"]
+        )
         collection = collection_file.collection
 
     ack(client_state, channel, method.delivery_tag)
@@ -89,8 +70,6 @@ def callback(client_state, channel, method, properties, input_message):
             )
     else:
         logger.debug("Collection %s is not compilable.", collection)
-
-    clean_thread_resources()
 
 
 def publish_releases(client_state, channel, collection):

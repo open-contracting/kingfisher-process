@@ -8,7 +8,7 @@ from yapw.methods.blocking import ack, publish
 from process.exceptions import AlreadyExists
 from process.models import CollectionFile, CollectionNote, ProcessingStep
 from process.processors.checker import check_collection_file
-from process.util import clean_thread_resources, create_client, delete_step, save_note
+from process.util import create_client, decorator, delete_step, save_note
 
 consume_routing_keys = ["file_worker"]
 routing_key = "checker"
@@ -20,7 +20,7 @@ class Command(BaseCommand):
         if not settings.ENABLE_CHECKER:
             raise CommandError("Refusing to start as checker is disabled in settings - see ENABLE_CHECKER value.")
 
-        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys)
+        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
@@ -51,4 +51,3 @@ def callback(client_state, channel, method, properties, input_message):
     publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
-    clean_thread_resources()

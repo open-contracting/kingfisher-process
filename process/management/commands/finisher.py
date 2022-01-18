@@ -7,7 +7,7 @@ from yapw.methods.blocking import ack
 
 from process.models import Collection
 from process.processors.finisher import completable
-from process.util import clean_thread_resources, create_client
+from process.util import create_client, decorator
 
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
 # compiling are performed, and if the "collection_closed" message is processed before the "file_worker" message.
@@ -24,7 +24,7 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        create_client().consume(callback, routing_key, consume_routing_keys)
+        create_client().consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
@@ -50,4 +50,3 @@ def callback(client_state, channel, method, properties, input_message):
             logger.debug("Processing of collection_id: %s not completable", collection_id)
 
     ack(client_state, channel, method.delivery_tag)
-    clean_thread_resources()

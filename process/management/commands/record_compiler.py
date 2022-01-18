@@ -6,7 +6,7 @@ from yapw.methods.blocking import ack, publish
 
 from process.models import ProcessingStep
 from process.processors.compiler import compile_record
-from process.util import clean_thread_resources, create_client, delete_step
+from process.util import create_client, decorator, delete_step
 
 consume_routing_keys = ["compiler_record"]
 routing_key = "record_compiler"
@@ -23,7 +23,7 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        create_client().consume(callback, routing_key, consume_routing_keys)
+        create_client().consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
@@ -49,4 +49,3 @@ def callback(client_state, channel, method, properties, input_message):
     publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
-    clean_thread_resources()

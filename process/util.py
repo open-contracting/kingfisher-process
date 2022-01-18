@@ -3,13 +3,14 @@ import functools
 import hashlib
 import logging
 import os
+import signal
 from textwrap import fill
 
 from django.conf import settings
 from django.db import connections
 from django.utils.translation import gettext as t
 from yapw import clients
-from yapw.util import jsonlib
+from yapw.decorators import decorate
 
 from process.models import CollectionNote, ProcessingStep
 
@@ -42,16 +43,27 @@ class Client(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
     pass
 
 
-# Old messages didn't set `content_type`. This can be deleted once old messages are processed.
-def decode(body, content_type):
-    return jsonlib.loads(body)
-
-
 @functools.lru_cache(maxsize=None)
 def create_client(prefetch_count=1):
-    return Client(
-        url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, prefetch_count=prefetch_count, decode=decode
-    )
+    return Client(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, prefetch_count=prefetch_count)
+
+
+def decorator(decode, callback, state, channel, method, properties, body):
+    """
+    If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment.
+
+    Close the database connections opened by the callback, before returning.
+    """
+
+    def errback():
+        logger.exception("Unhandled exception when consuming %r, sending SIGUSR1", body)
+        os.kill(os.getpid(), signal.SIGUSR1)
+
+    def finalback():
+        for conn in connections.all():
+            conn.close()
+
+    decorate(decode, callback, state, channel, method, properties, body, errback, finalback)
 
 
 def file_or_directory(string):
@@ -99,12 +111,3 @@ def delete_step(step_type=None, collection_id=None, collection_file_id=None, oci
             collection_file_id,
             ocid,
         )
-
-
-def clean_thread_resources():
-    """
-    Cleans thread resources, which are not cleaned by default and automatically
-    i.e. django db connections.
-    """
-    for conn in connections.all():
-        conn.close()

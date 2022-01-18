@@ -7,7 +7,7 @@ from yapw.methods.blocking import ack, publish
 
 from process.models import ProcessingStep
 from process.processors.file_loader import process_file
-from process.util import clean_thread_resources, create_client, create_step, delete_step
+from process.util import create_client, create_step, decorator, delete_step
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys)
+        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
@@ -45,5 +45,3 @@ def callback(client_state, channel, method, properties, input_message):
         publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
-
-    clean_thread_resources()
