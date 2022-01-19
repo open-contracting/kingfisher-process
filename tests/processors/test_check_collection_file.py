@@ -1,6 +1,6 @@
+from django.db.utils import IntegrityError
 from django.test import TransactionTestCase
 
-from process.exceptions import AlreadyExists
 from process.models import CollectionFile, ReleaseCheck
 from process.processors.checker import check_collection_file
 
@@ -9,7 +9,7 @@ class CheckCollectionFileTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_already_compiled(self):
-        with self.assertRaises(AlreadyExists):
+        with self.assertRaises(IntegrityError):
             check_collection_file(CollectionFile.objects.get(id=2))
 
     def test_happy_day(self):

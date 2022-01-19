@@ -1,15 +1,17 @@
 import logging
 
 import ocdsmerge
+import ocdsmerge.exceptions
 from django.conf import settings
 from ocdsextensionregistry.profile_builder import ProfileBuilder
-from ocdskit.util import is_linked_release
+from ocdskit.util import is_linked_release, save_note
 
 from process.exceptions import AlreadyExists
 from process.models import (
     Collection,
     CollectionFile,
     CollectionFileItem,
+    CollectionNote,
     CompiledRelease,
     Data,
     ProcessingStep,
@@ -31,42 +33,26 @@ def compile_release(collection_id, ocid):
 
     :returns: compiled release
     :rtype: CompiledRelease
-
-    :raises TypeError: if there arent integers provided on input
-    :raises ValueError: if there are no items of such id (collections/ocid)
-    :raises ValueError: if the compiled release already exists
-    :raises ValueError: if there are no releases to compile in the source/parent collection
     """
 
     logger.info("Compiling release collection_id: %s ocid: %s", collection_id, ocid)
 
-    # retrieve collection including its parent from db
-    try:
-        collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
-        if not collection:
-            # no collection found
-            raise ValueError("Compiled collection with parent collection id {} not found".format(collection_id))
-    except Collection.DoesNotExist:
-        raise ValueError("Compiled collection with parent collection id {} not found".format(collection_id))
+    collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
 
-    # check, whether the ocid wasnt already compiled
     try:
         compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
         raise AlreadyExists(
             "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
         )
     except CompiledRelease.DoesNotExist:
-        # happy day - compiled release should not exist
-        logger.debug("compiled_release with ocid %s does not exist, we can compile that and store it", ocid)
+        pass
 
-    # get all releases for given ocid
     releases = (
         Release.objects.filter(collection_id=collection.parent_id, ocid=ocid)
         .order_by()  # avoid default order
         .select_related("data", "package_data")
     )
 
-    # raise ValueError if not such releases found
     if len(releases) < 1:
         raise ValueError("No releases with ocid {} found in parent collection.".format(ocid))
 
@@ -89,7 +75,7 @@ def compile_release(collection_id, ocid):
                 )
 
     # merge data into into single compiled release
-    compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_data, extensions)
+    compiled_release_data = _compile_releases_by_ocdskit(collection, ocid, releases_data, extensions)
 
     return _save_compiled_release(compiled_release_data, collection, ocid)
 
@@ -104,48 +90,28 @@ def compile_record(collection_id, ocid):
 
     :returns: compiled release
     :rtype: CompiledRelease
-
-    :raises TypeError: if there arent integers provided on input
-    :raises ValueError: if there are no items of such id (collections/ocid)
-    :raises ValueError: if the compiled release already exists
-    :raises ValueError: if there are no records to compile in the source/parent collection
     """
 
     logger.info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
 
-    # retrieve collection including its parent from db
-    try:
-        collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
-        if not collection:
-            # no collection found
-            raise ValueError("Compiled collection with parent collection id {} not found".format(collection_id))
-    except Collection.DoesNotExist:
-        raise ValueError("Compiled collection with parent collection id {} not found".format(collection_id))
+    collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
 
-    # check, whether the ocid wasnt already compiled
     try:
         compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
-
         raise AlreadyExists(
             "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
         )
     except CompiledRelease.DoesNotExist:
-        # happy day - compiled release should not exist
-        logger.debug("compiled_release with ocid %s does not exist, we can compile that and store it", ocid)
+        pass
 
-    # get records for given ocid
-    try:
-        record = (
-            Record.objects.filter(collection_id=collection.parent_id)
-            .select_related("data", "package_data")
-            .get(ocid=ocid)
-        )
-    except Record.DoesNotExist:
-        raise ValueError("No records with ocid {} found in parent collection.".format(ocid))
+    record = (
+        Record.objects.filter(collection_id=collection.parent_id).select_related("data", "package_data").get(ocid=ocid)
+    )
 
     # create array with all the data for releases
     releases = record.data.data.get("releases", [])
-    releases_with_date, releases_without_date = _check_dates_in_releases(releases)
+    releases_with_date = [r for r in releases if "date" in r]
+    releases_without_date = [r for r in releases if "date" not in r]
 
     # Can we compile ourselves?
     releases_linked = [r for r in releases_with_date if is_linked_release(r)]
@@ -161,7 +127,7 @@ def compile_record(collection_id, ocid):
             )
 
         extensions = record.package_data.data.get("extensions", [])
-        compiled_release_data = _compile_releases_by_ocdskit(ocid, releases_with_date, extensions)
+        compiled_release_data = _compile_releases_by_ocdskit(collection, ocid, releases_with_date, extensions)
         return _save_compiled_release(compiled_release_data, collection, ocid)
 
     if releases_without_date:
@@ -266,61 +232,55 @@ def compilable(collection_id):
 
     :returns: true if the collection can be created
     :rtype: bool
-
-    :raises ValueError: if there is no collection with such collection_id or
     """
 
     try:
         collection = Collection.objects.filter(pk=collection_id).get(steps__contains="compile")
-
-        if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
-            # records can be processed immediately
-            return True
-
-        if collection.store_end_at is not None:
-            has_remaining_steps = (
-                ProcessingStep.objects.filter(collection=collection.get_root_parent())
-                .filter(name=ProcessingStep.Types.LOAD)
-                .exists()
-            )
-
-            if not has_remaining_steps:
-                compiled_collection = collection.get_compiled_collection()
-                if compiled_collection.compilation_started:
-                    # the compilation was already started
-                    return False
-                else:
-                    return True
-            else:
-                logger.debug("Load not finished yet for collection %s - >= 1 remaining steps.", collection)
-                return False
-        else:
-            logger.debug("Collection %s not completely stored yet. (store_end_at not set)", collection)
-            return False
-
     except Collection.DoesNotExist:
         logger.info("Collection (with steps including compile) id %s not found", collection_id)
         return False
 
+    # records can be processed immediately
+    if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+        return True
 
-def _check_dates_in_releases(releases):
-    releases_with_date = [r for r in releases if "date" in r]
-    releases_without_date = [r for r in releases if "date" not in r]
-    return releases_with_date, releases_without_date
+    if collection.store_end_at is None:
+        logger.debug("Collection %s not completely stored yet. (store_end_at not set)", collection)
+        return False
+
+    has_remaining_steps = (
+        ProcessingStep.objects.filter(collection=collection.get_root_parent())
+        .filter(name=ProcessingStep.Types.LOAD)
+        .exists()
+    )
+
+    if has_remaining_steps:
+        logger.debug("Load not finished yet for collection %s - >= 1 remaining steps.", collection)
+        return False
+
+    compiled_collection = collection.get_compiled_collection()
+    # the compilation was already started
+    if compiled_collection.compilation_started:
+        return False
+
+    return True
 
 
-def _compile_releases_by_ocdskit(ocid, releases, extensions):
+def _compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     try:
-        builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, extensions)
-        schema = builder.patched_release_schema()
-        merger = ocdsmerge.Merger(schema)
-        out = merger.create_compiled_release(releases)
-        return out
+        schema = _get_patched_release_schema(extensions)
     except Exception as e:
-        logger.warning("Unable to compile with extensions, trying without them. Root exception %s", e)
+        logger.warning("Using unpatched schema after failing to patch schema: %s", e)
+        schema = _get_patched_release_schema([])
 
-        builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, [])
-        schema = builder.patched_release_schema()
+    try:
         merger = ocdsmerge.Merger(schema)
-        out = merger.create_compiled_release(releases)
-        return out
+        return merger.create_compiled_release(releases)
+    except ocdsmerge.exceptions.OCDSMergeError as e:
+        logger.warning(f"{e.__class__.__name__}: {e} ({ocid})")
+        save_note(collection, CollectionNote.Codes.ERROR, f"{e.__class__.__name__}: {e} ({ocid})")
+
+
+def _get_patched_release_schema(extensions):
+    builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, extensions)
+    return builder.patched_release_schema()

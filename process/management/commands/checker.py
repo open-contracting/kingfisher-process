@@ -3,9 +3,9 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.utils import IntegrityError
 from yapw.methods.blocking import ack, publish
 
-from process.exceptions import AlreadyExists
 from process.models import CollectionFile, CollectionNote, ProcessingStep
 from process.processors.checker import check_collection_file
 from process.util import create_client, decorator, delete_step, save_note
@@ -32,7 +32,7 @@ def callback(client_state, channel, method, properties, input_message):
         try:
             with transaction.atomic():
                 check_collection_file(collection_file)
-        except AlreadyExists:
+        except IntegrityError:
             logger.exception("Checks already calculated for collection file %s", collection_file)
             save_note(
                 collection_file.collection,

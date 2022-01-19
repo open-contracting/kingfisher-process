@@ -13,8 +13,6 @@ def completable(collection_id):
 
     :returns: true if the collection processing was completed
     :rtype: bool
-
-    :raises ValueError: if there is no collection with such collection_id
     """
 
     try:

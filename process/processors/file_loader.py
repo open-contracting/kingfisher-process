@@ -216,9 +216,6 @@ def get_upgraded_collection(collection_file):
 
     :returns: upgraded collection
     :rtype: Collection
-
-    :raises TypeError: if there arent integers provided on input
-    :raises ValueError: if there is no such collection
     """
     try:
         upgraded_collection = Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(

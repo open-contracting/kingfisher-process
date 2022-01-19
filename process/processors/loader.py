@@ -58,10 +58,6 @@ def create_collections(
 
     :returns: created main collection, upgraded collection, compiled_collection
     :rtype: Collection, Collection, Collection
-
-    :raises ValueError: if there is a validation error
-    :raises ValueError: if there is a validation error
-    :raises IntegrityError: if such colleciton already exists
     """
     data = {"source_id": source_id, "data_version": data_version, "sample": sample, "force": force}
 
