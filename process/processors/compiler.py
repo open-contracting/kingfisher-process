@@ -4,14 +4,13 @@ import ocdsmerge
 import ocdsmerge.exceptions
 from django.conf import settings
 from ocdsextensionregistry.profile_builder import ProfileBuilder
-from ocdskit.util import is_linked_release, save_note
+from ocdskit.util import is_linked_release
 
 from process.exceptions import AlreadyExists
 from process.models import (
     Collection,
     CollectionFile,
     CollectionFileItem,
-    CollectionNote,
     CompiledRelease,
     Data,
     ProcessingStep,
@@ -56,17 +55,19 @@ def compile_release(collection_id, ocid):
     if len(releases) < 1:
         raise ValueError("No releases with ocid {} found in parent collection.".format(ocid))
 
-    # create array with all the data for releases
-    releases_data = []
-    extensions = []
+    # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
+    # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases
+    # lack a "date" field. To avoid an unnecessary error from OCDS Merge, we build the list using a set.
+    releases_data = set()
+    extensions = set()
     for release in releases:
-        releases_data.append(release.data.data)
+        releases_data.add(release.data.data)
 
         # collect all extensions used
         if release.package_data:
             package_data_extensions = release.package_data.data.get("extensions", [])
             if isinstance(package_data_extensions, list):
-                extensions = list(set(extensions + package_data_extensions))
+                extensions.update(package_data_extensions)
             else:
                 logger.error(
                     "Package data for release %s contains malformed extensions %s, skipping.",
@@ -75,7 +76,7 @@ def compile_release(collection_id, ocid):
                 )
 
     # merge data into into single compiled release
-    compiled_release_data = _compile_releases_by_ocdskit(collection, ocid, releases_data, extensions)
+    compiled_release_data = _compile_releases_by_ocdskit(collection, ocid, list(releases_data), extensions)
 
     return _save_compiled_release(compiled_release_data, collection, ocid)
 
@@ -273,12 +274,8 @@ def _compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         logger.warning("Using unpatched schema after failing to patch schema: %s", e)
         schema = _get_patched_release_schema([])
 
-    try:
-        merger = ocdsmerge.Merger(schema)
-        return merger.create_compiled_release(releases)
-    except ocdsmerge.exceptions.OCDSMergeError as e:
-        logger.warning(f"{e.__class__.__name__}: {e} ({ocid})")
-        save_note(collection, CollectionNote.Codes.ERROR, f"{e.__class__.__name__}: {e} ({ocid})")
+    merger = ocdsmerge.Merger(schema)
+    return merger.create_compiled_release(releases)
 
 
 def _get_patched_release_schema(extensions):
