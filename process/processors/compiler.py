@@ -55,13 +55,10 @@ def compile_release(collection_id, ocid):
     if len(releases) < 1:
         raise ValueError("No releases with ocid {} found in parent collection.".format(ocid))
 
-    # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
-    # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases
-    # lack a "date" field. To avoid an unnecessary error from OCDS Merge, we build the list using a set.
-    releases_data = set()
+    releases_data = []
     extensions = set()
     for release in releases:
-        releases_data.add(release.data.data)
+        releases_data.append(release.data.data)
 
         # collect all extensions used
         if release.package_data:
@@ -75,8 +72,20 @@ def compile_release(collection_id, ocid):
                     package_data_extensions,
                 )
 
+    # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
+    # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases
+    # lack a "date" field. To avoid an unnecessary error from OCDS Merge, we build the list using a set.
+    #
+    # https://more-itertools.readthedocs.io/en/stable/_modules/more_itertools/recipes.html#unique_everseen
+    seenlist = []
+    releases_data_unique = []
+    for d in releases_data:
+        if d not in seenlist:
+            seenlist.append(d)
+            releases_data_unique.append(d)
+
     # merge data into into single compiled release
-    compiled_release_data = _compile_releases_by_ocdskit(collection, ocid, list(releases_data), extensions)
+    compiled_release_data = _compile_releases_by_ocdskit(collection, ocid, releases_data_unique, extensions)
 
     return _save_compiled_release(compiled_release_data, collection, ocid)
 
@@ -236,9 +245,13 @@ def compilable(collection_id):
     """
 
     try:
-        collection = Collection.objects.filter(pk=collection_id).get(steps__contains="compile")
+        collection = Collection.objects.get(pk=collection_id)
     except Collection.DoesNotExist:
-        logger.info("Collection (with steps including compile) id %s not found", collection_id)
+        logger.warning("Collection %s not compilable (not found)", collection_id)
+        return False
+
+    if "compile" not in collection.steps:
+        logger.debug("Collection %s not compilable (step missing)", collection)
         return False
 
     # records can be processed immediately
@@ -246,7 +259,7 @@ def compilable(collection_id):
         return True
 
     if collection.store_end_at is None:
-        logger.debug("Collection %s not completely stored yet. (store_end_at not set)", collection)
+        logger.debug("Collection %s not compilable (store_end_at not set)", collection)
         return False
 
     has_remaining_steps = (
@@ -254,14 +267,13 @@ def compilable(collection_id):
         .filter(name=ProcessingStep.Types.LOAD)
         .exists()
     )
-
     if has_remaining_steps:
-        logger.debug("Load not finished yet for collection %s - >= 1 remaining steps.", collection)
+        logger.debug("Collection %s not compilable (load steps remaining)", collection)
         return False
 
     compiled_collection = collection.get_compiled_collection()
-    # the compilation was already started
     if compiled_collection.compilation_started:
+        logger.debug("Collection %s not compilable (already started)", collection)
         return False
 
     return True

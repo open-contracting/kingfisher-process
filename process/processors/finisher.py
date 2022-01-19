@@ -25,7 +25,7 @@ def completable(collection_id):
         logger.warning("Collection %s not completable (already completed)", collection)
         return False
 
-    # compile-releases collections don't set the `store_end_at` field - instead check the root collection.
+    # compile-releases collections don't set the `store_end_at` field (?) - instead check the root collection.
     if collection.store_end_at is None and (
         collection.transform_type != Collection.Transforms.COMPILE_RELEASES
         or collection.get_root_parent().store_end_at is None

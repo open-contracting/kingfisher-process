@@ -11,7 +11,9 @@ from django.db import connections
 from django.utils.translation import gettext as t
 from yapw import clients
 from yapw.decorators import decorate
+from yapw.methods.blocking import nack
 
+from process.exceptions import AlreadyExists
 from process.models import CollectionNote, ProcessingStep
 
 logger = logging.getLogger(__name__)
@@ -50,14 +52,19 @@ def create_client(prefetch_count=1):
 
 def decorator(decode, callback, state, channel, method, properties, body):
     """
-    If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment.
+    If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment. If the
+    exception is `AlreadyExists`, assume the same message was delivered twice, log an error, and ack the message.
 
     Close the database connections opened by the callback, before returning.
     """
 
-    def errback():
-        logger.exception("Unhandled exception when consuming %r, sending SIGUSR1", body)
-        os.kill(os.getpid(), signal.SIGUSR1)
+    def errback(exception):
+        if isinstance(exception, AlreadyExists):
+            logger.error(f"AlreadyExists error possibly caused by duplicate message: {exception}")
+            nack(state, channel, method.delivery_tag, requeue=False)
+        else:
+            logger.exception("Unhandled exception when consuming %r, sending SIGUSR1", body)
+            os.kill(os.getpid(), signal.SIGUSR1)
 
     def finalback():
         for conn in connections.all():

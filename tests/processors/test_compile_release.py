@@ -11,10 +11,6 @@ class CompileReleaseTests(TransactionTestCase):
 
     def test_nonexistent_input(self):
         with self.assertRaises(ValueError) as e:
-            compile_release(4, "")
-        self.assertEqual(str(e.exception), "Compiled collection with parent collection id 4 not found")
-
-        with self.assertRaises(ValueError) as e:
             compile_release(2, "sdf")
         self.assertEqual(str(e.exception), "No releases with ocid sdf found in parent collection.")
 
