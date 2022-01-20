@@ -2,8 +2,8 @@ from django.db import transaction
 from django.test import TransactionTestCase
 
 from process.exceptions import AlreadyExists
+from process.management.commands.release_compiler import compile_release
 from process.models import CompiledRelease
-from process.processors.compiler import compile_release
 
 
 class CompileReleaseTests(TransactionTestCase):

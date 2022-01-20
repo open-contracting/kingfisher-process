@@ -5,7 +5,6 @@ from django.db import transaction
 from yapw.methods.blocking import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record, Release
-from process.processors.compiler import compilable
 from process.util import create_client, create_step, decorator
 
 consume_routing_keys = ["file_worker", "collection_closed"]
@@ -139,3 +138,47 @@ def publish_records(client_state, channel, collection_file):
 
         create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
         publish(client_state, channel, message, "compiler_record")
+
+
+def compilable(collection_id):
+    """
+    Checks whether the collection
+        * should be compiled (compile in steps)
+        * could be compiled (load complete)
+        * already wasn't compiled
+
+    :param int collection_id: collection id - to be checked
+
+    :returns: true if the collection can be created
+    :rtype: bool
+    """
+
+    collection = Collection.objects.get(pk=collection_id)
+
+    if "compile" not in collection.steps:
+        logger.debug("Collection %s not compilable (step missing)", collection)
+        return False
+
+    # records can be processed immediately
+    if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+        return True
+
+    if collection.store_end_at is None:
+        logger.debug("Collection %s not compilable (store_end_at not set)", collection)
+        return False
+
+    has_remaining_steps = (
+        ProcessingStep.objects.filter(collection=collection.get_root_parent())
+        .filter(name=ProcessingStep.Types.LOAD)
+        .exists()
+    )
+    if has_remaining_steps:
+        logger.debug("Collection %s not compilable (load steps remaining)", collection)
+        return False
+
+    compiled_collection = collection.get_compiled_collection()
+    if compiled_collection.compilation_started:
+        logger.debug("Collection %s not compilable (already started)", collection)
+        return False
+
+    return True

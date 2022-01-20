@@ -4,10 +4,19 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.utils import IntegrityError
+from libcoveocds.api import ocds_json_output
 from yapw.methods.blocking import ack, publish
 
-from process.models import CollectionFile, CollectionNote, ProcessingStep
-from process.processors.checker import check_collection_file
+from process.models import (
+    Collection,
+    CollectionFile,
+    CollectionNote,
+    ProcessingStep,
+    Record,
+    RecordCheck,
+    Release,
+    ReleaseCheck,
+)
 from process.util import create_client, decorator, delete_step, save_note
 
 consume_routing_keys = ["file_worker"]
@@ -49,3 +58,60 @@ def callback(client_state, channel, method, properties, input_message):
     publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
+
+
+def check_collection_file(collection_file):
+    """
+    Checks releases for a given collection_file.
+
+    :param int collection_file: collection file for which should be releases checked
+    """
+
+    logger.info("Checking data for collection file %s", collection_file)
+
+    if (
+        collection_file.collection.data_type
+        and collection_file.collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE
+    ):
+        items_key = "releases"
+        items = Release.objects.filter(collection_file_item__collection_file=collection_file).select_related(
+            "data", "package_data"
+        )
+    else:
+        items_key = "records"
+        items = Record.objects.filter(collection_file_item__collection_file=collection_file).select_related(
+            "data", "package_data"
+        )
+
+    for item in items:
+        logger.debug("Checking %s form item %s", items_key, item)
+        data_to_check = item.data.data
+        if item.package_data:
+            logger.debug("Repacking for key %s object %s", items_key, item)
+            data_to_check = item.package_data.data
+            data_to_check[items_key] = item.data.data
+
+        check_result = ocds_json_output(
+            "",
+            "",
+            schema_version="1.0",
+            convert=False,
+            cache_schema=True,
+            file_type="json",
+            json_data=data_to_check,
+        )
+
+        # eliminate nonrequired check results
+        check_result.pop("releases_aggregates", None)
+        check_result.pop("records_aggregates", None)
+
+        if items_key == "releases":
+            check = ReleaseCheck()
+            check.release = item
+        else:
+            check = RecordCheck()
+            check.record = item
+
+        check.cove_output = check_result
+
+        check.save()

@@ -1,15 +1,12 @@
 from django.db.models.functions import Now
 from django.test import TransactionTestCase
 
+from process.management.commands.finisher import completable
 from process.models import Collection, CollectionFile, ProcessingStep
-from process.processors.finisher import completable
 
 
 class CompletableTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
-
-    def test_nonexistent_input(self):
-        self.assertEqual(completable(5), False)
 
     def test_already_completed(self):
         collection = Collection.objects.get(id=3)

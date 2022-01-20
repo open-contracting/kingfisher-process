@@ -1,4 +1,3 @@
-import argparse
 import functools
 import hashlib
 import logging
@@ -8,7 +7,6 @@ from textwrap import fill
 
 from django.conf import settings
 from django.db import connections
-from django.utils.translation import gettext as t
 from yapw import clients
 from yapw.decorators import decorate
 from yapw.methods.blocking import nack
@@ -73,13 +71,6 @@ def decorator(decode, callback, state, channel, method, properties, body):
             conn.close()
 
     decorate(decode, callback, state, channel, method, properties, body, errback, finalback)
-
-
-def file_or_directory(string):
-    """Checks whether the path is existing file or directory. Raises an exception if not"""
-    if not os.path.exists(string):
-        raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": string})
-    return string
 
 
 def save_note(collection, code, note):

@@ -1,7 +1,7 @@
 from django.test import TransactionTestCase
 
+from process.management.commands.file_worker import process_file
 from process.models import CollectionFile, CollectionFileItem, PackageData, Release
-from process.processors.file_loader import process_file
 
 
 class ProcessFileTests(TransactionTestCase):

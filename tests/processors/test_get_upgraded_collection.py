@@ -1,7 +1,7 @@
 from django.test import TransactionTestCase
 
+from process.management.commands.file_worker import _get_upgraded_collection
 from process.models import CollectionFile
-from process.processors.file_loader import get_upgraded_collection
 
 
 class GetUpgradedCollectionTests(TransactionTestCase):
@@ -9,12 +9,12 @@ class GetUpgradedCollectionTests(TransactionTestCase):
 
     def test_no_such_collection_input(self):
         collection_file = CollectionFile.objects.get(id=3)
-        self.assertIsNone(get_upgraded_collection(collection_file))
+        self.assertIsNone(_get_upgraded_collection(collection_file))
 
     def test_happy_day(self):
         collection_file = CollectionFile.objects.get(id=1)
 
-        upgraded_collection = get_upgraded_collection(collection_file)
+        upgraded_collection = _get_upgraded_collection(collection_file)
 
         self.assertEqual(collection_file.collection, upgraded_collection.parent)
         self.assertEqual("upgrade-1-0-to-1-1", upgraded_collection.transform_type)

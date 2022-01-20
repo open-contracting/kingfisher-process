@@ -5,8 +5,7 @@ from django.db import transaction
 from django.db.models.functions import Now
 from yapw.methods.blocking import ack
 
-from process.models import Collection
-from process.processors.finisher import completable
+from process.models import Collection, CollectionFile, ProcessingStep
 from process.util import create_client, decorator
 
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
@@ -48,3 +47,53 @@ def callback(client_state, channel, method, properties, input_message):
             logger.debug("Collection %s finished.", collection_id)
 
     ack(client_state, channel, method.delivery_tag)
+
+
+def completable(collection_id):
+    """
+    Checks whether the collection can be marked as completed.
+
+    :param int collection_id: collection id - to be checked
+
+    :returns: true if the collection processing was completed
+    :rtype: bool
+    """
+
+    collection = Collection.objects.get(pk=collection_id)
+
+    if collection.completed_at:
+        logger.warning("Collection %s not completable (already completed)", collection)
+        return False
+
+    # compile-releases collections don't set the `store_end_at` field (?) - instead check the root collection.
+    if collection.store_end_at is None and (
+        collection.transform_type != Collection.Transforms.COMPILE_RELEASES
+        or collection.get_root_parent().store_end_at is None
+    ):
+        logger.debug("Collection %s not completable (load not finished)", collection)
+        return False
+
+    # special case when the collection should be compiled and
+    # waits for compilation to be planned
+    # in such case, no processing steps will be available yet
+    if collection.transform_type == Collection.Transforms.COMPILE_RELEASES and not collection.compilation_started:
+        logger.debug("Collection %s not completable (compile not started)", collection)
+        return False
+
+    has_steps_remaining = ProcessingStep.objects.filter(collection=collection).exists()
+    if has_steps_remaining:
+        logger.debug("Collection %s not completable (steps remaining)", collection)
+        return False
+
+    real_files_count = CollectionFile.objects.filter(collection=collection).count()
+    if collection.expected_files_count and collection.expected_files_count > real_files_count:
+        logger.debug(
+            "Collection %s not completable. There are (probably) some unprocessed messages in the queue with the new "
+            "items - expected files count %s, real files count %s",
+            collection,
+            collection.expected_files_count,
+            real_files_count,
+        )
+        return False
+
+    return True

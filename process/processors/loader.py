@@ -1,9 +1,20 @@
+import argparse
 import logging
+import os
+
+from django.utils.translation import gettext as t
 
 from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
 from process.models import Collection, ProcessingStep
 
 logger = logging.getLogger(__name__)
+
+
+def file_or_directory(string):
+    """Checks whether the path is existing file or directory. Raises an exception if not"""
+    if not os.path.exists(string):
+        raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": string})
+    return string
 
 
 def create_collection_file(collection, file_path=None, url=None, errors=None):

@@ -1,8 +1,8 @@
 from django.db.utils import IntegrityError
 from django.test import TransactionTestCase
 
+from process.management.commands.checker import check_collection_file
 from process.models import CollectionFile, ReleaseCheck
-from process.processors.checker import check_collection_file
 
 
 class CheckCollectionFileTests(TransactionTestCase):

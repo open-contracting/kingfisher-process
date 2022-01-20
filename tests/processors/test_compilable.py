@@ -1,14 +1,11 @@
 from django.test import TransactionTestCase
 
+from process.management.commands.compiler import compilable
 from process.models import Collection, CollectionFile, ProcessingStep
-from process.processors.compiler import compilable
 
 
 class CompilableTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
-
-    def test_nonexistent_input(self):
-        self.assertEqual(compilable(5), False)
 
     def test_already_compiled(self):
         collection = Collection.objects.get(id=3)

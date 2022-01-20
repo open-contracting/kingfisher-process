@@ -8,8 +8,8 @@ from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
 from process.models import Collection
-from process.processors.loader import create_collection_file
-from process.util import create_client, file_or_directory, walk
+from process.processors.loader import create_collection_file, file_or_directory
+from process.util import create_client, walk
 from process.util import wrap as w
 
 logger = logging.getLogger(__name__)
