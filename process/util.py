@@ -60,6 +60,8 @@ def decorator(decode, callback, state, channel, method, properties, body):
 
     def errback(exception):
         if isinstance(exception, AlreadyExists):
+            # The frequency of these errors should be monitored via Sentry. They should be rare. If they are common,
+            # then either there is an error in the code or an issue with the connection (heartbeat, etc.).
             logger.error(f"AlreadyExists error possibly caused by duplicate message: {exception}")
             nack(state, channel, method.delivery_tag, requeue=False)
         else:

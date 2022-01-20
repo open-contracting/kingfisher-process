@@ -244,11 +244,7 @@ def compilable(collection_id):
     :rtype: bool
     """
 
-    try:
-        collection = Collection.objects.get(pk=collection_id)
-    except Collection.DoesNotExist:
-        logger.warning("Collection %s not compilable (not found)", collection_id)
-        return False
+    collection = Collection.objects.get(pk=collection_id)
 
     if "compile" not in collection.steps:
         logger.debug("Collection %s not compilable (step missing)", collection)
@@ -282,8 +278,10 @@ def compilable(collection_id):
 def _compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     try:
         schema = _get_patched_release_schema(extensions)
-    except Exception as e:
-        logger.warning("Using unpatched schema after failing to patch schema: %s", e)
+    except Exception:
+        # TODO Replace this with more specific exceptions and reduce logging level as appropriate, once more errors
+        # appear in Sentry.
+        logger.exception("Using unpatched schema after failing to patch schema")
         schema = _get_patched_release_schema([])
 
     merger = ocdsmerge.Merger(schema)

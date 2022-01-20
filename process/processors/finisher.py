@@ -15,11 +15,7 @@ def completable(collection_id):
     :rtype: bool
     """
 
-    try:
-        collection = Collection.objects.get(pk=collection_id)
-    except Collection.DoesNotExist:
-        logger.warning("Collection %s not completable (not found)", collection_id)
-        return False
+    collection = Collection.objects.get(pk=collection_id)
 
     if collection.completed_at:
         logger.warning("Collection %s not completable (already completed)", collection)

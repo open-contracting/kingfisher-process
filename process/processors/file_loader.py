@@ -209,8 +209,7 @@ def _get_data_type(collection_file):
 
 def get_upgraded_collection(collection_file):
     """
-    Gets upgraded collection for collection_file.parent collection. Throws an exception if such
-    collection does not exists.
+    Gets upgraded collection for collection_file.parent collection.
 
     :param CollectionFile collection_file: collection file of the parent
 
@@ -222,12 +221,6 @@ def get_upgraded_collection(collection_file):
             parent_id=collection_file.collection_id
         )
     except Collection.DoesNotExist:
-        logger.debug(
-            "There is no upgrade collection for collection %s (via collection_file %s)",
-            collection_file.collection,
-            collection_file,
-        )
-
         return None
     return upgraded_collection
 
