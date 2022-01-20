@@ -22,7 +22,16 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push: true
+          file: Dockerfile_django
           tags: |
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}-django:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: Dockerfile_static
+          tags: |
+            ghcr.io/${{ github.repository }}-static:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
