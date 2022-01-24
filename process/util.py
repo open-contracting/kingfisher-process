@@ -1,8 +1,8 @@
-import functools
 import hashlib
 import logging
 import os
 import signal
+from contextlib import contextmanager
 from textwrap import fill
 
 from django.conf import settings
@@ -51,14 +51,17 @@ def get_client(klass, **kwargs):
     return klass(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, **kwargs)
 
 
-@functools.lru_cache(maxsize=None)
 def get_consumer(prefetch_count=1):
     return get_client(Consumer, prefetch_count=prefetch_count)
 
 
-@functools.lru_cache(maxsize=None)
+@contextmanager
 def get_publisher(prefetch_count=1):
-    return get_client(Publisher, prefetch_count=prefetch_count)
+    client = get_client(Publisher, prefetch_count=prefetch_count)
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 def decorator(decode, callback, state, channel, method, properties, body):

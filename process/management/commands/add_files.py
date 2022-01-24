@@ -52,15 +52,14 @@ class Command(BaseCommand):
 
         logger.debug("Processing path %s", options["PATH"])
 
-        client = get_publisher()
+        with get_publisher() as client:
+            for file_path in walk(options["PATH"]):
+                # note - keep transaction here, not "higher" around the whole cycle
+                # we want to keep relation committed/published as close as possible
+                with transaction.atomic():
+                    logger.debug("Storing file %s", file_path)
+                    collection_file = create_collection_file(collection, file_path)
 
-        for file_path in walk(options["PATH"]):
-            # note - keep transaction here, not "higher" around the whole cycle
-            # we want to keep relation commited/published as close as possible
-            with transaction.atomic():
-                logger.debug("Storing file %s", file_path)
-                collection_file = create_collection_file(collection, file_path)
-
-            client.publish({"collection_file_id": collection_file.pk}, routing_key=routing_key)
+                client.publish({"collection_file_id": collection_file.pk}, routing_key=routing_key)
 
         logger.info("Load command completed")
