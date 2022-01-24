@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
-from process.util import create_client
+from process.util import get_publisher
 
 logger = logging.getLogger(__name__)
 
@@ -194,4 +194,4 @@ def wipe_collection(request):
 
 def _publish(message, routing_key):
     """Publish message with work for a next part of process"""
-    create_client().publish(message, routing_key=routing_key)
+    get_publisher().publish(message, routing_key=routing_key)

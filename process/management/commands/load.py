@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from process.models import Collection
 from process.processors.loader import create_collection_file, create_collections, file_or_directory
 from process.scrapyd import configured
-from process.util import create_client, walk
+from process.util import get_publisher, walk
 from process.util import wrap as w
 
 logger = logging.getLogger(__name__)
@@ -143,7 +143,7 @@ class Command(BaseCommand):
 
         logger.debug("Processing path %s", options["PATH"])
 
-        client = create_client()
+        client = get_publisher()
 
         for file_path in walk(options["PATH"]):
             # note - keep transaction here, not "higher" around the whole cycle

@@ -39,13 +39,26 @@ def get_hash(data):
     return hashlib.md5(data.encode("utf-8")).hexdigest()
 
 
-class Client(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
+class Consumer(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
     pass
 
 
+class Publisher(clients.Durable, clients.Blocking, clients.Base):
+    pass
+
+
+def get_client(klass, **kwargs):
+    return klass(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, **kwargs)
+
+
 @functools.lru_cache(maxsize=None)
-def create_client(prefetch_count=1):
-    return Client(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, prefetch_count=prefetch_count)
+def get_consumer(prefetch_count=1):
+    return get_client(Consumer, prefetch_count=prefetch_count)
+
+
+@functools.lru_cache(maxsize=None)
+def get_publisher(prefetch_count=1):
+    return get_client(Publisher, prefetch_count=prefetch_count)
 
 
 def decorator(decode, callback, state, channel, method, properties, body):

@@ -17,7 +17,7 @@ from process.models import (
     Release,
     ReleaseCheck,
 )
-from process.util import create_client, decorator, delete_step, save_note
+from process.util import decorator, delete_step, get_consumer, save_note
 
 consume_routing_keys = ["file_worker"]
 routing_key = "checker"
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         if not settings.ENABLE_CHECKER:
             raise CommandError("Refusing to start as checker is disabled in settings - see ENABLE_CHECKER value.")
 
-        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        get_consumer(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):

@@ -8,7 +8,7 @@ from yapw.methods.blocking import ack, publish
 
 from process.models import Collection
 from process.processors.loader import create_collection_file
-from process.util import create_client, decorator
+from process.util import decorator, get_consumer
 
 consume_routing_keys = ["api"]
 routing_key = "api_loader"
@@ -16,7 +16,7 @@ routing_key = "api_loader"
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        get_consumer(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):

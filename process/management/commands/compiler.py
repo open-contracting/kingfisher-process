@@ -5,7 +5,7 @@ from django.db import transaction
 from yapw.methods.blocking import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record, Release
-from process.util import create_client, create_step, decorator
+from process.util import create_step, decorator, get_consumer
 
 consume_routing_keys = ["file_worker", "collection_closed"]
 routing_key = "compiler"
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        create_client(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        get_consumer(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
