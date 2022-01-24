@@ -155,7 +155,7 @@ def compilable(collection_id):
 
     collection = Collection.objects.get(pk=collection_id)
 
-    if "compile" not in collection.steps:
+    if not collection.steps or "compile" not in collection.steps:
         logger.debug("Collection %s not compilable (step missing)", collection)
         return False
 
