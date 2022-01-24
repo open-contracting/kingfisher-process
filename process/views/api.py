@@ -51,7 +51,7 @@ def create_collection(request):
             return JsonResponse(result)
         except Exception as e:
             response = HttpResponseServerError(e)
-            logger.exception("Unable to create collection", e)
+            logger.exception("Unable to create collection")
             return response
     return HttpResponseBadRequest("Only POST requests accepted")
 
@@ -138,7 +138,7 @@ def close_collection(request):
             return HttpResponseServerError(error)
         except Exception as e:
             response = HttpResponseServerError(e)
-            logger.exception("Unable to close collection", e)
+            logger.exception("Unable to close collection")
             return response
     return HttpResponseBadRequest("Only POST requests accepted")
 
@@ -167,7 +167,7 @@ def create_collection_file(request):
             return HttpResponseServerError(error)
         except Exception as e:
             response = HttpResponseServerError(e)
-            logger.exception("Unable to create collection_file", e)
+            logger.exception("Unable to create collection_file")
             return response
     return HttpResponseBadRequest("Only POST requests accepted")
 
@@ -186,7 +186,7 @@ def wipe_collection(request):
             return HttpResponse("Wipe collection {} successfully planned.")
         except Exception as e:
             response = HttpResponseServerError(e)
-            logger.exception("Unable to wipe collection", e)
+            logger.exception("Unable to wipe collection")
             return response
 
     return HttpResponseBadRequest("Only POST requests accepted")
