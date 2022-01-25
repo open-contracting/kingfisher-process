@@ -100,7 +100,9 @@ orjson==3.6.1
 packaging==20.8
     # via bleach
 pika==1.2.0
-    # via yapw
+    # via
+    #   -r requirements.in
+    #   yapw
 psycopg2==2.9.2
     # via -r requirements.in
 pyparsing==2.4.7
