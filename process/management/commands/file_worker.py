@@ -22,7 +22,7 @@ from process.models import (
     Record,
     Release,
 )
-from process.util import create_step, decorator, delete_step, get_consumer, get_hash
+from process.util import consume, create_step, decorator, delete_step, get_hash
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
@@ -33,7 +33,7 @@ SUPPORTED_FORMATS = ["release package", "record package"]
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        get_consumer(prefetch_count=20).consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
 def callback(client_state, channel, method, properties, input_message):

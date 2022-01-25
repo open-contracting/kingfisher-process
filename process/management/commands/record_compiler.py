@@ -8,7 +8,7 @@ from yapw.methods.blocking import ack, publish
 from process.exceptions import AlreadyExists
 from process.models import Collection, CompiledRelease, ProcessingStep, Record
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
-from process.util import decorator, delete_step, get_consumer
+from process.util import consume, decorator, delete_step
 
 consume_routing_keys = ["compiler_record"]
 routing_key = "record_compiler"
@@ -25,7 +25,12 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        get_consumer().consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            callback,
+            routing_key,
+            consume_routing_keys,
+            decorator=decorator,
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):

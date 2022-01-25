@@ -5,6 +5,7 @@ import signal
 from contextlib import contextmanager
 from textwrap import fill
 
+import pika.exceptions
 from django.conf import settings
 from django.db import connections
 from yapw import clients
@@ -51,10 +52,6 @@ def get_client(klass, **kwargs):
     return klass(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, **kwargs)
 
 
-def get_consumer(prefetch_count=1):
-    return get_client(Consumer, prefetch_count=prefetch_count)
-
-
 @contextmanager
 def get_publisher(prefetch_count=1):
     client = get_client(Publisher, prefetch_count=prefetch_count)
@@ -62,6 +59,23 @@ def get_publisher(prefetch_count=1):
         yield client
     finally:
         client.close()
+
+
+# https://github.com/pika/pika/blob/master/examples/blocking_consume_recover_multiple_hosts.py
+def consume(*args, prefetch_count=1, **kwargs):
+    while True:
+        try:
+            client = get_client(Consumer, prefetch_count=prefetch_count)
+            client.consume(*args, **kwargs)
+            break
+        # Do not recover if the connection was closed by the broker.
+        except pika.exceptions.ConnectionClosedByBroker as e:  # subclass of AMQPConnectionError
+            logger.warning(e)
+            break
+        # Recover from "Connection reset by peer".
+        except pika.exceptions.StreamLostError as e:  # subclass of AMQPConnectionError
+            logger.warning(e)
+            continue
 
 
 def decorator(decode, callback, state, channel, method, properties, body):

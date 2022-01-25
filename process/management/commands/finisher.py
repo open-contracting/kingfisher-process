@@ -6,7 +6,7 @@ from django.db.models.functions import Now
 from yapw.methods.blocking import ack
 
 from process.models import Collection, CollectionFile, ProcessingStep
-from process.util import decorator, get_consumer
+from process.util import consume, decorator
 
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
 # compiling are performed, and if the "collection_closed" message is processed before the "file_worker" message.
@@ -23,7 +23,12 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        get_consumer().consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            callback,
+            routing_key,
+            consume_routing_keys,
+            decorator=decorator,
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):
