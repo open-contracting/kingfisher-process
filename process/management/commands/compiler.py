@@ -72,34 +72,29 @@ def callback(client_state, channel, method, properties, input_message):
 
 
 def publish_releases(client_state, channel, collection):
-    try:
+    with transaction.atomic():
+        compiled_collection = (
+            Collection.objects.select_for_update()
+            .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
+            .filter(compilation_started=False)
+            .get(parent=collection)
+        )
+
+        compiled_collection.compilation_started = True
+        compiled_collection.save()
+
+    ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
+
+    for item in ocids:
         with transaction.atomic():
-            compiled_collection = (
-                Collection.objects.select_for_update()
-                .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
-                .filter(compilation_started=False)
-                .get(parent=collection)
-            )
+            create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
-            compiled_collection.compilation_started = True
-            compiled_collection.save()
-
-        ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
-
-        for item in ocids:
             message = {
                 "ocid": item["ocid"],
                 "collection_id": collection.pk,
                 "compiled_collection_id": compiled_collection.pk,
             }
-
-            create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
             publish(client_state, channel, message, "compiler_release")
-    except Collection.DoesNotExist:
-        logger.warning(
-            "Tried to plan compilation for already 'planned' collection."
-            "This can rarely happen in multi worker environments."
-        )
 
 
 def publish_records(client_state, channel, collection_file):
@@ -122,14 +117,15 @@ def publish_records(client_state, channel, collection_file):
     )
 
     for item in ocids:
-        message = {
-            "ocid": item["ocid"],
-            "collection_id": collection_file.collection.pk,
-            "compiled_collection_id": compiled_collection.pk,
-        }
+        with transaction.atomic():
+            create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
-        create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
-        publish(client_state, channel, message, "compiler_record")
+            message = {
+                "ocid": item["ocid"],
+                "collection_id": collection_file.collection.pk,
+                "compiled_collection_id": compiled_collection.pk,
+            }
+            publish(client_state, channel, message, "compiler_record")
 
 
 def compilable(collection_id):
