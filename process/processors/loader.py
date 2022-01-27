@@ -117,15 +117,15 @@ def _create_collection(data, steps, note, parent, transform_type):
     collection_data["transform_type"] = transform_type
     collection_data["parent"] = parent
 
-    collection_form = CollectionForm(collection_data)
+    form = CollectionForm(collection_data)
 
-    if collection_form.is_valid():
-        collection = collection_form.save()
+    if form.is_valid():
+        collection = form.save()
         if note:
             _save_note(collection, note)
         return collection
 
-    raise ValueError(collection_form.error_messages)
+    raise ValueError(form.error_messages)
 
 
 def _save_note(collection, note):

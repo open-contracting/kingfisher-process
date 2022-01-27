@@ -37,8 +37,8 @@ def callback(client_state, channel, method, properties, input_message):
         logger.debug("Collection %s is compilable.", collection)
 
         if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-            real_files_count = CollectionFile.objects.filter(collection=collection).count()
-            if collection.expected_files_count and collection.expected_files_count <= real_files_count:
+            actual_files_count = CollectionFile.objects.filter(collection=collection).count()
+            if collection.expected_files_count and collection.expected_files_count <= actual_files_count:
                 # plans compilation of the whole collection (everything is stored yet)
                 publish_releases(client_state, channel, collection)
             else:
@@ -48,7 +48,7 @@ def callback(client_state, channel, method, properties, input_message):
                     " - expected files count %s real files count %s",
                     collection,
                     collection.expected_files_count,
-                    real_files_count,
+                    actual_files_count,
                 )
 
         if (
