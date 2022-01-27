@@ -1,4 +1,3 @@
-from django.db import transaction
 from django.test import TransactionTestCase
 
 from process.exceptions import AlreadyExists
@@ -24,9 +23,8 @@ class CompileReleaseTests(TransactionTestCase):
 
     def test_happy_day(self):
         ocid = "ocds-px0z7d-5052-5001-1"
-        with transaction.atomic():
-            compiled_release = CompiledRelease.objects.filter(collection__id=3).get(ocid=ocid)
-            compiled_release.collection_file_item.collection_file.delete()
+        compiled_release = CompiledRelease.objects.filter(collection__id=3).get(ocid=ocid)
+        compiled_release.collection_file_item.collection_file.delete()
         release = compile_release(2, ocid)
 
         self.assertEqual(release.ocid, ocid)
