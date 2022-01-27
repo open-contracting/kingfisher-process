@@ -81,10 +81,10 @@ def consume(*args, prefetch_count=1, **kwargs):
 
 def decorator(decode, callback, state, channel, method, properties, body):
     """
-    If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment. If the
-    exception is `AlreadyExists`, assume the same message was delivered twice, log an error, and ack the message.
-
     Close the database connections opened by the callback, before returning.
+
+    If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment. For some
+    exceptions, assume that the same message was delivered twice, log an error, and ack the message.
     """
 
     def errback(exception):
@@ -118,8 +118,8 @@ def create_step(name, collection_id, **kwargs):
 def delete_step(*args, **kwargs):
     try:
         yield
-    # See the errback() function in the process.util module. If a duplicate message is received, we want to ensure that
-    # the step was deleted, so that the collection is completable, before re-raising the exception.
+    # See the errback() function in the decorator() function. If a duplicate message is received, we want to ensure
+    # that the step was deleted, so that the collection is completable, before re-raising the exception.
     except IntegrityError:
         _delete_step(*args, **kwargs)
         raise
