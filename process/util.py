@@ -92,7 +92,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
         # have a transaction that spans both systems, so it's possible to insert a row then fail to ack a message.
         #
         # That said, we monitor the frequency of these errors via Sentry, to ensure that they are caused by the above
-        # and not by an error in logic.
+        # and not by an error in logic. Their number should not exceed the prefetch count.
         #
         # InvalidFormError is included, as it may be for a "unique_together" error, which is an integrity error.
         if isinstance(exception, (AlreadyExists, InvalidFormError, IntegrityError)):
@@ -114,27 +114,24 @@ def create_step(name, collection_id, **kwargs):
     processing_step.save()
 
 
-def delete_step(step_type=None, collection_id=None, collection_file_id=None, ocid=None):
-    processing_steps = ProcessingStep.objects.all()
+@contextmanager
+def delete_step(*args, **kwargs):
+    try:
+        yield
+    # See the errback() function in the process.util module. If a duplicate message is received, we want to ensure that
+    # the step was deleted, so that the collection is completable, before re-raising the exception.
+    except IntegrityError:
+        _delete_step(*args, **kwargs)
+        raise
+    else:
+        _delete_step(*args, **kwargs)
 
-    if collection_file_id:
-        processing_steps = processing_steps.filter(collection_file_id=collection_file_id)
 
-    if ocid:
-        processing_steps = processing_steps.filter(ocid=ocid)
-
-    if collection_id:
-        processing_steps = processing_steps.filter(collection_id=collection_id)
-
-    processing_steps = processing_steps.filter(name=step_type)
+def _delete_step(step_type, **kwargs):
+    # kwargs can include collection_id, collection_file_id and ocid.
+    processing_steps = ProcessingStep.objects.filter(name=step_type, **kwargs)
 
     if processing_steps.exists():
         processing_steps.delete()
     else:
-        logger.warning(
-            "No such processing step found: step_type=%s collection_id=%s collection_file_id=%s ocid=%s",
-            step_type,
-            collection_id,
-            collection_file_id,
-            ocid,
-        )
+        logger.warning("No such processing step found: %s: %s", step_type, kwargs)

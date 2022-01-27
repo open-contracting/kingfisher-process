@@ -38,10 +38,9 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    with transaction.atomic():
-        release = compile_record(collection_id, ocid)
-
-        delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
+    with delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
+        with transaction.atomic():
+            release = compile_record(collection_id, ocid)
 
     message = {
         "ocid": ocid,

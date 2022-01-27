@@ -41,14 +41,15 @@ def callback(client_state, channel, method, properties, input_message):
     collection_file_id = input_message["collection_file_id"]
 
     try:
-        with transaction.atomic():
-            collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-            upgraded_collection_file_id = process_file(collection_file)
+        with delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id):
+            with transaction.atomic():
+                collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+                upgraded_collection_file_id = process_file(collection_file)
 
-            delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id)
-
-            if settings.ENABLE_CHECKER:
-                create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
+        # If a duplicate message is received causing an IntegrityError above, we still want to create the next step, in
+        # case it was not created the first time. delete_step() will delete any duplicate steps.
+        if settings.ENABLE_CHECKER:
+            create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
         publish(client_state, channel, message, routing_key)
