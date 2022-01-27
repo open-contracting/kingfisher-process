@@ -59,6 +59,7 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     logger.debug("Storing file %s", file_path)
                     collection_file = create_collection_file(collection, file_path)
-                    client.publish({"collection_file_id": collection_file.pk}, routing_key=routing_key)
+                    message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
+                    client.publish(message, routing_key=routing_key)
 
         logger.info("Load command completed")
