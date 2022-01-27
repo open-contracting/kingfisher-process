@@ -1,5 +1,6 @@
 from django.test import TransactionTestCase
 
+from process.exceptions import InvalidFormError
 from process.models import Collection
 from process.processors.loader import create_collection_file
 
@@ -14,7 +15,7 @@ class CreateCollectionFileTests(TransactionTestCase):
 
     def test_integrity_error(self):
         collection = Collection.objects.get(id=1)
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(InvalidFormError) as e:
             create_collection_file(collection, "/path")
             create_collection_file(collection, "/path")
         self.assertTrue(str(e.exception).startswith("Collection 1 already contains file '/path'"))
