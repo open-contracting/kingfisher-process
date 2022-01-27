@@ -41,7 +41,6 @@ def callback(client_state, channel, method, properties, input_message):
     collection_file_id = input_message["collection_file_id"]
 
     try:
-        # Use a transaction for each message published.
         with transaction.atomic():
             collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
             upgraded_collection_file_id = process_file(collection_file)
@@ -51,19 +50,15 @@ def callback(client_state, channel, method, properties, input_message):
             if settings.ENABLE_CHECKER:
                 create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
 
-            message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
-            publish(client_state, channel, message, routing_key)
+        message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
+        publish(client_state, channel, message, routing_key)
 
         if upgraded_collection_file_id:
-            # Use a transaction for each message published.
-            with transaction.atomic():
-                if settings.ENABLE_CHECKER:
-                    create_step(
-                        ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id
-                    )
+            if settings.ENABLE_CHECKER:
+                create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id)
 
-                message = {"collection_id": collection_id, "collection_file_id": upgraded_collection_file_id}
-                publish(client_state, channel, message, routing_key)
+            message = {"collection_id": collection_id, "collection_file_id": upgraded_collection_file_id}
+            publish(client_state, channel, message, routing_key)
     # An irrecoverable error, raised by ijson.parse(). Discard the message to allow other messages to be processed.
     except ijson.common.IncompleteJSONError:
         logger.exception("Spider %s yields invalid JSON", collection_file.collection.source_id)

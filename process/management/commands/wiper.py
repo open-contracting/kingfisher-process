@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from yapw.methods.blocking import ack
 
 from process.models import Collection
@@ -19,7 +18,6 @@ class Command(BaseCommand):
         )
 
 
-@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 

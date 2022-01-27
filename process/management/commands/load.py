@@ -150,8 +150,9 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     logger.debug("Storing file %s", file_path)
                     collection_file = create_collection_file(collection, file_path=file_path)
-                    message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
-                    client.publish(message, routing_key=routing_key)
+
+                message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
+                client.publish(message, routing_key=routing_key)
 
         if not options["keep_open"]:
             collection.store_end_at = Now()

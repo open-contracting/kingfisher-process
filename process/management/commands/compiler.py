@@ -86,15 +86,14 @@ def publish_releases(client_state, channel, collection):
     ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
 
     for item in ocids:
-        with transaction.atomic():
-            create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
+        create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
-            message = {
-                "ocid": item["ocid"],
-                "collection_id": collection.pk,
-                "compiled_collection_id": compiled_collection.pk,
-            }
-            publish(client_state, channel, message, "compiler_release")
+        message = {
+            "ocid": item["ocid"],
+            "collection_id": collection.pk,
+            "compiled_collection_id": compiled_collection.pk,
+        }
+        publish(client_state, channel, message, "compiler_release")
 
 
 def publish_records(client_state, channel, collection_file):
@@ -117,15 +116,14 @@ def publish_records(client_state, channel, collection_file):
     )
 
     for item in ocids:
-        with transaction.atomic():
-            create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
+        create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
-            message = {
-                "ocid": item["ocid"],
-                "collection_id": collection_file.collection.pk,
-                "compiled_collection_id": compiled_collection.pk,
-            }
-            publish(client_state, channel, message, "compiler_record")
+        message = {
+            "ocid": item["ocid"],
+            "collection_id": collection_file.collection.pk,
+            "compiled_collection_id": compiled_collection.pk,
+        }
+        publish(client_state, channel, message, "compiler_record")
 
 
 def compilable(collection_id):

@@ -27,15 +27,15 @@ class Command(BaseCommand):
         consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
-@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     collection_id = input_message["collection_id"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    release = compile_release(collection_id, ocid)
+    with transaction.atomic():
+        release = compile_release(collection_id, ocid)
 
-    delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
+        delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
 
     message = {
         "ocid": ocid,

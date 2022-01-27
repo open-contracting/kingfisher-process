@@ -19,7 +19,6 @@ class Command(BaseCommand):
         consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
-@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     if input_message.get("errors") and not input_message.get("path"):
@@ -27,23 +26,24 @@ def callback(client_state, channel, method, properties, input_message):
     else:
         input_message["path"] = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
 
-    collection = Collection.objects.get(pk=collection_id)
-    collection_file = create_collection_file(
-        collection,
-        file_path=input_message.get("path"),
-        url=input_message.get("url"),
-        errors=input_message.get("errors"),
-    )
+    with transaction.atomic():
+        collection = Collection.objects.get(pk=collection_id)
+        collection_file = create_collection_file(
+            collection,
+            file_path=input_message.get("path"),
+            url=input_message.get("url"),
+            errors=input_message.get("errors"),
+        )
 
-    if input_message.get("close"):
-        collection = Collection.objects.select_for_update().get(pk=collection_id)
-        collection.store_end_at = Now()
-        collection.save()
+        if input_message.get("close"):
+            collection = Collection.objects.select_for_update().get(pk=collection_id)
+            collection.store_end_at = Now()
+            collection.save()
 
-        upgraded_collection = collection.get_upgraded_collection()
-        if upgraded_collection:
-            upgraded_collection.store_end_at = Now()
-            upgraded_collection.save()
+            upgraded_collection = collection.get_upgraded_collection()
+            if upgraded_collection:
+                upgraded_collection.store_end_at = Now()
+                upgraded_collection.save()
 
     # FileError items from Kingfisher Collect are not processed further.
     if "errors" not in input_message:

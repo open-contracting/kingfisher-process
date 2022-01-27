@@ -22,16 +22,16 @@ class Command(BaseCommand):
         consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
-@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
-    collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-    if "check" in collection_file.collection.steps:
-        check_collection_file(collection_file)
+    with transaction.atomic():
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+        if "check" in collection_file.collection.steps:
+            check_collection_file(collection_file)
 
-    delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
+        delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
 
     message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
     publish(client_state, channel, message, routing_key)
