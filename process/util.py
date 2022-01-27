@@ -8,12 +8,13 @@ from textwrap import fill
 import pika.exceptions
 from django.conf import settings
 from django.db import connections
+from django.db.utils import IntegrityError
 from yapw import clients
 from yapw.decorators import decorate
 from yapw.methods.blocking import nack
 
 from process.exceptions import AlreadyExists
-from process.models import CollectionNote, ProcessingStep
+from process.models import ProcessingStep
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +88,13 @@ def decorator(decode, callback, state, channel, method, properties, body):
     """
 
     def errback(exception):
-        if isinstance(exception, AlreadyExists):
-            # The frequency of these errors should be monitored via Sentry. They should be rare. If they are common,
-            # then either there is an error in the code or an issue with the connection (heartbeat, etc.).
-            logger.error(f"AlreadyExists error possibly caused by duplicate message: {exception}")
+        # These errors should only occur if the RabbitMQ and/or PostgreSQL connection is lost. It's not possible to
+        # have a transaction that spans both systems, so it's possible to insert a row then fail to ack a message.
+        #
+        # That said, we monitor the frequency of these errors via Sentry, to ensure that they are caused by the above
+        # and not by an error in logic.
+        if isinstance(exception, (AlreadyExists, IntegrityError)):
+            logger.error(f"{exception.__class__.__name__} possibly caused by duplicate message: {exception}")
             nack(state, channel, method.delivery_tag, requeue=False)
         else:
             logger.exception("Unhandled exception when consuming %r, sending SIGUSR1", body)
@@ -101,15 +105,6 @@ def decorator(decode, callback, state, channel, method, properties, body):
             conn.close()
 
     decorate(decode, callback, state, channel, method, properties, body, errback, finalback)
-
-
-def save_note(collection, code, note):
-    """Shortcut to save note to collection"""
-    collection_note = CollectionNote()
-    collection_note.collection = collection
-    collection_note.code = code
-    collection_note.note = note
-    collection_note.save()
 
 
 def create_step(name, collection_id, **kwargs):
