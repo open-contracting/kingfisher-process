@@ -33,10 +33,7 @@ def callback(client_state, channel, method, properties, input_message):
 
     delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
 
-    message = {
-        "collection_id": collection_id,
-        "collection_file_id": collection_file_id,
-    }
+    message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
     publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)

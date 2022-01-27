@@ -19,38 +19,35 @@ class Command(BaseCommand):
         consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
+@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
-    if input_message.get("errors", None) and not input_message.get("path", None):
-        input_message["path"] = input_message.get("url", None)
+    collection_id = input_message["collection_id"]
+    if input_message.get("errors") and not input_message.get("path"):
+        input_message["path"] = input_message.get("url")
     else:
         input_message["path"] = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
 
-    collection_id = input_message["collection_id"]
-
     collection = Collection.objects.get(pk=collection_id)
-    with transaction.atomic():
-        collection_file = create_collection_file(
-            collection,
-            file_path=input_message.get("path", None),
-            url=input_message.get("url", None),
-            errors=input_message.get("errors", None),
-        )
+    collection_file = create_collection_file(
+        collection,
+        file_path=input_message.get("path"),
+        url=input_message.get("url"),
+        errors=input_message.get("errors"),
+    )
 
-        message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
+    if input_message.get("close"):
+        collection = Collection.objects.select_for_update().get(pk=collection_id)
+        collection.store_end_at = Now()
+        collection.save()
 
-        if input_message.get("close", False):
-            # close collections as well
-            collection = Collection.objects.select_for_update().get(pk=collection_id)
-            collection.store_end_at = Now()
-            collection.save()
-
-            upgraded_collection = collection.get_upgraded_collection()
-            if upgraded_collection:
-                upgraded_collection.store_end_at = Now()
-                upgraded_collection.save()
+        upgraded_collection = collection.get_upgraded_collection()
+        if upgraded_collection:
+            upgraded_collection.store_end_at = Now()
+            upgraded_collection.save()
 
     # FileError items from Kingfisher Collect are not processed further.
     if "errors" not in input_message:
+        message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
         publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
