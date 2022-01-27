@@ -146,7 +146,7 @@ class Collection(models.Model):
                 )
 
             if self.transform_type == self.parent.transform_type:
-                message = "Unable to proceed"
+                message = _("Parent collection %(id)s is itself already a transformation of %(parent_id)s")
                 if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
                     message = _("Parent collection %(id)s is itself already a compilation of %(parent_id)s")
                 elif self.parent.transform_type == Collection.Transforms.UPGRADE_10_11:
@@ -180,6 +180,9 @@ class Collection(models.Model):
         :returns: upgraded collection
         :rtype: Collection
         """
+        # This is a shortcut to avoid a query. It is based on the logic in clean_fields().
+        if self.transform_type:
+            return None
         try:
             return Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(parent=self)
         except Collection.DoesNotExist:

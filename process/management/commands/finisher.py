@@ -35,8 +35,8 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 
     with transaction.atomic():
-        if completable(collection_id):
-            collection = Collection.objects.select_for_update().get(pk=collection_id)
+        collection = Collection.objects.select_for_update().get(pk=collection_id)
+        if completable(collection):
             if collection.transform_type == Collection.Transforms.COMPILE_RELEASES:
                 collection.store_end_at = Now()
             collection.completed_at = Now()
@@ -50,18 +50,7 @@ def callback(client_state, channel, method, properties, input_message):
     ack(client_state, channel, method.delivery_tag)
 
 
-def completable(collection_id):
-    """
-    Checks whether the collection can be marked as completed.
-
-    :param int collection_id: collection id - to be checked
-
-    :returns: true if the collection processing was completed
-    :rtype: bool
-    """
-
-    collection = Collection.objects.get(pk=collection_id)
-
+def completable(collection):
     if collection.completed_at:
         logger.warning("Collection %s not completable (already completed)", collection)
         return False
@@ -89,14 +78,14 @@ def completable(collection_id):
         logger.debug("Collection %s not completable (steps remaining)", collection)
         return False
 
-    real_files_count = CollectionFile.objects.filter(collection=collection).count()
-    if collection.expected_files_count and collection.expected_files_count > real_files_count:
+    actual_files_count = CollectionFile.objects.filter(collection=collection).count()
+    if collection.expected_files_count and collection.expected_files_count > actual_files_count:
         logger.debug(
             "Collection %s not completable. There are (probably) some unprocessed messages in the queue with the new "
             "items - expected files count %s, real files count %s",
             collection,
             collection.expected_files_count,
-            real_files_count,
+            actual_files_count,
         )
         return False
 
