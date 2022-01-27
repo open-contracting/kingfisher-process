@@ -51,8 +51,8 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
             collection_note.save()
 
         return collection_file
-    else:
-        raise InvalidFormError(form.error_messages)
+
+    raise InvalidFormError(form.error_messages)
 
 
 def create_collections(
@@ -98,7 +98,7 @@ def create_collections(
 
     # handling compiled collection
     compiled_collection = None
-    if compile and upgraded_collection:
+    if compile and upgrade:
         # main -> upgrade -> compile
         compiled_collection = _create_collection(
             data, [], note, upgraded_collection, Collection.Transforms.COMPILE_RELEASES
@@ -118,14 +118,14 @@ def _create_collection(data, steps, note, parent, transform_type):
     collection_data["parent"] = parent
 
     collection_form = CollectionForm(collection_data)
+
     if collection_form.is_valid():
         collection = collection_form.save()
         if note:
             _save_note(collection, note)
         return collection
 
-    else:
-        raise ValueError(collection_form.error_messages)
+    raise ValueError(collection_form.error_messages)
 
 
 def _save_note(collection, note):
@@ -133,7 +133,8 @@ def _save_note(collection, note):
     Creates note for a given collection
     """
     form = CollectionNoteForm({"collection": collection, "note": note, "code": CollectionNote.Codes.INFO})
+
     if form.is_valid():
         return form.save()
-    else:
-        raise ValueError(form.error_messages)
+
+    raise ValueError(form.error_messages)
