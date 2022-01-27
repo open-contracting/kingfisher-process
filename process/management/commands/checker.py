@@ -3,21 +3,11 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.db.utils import IntegrityError
 from libcoveocds.api import ocds_json_output
 from yapw.methods.blocking import ack, publish
 
-from process.models import (
-    Collection,
-    CollectionFile,
-    CollectionNote,
-    ProcessingStep,
-    Record,
-    RecordCheck,
-    Release,
-    ReleaseCheck,
-)
-from process.util import consume, decorator, delete_step, save_note
+from process.models import Collection, CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
+from process.util import consume, decorator, delete_step
 
 consume_routing_keys = ["file_worker"]
 routing_key = "checker"
@@ -32,28 +22,20 @@ class Command(BaseCommand):
         consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
+@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
+    collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
     collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-
     if "check" in collection_file.collection.steps:
-        try:
-            with transaction.atomic():
-                check_collection_file(collection_file)
-        except IntegrityError:
-            logger.exception("Checks already calculated for collection file %s", collection_file)
-            save_note(
-                collection_file.collection,
-                CollectionNote.Codes.WARNING,
-                "Checks already calculated for collection file {}".format(collection_file),
-            )
+        check_collection_file(collection_file)
 
-    delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file.pk)
+    delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id)
 
     message = {
-        "collection_file": collection_file.pk,
-        "collection_id": collection_file.collection.pk,
+        "collection_id": collection_id,
+        "collection_file_id": collection_file_id,
     }
     publish(client_state, channel, message, routing_key)
 

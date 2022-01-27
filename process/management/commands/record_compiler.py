@@ -33,24 +33,20 @@ class Command(BaseCommand):
         )
 
 
+@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     collection_id = input_message["collection_id"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    with transaction.atomic():
-        release = compile_record(collection_id, ocid)
-
-    release_id = None
-    if release:
-        release_id = release.pk
+    release = compile_record(collection_id, ocid)
 
     delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid)
 
     message = {
         "ocid": ocid,
-        "compiled_release_id": release_id,
         "collection_id": compiled_collection_id,
+        "compiled_release_id": release.pk if release else None,
     }
     publish(client_state, channel, message, routing_key)
 
@@ -75,9 +71,7 @@ def compile_record(collection_id, ocid):
 
     try:
         compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
-        raise AlreadyExists(
-            "CompiledRelease {} for a collection {} already exists".format(compiled_release, collection)
-        )
+        raise AlreadyExists("CompiledRelease {} for Collection {} already exists".format(compiled_release, collection))
     except CompiledRelease.DoesNotExist:
         pass
 

@@ -84,13 +84,9 @@ def publish_releases(client_state, channel, collection):
             compiled_collection.compilation_started = True
             compiled_collection.save()
 
-        logger.info("Planning release compilation for %s", compiled_collection)
-
-        # get all ocids for collection
         ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
 
         for item in ocids:
-            # send message to a next phase
             message = {
                 "ocid": item["ocid"],
                 "collection_id": collection.pk,
@@ -118,9 +114,6 @@ def publish_records(client_state, channel, collection_file):
             compiled_collection.compilation_started = True
             compiled_collection.save()
 
-    logger.info("Planning records compilation for %s file %s", compiled_collection, collection_file)
-
-    # get all ocids for collection
     ocids = (
         Record.objects.filter(collection_file_item__collection_file=collection_file)
         .order_by()
@@ -129,7 +122,6 @@ def publish_records(client_state, channel, collection_file):
     )
 
     for item in ocids:
-        # send message to a next phase
         message = {
             "ocid": item["ocid"],
             "collection_id": collection_file.collection.pk,

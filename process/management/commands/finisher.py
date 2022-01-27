@@ -31,25 +31,21 @@ class Command(BaseCommand):
         )
 
 
+@transaction.atomic
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 
-    with transaction.atomic():
-        if completable(collection_id):
-            collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
-            if collection.transform_type == Collection.Transforms.COMPILE_RELEASES:
-                collection.store_end_at = Now()
+    if completable(collection_id):
+        collection = Collection.objects.select_for_update().get(pk=collection_id)
+        if collection.transform_type == Collection.Transforms.COMPILE_RELEASES:
+            collection.store_end_at = Now()
+        collection.completed_at = Now()
+        collection.save()
 
-            collection.completed_at = Now()
-            collection.save()
-
-            # complete upgraded collection as well
-            upgraded_collection = collection.get_upgraded_collection()
-            if upgraded_collection:
-                upgraded_collection.completed_at = Now()
-                upgraded_collection.save()
-
-            logger.debug("Collection %s finished.", collection_id)
+        upgraded_collection = collection.get_upgraded_collection()
+        if upgraded_collection:
+            upgraded_collection.completed_at = Now()
+            upgraded_collection.save()
 
     ack(client_state, channel, method.delivery_tag)
 
