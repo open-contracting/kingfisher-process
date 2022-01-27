@@ -4,6 +4,7 @@ import os
 
 from django.utils.translation import gettext as t
 
+from process.exceptions import InvalidFormError
 from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
 from process.models import Collection, ProcessingStep
 
@@ -28,7 +29,7 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
     :returns: created collection file
     :rtype: CollectionFile
 
-    :raises ValueError: if there is a validation error
+    :raises InvalidFormError: if there is a validation error
     """
     form = CollectionFileForm({"collection": collection, "filename": file_path, "url": url})
 
@@ -51,7 +52,7 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
 
         return collection_file
     else:
-        raise ValueError(form.error_messages)
+        raise InvalidFormError(form.error_messages)
 
 
 def create_collections(

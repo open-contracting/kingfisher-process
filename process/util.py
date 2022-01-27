@@ -13,7 +13,7 @@ from yapw import clients
 from yapw.decorators import decorate
 from yapw.methods.blocking import nack
 
-from process.exceptions import AlreadyExists
+from process.exceptions import AlreadyExists, InvalidFormError
 from process.models import ProcessingStep
 
 logger = logging.getLogger(__name__)
@@ -93,7 +93,9 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # That said, we monitor the frequency of these errors via Sentry, to ensure that they are caused by the above
         # and not by an error in logic.
-        if isinstance(exception, (AlreadyExists, IntegrityError)):
+        #
+        # InvalidFormError is included, as it may be for a "unique_together" error, which is an integrity error.
+        if isinstance(exception, (AlreadyExists, InvalidFormError, IntegrityError)):
             logger.error(f"{exception.__class__.__name__} possibly caused by duplicate message: {exception}")
             nack(state, channel, method.delivery_tag, requeue=False)
         else:
