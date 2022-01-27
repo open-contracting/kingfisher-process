@@ -66,19 +66,22 @@ def completable(collection_id):
         logger.warning("Collection %s not completable (already completed)", collection)
         return False
 
-    # compile-releases collections don't set the `store_end_at` field (?) - instead check the root collection.
+    # The compiler worker changes `compilation_started` to `True`, then creates the processing steps. This check is
+    # required, to avoid a false positive from the `has_steps_remaining` check, below.
+    if collection.transform_type == Collection.Transforms.COMPILE_RELEASES and not collection.compilation_started:
+        logger.debug("Collection %s not completable (compile steps not created)", collection)
+        return False
+
+    # The close_collection endpoint, load command and close command set `store_end_at` for the original and upgraded
+    # collections. (Upgrading is performed at the same time as loading.)
+    #
+    # The finisher worker sets `store_end_at` for the compiled collection, Loading for a compile-releases collection
+    # is synonymous with compiling, which is performed in the previous step.
     if collection.store_end_at is None and (
         collection.transform_type != Collection.Transforms.COMPILE_RELEASES
         or collection.get_root_parent().store_end_at is None
     ):
-        logger.debug("Collection %s not completable (load not finished)", collection)
-        return False
-
-    # special case when the collection should be compiled and
-    # waits for compilation to be planned
-    # in such case, no processing steps will be available yet
-    if collection.transform_type == Collection.Transforms.COMPILE_RELEASES and not collection.compilation_started:
-        logger.debug("Collection %s not completable (compile not started)", collection)
+        logger.debug("Collection %s not completable (load incomplete)", collection)
         return False
 
     has_steps_remaining = ProcessingStep.objects.filter(collection=collection).exists()
