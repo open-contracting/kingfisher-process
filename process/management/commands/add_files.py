@@ -54,12 +54,11 @@ class Command(BaseCommand):
 
         with get_publisher() as client:
             for file_path in walk(options["PATH"]):
-                # note - keep transaction here, not "higher" around the whole cycle
-                # we want to keep relation committed/published as close as possible
+                # The transaction is inside the loop, since we can't rollback RabbitMQ messages, only PostgreSQL
+                # statements. This ensures that any published message is paired with a database commit.
                 with transaction.atomic():
                     logger.debug("Storing file %s", file_path)
                     collection_file = create_collection_file(collection, file_path)
-
-                client.publish({"collection_file_id": collection_file.pk}, routing_key=routing_key)
+                    client.publish({"collection_file_id": collection_file.pk}, routing_key=routing_key)
 
         logger.info("Load command completed")
