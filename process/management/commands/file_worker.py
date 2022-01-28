@@ -79,96 +79,78 @@ def process_file(collection_file):
     :rtype: int
     """
 
-    logger.info("Loading data for collection file %s", collection_file)
-
-    # detect format and check, whether its supported
     data_type = _get_data_type(collection_file)
 
     if data_type["format"] not in SUPPORTED_FORMATS:
         raise ValueError(
-            "Unsupported data type '{}' for file {}. Must be one of {}".format(
-                data_type, collection_file, SUPPORTED_FORMATS
-            )
+            f"Unsupported data type '{data_type}' for file {collection_file}. Must be one of {SUPPORTED_FORMATS}."
         )
 
-    # read the file data
-    file_items, file_package_data = _read_data_from_file(collection_file.filename, data_type)
+    file_package_data, file_items = _read_data_from_file(collection_file.filename, data_type)
 
-    # store data for a current collection
     _store_data(collection_file, file_items, file_package_data, data_type, False)
 
-    # should we store upgraded data as well?
     upgraded_collection = _get_upgraded_collection(collection_file)
 
     if upgraded_collection:
         upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
         _store_data(upgraded_collection_file, file_items, file_package_data, data_type, True)
 
-        # return upgraded file
         return upgraded_collection_file.pk
 
-    # not upgrading, return None
     return None
 
 
 def _read_data_from_file(filename, data_type):
-    key = ""
     package_key = ""
-    # is there an aray with data?
-    if data_type["array"]:
-        key = "item."
-        package_key = "item"
+    data_key = ""
 
-    # build key based on what we are handling
+    if data_type["array"]:
+        package_key = "item"
+        data_key = "item."
+
     if data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
-        key = key + "records"
+        data_key += "records"
     elif data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-        key = key + "releases"
-    else:
-        raise ValueError(
-            "Unsupported format {} for {}, must be one of {}".format(data_type, filename, SUPPORTED_FORMATS)
-        )
+        data_key += "releases"
 
     with open(filename, "rb") as f:
-        file_items = []
-        package_data_object = None
-        builder_object = ObjectBuilder()
-        builder_package = ObjectBuilder()
-
-        build_object = False
         build_package = False
+        build_data = False
+
+        package_builder = ObjectBuilder()
+        data_builder = ObjectBuilder()
+
+        package = None
+        data = []
+
         for prefix, event, value in ijson.parse(f, use_float=True):
-
-            if prefix == package_key and event == "start_map":
-                # collection of package data started
-                builder_package = ObjectBuilder()
-                build_package = True
-
-            if prefix == "{}.item".format(key) and event == "start_map":
-                # collection of the record/release data item started here
-                builder_object = ObjectBuilder()
-                build_object = True
-
-            if prefix == "{}.item".format(key) and event == "end_map":
-                # collection of the record/release data item ended here
-                build_object = False
-                file_items.append(OrderedDict(builder_object.value))
-
-            if prefix == package_key and event == "end_map":
-                # collection of package data ended
-                build_package = False
-                package_data_object = builder_package.value
-
-            if build_object:
-                # store data to current record/release item
-                builder_object.event(event, value)
+            if prefix == package_key:
+                # Start of package.
+                if event == "start_map":
+                    build_package = True
+                    package_builder = ObjectBuilder()
+                # End of package.
+                elif event == "end_map":
+                    build_package = False
+                    package = package_builder.value
+            elif prefix == f"{data_key}.item":
+                # Start of an item of data.
+                if event == "start_map":
+                    build_data = True
+                    data_builder = ObjectBuilder()
+                # End of an item of data.
+                elif event == "end_map":
+                    build_data = False
+                    data.append(OrderedDict(data_builder.value))
 
             if build_package:
-                # store data to package object
-                if not prefix.startswith(key):
-                    builder_package.event(event, value)
+                if not prefix.startswith(data_key):
+                    package_builder.event(event, value)
+            if build_data:
+                data_builder.event(event, value)
 
-    return file_items, package_data_object
+    return package, data
 
 
 def _store_data(collection_file, file_items, file_package_data, data_type, upgrade=False):
@@ -248,11 +230,18 @@ def _get_data_type(collection_file):
     collection = collection_file.collection
     if not collection.data_type:
         detected_format = detect_format(collection_file.filename)
-        collection.set_data_type(detected_format)
+        data_type = {
+            "format": detected_format[0],
+            "concatenated": detected_format[1],
+            "array": detected_format[2],
+        }
+
+        collection.data_type = data_type
         collection.save(update_fields=["data_type"])
+
         upgraded_collection = collection.get_upgraded_collection()
         if upgraded_collection:
-            upgraded_collection.set_data_type(detected_format)
+            upgraded_collection.data_type = data_type
             upgraded_collection.save(update_fields=["data_type"])
 
     return collection.data_type

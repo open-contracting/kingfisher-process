@@ -212,20 +212,6 @@ class Collection(models.Model):
         else:
             return self.parent.get_root_parent()
 
-    def set_data_type(self, detected_format):
-        """
-        Formats detected format to proper dictionary
-
-        :returns: data type
-        :rtype: dictionary
-        """
-        data_type = {}
-        data_type["format"] = detected_format[0]
-        data_type["concatenated"] = detected_format[1]
-        data_type["array"] = detected_format[2]
-
-        self.data_type = data_type
-
 
 class CollectionNote(models.Model):
     """
