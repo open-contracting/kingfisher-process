@@ -1,7 +1,6 @@
 import logging
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from yapw.methods.blocking import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record, Release
@@ -71,21 +70,17 @@ def callback(client_state, channel, method, properties, input_message):
         logger.debug("Collection %s is not compilable.", collection)
 
 
-def publish_releases(client_state, channel, collection):
-    with transaction.atomic():
-        compiled_collection = (
-            Collection.objects.select_for_update()
-            .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
-            .filter(compilation_started=False)
-            .get(parent=collection)
-        )
+def _set_compilation_started(parent):
+    collection = Collection.objects.filter(parent=parent, transform_type=Collection.Transforms.COMPILE_RELEASES).get()
 
-        compiled_collection.compilation_started = True
-        compiled_collection.save()
+    # Use optimistic locking to update the collection.
+    updated = Collection.objects.filter(pk=collection.ok, compilation_started=False).update(compilation_started=True)
 
-    ocids = Release.objects.filter(collection=collection).order_by().values("ocid").distinct()
+    return collection, updated
 
-    for item in ocids:
+
+def _publish(client_state, channel, collection, compiled_collection, items, routing_key):
+    for item in items.order_by().values("ocid").distinct():
         create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
         message = {
@@ -93,37 +88,25 @@ def publish_releases(client_state, channel, collection):
             "collection_id": collection.pk,
             "compiled_collection_id": compiled_collection.pk,
         }
-        publish(client_state, channel, message, "compiler_release")
+        publish(client_state, channel, message, routing_key)
+
+
+def publish_releases(client_state, channel, collection):
+    compiled_collection, updated = _set_compilation_started(collection)
+
+    # Return if another compiler worker received a message for the same compilable collection.
+    if not updated:
+        return
+
+    items = Release.objects.filter(collection=collection)
+    _publish(client_state, channel, collection, compiled_collection, items, "compiler_release")
 
 
 def publish_records(client_state, channel, collection_file):
-    with transaction.atomic():
-        compiled_collection = (
-            Collection.objects.select_for_update()
-            .filter(transform_type=Collection.Transforms.COMPILE_RELEASES)
-            .get(parent_id=collection_file.collection.pk)
-        )
+    compiled_collection, updated = _set_compilation_started(collection_file.collection)
 
-        if not compiled_collection.compilation_started:
-            compiled_collection.compilation_started = True
-            compiled_collection.save()
-
-    ocids = (
-        Record.objects.filter(collection_file_item__collection_file=collection_file)
-        .order_by()
-        .values("ocid")
-        .distinct()
-    )
-
-    for item in ocids:
-        create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
-
-        message = {
-            "ocid": item["ocid"],
-            "collection_id": collection_file.collection.pk,
-            "compiled_collection_id": compiled_collection.pk,
-        }
-        publish(client_state, channel, message, "compiler_record")
+    items = Record.objects.filter(collection_file_item__collection_file=collection_file)
+    _publish(client_state, channel, collection_file.collection, compiled_collection, items, "compiler_record")
 
 
 def compilable(collection_id):
@@ -153,11 +136,9 @@ def compilable(collection_id):
         logger.debug("Collection %s not compilable (store_end_at not set)", collection)
         return False
 
-    has_remaining_steps = (
-        ProcessingStep.objects.filter(collection=collection.get_root_parent())
-        .filter(name=ProcessingStep.Types.LOAD)
-        .exists()
-    )
+    has_remaining_steps = ProcessingStep.objects.filter(
+        collection=collection.get_root_parent(), name=ProcessingStep.Types.LOAD
+    ).exists()
     if has_remaining_steps:
         logger.debug("Collection %s not compilable (load steps remaining)", collection)
         return False
