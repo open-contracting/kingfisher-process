@@ -67,13 +67,7 @@ def consume(*args, prefetch_count=1, **kwargs):
     while True:
         try:
             client = get_client(Consumer, prefetch_count=prefetch_count)
-            # Crawls can fill up queues with millions of messages, causing an out-of-memory error, even when using
-            # durable queues.
-            #
-            # "If the messages in a queue take up a lot of memory, we recommend lazy queues so that they are stored on
-            # disk as soon as possible and not kept in memory longer than is necessary."
-            # https://www.rabbitmq.com/memory-use.html
-            client.consume(*args, arguments={"x-queue-mode": "lazy"}, **kwargs)
+            client.consume(*args, **kwargs)
             break
         # Do not recover if the connection was closed by the broker.
         except pika.exceptions.ConnectionClosedByBroker as e:  # subclass of AMQPConnectionError
