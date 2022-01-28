@@ -74,7 +74,7 @@ def _set_compilation_started(parent):
     collection = Collection.objects.filter(parent=parent, transform_type=Collection.Transforms.COMPILE_RELEASES).get()
 
     # Use optimistic locking to update the collection.
-    updated = Collection.objects.filter(pk=collection.ok, compilation_started=False).update(compilation_started=True)
+    updated = Collection.objects.filter(pk=collection.pk, compilation_started=False).update(compilation_started=True)
 
     return collection, updated
 
