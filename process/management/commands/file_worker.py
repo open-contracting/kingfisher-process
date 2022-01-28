@@ -28,7 +28,7 @@ consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
-SUPPORTED_FORMATS = ["release package", "record package"]
+SUPPORTED_FORMATS = [Collection.DataTypes.RELEASE_PACKAGE, Collection.DataTypes.RECORD_PACKAGE]
 
 
 class Command(BaseCommand):
@@ -120,9 +120,9 @@ def _read_data_from_file(filename, data_type):
         package_key = "item"
 
     # build key based on what we are handling
-    if data_type["format"] == "record package":
+    if data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
         key = key + "records"
-    elif data_type["format"] == "release package":
+    elif data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
         key = key + "releases"
     else:
         raise ValueError(
@@ -216,7 +216,7 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
             except IntegrityError:
                 data = Data.objects.get(hash_md5=item_hash)
 
-        if data_type["format"] == "record package":
+        if data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
             # store record
             record = Record()
             record.collection = collection_file.collection
@@ -225,7 +225,7 @@ def _store_data(collection_file, file_items, file_package_data, data_type, upgra
             record.package_data = package_data
             record.ocid = item["ocid"]
             record.save()
-        elif data_type["format"] == "release package":
+        elif data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
             # store release
             release = Release()
             release.collection = collection_file.collection
