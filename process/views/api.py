@@ -100,16 +100,16 @@ def close_collection(request):
                 collection_note.save()
 
     with get_publisher() as client:
-        message = {"collection_id": collection.pk, "source": "collection_closed"}
+        message = {"collection_id": collection.pk}
         client.publish(message, routing_key="collection_closed")
 
         if upgraded_collection:
-            message = {"collection_id": upgraded_collection.pk, "source": "collection_closed"}
+            message = {"collection_id": upgraded_collection.pk}
             client.publish(message, routing_key="collection_closed")
 
         compiled_collection = collection.get_compiled_collection()
         if compiled_collection:
-            message = {"collection_id": compiled_collection.pk, "source": "collection_closed"}
+            message = {"collection_id": compiled_collection.pk}
             client.publish(message, routing_key="collection_closed")
 
     return HttpResponse(status=204)

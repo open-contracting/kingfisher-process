@@ -17,57 +17,23 @@ class Command(BaseCommand):
 
 
 def callback(client_state, channel, method, properties, input_message):
-    collection = None
-    collection_file = None
+    collection_id = input_message["collection_id"]
+    collection_file_id = input_message.get("collection_file_id")  # None if collection_closed
 
-    # received message from collection closed api endpoint
-    if "source" in input_message and input_message["source"] == "collection_closed":
-        collection = Collection.objects.get(pk=input_message["collection_id"])
-    # received message from regular file processing
+    if method.routing_key == "collection_closed":
+        collection = Collection.objects.get(pk=collection_id)
+        collection_file = None
     else:
-        collection_file = CollectionFile.objects.select_related("collection").get(
-            pk=input_message["collection_file_id"]
-        )
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
         collection = collection_file.collection
 
     ack(client_state, channel, method.delivery_tag)
 
-    if compilable(collection.pk):
-        logger.debug("Collection %s is compilable.", collection)
-
-        if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-            actual_files_count = CollectionFile.objects.filter(collection=collection).count()
-            if collection.expected_files_count and collection.expected_files_count <= actual_files_count:
-                # plans compilation of the whole collection (everything is stored yet)
-                publish_releases(client_state, channel, collection)
-            else:
-                logger.debug(
-                    "Collection %s is not compilable yet. There are (probably) some"
-                    "unprocessed messages in the queue with the new items"
-                    " - expected files count %s real files count %s",
-                    collection,
-                    collection.expected_files_count,
-                    actual_files_count,
-                )
-
-        if (
-            collection_file
-            and collection.data_type
-            and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
-        ):
-            # plans compilation of this file (immedaite compilation - we dont have to wait for all records)
+    if compilable(collection):
+        if collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+            publish_releases(client_state, channel, collection)
+        elif collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and collection_file:
             publish_records(client_state, channel, collection_file)
-        else:
-            logger.debug(
-                """
-                    There is no collection_file avalable for %s,
-                    Message probably comming from api endpoint collection_closed.
-                    This log entry can be ignored for collections with record_packages.
-                """,
-                collection,
-            )
-    else:
-        logger.debug("Collection %s is not compilable.", collection)
 
 
 def _set_compilation_started(parent):
@@ -109,43 +75,52 @@ def publish_records(client_state, channel, collection_file):
     _publish(client_state, channel, collection_file.collection, compiled_collection, items, "compiler_record")
 
 
-def compilable(collection_id):
-    """
-    Checks whether the collection
-        * should be compiled (compile in steps)
-        * could be compiled (load complete)
-        * already wasn't compiled
-
-    :param int collection_id: collection id - to be checked
-
-    :returns: true if the collection can be created
-    :rtype: bool
-    """
-
-    collection = Collection.objects.get(pk=collection_id)
+def compilable(collection):
+    # 1. Check whether compilation *should* occur.
 
     if not collection.steps or "compile" not in collection.steps:
-        logger.debug("Collection %s not compilable (step missing)", collection)
+        logger.debug("Collection %s not compilable ('compile' step not set)", collection)
         return False
 
-    # records can be processed immediately
-    if collection.data_type and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+    # 2. Check whether compilation *can* occur.
+
+    # This can occur if the close_collection endpoint is called before the file_worker worker can process any messages.
+    if not collection.data_type:
+        logger.debug("Collection %s not compilable (data_type not set)", collection)
+        return False
+
+    # Records can be compiled immediately without waiting for a complete load.
+    if collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
         return True
 
     if collection.store_end_at is None:
-        logger.debug("Collection %s not compilable (store_end_at not set)", collection)
+        logger.debug("Collection %s not compilable (load incomplete)", collection)
         return False
 
-    has_remaining_steps = ProcessingStep.objects.filter(
-        collection=collection.get_root_parent(), name=ProcessingStep.Types.LOAD
-    ).exists()
-    if has_remaining_steps:
-        logger.debug("Collection %s not compilable (load steps remaining)", collection)
-        return False
+    # 3. Check whether compilation hasn't started. (2. then continues below, to put slower queries later.)
 
     compiled_collection = collection.get_compiled_collection()
     if compiled_collection.compilation_started:
         logger.debug("Collection %s not compilable (already started)", collection)
+        return False
+
+    has_load_steps_remaining = ProcessingStep.objects.filter(
+        collection=collection.get_root_parent(), name=ProcessingStep.Types.LOAD
+    ).exists()
+    if has_load_steps_remaining:
+        logger.debug("Collection %s not compilable (load steps remaining)", collection)
+        return False
+
+    # At this point, we know that collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE.
+    actual_files_count = CollectionFile.objects.filter(collection=collection).count()
+    if collection.expected_files_count and collection.expected_files_count > actual_files_count:
+        logger.debug(
+            "Collection %s not compilable. There are (probably) some unprocessed messages in the queue with the "
+            "new items - expected files count %s, real files count %s",
+            collection,
+            collection.expected_files_count,
+            actual_files_count,
+        )
         return False
 
     return True
