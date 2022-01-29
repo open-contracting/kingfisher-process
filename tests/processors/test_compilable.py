@@ -11,7 +11,7 @@ class CompilableTests(TransactionTestCase):
         collection = Collection.objects.get(id=3)
         collection.compilation_started = True
         collection.save()
-        self.assertEqual(compilable(2), False)
+        self.assertEqual(compilable(collection), False)
 
     def test_not_fully_processed(self):
         collection = Collection.objects.get(id=2)
@@ -23,13 +23,10 @@ class CompilableTests(TransactionTestCase):
         )
         collection_file_step.save()
 
-        self.assertEqual(compilable(2), False)
+        self.assertEqual(compilable(collection), False)
 
         collection_file_step.delete()
 
         collection.store_end_at = None
         collection.save()
-        self.assertEqual(compilable(2), False)
-
-    def test_happy_day(self):
-        self.assertEqual(compilable(2), True)
+        self.assertEqual(compilable(collection), False)
