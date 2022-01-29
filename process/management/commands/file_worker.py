@@ -104,6 +104,14 @@ def process_file(collection_file):
     return None
 
 
+class ControlCodesFilter:
+    def __init__(self, file):
+        self.file = file
+
+    def read(self, buf_size):
+        return self.file.read(buf_size).replace(b"\\u0000", b"")
+
+
 def _read_data_from_file(filename, data_type):
     package_key = ""
     data_key = ""
@@ -127,7 +135,7 @@ def _read_data_from_file(filename, data_type):
         package = None
         releases_or_records = []
 
-        for prefix, event, value in ijson.parse(f, use_float=True):
+        for prefix, event, value in ijson.parse(ControlCodesFilter(f), use_float=True):
             if prefix == package_key:
                 # Start of package.
                 if event == "start_map":
