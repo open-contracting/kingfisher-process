@@ -86,15 +86,18 @@ def process_file(collection_file):
             f"Unsupported data type '{data_type}' for file {collection_file}. Must be one of {SUPPORTED_FORMATS}."
         )
 
-    file_package_data, file_items = _read_data_from_file(collection_file.filename, data_type)
+    package, releases_or_records = _read_data_from_file(collection_file.filename, data_type)
 
-    _store_data(collection_file, file_items, file_package_data, data_type, False)
+    _store_data(collection_file, package, releases_or_records, data_type, upgrade=False)
 
-    upgraded_collection = _get_upgraded_collection(collection_file)
-
+    upgraded_collection = collection_file.collection.get_upgraded_collection()
     if upgraded_collection:
-        upgraded_collection_file = _create_upgraded_collection_file(collection_file, upgraded_collection)
-        _store_data(upgraded_collection_file, file_items, file_package_data, data_type, True)
+        upgraded_collection_file = CollectionFile(
+            collection=upgraded_collection, filename=collection_file.filename, url=collection_file.url
+        )
+        upgraded_collection_file.save()
+
+        _store_data(upgraded_collection_file, package, releases_or_records, data_type, upgrade=True)
 
         return upgraded_collection_file.pk
 
@@ -122,7 +125,7 @@ def _read_data_from_file(filename, data_type):
         data_builder = ObjectBuilder()
 
         package = None
-        data = []
+        releases_or_records = []
 
         for prefix, event, value in ijson.parse(f, use_float=True):
             if prefix == package_key:
@@ -142,7 +145,7 @@ def _read_data_from_file(filename, data_type):
                 # End of an item of data.
                 elif event == "end_map":
                     build_data = False
-                    data.append(OrderedDict(data_builder.value))
+                    releases_or_records.append(OrderedDict(data_builder.value))
 
             if build_package:
                 if not prefix.startswith(data_key):
@@ -150,77 +153,59 @@ def _read_data_from_file(filename, data_type):
             if build_data:
                 data_builder.event(event, value)
 
-    return package, data
+    return package, releases_or_records
 
 
-def _store_data(collection_file, file_items, file_package_data, data_type, upgrade=False):
-    # store package data
-    package_hash = get_hash(str(file_package_data))
-    try:
-        package_data = PackageData.objects.get(hash_md5=package_hash)
-    except (PackageData.DoesNotExist, PackageData.MultipleObjectsReturned):
-        package_data = PackageData()
-        package_data.data = file_package_data
-        package_data.hash_md5 = package_hash
-        try:
-            with transaction.atomic():
-                # another transaction needed here as integrity error will "broke" the upper one
-                package_data.save()
-        except IntegrityError:
-            package_data = PackageData.objects.get(hash_md5=package_hash)
-
-    # store individual items
-    collection_file_item = CollectionFileItem()
-    collection_file_item.collection_file = collection_file
-    collection_file_item.number = 0
+def _store_data(collection_file, package, releases_or_records, data_type, upgrade=False):
+    collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
     collection_file_item.save()
 
-    for item in file_items:
-        # upgrade to latest version if necessary
+    package_data = _store_deduplicated_data(PackageData, package)
+
+    for release_or_record in releases_or_records:
         if upgrade:
             # this is not the prettiest solution
             # however there is no way to tell upgrade_10_11 to not to reorder keys
             # simplejson is used here as it supports Decimal natively
-            item = upgrade_10_11(json.loads(json.dumps(item, use_decimal=True), object_pairs_hook=OrderedDict))
+            release_or_record = upgrade_10_11(
+                json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
+            )
 
-        # store data object
-        item_hash = get_hash(str(item))
-        try:
-            data = Data.objects.get(hash_md5=item_hash)
-        except (Data.DoesNotExist, Data.MultipleObjectsReturned):
-            data = Data()
-            data.data = item
-            data.hash_md5 = item_hash
-            try:
-                with transaction.atomic():
-                    # another transaction needed here as integrity error will "broke" the upper one
-                    data.save()
-            except IntegrityError:
-                data = Data.objects.get(hash_md5=item_hash)
+        data = _store_deduplicated_data(Data, release_or_record)
 
         if data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
-            # store record
-            record = Record()
-            record.collection = collection_file.collection
-            record.collection_file_item = collection_file_item
-            record.data = data
-            record.package_data = package_data
-            record.ocid = item["ocid"]
-            record.save()
+            Record(
+                collection=collection_file.collection,
+                collection_file_item=collection_file_item,
+                package_data=package_data,
+                data=data,
+                ocid=release_or_record["ocid"],
+            ).save()
         elif data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-            # store release
-            release = Release()
-            release.collection = collection_file.collection
-            release.collection_file_item = collection_file_item
-            release.data = data
-            release.package_data = package_data
-            release.release_id = item["id"]
-            release.ocid = item["ocid"]
-            release.save()
-        else:
-            raise ValueError(
-                "Unsupported format {} for {}, must be one of {}".format(format, collection_file, SUPPORTED_FORMATS)
-            )
+            Release(
+                collection=collection_file.collection,
+                collection_file_item=collection_file_item,
+                package_data=package_data,
+                data=data,
+                ocid=release_or_record["ocid"],
+                release_id=release_or_record["id"],
+            ).save()
+
+
+def _store_deduplicated_data(klass, data):
+    hash_md5 = get_hash(str(data))
+
+    try:
+        obj = klass.objects.get(hash_md5=hash_md5)
+    except (klass.DoesNotExist, klass.MultipleObjectsReturned):
+        obj = klass(data=data, hash_md5=hash_md5)
+        try:
+            with transaction.atomic():
+                obj.save()
+        except IntegrityError:
+            obj = klass.objects.get(hash_md5=hash_md5)
+
+    return obj
 
 
 def _get_data_type(collection_file):
@@ -245,34 +230,3 @@ def _get_data_type(collection_file):
             upgraded_collection.save(update_fields=["data_type"])
 
     return collection.data_type
-
-
-def _get_upgraded_collection(collection_file):
-    """
-    Gets upgraded collection for collection_file.parent collection.
-
-    :param CollectionFile collection_file: collection file of the parent
-
-    :returns: upgraded collection
-    :rtype: Collection
-    """
-    try:
-        upgraded_collection = Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(
-            parent_id=collection_file.collection_id
-        )
-    except Collection.DoesNotExist:
-        return None
-    return upgraded_collection
-
-
-def _create_upgraded_collection_file(collection_file, upgraded_collection):
-    """
-    Simple helper responsible for "copying" existing collection file to an upgraded_collection.collection_file.
-    """
-    upgraded_collection_file = CollectionFile()
-    upgraded_collection_file.collection = upgraded_collection
-    upgraded_collection_file.filename = collection_file.filename
-    upgraded_collection_file.url = collection_file.url
-    upgraded_collection_file.save()
-
-    return upgraded_collection_file
