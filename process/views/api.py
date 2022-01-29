@@ -52,6 +52,7 @@ def create_collection(request):
 @require_POST
 def close_collection(request):
     input_message = json.loads(request.body)
+
     if "collection_id" not in input_message:
         return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id": "<collection_id>"}')
 
@@ -70,34 +71,34 @@ def close_collection(request):
             upgraded_collection.save()
 
         if "reason" in input_message and input_message["reason"]:
-            collection_note = CollectionNote()
-            collection_note.collection = collection
-            collection_note.code = CollectionNote.Codes.INFO
-            collection_note.note = "Spider close reason: {}".format(input_message["reason"])
-            collection_note.save()
+            CollectionNote(
+                collection=collection,
+                code=CollectionNote.Codes.INFO,
+                note="Spider close reason: {}".format(input_message["reason"]),
+            ).save()
 
             if upgraded_collection:
-                collection_note = CollectionNote()
-                collection_note.collection = upgraded_collection
-                collection_note.code = CollectionNote.Codes.INFO
-                collection_note.note = "Spider close reason: {}".format(input_message["reason"])
-                collection_note.save()
+                CollectionNote(
+                    collection=upgraded_collection,
+                    code=CollectionNote.Codes.INFO,
+                    note="Spider close reason: {}".format(input_message["reason"]),
+                ).save()
 
         if "stats" in input_message and input_message["stats"]:
-            collection_note = CollectionNote()
-            collection_note.collection = collection
-            collection_note.code = CollectionNote.Codes.INFO
-            collection_note.note = "Spider stats"
-            collection_note.data = input_message["stats"]
-            collection_note.save()
+            CollectionNote(
+                collection=collection,
+                code=CollectionNote.Codes.INFO,
+                note="Spider stats",
+                data=input_message["stats"],
+            ).save()
 
             if upgraded_collection:
-                collection_note = CollectionNote()
-                collection_note.collection = upgraded_collection
-                collection_note.code = CollectionNote.Codes.INFO
-                collection_note.note = "Spider stats"
-                collection_note.data = input_message["stats"]
-                collection_note.save()
+                CollectionNote(
+                    collection=upgraded_collection,
+                    code=CollectionNote.Codes.INFO,
+                    note="Spider stats",
+                    data=input_message["stats"],
+                ).save()
 
     with get_publisher() as client:
         message = {"collection_id": collection.pk}

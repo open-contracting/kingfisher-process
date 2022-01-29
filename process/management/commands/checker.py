@@ -84,12 +84,9 @@ def check_collection_file(collection_file):
         check_result.pop("records_aggregates", None)
 
         if items_key == "releases":
-            check = ReleaseCheck()
-            check.release = item
+            check = ReleaseCheck(release=item)
         else:
-            check = RecordCheck()
-            check.record = item
+            check = RecordCheck(record=item)
 
         check.cove_output = check_result
-
         check.save()

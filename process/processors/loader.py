@@ -35,20 +35,18 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
 
     if form.is_valid():
         collection_file = form.save()
-        logger.debug("Create collection file %s", collection_file)
         if not errors:
-            processing_step = ProcessingStep()
-            processing_step.collection = collection
-            processing_step.collection_file = collection_file
-            processing_step.name = ProcessingStep.Types.LOAD
-            processing_step.save()
-            logger.debug("Created processing step %s", processing_step)
+            ProcessingStep(
+                collection=collection,
+                collection_file=collection_file,
+                name=ProcessingStep.Types.LOAD,
+            ).save()
         else:
-            collection_note = CollectionNote()
-            collection_note.collection = collection
-            collection_note.code = (CollectionNote.Codes.ERROR,)
-            collection_note.note = "Errors when downloading collection_file_id {} \n{}".format(collection_file, errors)
-            collection_note.save()
+            CollectionNote(
+                collection=collection,
+                code=(CollectionNote.Codes.ERROR,),
+                note=f"Errors when downloading collection_file_id {collection_file}\n{errors}",
+            ).save()
 
         return collection_file
 

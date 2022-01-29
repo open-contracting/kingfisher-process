@@ -16,10 +16,11 @@ class CompilableTests(TransactionTestCase):
     def test_not_fully_processed(self):
         collection = Collection.objects.get(id=2)
         collection_file = CollectionFile.objects.get(id=1)
-        collection_file_step = ProcessingStep()
-        collection_file_step.name = ProcessingStep.Types.LOAD
-        collection_file_step.collection = Collection.objects.get(id=1)
-        collection_file_step.collection_file = collection_file
+        collection_file_step = ProcessingStep(
+            name=ProcessingStep.Types.LOAD,
+            collection=Collection.objects.get(id=1),
+            collection_file=collection_file,
+        )
         collection_file_step.save()
 
         self.assertEqual(compilable(2), False)
