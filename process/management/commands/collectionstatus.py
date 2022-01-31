@@ -27,13 +27,16 @@ class Command(CollectionCommand):
 
         # Relations
         print(f"collection_files: {collection.collection_files.count()}")
-        print(f"processing_steps: {collection.processing_steps.exists()}")
-
-        # Logic
-        print(f"compilable: {compilable(collection)}")
-        print(f"completable: {completable(collection)}")
+        print(f"processing_steps: {collection.processing_steps.count()}")
 
         compiled_collection = collection.get_compiled_collection()
+
+        # Logic
+        if not compiled_collection or not compiled_collection.compilation_started:
+            print(f"compilable: {compilable(collection)}")
+        if not collection.completed_at:
+            print(f"completable: {completable(collection)}")
+
         if compiled_collection:
             print()
 
