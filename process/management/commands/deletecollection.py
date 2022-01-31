@@ -5,7 +5,7 @@ from process.util import wrap as w
 
 
 class Command(CollectionCommand):
-    help = w(t("Deletes a collection and its ancestors. Rows in the package_data and data tables are not deleted."))
+    help = w(t("Delete a collection and its ancestors. Rows in the package_data and data tables are not deleted."))
 
     def handle_collection(self, collection, *args, **options):
         confirm = input(f"Collection {collection} will be deleted. Do you want to continue? [y/N] ")
@@ -13,4 +13,4 @@ class Command(CollectionCommand):
         if confirm.lower() == "y":
             print("Working... ", end="")
             collection.delete()
-            print("success")
+            print("done")
