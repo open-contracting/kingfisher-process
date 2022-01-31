@@ -3,7 +3,7 @@ from django.db.models.functions import Now
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
-from process.management.commands.base.collection_command import CollectionCommand
+from process.cli import CollectionCommand
 from process.util import wrap as w
 
 
