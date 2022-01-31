@@ -1,4 +1,3 @@
-import argparse
 import logging
 import os
 
@@ -20,7 +19,6 @@ class Command(BaseCommand):
     help = w(t("Load data into a (open) collection, asynchronously"))
 
     def add_arguments(self, parser):
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument("PATH", help=_("a file or directory to load"), nargs="+", type=file_or_directory)
         parser.add_argument(
             "-c",

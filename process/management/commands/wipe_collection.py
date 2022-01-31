@@ -1,4 +1,3 @@
-import argparse
 import logging
 import sys
 
@@ -21,7 +20,6 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             "-c",
             "--collection",

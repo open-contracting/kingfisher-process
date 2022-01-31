@@ -1,4 +1,3 @@
-import argparse
 import logging
 
 from django.core.management.base import BaseCommand, CommandError
@@ -16,7 +15,6 @@ class Command(BaseCommand):
     help = w(t("Close open collection."))
 
     def add_arguments(self, parser):
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             "-c",
             "--collection",
