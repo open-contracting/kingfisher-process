@@ -82,7 +82,6 @@ def compile_release(collection_id, ocid):
     for release in releases:
         releases_data.append(release.data.data)
 
-        # collect all extensions used
         if release.package_data:
             package_data_extensions = release.package_data.data.get("extensions", [])
             if isinstance(package_data_extensions, list):
