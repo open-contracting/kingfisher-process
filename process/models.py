@@ -254,7 +254,9 @@ class CollectionFile(models.Model):
             models.UniqueConstraint(name="unique_collection_file_identifiers", fields=["collection", "filename"]),
         ]
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, db_index=False, related_name="collection_files"
+    )
 
     filename = models.TextField(blank=True)
     url = models.TextField(blank=True)
