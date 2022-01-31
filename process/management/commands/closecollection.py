@@ -8,7 +8,7 @@ from process.util import wrap as w
 
 
 class Command(CollectionCommand):
-    help = w(t("Close an open root collection."))
+    help = w(t("Close an open root collection and its upgraded child collection, if any."))
 
     def handle_collection(self, collection, *args, **options):
         if collection.store_end_at:
