@@ -11,22 +11,22 @@ from tests.fixtures import collection
 class WipeTests(TransactionTestCase):
     def test_missing_args(self):
         with self.assertRaises(CommandError) as e:
-            call_command("close")
+            call_command("deletecollection")
 
-        message = "Please indicate collection by its id."
+        message = "Error: the following arguments are required: collection_id"
         self.assertEqual(str(e.exception), message)
 
     def test_wrong_args(self):
-        with self.assertRaises(CommandError) as e:
-            call_command("close", "-c", "dfds")
+        with self.assertRaises(ValueError) as e:
+            call_command("deletecollection", "text")
 
-        message = "--collection dfds is not an int value"
+        message = "Field 'id' expected a number but got 'text'."
         self.assertEqual(str(e.exception), message)
 
-    @patch("builtins.input", return_value="Y")
+    @patch("builtins.input", return_value="y")
     def test_ok(self, mocked):
         source = collection()
         source.save()
-        call_command("wipe_collection", "-c", source.id)
+        call_command("deletecollection", source.id)
         with self.assertRaises(Collection.DoesNotExist):
             source.refresh_from_db()
