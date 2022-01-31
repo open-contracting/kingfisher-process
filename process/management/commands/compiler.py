@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from yapw.methods.blocking import ack, publish
 
@@ -20,7 +21,7 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message.get("collection_file_id")  # None if collection_closed
 
-    if method.routing_key == "collection_closed":
+    if method.routing_key == f"{settings.RABBIT_EXCHANGE_NAME}_collection_closed":
         collection = Collection.objects.get(pk=collection_id)
         collection_file = None
     else:
