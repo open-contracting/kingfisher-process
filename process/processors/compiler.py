@@ -12,19 +12,19 @@ from process.util import get_hash
 logger = logging.getLogger(__name__)
 
 
-def save_compiled_release(compiled_release_data, collection, ocid):
+def save_compiled_release(merged, collection, ocid):
     collection_file = CollectionFile(collection=collection, filename=f"{ocid}.json")
     collection_file.save()
 
     collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
     collection_file_item.save()
 
-    hash_md5 = get_hash(str(compiled_release_data))
+    hash_md5 = get_hash(str(merged))
 
     try:
         data = Data.objects.get(hash_md5=hash_md5)
     except (Data.DoesNotExist, Data.MultipleObjectsReturned):
-        data = Data(data=compiled_release_data, hash_md5=hash_md5)
+        data = Data(data=merged, hash_md5=hash_md5)
         data.save()
 
     release = CompiledRelease(collection=collection, collection_file_item=collection_file_item, data=data, ocid=ocid)

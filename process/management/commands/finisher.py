@@ -5,7 +5,7 @@ from django.db import transaction
 from django.db.models.functions import Now
 from yapw.methods.blocking import ack
 
-from process.models import Collection, CollectionFile, ProcessingStep
+from process.models import Collection
 from process.util import consume, decorator
 
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
@@ -73,12 +73,12 @@ def completable(collection):
         logger.debug("Collection %s not completable (load incomplete)", collection)
         return False
 
-    has_steps_remaining = ProcessingStep.objects.filter(collection=collection).exists()
+    has_steps_remaining = collection.processing_steps.exists()
     if has_steps_remaining:
         logger.debug("Collection %s not completable (steps remaining)", collection)
         return False
 
-    actual_files_count = CollectionFile.objects.filter(collection=collection).count()
+    actual_files_count = collection.collectionfile_set.count()
     if collection.expected_files_count and collection.expected_files_count > actual_files_count:
         logger.debug(
             "Collection %s not completable. There are (probably) some unprocessed messages in the queue with the new "

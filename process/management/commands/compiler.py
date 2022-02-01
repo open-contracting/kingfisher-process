@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from yapw.methods.blocking import ack, publish
 
-from process.models import Collection, CollectionFile, ProcessingStep, Record, Release
+from process.models import Collection, CollectionFile, ProcessingStep, Record
 from process.util import consume, create_step, decorator
 
 consume_routing_keys = ["file_worker", "collection_closed"]
@@ -38,7 +38,7 @@ def callback(client_state, channel, method, properties, input_message):
 
 
 def _set_compilation_started(parent):
-    collection = Collection.objects.filter(parent=parent, transform_type=Collection.Transforms.COMPILE_RELEASES).get()
+    collection = Collection.objects.get(parent=parent, transform_type=Collection.Transforms.COMPILE_RELEASES)
 
     # Use optimistic locking to update the collection.
     updated = Collection.objects.filter(pk=collection.pk, compilation_started=False).update(compilation_started=True)
@@ -65,7 +65,7 @@ def publish_releases(client_state, channel, collection):
     if not updated:
         return
 
-    items = Release.objects.filter(collection=collection)
+    items = collection.release_set
     _publish(client_state, channel, collection, compiled_collection, items, "compiler_release")
 
 
@@ -105,15 +105,15 @@ def compilable(collection):
         logger.debug("Collection %s not compilable (already started)", collection)
         return False
 
-    has_load_steps_remaining = ProcessingStep.objects.filter(
-        collection=collection.get_root_parent(), name=ProcessingStep.Types.LOAD
-    ).exists()
+    has_load_steps_remaining = (
+        collection.get_root_parent().processing_steps.filter(name=ProcessingStep.Types.LOAD).exists()
+    )
     if has_load_steps_remaining:
         logger.debug("Collection %s not compilable (load steps remaining)", collection)
         return False
 
     # At this point, we know that collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE.
-    actual_files_count = CollectionFile.objects.filter(collection=collection).count()
+    actual_files_count = collection.collectionfile_set.count()
     if collection.expected_files_count and collection.expected_files_count > actual_files_count:
         logger.debug(
             "Collection %s not compilable. There are (probably) some unprocessed messages in the queue with the "
