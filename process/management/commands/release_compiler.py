@@ -16,11 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     """
-    The worker is responsible for the compilation of particular releases.
-    Consumes messages with an ocid and collection_id which should be compiled.
-    The whole structure of CollectionFile, CollectionFileItem, and CompiledRelease
-    is created and saved.
-    It's safe to run multiple workers of this type at the same type.
+    Create a compiled release from the releases for a given OCID.
     """
 
     def handle(self, *args, **options):
@@ -29,12 +25,11 @@ class Command(BaseCommand):
 
 def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
-    collection_id = input_message["collection_id"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
     with delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
         with transaction.atomic():
-            release = compile_release(collection_id, ocid)
+            release = compile_release(compiled_collection_id, ocid)
 
     message = {
         "ocid": ocid,
@@ -46,25 +41,12 @@ def callback(client_state, channel, method, properties, input_message):
     ack(client_state, channel, method.delivery_tag)
 
 
-def compile_release(collection_id, ocid):
-    """
-    Compiles releases of given ocid in a "parent" collection. Creates the whole structure in the "proper" transformed
-    collection - CollectionFile, CollectionFileItems, Data, and CompiledRelease.
-
-    :param int collection_id: collection id to which the ocid belongs to
-    :param str ocid: ocid of release whiich should be compiled
-
-    :returns: compiled release
-    :rtype: CompiledRelease
-    """
-
-    logger.info("Compiling release collection_id: %s ocid: %s", collection_id, ocid)
-
-    collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
+def compile_release(compiled_collection_id, ocid):
+    collection = Collection.objects.get(pk=compiled_collection_id)
 
     try:
-        compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
-        raise AlreadyExists("CompiledRelease {} for Collection {} already exists".format(compiled_release, collection))
+        compiled_release = collection.compiledrelease_set.get(ocid=ocid)
+        raise AlreadyExists(f"Compiled release {compiled_release} for collection {collection} already exists")
     except CompiledRelease.DoesNotExist:
         pass
 
@@ -75,23 +57,19 @@ def compile_release(collection_id, ocid):
     )
 
     if len(releases) < 1:
-        raise ValueError("No releases with ocid {} found in parent collection.".format(ocid))
+        raise ValueError(f"OCID {ocid} has 0 releases.")
 
-    releases_data = []
+    data = []
     extensions = set()
     for release in releases:
-        releases_data.append(release.data.data)
+        data.append(release.data.data)
 
         if release.package_data:
-            package_data_extensions = release.package_data.data.get("extensions", [])
-            if isinstance(package_data_extensions, list):
-                extensions.update(package_data_extensions)
+            package_extensions = release.package_data.data.get("extensions", [])
+            if isinstance(package_extensions, list):
+                extensions.update(package_extensions)
             else:
-                logger.error(
-                    "Package data for release %s contains malformed extensions %s, skipping.",
-                    release,
-                    package_data_extensions,
-                )
+                logger.error("Skipped malformed extensions for release %s: %s", release, package_extensions)
 
     # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
     # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases
@@ -99,13 +77,11 @@ def compile_release(collection_id, ocid):
     #
     # https://more-itertools.readthedocs.io/en/stable/_modules/more_itertools/recipes.html#unique_everseen
     seenlist = []
-    releases_data_unique = []
-    for d in releases_data:
+    unique = []
+    for d in data:
         if d not in seenlist:
             seenlist.append(d)
-            releases_data_unique.append(d)
+            unique.append(d)
 
-    # merge data into into single compiled release
-    compiled_release_data = compile_releases_by_ocdskit(collection, ocid, releases_data_unique, extensions)
-
-    return save_compiled_release(compiled_release_data, collection, ocid)
+    merged = compile_releases_by_ocdskit(collection, ocid, unique, extensions)
+    return save_compiled_release(merged, collection, ocid)
