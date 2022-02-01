@@ -18,7 +18,7 @@ class CompletableTests(TransactionTestCase):
         collection = Collection.objects.get(id=2)
         collection_file = CollectionFile.objects.get(id=1)
         collection_file_step = ProcessingStep(
-            name=ProcessingStep.Types.LOAD,
+            name=ProcessingStep.Name.LOAD,
             collection=Collection.objects.get(id=2),
             collection_file=collection_file,
         )
@@ -34,7 +34,7 @@ class CompletableTests(TransactionTestCase):
 
     def test_happy_day_compiled(self):
         collection = Collection.objects.get(id=2)
-        collection.transform_type = Collection.Transforms.COMPILE_RELEASES
+        collection.transform_type = Collection.Transform.COMPILE_RELEASES
         collection.store_end_at = None
         collection.compilation_started = True
         collection.save()

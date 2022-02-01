@@ -39,12 +39,12 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
             ProcessingStep(
                 collection=collection,
                 collection_file=collection_file,
-                name=ProcessingStep.Types.LOAD,
+                name=ProcessingStep.Name.LOAD,
             ).save()
         else:
             CollectionNote(
                 collection=collection,
-                code=(CollectionNote.Codes.ERROR,),
+                code=(CollectionNote.Level.ERROR,),
                 note=f"Errors when downloading collection_file_id {collection_file}\n{errors}",
             ).save()
 
@@ -88,23 +88,23 @@ def create_collections(
     if upgrade and compile:
         # main -> upgrade -> compile
         upgraded_collection = _create_collection(
-            data, ["compile"], note, collection, Collection.Transforms.UPGRADE_10_11
+            data, ["compile"], note, collection, Collection.Transform.UPGRADE_10_11
         )
     if upgrade and not compile:
         # main -> upgrade
-        upgraded_collection = _create_collection(data, [], note, collection, Collection.Transforms.UPGRADE_10_11)
+        upgraded_collection = _create_collection(data, [], note, collection, Collection.Transform.UPGRADE_10_11)
 
     # handling compiled collection
     compiled_collection = None
     if compile and upgrade:
         # main -> upgrade -> compile
         compiled_collection = _create_collection(
-            data, [], note, upgraded_collection, Collection.Transforms.COMPILE_RELEASES
+            data, [], note, upgraded_collection, Collection.Transform.COMPILE_RELEASES
         )
 
     if compile and not upgraded_collection:
         # main -> compile
-        compiled_collection = _create_collection(data, [], note, collection, Collection.Transforms.COMPILE_RELEASES)
+        compiled_collection = _create_collection(data, [], note, collection, Collection.Transform.COMPILE_RELEASES)
 
     return collection, upgraded_collection, compiled_collection
 
@@ -130,7 +130,7 @@ def _save_note(collection, note):
     """
     Creates note for a given collection
     """
-    form = CollectionNoteForm({"collection": collection, "note": note, "code": CollectionNote.Codes.INFO})
+    form = CollectionNoteForm({"collection": collection, "note": note, "code": CollectionNote.Level.INFO})
 
     if form.is_valid():
         return form.save()

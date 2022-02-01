@@ -28,7 +28,7 @@ def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    with delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
+    with delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
         with transaction.atomic():
             release = compile_record(compiled_collection_id, ocid)
 
@@ -76,7 +76,7 @@ def compile_record(compiled_collection_id, ocid):
         if undated:
             create_note(
                 collection,
-                CollectionNote.Codes.WARNING,
+                CollectionNote.Level.WARNING,
                 f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled.",
             )
 
@@ -97,7 +97,7 @@ def compile_record(compiled_collection_id, ocid):
     compiled_release = record.data.data.get("compiledRelease", [])
     if compiled_release:
         note.append("Its compiledRelease was used.")
-        create_note(collection, CollectionNote.Codes.WARNING, note)
+        create_note(collection, CollectionNote.Level.WARNING, note)
         return save_compiled_release(compiled_release, collection, ocid)
 
     if tagged:
@@ -105,8 +105,8 @@ def compile_record(compiled_collection_id, ocid):
             note.append("Its first release tagged 'compiled' was used.")
         else:
             note.append("Its only release tagged 'compiled' was used.")
-        create_note(collection, CollectionNote.Codes.WARNING, note)
+        create_note(collection, CollectionNote.Level.WARNING, note)
         return save_compiled_release(tagged[0], collection, ocid)
 
     note.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
-    create_note(collection, CollectionNote.Codes.ERROR, note)
+    create_note(collection, CollectionNote.Level.ERROR, note)

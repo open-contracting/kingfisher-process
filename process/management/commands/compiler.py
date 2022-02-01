@@ -38,7 +38,7 @@ def callback(client_state, channel, method, properties, input_message):
 
 
 def _set_compilation_started(parent):
-    collection = Collection.objects.get(parent=parent, transform_type=Collection.Transforms.COMPILE_RELEASES)
+    collection = Collection.objects.get(parent=parent, transform_type=Collection.Transform.COMPILE_RELEASES)
 
     # Use optimistic locking to update the collection.
     updated = Collection.objects.filter(pk=collection.pk, compilation_started=False).update(compilation_started=True)
@@ -48,7 +48,7 @@ def _set_compilation_started(parent):
 
 def _publish(client_state, channel, collection, compiled_collection, items, routing_key):
     for item in items.order_by().values("ocid").distinct():
-        create_step(ProcessingStep.Types.COMPILE, compiled_collection.pk, ocid=item["ocid"])
+        create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
         message = {
             "ocid": item["ocid"],
@@ -106,7 +106,7 @@ def compilable(collection):
         return False
 
     has_load_steps_remaining = (
-        collection.get_root_parent().processing_steps.filter(name=ProcessingStep.Types.LOAD).exists()
+        collection.get_root_parent().processing_steps.filter(name=ProcessingStep.Name.LOAD).exists()
     )
     if has_load_steps_remaining:
         logger.debug("Collection %s not compilable (load steps remaining)", collection)

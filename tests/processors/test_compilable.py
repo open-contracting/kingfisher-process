@@ -17,7 +17,7 @@ class CompilableTests(TransactionTestCase):
         collection = Collection.objects.get(id=2)
         collection_file = CollectionFile.objects.get(id=1)
         collection_file_step = ProcessingStep(
-            name=ProcessingStep.Types.LOAD,
+            name=ProcessingStep.Name.LOAD,
             collection=Collection.objects.get(id=1),
             collection_file=collection_file,
         )

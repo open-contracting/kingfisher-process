@@ -53,7 +53,7 @@ class Collection(models.Model):
             models.UniqueConstraint(name="unique_upgraded_compiled_collection", fields=["parent", "transform_type"]),
         ]
 
-    class Transforms(models.TextChoices):
+    class Transform(models.TextChoices):
         COMPILE_RELEASES = "compile-releases", _("Compile releases")
         UPGRADE_10_11 = "upgrade-1-0-to-1-1", _("Upgrade from 1.0 to 1.1 ")
 
@@ -87,7 +87,7 @@ class Collection(models.Model):
         db_index=False,
         db_column="transform_from_collection_id",
     )
-    transform_type = models.TextField(blank=True, choices=Transforms.choices)
+    transform_type = models.TextField(blank=True, choices=Transform.choices)
     data_type = JSONField(null=True, blank=True)
 
     # Calculated fields
@@ -116,7 +116,7 @@ class Collection(models.Model):
         self.full_clean()
         self.save()
 
-        if step in Collection.Transforms.values:
+        if step in Collection.Transform.values:
             collection = Collection(
                 source_id=self.source_id,
                 data_version=self.data_version,
@@ -147,17 +147,17 @@ class Collection(models.Model):
 
             if self.transform_type == self.parent.transform_type:
                 message = _("Parent collection %(id)s is itself already a transformation of %(parent_id)s")
-                if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
+                if self.parent.transform_type == Collection.Transform.COMPILE_RELEASES:
                     message = _("Parent collection %(id)s is itself already a compilation of %(parent_id)s")
-                elif self.parent.transform_type == Collection.Transforms.UPGRADE_10_11:
+                elif self.parent.transform_type == Collection.Transform.UPGRADE_10_11:
                     message = _("Parent collection %(id)s is itself already an upgrade of %(parent_id)s")
                 raise ValidationError(
                     {"transform_type": ValidationError(message, params=self.parent.__dict__)},
                     code="transform_duplicate_transition",
                 )
 
-            if self.transform_type == Collection.Transforms.UPGRADE_10_11:
-                if self.parent.transform_type == Collection.Transforms.COMPILE_RELEASES:
+            if self.transform_type == Collection.Transform.UPGRADE_10_11:
+                if self.parent.transform_type == Collection.Transform.COMPILE_RELEASES:
                     message = _("Parent collection %(id)s is compiled and can't be upgraded")
                     raise ValidationError(
                         {"transform_type": ValidationError(message, params=self.parent.__dict__)},
@@ -184,7 +184,7 @@ class Collection(models.Model):
         if self.transform_type:
             return None
         try:
-            return Collection.objects.get(transform_type=Collection.Transforms.UPGRADE_10_11, parent=self)
+            return Collection.objects.get(transform_type=Collection.Transform.UPGRADE_10_11, parent=self)
         except Collection.DoesNotExist:
             return None
 
@@ -196,7 +196,7 @@ class Collection(models.Model):
         :rtype: Collection
         """
         try:
-            return Collection.objects.get(transform_type=Collection.Transforms.COMPILE_RELEASES, parent=self)
+            return Collection.objects.get(transform_type=Collection.Transform.COMPILE_RELEASES, parent=self)
         except Collection.DoesNotExist:
             return None
 
@@ -229,12 +229,12 @@ class CollectionNote(models.Model):
     data = JSONField(encoder=DjangoJSONEncoder, null=True, blank=True)
     stored_at = models.DateTimeField(auto_now_add=True)
 
-    class Codes(models.TextChoices):
+    class Level(models.TextChoices):
         INFO = "INFO"
         ERROR = "ERROR"
         WARNING = "WARNING"
 
-    code = models.TextField(blank=True, choices=Codes.choices)
+    code = models.TextField(blank=True, choices=Level.choices)
 
     def __str__(self):
         return "{note} (id: {id})".format_map(Default(note=self.note, id=self.pk))
@@ -279,7 +279,7 @@ class ProcessingStep(models.Model):
             models.Index(name="processing_step_name_idx", fields=["name"]),
         ]
 
-    class Types(models.TextChoices):
+    class Name(models.TextChoices):
         LOAD = "LOAD"
         UPGRADE = "UPGRADE"
         COMPILE = "COMPILE"
@@ -291,7 +291,7 @@ class ProcessingStep(models.Model):
 
     collection_file = models.ForeignKey(CollectionFile, null=True, on_delete=models.CASCADE, db_index=True)
     ocid = models.TextField(null=True)
-    name = models.TextField(choices=Types.choices, db_index=True)
+    name = models.TextField(choices=Name.choices, db_index=True)
 
 
 class CollectionFileItem(models.Model):

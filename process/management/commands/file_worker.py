@@ -42,7 +42,7 @@ def callback(client_state, channel, method, properties, input_message):
     collection_file_id = input_message["collection_file_id"]
 
     try:
-        with delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id):
+        with delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id):
             with transaction.atomic():
                 collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
                 collection = collection_file.collection
@@ -51,21 +51,21 @@ def callback(client_state, channel, method, properties, input_message):
         # If a duplicate message is received causing an IntegrityError above, we still want to create the next step, in
         # case it was not created the first time. delete_step() will delete any duplicate steps.
         if settings.ENABLE_CHECKER:
-            create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=collection_file_id)
+            create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=collection_file_id)
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
         publish(client_state, channel, message, routing_key)
 
         if upgraded_collection_file_id:
             if settings.ENABLE_CHECKER:
-                create_step(ProcessingStep.Types.CHECK, collection_id, collection_file_id=upgraded_collection_file_id)
+                create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=upgraded_collection_file_id)
 
             message = {"collection_id": collection_id, "collection_file_id": upgraded_collection_file_id}
             publish(client_state, channel, message, routing_key)
     # An irrecoverable error, raised by ijson.parse(). Discard the message to allow other messages to be processed.
     except ijson.common.IncompleteJSONError:
         logger.exception("Spider %s yields invalid JSON", collection.source_id)
-        create_note(collection, CollectionNote.Codes.ERROR, f"Spider {collection.source_id} yields invalid JSON")
+        create_note(collection, CollectionNote.Level.ERROR, f"Spider {collection.source_id} yields invalid JSON")
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
         ack(client_state, channel, method.delivery_tag)

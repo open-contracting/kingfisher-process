@@ -60,7 +60,7 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
         Collection.objects.annotate(
             steps_remaining_LOAD=Count(
                 Case(
-                    When(processing_steps__name=ProcessingStep.Types.LOAD, then=1),
+                    When(processing_steps__name=ProcessingStep.Name.LOAD, then=1),
                     output_field=IntegerField(),
                 )
             )
@@ -68,7 +68,7 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
         .annotate(
             steps_remaining_UPGRADE=Count(
                 Case(
-                    When(processing_steps__name=ProcessingStep.Types.UPGRADE, then=1),
+                    When(processing_steps__name=ProcessingStep.Name.UPGRADE, then=1),
                     output_field=IntegerField(),
                 )
             )
@@ -76,7 +76,7 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
         .annotate(
             steps_remaining_COMPILE=Count(
                 Case(
-                    When(processing_steps__name=ProcessingStep.Types.COMPILE, then=1),
+                    When(processing_steps__name=ProcessingStep.Name.COMPILE, then=1),
                     output_field=IntegerField(),
                 )
             )
@@ -84,7 +84,7 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
         .annotate(
             steps_remaining_CHECK=Count(
                 Case(
-                    When(processing_steps__name=ProcessingStep.Types.CHECK, then=1),
+                    When(processing_steps__name=ProcessingStep.Name.CHECK, then=1),
                     output_field=IntegerField(),
                 )
             )

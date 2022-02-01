@@ -30,7 +30,7 @@ def callback(client_state, channel, method, properties, input_message):
     with transaction.atomic():
         collection = Collection.objects.select_for_update().get(pk=collection_id)
         if completable(collection):
-            if collection.transform_type == Collection.Transforms.COMPILE_RELEASES:
+            if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
                 collection.store_end_at = Now()
             collection.completed_at = Now()
             collection.save()
@@ -50,7 +50,7 @@ def completable(collection):
 
     # The compiler worker changes `compilation_started` to `True`, then creates the processing steps. This check is
     # required, to avoid a false positive from the `has_steps_remaining` check, below.
-    if collection.transform_type == Collection.Transforms.COMPILE_RELEASES and not collection.compilation_started:
+    if collection.transform_type == Collection.Transform.COMPILE_RELEASES and not collection.compilation_started:
         logger.debug("Collection %s not completable (compile steps not created)", collection)
         return False
 
@@ -60,7 +60,7 @@ def completable(collection):
     # The finisher worker sets `store_end_at` for the compiled collection, Loading for a compile-releases collection
     # is synonymous with compiling, which is performed in the previous step.
     if collection.store_end_at is None and (
-        collection.transform_type != Collection.Transforms.COMPILE_RELEASES
+        collection.transform_type != Collection.Transform.COMPILE_RELEASES
         or collection.get_root_parent().store_end_at is None
     ):
         logger.debug("Collection %s not completable (load incomplete)", collection)

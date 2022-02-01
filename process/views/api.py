@@ -73,21 +73,21 @@ def close_collection(request):
         if "reason" in input_message and input_message["reason"]:
             CollectionNote(
                 collection=collection,
-                code=CollectionNote.Codes.INFO,
+                code=CollectionNote.Level.INFO,
                 note="Spider close reason: {}".format(input_message["reason"]),
             ).save()
 
             if upgraded_collection:
                 CollectionNote(
                     collection=upgraded_collection,
-                    code=CollectionNote.Codes.INFO,
+                    code=CollectionNote.Level.INFO,
                     note="Spider close reason: {}".format(input_message["reason"]),
                 ).save()
 
         if "stats" in input_message and input_message["stats"]:
             CollectionNote(
                 collection=collection,
-                code=CollectionNote.Codes.INFO,
+                code=CollectionNote.Level.INFO,
                 note="Spider stats",
                 data=input_message["stats"],
             ).save()
@@ -95,7 +95,7 @@ def close_collection(request):
             if upgraded_collection:
                 CollectionNote(
                     collection=upgraded_collection,
-                    code=CollectionNote.Codes.INFO,
+                    code=CollectionNote.Level.INFO,
                     note="Spider stats",
                     data=input_message["stats"],
                 ).save()

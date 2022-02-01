@@ -26,7 +26,7 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
-    with delete_step(ProcessingStep.Types.CHECK, collection_file_id=collection_file_id):
+    with delete_step(ProcessingStep.Name.CHECK, collection_file_id=collection_file_id):
         with transaction.atomic():
             collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
             if "check" in collection_file.collection.steps:
