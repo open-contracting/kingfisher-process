@@ -6,9 +6,9 @@ from ocdskit.util import is_linked_release
 from yapw.methods.blocking import ack, publish
 
 from process.exceptions import AlreadyExists
-from process.models import Collection, CompiledRelease, ProcessingStep, Record
+from process.models import Collection, CollectionNote, CompiledRelease, ProcessingStep, Record
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
-from process.util import consume, decorator, delete_step
+from process.util import consume, create_note, decorator, delete_step
 
 consume_routing_keys = ["compiler_record"]
 routing_key = "record_compiler"
@@ -17,30 +17,20 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     """
-    The worker is responsible for the compilation of particular records.
-    Consumes messages with an ocid and collection_id which should be compiled.
-    The whole structure of CollectionFile, CollectionFileItem, and CompiledRelease
-    is created and saved.
-    It's safe to run multiple workers of this type at the same type.
+    Create a compiled release from a record.
     """
 
     def handle(self, *args, **options):
-        consume(
-            callback,
-            routing_key,
-            consume_routing_keys,
-            decorator=decorator,
-        )
+        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
-    collection_id = input_message["collection_id"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
     with delete_step(ProcessingStep.Types.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
         with transaction.atomic():
-            release = compile_record(collection_id, ocid)
+            release = compile_record(compiled_collection_id, ocid)
 
     message = {
         "ocid": ocid,
@@ -52,97 +42,71 @@ def callback(client_state, channel, method, properties, input_message):
     ack(client_state, channel, method.delivery_tag)
 
 
-def compile_record(collection_id, ocid):
-    """
-    Compiles records of given ocid in a "parent" collection. Creates the whole structure in the "proper" transformed
-    collection - CollectionFile, CollectionFileItems, Data, and CompiledRelease.
-
-    :param int collection_id: collection id to which the ocid belongs to
-    :param str ocid: ocid of release whiich should be compiled
-
-    :returns: compiled release
-    :rtype: CompiledRelease
-    """
-
-    logger.info("Compiling record collection_id: %s ocid: %s", collection_id, ocid)
-
-    collection = Collection.objects.filter(parent_id=collection_id).get(parent__steps__contains="compile")
+def compile_record(compiled_collection_id, ocid):
+    collection = Collection.objects.get(pk=compiled_collection_id)
 
     try:
-        compiled_release = CompiledRelease.objects.filter(collection=collection).get(ocid=ocid)
-        raise AlreadyExists("CompiledRelease {} for Collection {} already exists".format(compiled_release, collection))
+        compiled_release = collection.compiledrelease_set.get(ocid=ocid)
+        raise AlreadyExists(f"Compiled release {compiled_release} for collection {collection} already exists")
     except CompiledRelease.DoesNotExist:
         pass
 
-    record = (
-        Record.objects.filter(collection_id=collection.parent_id).select_related("data", "package_data").get(ocid=ocid)
-    )
+    record = Record.objects.select_related("data", "package_data").get(collection_id=collection.parent_id, ocid=ocid)
 
-    # create array with all the data for releases
     releases = record.data.data.get("releases", [])
-    releases_with_date = [r for r in releases if "date" in r]
-    releases_without_date = [r for r in releases if "date" not in r]
 
-    # Can we compile ourselves?
-    releases_linked = [r for r in releases_with_date if is_linked_release(r)]
-    if releases_with_date and not releases_linked:
-        # We have releases with date fields and none are linked (have URL's).
-        # We can compile them ourselves.
-        # (Checking releases_with_date here and not releases means that a record with
-        #  a compiledRelease and releases with no dates will be processed by using the compiledRelease,
-        #  so we still have some data)
-        if releases_without_date:
-            logger.warning(
-                "This OCID %s had some releases without a date element. We have compiled all other releases.", ocid
+    dated = []
+    undated = 0
+    linked = 0
+    tagged = []
+
+    for release in releases:
+        if "date" in release:
+            dated.append(release)
+            if is_linked_release(release):
+                linked += 1
+        else:
+            undated += 1
+
+        if "tag" in release and isinstance(release["tag"], list) and "compiled" in release["tag"]:
+            tagged.append(release)
+
+    # See discussion in https://github.com/open-contracting/kingfisher-process/pull/284
+    if dated and not linked:
+        if undated:
+            create_note(
+                collection,
+                CollectionNote.Codes.WARNING,
+                f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled.",
             )
 
         extensions = record.package_data.data.get("extensions", [])
-        compiled_release_data = compile_releases_by_ocdskit(collection, ocid, releases_with_date, extensions)
-        return save_compiled_release(compiled_release_data, collection, ocid)
+        merged = compile_releases_by_ocdskit(collection, ocid, dated, extensions)
+        return save_compiled_release(merged, collection, ocid)
 
-    if releases_without_date:
-        logger.warning("This OCID had some releases without a date element.")
+    note = []
+    if linked:
+        note.append(
+            f"OCID {ocid} has {linked} linked releases among {len(dated)} dated releases and {len(releases)} releases."
+        )
+    elif undated:
+        note.append(f"OCID {ocid} has {len(releases)} releases, all undated.")
+    else:
+        note.append(f"OCID {ocid} has 0 releases.")
 
-    # Is there a compiledRelease?
     compiled_release = record.data.data.get("compiledRelease", [])
     if compiled_release:
-        logger.warning(
-            "This record %s already had a compiledRelease in the record! "
-            "It was passed through this transform unchanged.",
-            record,
-        )
-
+        note.append("Its compiledRelease was used.")
+        create_note(collection, CollectionNote.Codes.WARNING, note)
         return save_compiled_release(compiled_release, collection, ocid)
 
-    # Is there a release tagged 'compiled'?
-    releases_compiled = [x for x in releases if "tag" in x and isinstance(x["tag"], list) and "compiled" in x["tag"]]
+    if tagged:
+        if len(tagged) > 1:
+            note.append("Its first release tagged 'compiled' was used.")
+        else:
+            note.append("Its only release tagged 'compiled' was used.")
+        create_note(collection, CollectionNote.Codes.WARNING, note)
+        return save_compiled_release(tagged[0], collection, ocid)
 
-    if len(releases_compiled) > 1:
-        # If more than one, pick one at random. and log that.
-        logger.warning(
-            "This record %s already has multiple compiled releases in the releases array!"
-            "The compiled release to pass through was selected arbitrarily.",
-            record,
-        )
-        return save_compiled_release(releases_compiled[0], collection, ocid)
-
-    elif len(releases_compiled) == 1:
-        # There is just one compiled release - pass it through unchanged, and log that.
-        logger.warning(
-            "This record %s already has multiple compiled releases in the releases array!"
-            "It was passed through this transform unchanged.",
-            record,
-        )
-
-        return save_compiled_release(releases_compiled[0], collection, ocid)
-
-    else:
-        # We can't process this ocid. Warn of that.
-        logger.warning(
-            "Record %s could not be compiled because at least one release in the releases array is a linked release "
-            "or there are no releases with dates, and the record has neither a compileRelease nor a release with a "
-            "tag of 'compiled'.",
-            record,
-        )
-
-    return None
+    note.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
+    create_note(collection, CollectionNote.Codes.ERROR, note)
