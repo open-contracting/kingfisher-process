@@ -10,22 +10,22 @@ class CompileReleaseTests(TransactionTestCase):
 
     def test_nonexistent_input(self):
         with self.assertRaises(ValueError) as e:
-            compile_release(2, "sdf")
-        self.assertEqual(str(e.exception), "No releases with ocid sdf found in parent collection.")
+            compile_release(3, "nonexistent")
+        self.assertEqual(str(e.exception), "OCID nonexistent has 0 releases.")
 
     def test_already_compiled(self):
         with self.assertRaises(AlreadyExists) as e:
-            compile_release(2, "ocds-px0z7d-17998-18005-1")
+            compile_release(3, "ocds-px0z7d-17998-18005-1")
         self.assertEqual(
             str(e.exception),
-            "CompiledRelease ocds-px0z7d-17998-18005-1 (id: 45) for Collection portugal-releases:2020-12-29 09:22:08 (id: 3) already exists",  # noqa: E501
+            "Compiled release ocds-px0z7d-17998-18005-1 (id: 45) already exists in collection portugal-releases:2020-12-29 09:22:08 (id: 3)",  # noqa: E501
         )
 
     def test_happy_day(self):
         ocid = "ocds-px0z7d-5052-5001-1"
         compiled_release = CompiledRelease.objects.get(collection_id=3, ocid=ocid)
         compiled_release.collection_file_item.collection_file.delete()
-        release = compile_release(2, ocid)
+        release = compile_release(3, ocid)
 
         self.assertEqual(release.ocid, ocid)
         self.assertEqual(release.collection.id, 3)

@@ -46,7 +46,7 @@ def compile_release(compiled_collection_id, ocid):
 
     try:
         compiled_release = collection.compiledrelease_set.get(ocid=ocid)
-        raise AlreadyExists(f"Compiled release {compiled_release} for collection {collection} already exists")
+        raise AlreadyExists(f"Compiled release {compiled_release} already exists in collection {collection}")
     except CompiledRelease.DoesNotExist:
         pass
 
