@@ -17,18 +17,11 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     """
-    The worker is responsible for the final steps in collection processing.
-    All the checks and calculations are done at this moment, collection is fully procesed.
-    Practically, only the completed status is set on collection.
+    Mark a collection as completed.
     """
 
     def handle(self, *args, **options):
-        consume(
-            callback,
-            routing_key,
-            consume_routing_keys,
-            decorator=decorator,
-        )
+        consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
 
 
 def callback(client_state, channel, method, properties, input_message):

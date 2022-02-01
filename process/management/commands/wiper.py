@@ -10,12 +10,7 @@ routing_key = "wiper"
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        consume(
-            callback,
-            routing_key,
-            consume_routing_keys,
-            decorator=decorator,
-        )
+        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
