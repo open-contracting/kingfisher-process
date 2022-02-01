@@ -19,7 +19,7 @@ class Command(BaseCommand):
         if not settings.ENABLE_CHECKER:
             raise CommandError("Refusing to start as checker is disabled in settings - see ENABLE_CHECKER value.")
 
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
+        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):

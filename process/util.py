@@ -54,8 +54,8 @@ def get_client(klass, **kwargs):
 
 
 @contextmanager
-def get_publisher(prefetch_count=1):
-    client = get_client(Publisher, prefetch_count=prefetch_count)
+def get_publisher():
+    client = get_client(Publisher)
     try:
         yield client
     finally:
@@ -63,10 +63,10 @@ def get_publisher(prefetch_count=1):
 
 
 # https://github.com/pika/pika/blob/master/examples/blocking_consume_recover_multiple_hosts.py
-def consume(*args, prefetch_count=1, **kwargs):
+def consume(*args, **kwargs):
     while True:
         try:
-            client = get_client(Consumer, prefetch_count=prefetch_count)
+            client = get_client(Consumer, prefetch_count=20)
             client.consume(*args, **kwargs)
             break
         # Do not recover if the connection was closed by the broker.

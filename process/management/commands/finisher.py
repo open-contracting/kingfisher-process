@@ -21,7 +21,7 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator, prefetch_count=20)
+        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
 
 def callback(client_state, channel, method, properties, input_message):
