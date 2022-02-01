@@ -26,7 +26,7 @@ class Command(CollectionCommand):
         print(f"expected_files_count: {collection.expected_files_count}")
 
         # Relations
-        print(f"collection_files: {collection.collection_files.count()}")
+        print(f"collection_files: {collection.collectionfile_set.count()}")
         print(f"processing_steps: {collection.processing_steps.count()}")
 
         compiled_collection = collection.get_compiled_collection()
@@ -44,7 +44,7 @@ class Command(CollectionCommand):
             print(f"compilation_started: {compiled_collection.compilation_started}")
 
             # Relations
-            print(f"collection_files: {compiled_collection.collection_files.count()}")
+            print(f"collection_files: {compiled_collection.collectionfile_set.count()}")
 
             # Logic
             print(f"completable: {completable(compiled_collection)}")

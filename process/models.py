@@ -184,7 +184,7 @@ class Collection(models.Model):
         if self.transform_type:
             return None
         try:
-            return Collection.objects.filter(transform_type=Collection.Transforms.UPGRADE_10_11).get(parent=self)
+            return Collection.objects.get(transform_type=Collection.Transforms.UPGRADE_10_11, parent=self)
         except Collection.DoesNotExist:
             return None
 
@@ -196,7 +196,7 @@ class Collection(models.Model):
         :rtype: Collection
         """
         try:
-            return Collection.objects.filter(transform_type=Collection.Transforms.COMPILE_RELEASES).get(parent=self)
+            return Collection.objects.get(transform_type=Collection.Transforms.COMPILE_RELEASES, parent=self)
         except Collection.DoesNotExist:
             return None
 
@@ -254,9 +254,7 @@ class CollectionFile(models.Model):
             models.UniqueConstraint(name="unique_collection_file_identifiers", fields=["collection", "filename"]),
         ]
 
-    collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, db_index=False, related_name="collection_files"
-    )
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
 
     filename = models.TextField(blank=True)
     url = models.TextField(blank=True)
