@@ -35,18 +35,18 @@ def save_compiled_release(merged, collection, ocid):
 
 def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     try:
-        schema = _get_patched_release_schema(frozenset(extensions))
+        merger = _get_merger(frozenset(extensions))
     except Exception:
         # TODO Replace this with more specific exceptions and reduce logging level as appropriate, once more errors
         # appear in Sentry.
         logger.exception("Using unpatched schema after failing to patch schema")
-        schema = _get_patched_release_schema(frozenset())
+        merger = _get_merger(frozenset())
 
-    merger = ocdsmerge.Merger(schema)
     return merger.create_compiled_release(releases)
 
 
 @functools.lru_cache
-def _get_patched_release_schema(extensions):
+def _get_merger(extensions):
     builder = ProfileBuilder(settings.COMPILER_OCDS_VERSION, extensions)
-    return builder.patched_release_schema()
+    patched_schema = builder.patched_release_schema()
+    return ocdsmerge.Merger(patched_schema)
