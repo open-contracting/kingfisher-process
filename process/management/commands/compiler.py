@@ -30,50 +30,40 @@ def callback(client_state, channel, method, properties, input_message):
 
     ack(client_state, channel, method.delivery_tag)
 
-    if compilable(collection):
-        if collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
-            publish_releases(client_state, channel, collection)
-        elif collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and collection_file:
-            publish_records(client_state, channel, collection_file)
-
-
-def _set_compilation_started(parent):
-    collection = Collection.objects.get(parent=parent, transform_type=Collection.Transform.COMPILE_RELEASES)
-
-    # Use optimistic locking to update the collection.
-    updated = Collection.objects.filter(pk=collection.pk, compilation_started=False).update(compilation_started=True)
-
-    return collection, updated
-
-
-def _publish(client_state, channel, collection, compiled_collection, items, routing_key):
-    for item in items.order_by().values("ocid").distinct():
-        create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
-
-        message = {
-            "ocid": item["ocid"],
-            "collection_id": collection.pk,
-            "compiled_collection_id": compiled_collection.pk,
-        }
-        publish(client_state, channel, message, routing_key)
-
-
-def publish_releases(client_state, channel, collection):
-    compiled_collection, updated = _set_compilation_started(collection)
-
-    # Return if another compiler worker received a message for the same compilable collection.
-    if not updated:
+    # No action is performed for "collection_closed" messages for "record package" collections.
+    if collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and not collection_file:
         return
 
-    items = collection.release_set
-    _publish(client_state, channel, collection, compiled_collection, items, "compiler_release")
+    # There is already a guard in the file_worker worker's process_file function to halt on non-packages, so we only
+    # test the "format" to decide the logic, not to decide whether to proceed.
+    if compilable(collection):
+        compiled_collection = Collection.objects.get(
+            parent=collection, transform_type=Collection.Transform.COMPILE_RELEASES
+        )
+        # Use optimistic locking to update the collection.
+        updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
+            compilation_started=True
+        )
 
+        if collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+            # Return if another compiler worker received a message for the same compilable collection.
+            if not updated:
+                return
+            items = collection.release_set
+            publish_routing_key = "compiler_release"
+        elif collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+            items = Record.objects.filter(collection_file_item__collection_file=collection_file)
+            publish_routing_key = "compiler_record"
 
-def publish_records(client_state, channel, collection_file):
-    compiled_collection, updated = _set_compilation_started(collection_file.collection)
+        for item in items.order_by().values("ocid").distinct():
+            create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
-    items = Record.objects.filter(collection_file_item__collection_file=collection_file)
-    _publish(client_state, channel, collection_file.collection, compiled_collection, items, "compiler_record")
+            message = {
+                "ocid": item["ocid"],
+                "collection_id": collection.pk,
+                "compiled_collection_id": compiled_collection.pk,
+            }
+            publish(client_state, channel, message, publish_routing_key)
 
 
 def compilable(collection):
