@@ -38,13 +38,16 @@ class Command(CollectionCommand):
             print(f"completable: {completable(collection)}")
 
         if compiled_collection:
-            print()
+            print("\nCompiled collection")
 
             # Fields
             print(f"compilation_started: {compiled_collection.compilation_started}")
+            print(f"store_end_at: {compiled_collection.store_end_at}")
+            print(f"completed_at: {compiled_collection.completed_at}")
 
             # Relations
             print(f"collection_files: {compiled_collection.collectionfile_set.count()}")
 
             # Logic
-            print(f"completable: {completable(compiled_collection)}")
+            if not compiled_collection.completed_at:
+                print(f"completable: {completable(compiled_collection)}")
