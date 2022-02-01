@@ -125,7 +125,7 @@ def delete_step(*args, **kwargs):
         yield
     # See the errback() function in the decorator() function. If a duplicate message is received, we want to ensure
     # that the step was deleted, so that the collection is completable, before re-raising the exception.
-    except IntegrityError:
+    except (AlreadyExists, InvalidFormError, IntegrityError):
         _delete_step(*args, **kwargs)
         raise
     else:
