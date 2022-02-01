@@ -14,7 +14,7 @@ from yapw.decorators import decorate
 from yapw.methods.blocking import nack
 
 from process.exceptions import AlreadyExists, InvalidFormError
-from process.models import ProcessingStep
+from process.models import CollectionNote, ProcessingStep
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +109,14 @@ def decorator(decode, callback, state, channel, method, properties, body):
     decorate(decode, callback, state, channel, method, properties, body, errback, finalback)
 
 
+def create_note(collection, code, note):
+    if isinstance(note, list):
+        note = " ".join(note)
+    CollectionNote(collection=collection, code=code, note=note).save()
+
+
 def create_step(name, collection_id, **kwargs):
-    processing_step = ProcessingStep(name=name, collection_id=collection_id, **kwargs)
-    processing_step.save()
+    ProcessingStep(name=name, collection_id=collection_id, **kwargs).save()
 
 
 @contextmanager
