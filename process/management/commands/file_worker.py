@@ -16,13 +16,14 @@ from process.models import (
     Collection,
     CollectionFile,
     CollectionFileItem,
+    CollectionNote,
     Data,
     PackageData,
     ProcessingStep,
     Record,
     Release,
 )
-from process.util import consume, create_step, decorator, delete_step, get_hash
+from process.util import consume, create_note, create_step, decorator, delete_step, get_hash
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
@@ -44,6 +45,7 @@ def callback(client_state, channel, method, properties, input_message):
         with delete_step(ProcessingStep.Types.LOAD, collection_file_id=collection_file_id):
             with transaction.atomic():
                 collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+                collection = collection_file.collection
                 upgraded_collection_file_id = process_file(collection_file)
 
         # If a duplicate message is received causing an IntegrityError above, we still want to create the next step, in
@@ -62,7 +64,8 @@ def callback(client_state, channel, method, properties, input_message):
             publish(client_state, channel, message, routing_key)
     # An irrecoverable error, raised by ijson.parse(). Discard the message to allow other messages to be processed.
     except ijson.common.IncompleteJSONError:
-        logger.exception("Spider %s yields invalid JSON", collection_file.collection.source_id)
+        logger.exception("Spider %s yields invalid JSON", collection.source_id)
+        create_note(collection, CollectionNote.Codes.ERROR, f"Spider {collection.source_id} yields invalid JSON")
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
         ack(client_state, channel, method.delivery_tag)
