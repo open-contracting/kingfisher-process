@@ -1,6 +1,5 @@
 import functools
 import logging
-from urllib.parse import urlsplit
 
 import ocdsmerge
 import ocdsmerge.exceptions
@@ -37,9 +36,7 @@ def save_compiled_release(merged, collection, ocid):
 def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     # XXX: Hotfix. It otherwise takes a very long time for requests and retries to time out.
     if collection.source_id == "colombia_api":
-        for i, extension in enumerate(extensions):
-            parsed = urlsplit(extension)
-            extensions[i] = parsed._replace(netloc=parsed.netloc.split(":", 1)[0]).geturl()
+        extensions = {extension.replace(":8443", "") for extension in extensions}
 
     try:
         merger = _get_merger(frozenset(extensions))
