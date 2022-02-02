@@ -31,7 +31,11 @@ def callback(client_state, channel, method, properties, input_message):
     ack(client_state, channel, method.delivery_tag)
 
     # No action is performed for "collection_closed" messages for "record package" collections.
-    if collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE and not collection_file:
+    if (
+        collection.data_type
+        and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
+        and not collection_file
+    ):
         return
 
     # There is already a guard in the file_worker worker's process_file function to halt on non-packages, so we only
