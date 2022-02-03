@@ -47,6 +47,7 @@ class Command(CollectionCommand):
 
             # Relations
             print(f"collection_files: {compiled_collection.collectionfile_set.count()}")
+            print(f"collection_files: {compiled_collection.processing_steps.count()}")
 
             # Logic
             if not compiled_collection.completed_at:
