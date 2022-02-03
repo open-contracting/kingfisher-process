@@ -107,6 +107,30 @@ def process_file(collection_file):
     return None
 
 
+def _get_data_type(collection_file):
+    """
+    Returns the expected data type of the collection_file.
+    """
+    collection = collection_file.collection
+    if not collection.data_type:
+        detected_format = detect_format(collection_file.filename)
+        data_type = {
+            "format": detected_format[0],
+            "concatenated": detected_format[1],
+            "array": detected_format[2],
+        }
+
+        collection.data_type = data_type
+        collection.save(update_fields=["data_type"])
+
+        upgraded_collection = collection.get_upgraded_collection()
+        if upgraded_collection:
+            upgraded_collection.data_type = data_type
+            upgraded_collection.save(update_fields=["data_type"])
+
+    return collection.data_type
+
+
 class ControlCodesFilter:
     def __init__(self, file):
         self.file = file
@@ -217,27 +241,3 @@ def _store_deduplicated_data(klass, data):
             obj = klass.objects.get(hash_md5=hash_md5)
 
     return obj
-
-
-def _get_data_type(collection_file):
-    """
-    Returns the expected data type of the collection_file.
-    """
-    collection = collection_file.collection
-    if not collection.data_type:
-        detected_format = detect_format(collection_file.filename)
-        data_type = {
-            "format": detected_format[0],
-            "concatenated": detected_format[1],
-            "array": detected_format[2],
-        }
-
-        collection.data_type = data_type
-        collection.save(update_fields=["data_type"])
-
-        upgraded_collection = collection.get_upgraded_collection()
-        if upgraded_collection:
-            upgraded_collection.data_type = data_type
-            upgraded_collection.save(update_fields=["data_type"])
-
-    return collection.data_type
