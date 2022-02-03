@@ -28,19 +28,24 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 
     with transaction.atomic():
-        collection = Collection.objects.select_for_update().get(pk=collection_id)
+        collection = Collection.objects.get(pk=collection_id)
         if completable(collection):
+            # Use optimistic locking to update the collections.
             if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
-                collection.store_end_at = Now()
-            collection.completed_at = Now()
-            collection.save()
+                updated = _set_complete_at(collection, store_end_at=Now())
+            else:
+                updated = _set_complete_at(collection)
 
-            upgraded_collection = collection.get_upgraded_collection()
-            if upgraded_collection:
-                upgraded_collection.completed_at = Now()
-                upgraded_collection.save()
+            if updated:
+                upgraded_collection = collection.get_upgraded_collection()
+                if upgraded_collection:
+                    _set_complete_at(upgraded_collection)
 
     ack(client_state, channel, method.delivery_tag)
+
+
+def _set_complete_at(collection, **kwargs):
+    return Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now(), **kwargs)
 
 
 def completable(collection):
