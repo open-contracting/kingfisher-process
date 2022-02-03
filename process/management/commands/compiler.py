@@ -41,9 +41,8 @@ def callback(client_state, channel, method, properties, input_message):
     # There is already a guard in the file_worker worker's process_file function to halt on non-packages, so we only
     # test the "format" to decide the logic, not to decide whether to proceed.
     if compilable(collection):
-        compiled_collection = Collection.objects.get(
-            parent=collection, transform_type=Collection.Transform.COMPILE_RELEASES
-        )
+        compiled_collection = collection.get_compiled_collection()
+
         # Use optimistic locking to update the collection.
         updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
             compilation_started=True
