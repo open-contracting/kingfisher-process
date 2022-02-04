@@ -6,8 +6,8 @@ from django.db import transaction
 from libcoveocds.api import ocds_json_output
 from yapw.methods.blocking import ack, publish
 
-from process.models import Collection, CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
-from process.util import consume, decorator, delete_step
+from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
+from process.util import RELEASE_PACKAGE, consume, decorator, delete_step
 
 consume_routing_keys = ["file_worker"]
 routing_key = "checker"
@@ -47,10 +47,7 @@ def check_collection_file(collection_file):
 
     logger.info("Checking data for collection file %s", collection_file)
 
-    if (
-        collection_file.collection.data_type
-        and collection_file.collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE
-    ):
+    if collection_file.collection.data_type and collection_file.collection.data_type["format"] == RELEASE_PACKAGE:
         items_key = "releases"
         items = Release.objects.filter(collection_file_item__collection_file=collection_file).select_related(
             "data", "package_data"

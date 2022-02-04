@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from yapw.methods.blocking import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record
-from process.util import consume, create_step, decorator
+from process.util import RECORD_PACKAGE, RELEASE_PACKAGE, consume, create_step, decorator
 
 consume_routing_keys = ["file_worker", "collection_closed"]
 routing_key = "compiler"
@@ -31,11 +31,7 @@ def callback(client_state, channel, method, properties, input_message):
     ack(client_state, channel, method.delivery_tag)
 
     # No action is performed for "collection_closed" messages for "record package" collections.
-    if (
-        collection.data_type
-        and collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE
-        and not collection_file
-    ):
+    if collection.data_type and collection.data_type["format"] == RECORD_PACKAGE and not collection_file:
         return
 
     # There is already a guard in the file_worker worker's process_file function to halt on non-packages, so we only
@@ -48,13 +44,13 @@ def callback(client_state, channel, method, properties, input_message):
             compilation_started=True
         )
 
-        if collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+        if collection.data_type["format"] == RELEASE_PACKAGE:
             # Return if another compiler worker received a message for the same compilable collection.
             if not updated:
                 return
             items = collection.release_set
             publish_routing_key = "compiler_release"
-        elif collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+        elif collection.data_type["format"] == RECORD_PACKAGE:
             items = Record.objects.filter(collection_file_item__collection_file=collection_file)
             publish_routing_key = "compiler_record"
 
@@ -84,7 +80,7 @@ def compilable(collection):
         return False
 
     # Records can be compiled immediately without waiting for a complete load.
-    if collection.data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+    if collection.data_type["format"] == RECORD_PACKAGE:
         return True
 
     if collection.store_end_at is None:
@@ -105,7 +101,7 @@ def compilable(collection):
         logger.debug("Collection %s not compilable (load steps remaining)", collection)
         return False
 
-    # At this point, we know that collection.data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE.
+    # At this point, we know that collection.data_type["format"] == RELEASE_PACKAGE.
     actual_files_count = collection.collectionfile_set.count()
     if collection.expected_files_count and collection.expected_files_count > actual_files_count:
         logger.debug(

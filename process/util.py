@@ -18,6 +18,10 @@ from process.models import CollectionNote, ProcessingStep
 
 logger = logging.getLogger(__name__)
 
+# These must match the output of ocdskit.util.detect_format().
+RELEASE_PACKAGE = "release package"
+RECORD_PACKAGE = "record package"
+
 
 def wrap(string):
     """

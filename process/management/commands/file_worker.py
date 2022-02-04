@@ -13,7 +13,6 @@ from ocdskit.util import detect_format
 from yapw.methods.blocking import ack, nack, publish
 
 from process.models import (
-    Collection,
     CollectionFile,
     CollectionFileItem,
     CollectionNote,
@@ -23,13 +22,22 @@ from process.models import (
     Record,
     Release,
 )
-from process.util import consume, create_note, create_step, decorator, delete_step, get_hash
+from process.util import (
+    RECORD_PACKAGE,
+    RELEASE_PACKAGE,
+    consume,
+    create_note,
+    create_step,
+    decorator,
+    delete_step,
+    get_hash,
+)
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
-SUPPORTED_FORMATS = [Collection.DataTypes.RELEASE_PACKAGE, Collection.DataTypes.RECORD_PACKAGE]
+SUPPORTED_FORMATS = [RELEASE_PACKAGE, RECORD_PACKAGE]
 
 
 class Command(BaseCommand):
@@ -147,9 +155,9 @@ def _read_data_from_file(filename, data_type):
         package_key = "item"
         data_key = "item."
 
-    if data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+    if data_type["format"] == RECORD_PACKAGE:
         data_key += "records"
-    elif data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+    elif data_type["format"] == RELEASE_PACKAGE:
         data_key += "releases"
 
     with open(filename, "rb") as f:
@@ -208,7 +216,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
 
         data = _store_deduplicated_data(Data, release_or_record)
 
-        if data_type["format"] == Collection.DataTypes.RECORD_PACKAGE:
+        if data_type["format"] == RECORD_PACKAGE:
             Record(
                 collection=collection_file.collection,
                 collection_file_item=collection_file_item,
@@ -216,7 +224,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
                 data=data,
                 ocid=release_or_record["ocid"],
             ).save()
-        elif data_type["format"] == Collection.DataTypes.RELEASE_PACKAGE:
+        elif data_type["format"] == RELEASE_PACKAGE:
             Release(
                 collection=collection_file.collection,
                 collection_file_item=collection_file_item,
