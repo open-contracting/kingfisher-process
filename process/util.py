@@ -14,7 +14,7 @@ from yapw.decorators import decorate
 from yapw.methods.blocking import nack
 
 from process.exceptions import AlreadyExists, InvalidFormError
-from process.models import CollectionNote, ProcessingStep
+from process.models import CollectionFile, CollectionNote, ProcessingStep
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,12 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # InvalidFormError is included, as it may be for a "unique_together" error, which is an integrity error.
         if isinstance(exception, (AlreadyExists, InvalidFormError, IntegrityError)):
-            logger.error(f"{exception.__class__.__name__} possibly caused by duplicate message: {exception}")
+            logger.exception("%s maybe caused by duplicate message %r, skipping", exception.__class__.__name__, body)
+            nack(state, channel, method.delivery_tag, requeue=False)
+        # This error should never occur under normal operations. However, such messages interrupt processing, so they
+        # are nack'ed.
+        elif isinstance(exception, CollectionFile.DoesNotExist):
+            logger.exception("Unprocessable message %r, skipping", body)
             nack(state, channel, method.delivery_tag, requeue=False)
         else:
             logger.exception("Unhandled exception when consuming %r, sending SIGUSR1", body)
