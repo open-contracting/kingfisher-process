@@ -22,8 +22,8 @@ def callback(client_state, channel, method, properties, input_message):
 
     try:
         Collection.objects.get(pk=collection_id).delete()
-    except Collection.DoesNotExist as exception:
-        logger.error(f"{exception.__class__.__name__} possibly caused by duplicate message: {exception}")
+    except Collection.DoesNotExist:
+        logger.exception("Collection.DoesNotExist maybe caused by duplicate message %r, skipping", input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
         ack(client_state, channel, method.delivery_tag)

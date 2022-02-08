@@ -72,7 +72,7 @@ def callback(client_state, channel, method, properties, input_message):
             publish(client_state, channel, message, routing_key)
     # An irrecoverable error, raised by ijson.parse(). Discard the message to allow other messages to be processed.
     except ijson.common.IncompleteJSONError:
-        logger.exception("Spider %s yields invalid JSON", collection.source_id)
+        logger.exception("Spider %s yields invalid JSON, skipping", collection.source_id)
         create_note(collection, CollectionNote.Level.ERROR, f"Spider {collection.source_id} yields invalid JSON")
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
