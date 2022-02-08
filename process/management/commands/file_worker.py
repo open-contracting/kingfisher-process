@@ -170,7 +170,8 @@ def _read_data_from_file(filename, data_type):
         package = None
         releases_or_records = []
 
-        for prefix, event, value in ijson.parse(ControlCodesFilter(f), use_float=True):
+        # Constructs Decimal values. https://github.com/ICRAR/ijson#options
+        for prefix, event, value in ijson.parse(ControlCodesFilter(f)):
             if prefix == package_key:
                 # Start of package.
                 if event == "start_map":

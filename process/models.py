@@ -1,8 +1,10 @@
 from django.core.exceptions import ValidationError
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, transaction
 from django.db.models import JSONField, Q
 from django.utils.translation import gettext_lazy as _
+
+# DjangoJSONEncoder serializes Decimal values as strings. simplejson serializes Decimal values as numbers.
+from simplejson import JSONEncoder
 
 # # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
 # don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
@@ -222,7 +224,7 @@ class CollectionNote(models.Model):
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
-    data = JSONField(encoder=DjangoJSONEncoder, null=True, blank=True)
+    data = JSONField(encoder=JSONEncoder, null=True, blank=True)
     stored_at = models.DateTimeField(auto_now_add=True)
 
     class Level(models.TextChoices):
@@ -329,7 +331,7 @@ class Data(models.Model):
         ]
 
     hash_md5 = models.TextField()
-    data = JSONField(encoder=DjangoJSONEncoder)
+    data = JSONField(encoder=JSONEncoder)
 
     def __str__(self):
         return "{hash_md5} (id: {id})".format_map(Default(hash_md5=self.hash_md5, id=self.pk))
@@ -347,7 +349,7 @@ class PackageData(models.Model):
         ]
 
     hash_md5 = models.TextField()
-    data = JSONField(encoder=DjangoJSONEncoder)
+    data = JSONField(encoder=JSONEncoder)
 
     def __str__(self):
         return self.hash_md5
