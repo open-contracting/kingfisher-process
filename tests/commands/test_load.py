@@ -43,9 +43,7 @@ class LoadTests(TransactionTestCase):
                 "2001-01-01 00:00:00",
             )
 
-        self.assertEqual(
-            str(e.exception), "A collection {} matching those arguments is being deleted".format(source.pk)
-        )
+        self.assertEqual(str(e.exception), f"A collection {source.pk} matching those arguments is being deleted")
 
     def test_path_nonexistent(self):
         with self.assertRaises(CommandError) as e:
@@ -74,8 +72,7 @@ class LoadTests(TransactionTestCase):
 
                 self.assertEqual(
                     str(e.exception),
-                    "data_version '{}' is not in \"YYYY-MM-DD HH:MM:SS\" format or is "
-                    "an invalid date/time".format(value),
+                    f"data_version '{value}' is not in \"YYYY-MM-DD HH:MM:SS\" format or is an invalid date/time",
                 )
 
     @patch("yapw.methods.blocking.publish")
@@ -84,7 +81,7 @@ class LoadTests(TransactionTestCase):
             try:
                 call_command("load", "--source", "nonexistent", "--note", "x", path("file.json"))
             except Exception as e:
-                self.fail("Unexpected exception {}".format(e))
+                self.fail(f"Unexpected exception {e}")
 
             self.assertTrue(
                 "The --source argument can't be validated, because a Scrapyd URL is not configured in "
@@ -126,7 +123,7 @@ class LoadTests(TransactionTestCase):
             try:
                 call_command("load", "--source", "nonexistent", "--note", "x", "--force", path("file.json"))
             except Exception as e:
-                self.fail("Unexpected exception {}".format(e))
+                self.fail(f"Unexpected exception {e}")
 
     @patch("process.scrapyd.spiders")
     @patch("yapw.methods.blocking.publish")
@@ -137,7 +134,7 @@ class LoadTests(TransactionTestCase):
             try:
                 call_command("load", "--source", "france_local", "--note", "x", "--force", path("file.json"))
             except Exception as e:
-                self.fail("Unexpected exception {}".format(e))
+                self.fail(f"Unexpected exception {e}")
 
     def test_unique_deleted_at(self):
         source = collection(deleted_at="2001-01-01 00:00:00")
@@ -148,9 +145,7 @@ class LoadTests(TransactionTestCase):
                 "load", "--source", source.source_id, "--time", source.data_version, "--note", "x", path("file.json")
             )
 
-        self.assertEqual(
-            str(e.exception), "A collection {} matching those arguments is being deleted".format(source.pk)
-        )
+        self.assertEqual(str(e.exception), f"A collection {source.pk} matching those arguments is being deleted")
 
     def test_unique_store_end_at(self):
         source = collection(store_end_at="2001-01-01 00:00:00")
@@ -161,9 +156,7 @@ class LoadTests(TransactionTestCase):
                 "load", "--source", source.source_id, "--time", source.data_version, "--note", "x", path("file.json")
             )
 
-        self.assertEqual(
-            str(e.exception), "A closed collection {} matching those arguments already exists".format(source.pk)
-        )
+        self.assertEqual(str(e.exception), f"A closed collection {source.pk} matching those arguments already exists")
 
     def test_unique(self):
         source = collection()
@@ -174,10 +167,7 @@ class LoadTests(TransactionTestCase):
                 "load", "--source", source.source_id, "--time", source.data_version, "--note", "x", path("file.json")
             )
 
-        self.assertEqual(
-            str(e.exception),
-            "An open collection {0} matching those arguments already exists.".format(source.pk),
-        )
+        self.assertEqual(str(e.exception), f"An open collection {source.pk} matching those arguments already exists.")
 
 
 # TODO: test files with: bad encoding, nested data

@@ -30,4 +30,4 @@ class CompileReleaseTests(TransactionTestCase):
         self.assertEqual(release.ocid, ocid)
         self.assertEqual(release.collection.id, 3)
         self.assertEqual(release.collection_file_item.number, 0)
-        self.assertEqual(release.collection_file_item.collection_file.filename, "{}.json".format(ocid))
+        self.assertEqual(release.collection_file_item.collection_file.filename, f"{ocid}.json")

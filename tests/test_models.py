@@ -42,7 +42,7 @@ class CollectionTests(TestCase):
         try:
             obj.clean_fields()
         except Exception as e:
-            self.fail("Unexpected exception {}".format(e))
+            self.fail(f"Unexpected exception {e}")
 
     def test_clean_fields_conditionally_mandatory(self):
         source = collection()
@@ -101,7 +101,7 @@ class CollectionTests(TestCase):
         self.assertEqual(
             e.exception.message_dict,
             {
-                "parent": ["Parent collection {} is being deleted".format(source.pk)],
+                "parent": [f"Parent collection {source.pk} is being deleted"],
             },
         )
 
@@ -143,7 +143,7 @@ class CollectionTests(TestCase):
         self.assertEqual(
             e.exception.message_dict,
             {
-                "transform_type": ["Parent collection {} is compiled and can't be upgraded".format(compiled.pk)],
+                "transform_type": [f"Parent collection {compiled.pk} is compiled and can't be upgraded"],
             },
         )
 
@@ -158,7 +158,7 @@ class CollectionTests(TestCase):
         with self.assertRaises(ValidationError) as e:
             obj.clean_fields()
 
-        message = "Parent collection {} is already transformed into {}".format(source.pk, destination.pk)
+        message = f"Parent collection {source.pk} is already transformed into {destination.pk}"
         self.assertEqual(e.exception.messages, [message])
 
 

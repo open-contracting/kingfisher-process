@@ -74,14 +74,14 @@ def close_collection(request):
             CollectionNote(
                 collection=collection,
                 code=CollectionNote.Level.INFO,
-                note="Spider close reason: {}".format(input_message["reason"]),
+                note=f"Spider close reason: {input_message['reason']}",
             ).save()
 
             if upgraded_collection:
                 CollectionNote(
                     collection=upgraded_collection,
                     code=CollectionNote.Level.INFO,
-                    note="Spider close reason: {}".format(input_message["reason"]),
+                    note=f"Spider close reason: {input_message['reason']}",
                 ).save()
 
         if "stats" in input_message and input_message["stats"]:
@@ -127,7 +127,7 @@ def create_collection_file(request):
 
     input_path = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
     if not isfile(input_path):
-        return HttpResponseBadRequest("{} is not a file".format(input_path))
+        return HttpResponseBadRequest(f"{input_path} is not a file")
 
     with get_publisher() as client:
         client.publish(input_message, routing_key="api")
