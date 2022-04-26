@@ -1,0 +1,16 @@
+dj-database-url
+django-cors-headers
+django-filter
+Django<4
+djangorestframework
+gunicorn[setproctitle]
+ijson
+ocdsextensionregistry
+ocdskit
+ocdsmerge
+pika
+psycopg2
+requests
+sentry-sdk
+simplejson
+yapw[perf]

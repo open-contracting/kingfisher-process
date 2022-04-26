@@ -1,17 +1,2 @@
-dj-database-url
-django-cors-headers
-django-filter
-Django<4
-djangorestframework
-gunicorn[setproctitle]
-ijson
+-r requirements_nongpl.in
 libcoveocds
-ocdsextensionregistry
-ocdskit
-ocdsmerge
-pika
-psycopg2
-requests
-sentry-sdk
-simplejson
-yapw[perf]

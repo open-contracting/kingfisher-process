@@ -3,8 +3,14 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from libcoveocds.api import ocds_json_output
 from yapw.methods.blocking import ack, publish
+
+try:
+    from libcoveocds.api import ocds_json_output
+
+    using_libcoveocds = True
+except ImportError:
+    using_libcoveocds = False
 
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
 from process.util import RELEASE_PACKAGE, consume, decorator, delete_step
@@ -17,7 +23,9 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     def handle(self, *args, **options):
         if not settings.ENABLE_CHECKER:
-            raise CommandError("Refusing to start as checker is disabled in settings - see ENABLE_CHECKER value.")
+            raise CommandError("Checker is disabled. Set the ENABLE_CHECKER environment variable to enable.")
+        if not using_libcoveocds:
+            raise CommandError("Checker is unavailable. Install the libcoveocds Python package.")
 
         consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 

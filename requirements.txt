@@ -27,31 +27,31 @@ contextlib2==0.6.0.post1
 defusedxml==0.6.0
     # via odfpy
 dj-database-url==0.5.0
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 django==3.2.13
     # via
-    #   -r requirements.in
+    #   -r requirements_nongpl.in
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
     #   libcoveocds
 django-cors-headers==3.6.0
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 django-filter==2.4.0
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 djangorestframework==3.12.4
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 et-xmlfile==1.0.1
     # via openpyxl
 flattentool==0.15.2
     # via libcove
 gunicorn[setproctitle]==20.1.0
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 idna==2.9
     # via requests
 ijson==3.1.3
     # via
-    #   -r requirements.in
+    #   -r requirements_nongpl.in
     #   ocdskit
 jdcal==1.4.1
     # via openpyxl
@@ -83,13 +83,13 @@ markdown-it-py==1.1.0
     # via libcoveocds
 ocdsextensionregistry==0.1.11
     # via
-    #   -r requirements.in
+    #   -r requirements_nongpl.in
     #   ocdskit
 ocdskit==0.2.18
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 ocdsmerge==0.6.4
     # via
-    #   -r requirements.in
+    #   -r requirements_nongpl.in
     #   ocdskit
 odfpy==1.4.1
     # via flattentool
@@ -101,10 +101,10 @@ packaging==20.8
     # via bleach
 pika==1.2.0
     # via
-    #   -r requirements.in
+    #   -r requirements_nongpl.in
     #   yapw
 psycopg2==2.9.2
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 pyparsing==2.4.7
     # via packaging
 pyrsistent==0.17.3
@@ -115,7 +115,7 @@ pytz==2019.3
     #   flattentool
 requests==2.26.0
     # via
-    #   -r requirements.in
+    #   -r requirements_nongpl.in
     #   libcove
     #   libcoveocds
     #   ocdsextensionregistry
@@ -131,11 +131,11 @@ rfc3987==1.3.8
 schema==0.7.2
     # via flattentool
 sentry-sdk==1.3.0
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 setproctitle==1.2.2
     # via gunicorn
 simplejson==3.17.2
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 six==1.15.0
     # via
     #   bleach
@@ -157,7 +157,7 @@ webencodings==0.5.1
 xmltodict==0.12.0
     # via flattentool
 yapw[perf]==0.0.13
-    # via -r requirements.in
+    # via -r requirements_nongpl.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
