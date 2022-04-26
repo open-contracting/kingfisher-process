@@ -5,7 +5,9 @@
 #    pip-compile
 #
 asgiref==3.3.4
-    # via django
+    # via
+    #   -r requirements_nongpl.txt
+    #   django
 attrs==20.3.0
     # via
     #   jsonschema
@@ -16,10 +18,13 @@ cached-property==1.5.2
     # via libcove
 certifi==2019.11.28
     # via
+    #   -r requirements_nongpl.txt
     #   requests
     #   sentry-sdk
 charset-normalizer==2.0.8
-    # via requests
+    # via
+    #   -r requirements_nongpl.txt
+    #   requests
 click==7.1.2
     # via libcoveocds
 contextlib2==0.6.0.post1
@@ -27,42 +32,44 @@ contextlib2==0.6.0.post1
 defusedxml==0.6.0
     # via odfpy
 dj-database-url==0.5.0
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 django==3.2.13
     # via
-    #   -r requirements_nongpl.in
+    #   -r requirements_nongpl.txt
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
     #   libcoveocds
 django-cors-headers==3.6.0
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 django-filter==2.4.0
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 djangorestframework==3.12.4
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 et-xmlfile==1.0.1
     # via openpyxl
 flattentool==0.15.2
     # via libcove
 gunicorn[setproctitle]==20.1.0
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 idna==2.9
-    # via requests
+    # via
+    #   -r requirements_nongpl.txt
+    #   requests
 ijson==3.1.3
     # via
-    #   -r requirements_nongpl.in
+    #   -r requirements_nongpl.txt
     #   ocdskit
 jdcal==1.4.1
     # via openpyxl
 json-merge-patch==0.2
     # via
+    #   -r requirements_nongpl.txt
     #   libcoveocds
     #   ocdsextensionregistry
-jsonpointer==2.0
-    # via ocdskit
 jsonref==0.2
     # via
+    #   -r requirements_nongpl.txt
     #   flattentool
     #   libcove
     #   ocdsextensionregistry
@@ -72,8 +79,7 @@ jsonschema==3.2.0
     # via
     #   libcove
     #   libcoveocds
-    #   ocdskit
-libcove==0.26.0
+libcove==0.27.0
     # via libcoveocds
 libcoveocds==0.11.0
     # via -r requirements.in
@@ -83,73 +89,77 @@ markdown-it-py==1.1.0
     # via libcoveocds
 ocdsextensionregistry==0.1.11
     # via
-    #   -r requirements_nongpl.in
+    #   -r requirements_nongpl.txt
     #   ocdskit
-ocdskit==0.2.18
-    # via -r requirements_nongpl.in
+ocdskit==1.0.4
+    # via -r requirements_nongpl.txt
 ocdsmerge==0.6.4
     # via
-    #   -r requirements_nongpl.in
+    #   -r requirements_nongpl.txt
     #   ocdskit
 odfpy==1.4.1
     # via flattentool
 openpyxl==3.0.5
     # via flattentool
 orjson==3.6.1
-    # via yapw
+    # via
+    #   -r requirements_nongpl.txt
+    #   yapw
 packaging==20.8
     # via bleach
 pika==1.2.0
     # via
-    #   -r requirements_nongpl.in
+    #   -r requirements_nongpl.txt
     #   yapw
 psycopg2==2.9.2
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 pyparsing==2.4.7
     # via packaging
 pyrsistent==0.17.3
     # via jsonschema
 pytz==2019.3
     # via
+    #   -r requirements_nongpl.txt
     #   django
     #   flattentool
 requests==2.26.0
     # via
-    #   -r requirements_nongpl.in
+    #   -r requirements_nongpl.txt
     #   libcove
     #   libcoveocds
     #   ocdsextensionregistry
-    #   ocdskit
     #   ocdsmerge
     #   requests-cache
 requests-cache==0.5.2
-    # via ocdsextensionregistry
-rfc3987==1.3.8
     # via
-    #   libcove
-    #   ocdskit
+    #   -r requirements_nongpl.txt
+    #   ocdsextensionregistry
+rfc3339-validator==0.1.4
+    # via libcove
+rfc3987==1.3.8
+    # via libcove
 schema==0.7.2
     # via flattentool
 sentry-sdk==1.3.0
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 setproctitle==1.2.2
-    # via gunicorn
+    # via
+    #   -r requirements_nongpl.txt
+    #   gunicorn
 simplejson==3.17.2
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 six==1.15.0
     # via
     #   bleach
     #   jsonschema
-sqlalchemy==1.3.22
-    # via ocdskit
+    #   rfc3339-validator
 sqlparse==0.3.1
-    # via django
-strict-rfc3339==0.7
     # via
-    #   libcove
-    #   ocdskit
+    #   -r requirements_nongpl.txt
+    #   django
 urllib3==1.26.7
     # via
+    #   -r requirements_nongpl.txt
     #   requests
     #   sentry-sdk
 webencodings==0.5.1
@@ -157,7 +167,7 @@ webencodings==0.5.1
 xmltodict==0.12.0
     # via flattentool
 yapw[perf]==0.0.13
-    # via -r requirements_nongpl.in
+    # via -r requirements_nongpl.txt
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

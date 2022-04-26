@@ -1,2 +1,2 @@
--r requirements_nongpl.in
+-r requirements_nongpl.txt
 libcoveocds
