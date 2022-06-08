@@ -70,9 +70,6 @@ class Collection(models.Model):
     expected_files_count = models.IntegerField(null=True, blank=True)
     compilation_started = models.BooleanField(default=False)
 
-    # Deprecated
-    check_data = models.BooleanField(default=False)
-
     # Provenance
     parent = models.ForeignKey(
         "self",
