@@ -359,7 +359,7 @@ class Release(models.Model):
     class Meta:
         db_table = "release"
         indexes = [
-            models.Index(name="release_collection_id_idx", fields=["collection_file_item"]),
+            models.Index(name="release_collection_id_idx", fields=["collection"]),
             models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="release_ocid_idx", fields=["ocid"]),
             models.Index(name="release_data_id_idx", fields=["data"]),
