@@ -68,6 +68,9 @@ class Collection(models.Model):
     steps = JSONField(blank=True, null=True, default=dict)
     options = JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
+
+    # Process management
+    data_type = JSONField(null=True, blank=True)
     compilation_started = models.BooleanField(default=False)
 
     # Provenance
@@ -80,7 +83,6 @@ class Collection(models.Model):
         db_column="transform_from_collection_id",
     )
     transform_type = models.TextField(blank=True, choices=Transform.choices)
-    data_type = JSONField(null=True, blank=True)
 
     # Calculated fields
     cached_releases_count = models.IntegerField(null=True, blank=True)
