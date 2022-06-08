@@ -40,9 +40,9 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
 
     try:
         merger = _get_merger(frozenset(extensions))
+    # TODO Replace this with more specific exceptions, e.g. failed HTTP requests, bad ZIP files, etc.
+    # and reduce logging level as appropriate, once more errors appear in Sentry.
     except Exception:
-        # TODO Replace this with more specific exceptions and reduce logging level as appropriate, once more errors
-        # appear in Sentry.
         logger.exception("Using unpatched schema after failing to patch schema")
         merger = _get_merger(frozenset())
 
