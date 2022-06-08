@@ -35,10 +35,6 @@ class Collection(models.Model):
     A collection can be a sample of a source. For example, an analyst can load a sample of a bulk download, run manual
     queries to check whether it serves their needs, and then load the full file. To avoid the overhead of deleting the
     sample, we instead make ``sample`` part of the unique constraint, along with ``source_id`` and ``data_version``.
-
-    Furthermore, the present design is for sources to be able to send data to this project without first requesting a
-    collection ID. As such, we need a way to uniquely identify a collection by other means. The present solution is for
-    sources to send ``source_id``, ``data_version`` and ``sample`` values as a composite unique key.
     """
 
     class Meta:
