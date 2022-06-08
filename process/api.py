@@ -37,7 +37,6 @@ class CollectionSerializer(ModelSerializer):
             "options",
             "expected_files_count",
             "compilation_started",
-            "check_older_data_with_schema_version_1_1",
             "parent",
             "transform_type",
             "data_type",
