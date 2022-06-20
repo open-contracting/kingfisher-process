@@ -87,7 +87,7 @@ lxml==4.7.1
     # via flattentool
 markdown-it-py==1.1.0
     # via libcoveocds
-ocdsextensionregistry==0.1.11
+ocdsextensionregistry==0.1.13
     # via
     #   -r requirements_nongpl.txt
     #   ocdskit

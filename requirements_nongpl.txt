@@ -41,7 +41,7 @@ jsonref==0.2
     #   ocdsextensionregistry
     #   ocdskit
     #   ocdsmerge
-ocdsextensionregistry==0.1.11
+ocdsextensionregistry==0.1.13
     # via
     #   -r requirements_nongpl.in
     #   ocdskit
