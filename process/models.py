@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import JSONField, Q
 from django.utils.translation import gettext_lazy as _
 
 # DjangoJSONEncoder serializes Decimal values as strings. simplejson serializes Decimal values as numbers.
@@ -46,7 +45,7 @@ class Collection(models.Model):
             models.UniqueConstraint(
                 name="unique_collection_identifiers",
                 fields=["source_id", "data_version", "sample"],
-                condition=Q(transform_type=""),
+                condition=models.Q(transform_type=""),
             ),
             models.UniqueConstraint(name="unique_upgraded_compiled_collection", fields=["parent", "transform_type"]),
         ]
@@ -61,12 +60,12 @@ class Collection(models.Model):
     sample = models.BooleanField(default=False)
 
     # Routing slip
-    steps = JSONField(blank=True, null=True, default=dict)
-    options = JSONField(blank=True, default=dict)
+    steps = models.JSONField(blank=True, null=True, default=dict)
+    options = models.JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
 
     # Process management
-    data_type = JSONField(null=True, blank=True)
+    data_type = models.JSONField(null=True, blank=True)
     compilation_started = models.BooleanField(default=False)
 
     # Provenance
@@ -216,7 +215,7 @@ class CollectionNote(models.Model):
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
-    data = JSONField(encoder=JSONEncoder, null=True, blank=True)
+    data = models.JSONField(encoder=JSONEncoder, null=True, blank=True)
     stored_at = models.DateTimeField(auto_now_add=True)
 
     class Level(models.TextChoices):
@@ -249,8 +248,8 @@ class CollectionFile(models.Model):
     filename = models.TextField(blank=True)
     url = models.TextField(blank=True)
 
-    warnings = JSONField(null=True, blank=True)
-    errors = JSONField(null=True, blank=True)
+    warnings = models.JSONField(null=True, blank=True)
+    errors = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{filename} (id: {id})".format_map(Default(filename=self.filename, id=self.pk))
@@ -304,8 +303,8 @@ class CollectionFileItem(models.Model):
 
     number = models.IntegerField(blank=True)
 
-    warnings = JSONField(null=True, blank=True)
-    errors = JSONField(null=True, blank=True)
+    warnings = models.JSONField(null=True, blank=True)
+    errors = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return "step no. {number} (id: {id})".format_map(Default(number=self.number, id=self.pk))
@@ -323,7 +322,7 @@ class Data(models.Model):
         ]
 
     hash_md5 = models.TextField()
-    data = JSONField(encoder=JSONEncoder)
+    data = models.JSONField(encoder=JSONEncoder)
 
     def __str__(self):
         return "{hash_md5} (id: {id})".format_map(Default(hash_md5=self.hash_md5, id=self.pk))
@@ -341,7 +340,7 @@ class PackageData(models.Model):
         ]
 
     hash_md5 = models.TextField()
-    data = JSONField(encoder=JSONEncoder)
+    data = models.JSONField(encoder=JSONEncoder)
 
     def __str__(self):
         return self.hash_md5
@@ -447,7 +446,7 @@ class ReleaseCheck(models.Model):
 
     release = models.ForeignKey(Release, on_delete=models.CASCADE, db_index=False)
     override_schema_version = models.TextField(blank=True)
-    cove_output = JSONField()
+    cove_output = models.JSONField()
 
 
 class RecordCheck(models.Model):
@@ -468,4 +467,4 @@ class RecordCheck(models.Model):
 
     record = models.ForeignKey(Record, on_delete=models.CASCADE, db_index=False)
     override_schema_version = models.TextField(blank=True)
-    cove_output = JSONField()
+    cove_output = models.JSONField()
