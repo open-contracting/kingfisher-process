@@ -217,6 +217,11 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
 
         data = _store_deduplicated_data(Data, release_or_record)
 
+        # The ocid is required to find all the releases relating to the same record, during compilation.
+        if "ocid" not in release_or_record:
+            logger.error("Skipped release or record without ocid: %s", release_or_record)
+            continue
+
         if data_type["format"] == RECORD_PACKAGE:
             Record(
                 collection=collection_file.collection,
