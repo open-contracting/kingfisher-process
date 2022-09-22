@@ -73,7 +73,8 @@ def compile_release(compiled_collection_id, ocid):
 
     # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
     # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases
-    # lack a "date" field. To avoid an unnecessary error from OCDS Merge, we build the list using a set.
+    # lack a "date" field. To avoid an unnecessary error from OCDS Merge, we build a unique list. We cannot use set(),
+    # as the elements of the set are dicts, which are unhashable.
     #
     # https://more-itertools.readthedocs.io/en/stable/_modules/more_itertools/recipes.html#unique_everseen
     seenlist = []
