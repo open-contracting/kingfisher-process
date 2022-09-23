@@ -88,7 +88,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
     Close the database connections opened by the callback, before returning.
 
     If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment. For some
-    exceptions, assume that the same message was delivered twice, log an error, and ack the message.
+    exceptions, assume that the same message was delivered twice, log an error, and nack the message.
     """
 
     def errback(exception):
