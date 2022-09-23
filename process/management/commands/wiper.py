@@ -1,7 +1,7 @@
 import logging
 
 from django.core.management.base import BaseCommand
-from yapw.methods.blocking import ack, nack
+from yapw.methods.blocking import ack
 
 from process.models import Collection
 from process.util import consume, decorator
@@ -20,10 +20,6 @@ class Command(BaseCommand):
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 
-    try:
-        Collection.objects.get(pk=collection_id).delete()
-    except Collection.DoesNotExist:
-        logger.exception("Collection.DoesNotExist maybe caused by duplicate message %r, skipping", input_message)
-        nack(client_state, channel, method.delivery_tag, requeue=False)
-    else:
-        ack(client_state, channel, method.delivery_tag)
+    Collection.objects.get(pk=collection_id).delete()
+
+    ack(client_state, channel, method.delivery_tag)
