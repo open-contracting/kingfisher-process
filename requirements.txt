@@ -33,7 +33,7 @@ defusedxml==0.6.0
     # via odfpy
 dj-database-url==0.5.0
     # via -r requirements_nongpl.txt
-django==3.2.15
+django==3.2.16
     # via
     #   -r requirements_nongpl.txt
     #   django-cors-headers
@@ -79,9 +79,9 @@ jsonschema==3.2.0
     # via
     #   libcove
     #   libcoveocds
-libcove==0.27.0
+libcove==0.27.1
     # via libcoveocds
-libcoveocds==0.11.0
+libcoveocds==0.11.1
     # via -r requirements.in
 lxml==4.9.1
     # via flattentool
