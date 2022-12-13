@@ -16,7 +16,7 @@ bleach==4.1.0
     # via libcoveocds
 cached-property==1.5.2
     # via libcove
-certifi==2019.11.28
+certifi==2022.12.7
     # via
     #   -r requirements_nongpl.txt
     #   requests

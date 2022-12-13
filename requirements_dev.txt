@@ -13,7 +13,7 @@ attrs==20.3.0
     #   -r requirements.txt
     #   jsonschema
     #   markdown-it-py
-backports-entry-points-selectable==1.1.1
+backports-entry-points-selectable==1.2.0
     # via virtualenv
 black==21.12b0
     # via -r requirements_dev.in
@@ -25,7 +25,7 @@ cached-property==1.5.2
     # via
     #   -r requirements.txt
     #   libcove
-certifi==2019.11.28
+certifi==2022.12.7
     # via
     #   -r requirements.txt
     #   requests
