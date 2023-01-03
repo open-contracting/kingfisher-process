@@ -127,11 +127,11 @@ jsonschema==3.2.0
     #   libcove
     #   libcoveocds
     #   ocdskit
-libcove==0.26.0
+libcove==0.29.0
     # via
     #   -r requirements.txt
     #   libcoveocds
-libcoveocds==0.11.0
+libcoveocds==0.11.1
     # via -r requirements.txt
 lxml==4.6.3
     # via
@@ -238,6 +238,10 @@ requests-cache==0.5.2
     # via
     #   -r requirements.txt
     #   ocdsextensionregistry
+rfc3339-validator==0.1.4
+    # via
+    #   -r requirements.txt
+    #   libcove
 rfc3987==1.3.8
     # via
     #   -r requirements.txt
@@ -256,6 +260,7 @@ six==1.13.0
     #   jsonschema
     #   pyrsistent
     #   python-dateutil
+    #   rfc3339-validator
 sqlalchemy==1.2.19
     # via
     #   -r requirements.txt
@@ -268,7 +273,6 @@ sqlparse==0.3.0
 strict-rfc3339==0.7
     # via
     #   -r requirements.txt
-    #   libcove
     #   ocdskit
 toml==0.10.2
     # via pytest
