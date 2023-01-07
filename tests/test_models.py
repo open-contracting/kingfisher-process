@@ -49,8 +49,8 @@ class CollectionTests(TestCase):
         source.save()
 
         values = [
-            dict(parent=source),
-            dict(transform_type="compile-releases"),
+            {"parent": source},
+            {"transform_type": "compile-releases"},
         ]
         for kwargs in values:
             with self.subTest(kwargs=kwargs):
