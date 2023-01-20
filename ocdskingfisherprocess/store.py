@@ -182,6 +182,8 @@ class Store:
                         package_data[key] = value
 
             for row in data_list:
+                if row is None:
+                    continue
                 if not isinstance(row, dict):
                     raise Exception("Row in data is not a object")
 
