@@ -49,8 +49,7 @@ class CollectionForm(KingfisherForm):
 
             if source_id not in options and not force:
                 params = {"value": source_id, "project": settings.SCRAPYD["project"]}
-                match = get_close_matches(source_id, options, n=1)
-                if match:
+                if match := get_close_matches(source_id, options, n=1):
                     params["match"] = match[0]
                     message = _(
                         "%(value)r is not a spider in the %(project)s project of Scrapyd. Did you mean: " "%(match)s"
