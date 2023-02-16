@@ -33,7 +33,7 @@ defusedxml==0.6.0
     # via odfpy
 dj-database-url==0.5.0
     # via -r requirements_nongpl.txt
-django==3.2.17
+django==3.2.18
     # via
     #   -r requirements_nongpl.txt
     #   django-cors-headers
