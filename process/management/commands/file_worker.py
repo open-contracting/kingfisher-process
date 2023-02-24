@@ -144,6 +144,8 @@ class ControlCodesFilter:
         self.file = file
 
     def read(self, buf_size):
+        # Replace the "\u0000" escape sequence in the JSON string, which is rejected by PostgreSQL.
+        # https://www.postgresql.org/docs/current/datatype-json.html
         return self.file.read(buf_size).replace(b"\\u0000", b"")
 
 
