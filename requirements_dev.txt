@@ -12,7 +12,6 @@ attrs==20.3.0
     # via
     #   -r requirements.txt
     #   jsonschema
-    #   markdown-it-py
 backports-entry-points-selectable==1.2.0
     # via virtualenv
 black==21.12b0
@@ -135,12 +134,16 @@ lxml==4.9.1
     # via
     #   -r requirements.txt
     #   flattentool
-markdown-it-py==1.1.0
+markdown-it-py==2.2.0
     # via
     #   -r requirements.txt
     #   libcoveocds
 mccabe==0.6.1
     # via flake8
+mdurl==0.1.2
+    # via
+    #   -r requirements.txt
+    #   markdown-it-py
 mypy-extensions==0.4.3
     # via black
 nodeenv==1.6.0
