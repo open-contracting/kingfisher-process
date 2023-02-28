@@ -1,19 +1,18 @@
 from django.db.models import Case, Count, IntegerField, When
 from django.http.response import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import serializers, viewsets
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from rest_framework.viewsets import ViewSetMixin
 
 from process.models import Collection, ProcessingStep
 
 
-class CollectionSerializer(ModelSerializer):
-    steps_remaining_LOAD = SerializerMethodField()
-    steps_remaining_UPGRADE = SerializerMethodField()
-    steps_remaining_COMPILE = SerializerMethodField()
-    steps_remaining_CHECK = SerializerMethodField()
+class CollectionSerializer(serializers.ModelSerializer):
+    steps_remaining_LOAD = serializers.SerializerMethodField()
+    steps_remaining_UPGRADE = serializers.SerializerMethodField()
+    steps_remaining_COMPILE = serializers.SerializerMethodField()
+    steps_remaining_CHECK = serializers.SerializerMethodField()
 
     def get_steps_remaining_LOAD(self, obj):
         return obj.steps_remaining_LOAD
@@ -54,7 +53,7 @@ class CollectionSerializer(ModelSerializer):
         ]
 
 
-class CollectionViewSet(ViewSetMixin, ListAPIView):
+class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
     queryset = (
         Collection.objects.annotate(
             steps_remaining_LOAD=Count(
@@ -102,13 +101,13 @@ class CollectionViewSet(ViewSetMixin, ListAPIView):
     ]
 
 
-class TreeSerializer(ModelSerializer):
+class TreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = "__all__"
 
 
-class TreeViewSet(ViewSetMixin, RetrieveAPIView):
+class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
     queryset = Collection.objects.filter(parent__isnull=True)
 
     def retrieve(self, request, pk=None):
