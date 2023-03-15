@@ -12,8 +12,6 @@ attrs==20.3.0
     # via jsonschema
 bleach==4.1.0
     # via libcoveocds
-cached-property==1.5.2
-    # via libcove
 certifi==2022.12.7
     # via
     #   -r requirements_nongpl.txt
@@ -58,6 +56,8 @@ ijson==3.1.3
     # via
     #   -r requirements_nongpl.txt
     #   ocdskit
+importlib-resources==5.12.0
+    # via jsonschema
 jdcal==1.4.1
     # via openpyxl
 json-merge-patch==0.2
@@ -73,11 +73,11 @@ jsonref==0.2
     #   ocdsextensionregistry
     #   ocdskit
     #   ocdsmerge
-jsonschema==3.2.0
+jsonschema==4.17.3
     # via
     #   libcove
     #   libcoveocds
-libcove==0.27.1
+libcove==0.30.0
     # via libcoveocds
 libcoveocds==0.11.1
     # via -r requirements.in
@@ -111,6 +111,8 @@ pika==1.2.0
     # via
     #   -r requirements_nongpl.txt
     #   yapw
+pkgutil-resolve-name==1.3.10
+    # via jsonschema
 psycopg2==2.9.2
     # via -r requirements_nongpl.txt
 pyparsing==2.4.7
@@ -151,7 +153,6 @@ simplejson==3.17.2
 six==1.15.0
     # via
     #   bleach
-    #   jsonschema
     #   rfc3339-validator
 sqlparse==0.3.1
     # via
@@ -168,6 +169,8 @@ xmltodict==0.12.0
     # via flattentool
 yapw[perf]==0.0.13
     # via -r requirements_nongpl.txt
+zipp==3.15.0
+    # via importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

@@ -20,10 +20,6 @@ bleach==4.1.0
     # via
     #   -r requirements.txt
     #   libcoveocds
-cached-property==1.5.2
-    # via
-    #   -r requirements.txt
-    #   libcove
 certifi==2022.12.7
     # via
     #   -r requirements.txt
@@ -100,6 +96,10 @@ ijson==3.1.3
     # via
     #   -r requirements.txt
     #   ocdskit
+importlib-resources==5.12.0
+    # via
+    #   -r requirements.txt
+    #   jsonschema
 isort==5.7.0
     # via -r requirements_dev.in
 jdcal==1.4.1
@@ -119,12 +119,12 @@ jsonref==0.2
     #   ocdsextensionregistry
     #   ocdskit
     #   ocdsmerge
-jsonschema==3.2.0
+jsonschema==4.17.3
     # via
     #   -r requirements.txt
     #   libcove
     #   libcoveocds
-libcove==0.27.1
+libcove==0.30.0
     # via
     #   -r requirements.txt
     #   libcoveocds
@@ -184,6 +184,10 @@ pika==1.2.0
     #   yapw
 pip-tools==6.4.0
     # via -r requirements_dev.in
+pkgutil-resolve-name==1.3.10
+    # via
+    #   -r requirements.txt
+    #   jsonschema
 platformdirs==2.4.0
     # via
     #   black
@@ -250,7 +254,6 @@ six==1.15.0
     # via
     #   -r requirements.txt
     #   bleach
-    #   jsonschema
     #   rfc3339-validator
     #   virtualenv
 sqlparse==0.3.1
@@ -284,6 +287,10 @@ xmltodict==0.12.0
     #   flattentool
 yapw[perf]==0.0.13
     # via -r requirements.txt
+zipp==3.15.0
+    # via
+    #   -r requirements.txt
+    #   importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
