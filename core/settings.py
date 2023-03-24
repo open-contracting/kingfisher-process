@@ -251,7 +251,7 @@ SCRAPYD = {
 }
 # The directory from which to read the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher
 # Process share a filesystem, this will be the same value for both services.
-# WARNING: If you change the production default, update `Dockerfile` and `docker-compose.yaml` to match.
+# WARNING: If you change the production default, update `Dockerfile_django` and `docker-compose.yaml` volumes.
 KINGFISHER_COLLECT_FILES_STORE = os.getenv(
     "KINGFISHER_COLLECT_FILES_STORE", "/data" if production else BASE_DIR / "data"
 )
