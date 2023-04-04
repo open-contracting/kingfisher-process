@@ -5,7 +5,6 @@ import simplejson.encoder
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("process", "0024_remove_collectionnote_unique_collection_note_identifiers"),
     ]
