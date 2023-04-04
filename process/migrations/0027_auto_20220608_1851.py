@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("process", "0026_remove_collection_check_older_data_with_schema_version_1_1"),
     ]
