@@ -19,6 +19,7 @@ jobs:
         run: curl -s -S --retry 3 $BASEDIR/tests/script.sh | bash -
       - run: pip install -r requirements_dev.txt
       - env:
+          # libcoveocds is optional (try-except block).
           STANDARD_MAINTENANCE_SCRIPTS_IGNORE: libcoveocds
           STANDARD_MAINTENANCE_SCRIPTS_FILES: requirements_nongpl.in
         run: pytest /tmp/test_requirements.py
