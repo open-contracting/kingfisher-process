@@ -61,7 +61,7 @@ psycopg2==2.9.2
     # via -r requirements_nongpl.in
 pytz==2019.3
     # via django
-requests==2.26.0
+requests==2.31.0
     # via
     #   -r requirements_nongpl.in
     #   ocdsextensionregistry

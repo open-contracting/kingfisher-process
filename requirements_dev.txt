@@ -217,7 +217,7 @@ pytz==2019.3
     #   flattentool
 pyyaml==6.0
     # via pre-commit
-requests==2.26.0
+requests==2.31.0
     # via
     #   -r requirements.txt
     #   coveralls

@@ -124,7 +124,7 @@ pytz==2019.3
     #   -r requirements_nongpl.txt
     #   django
     #   flattentool
-requests==2.26.0
+requests==2.31.0
     # via
     #   -r requirements_nongpl.txt
     #   libcove
