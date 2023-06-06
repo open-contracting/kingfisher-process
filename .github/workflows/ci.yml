@@ -20,6 +20,7 @@ jobs:
           PYTHONWARNINGS: error
           DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
           RABBIT_URL: amqp://127.0.0.1:${{ job.services.rabbitmq.ports[5672] }}
+        shell: bash
         run: |
           ./manage.py migrate
           ./manage.py makemigrations --check --dry-run
