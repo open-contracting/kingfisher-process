@@ -1,5 +1,4 @@
 import hashlib
-import json
 import logging
 import os
 import signal
@@ -7,6 +6,7 @@ from contextlib import contextmanager
 from textwrap import fill
 
 import pika.exceptions
+import simplejson as json
 from django.conf import settings
 from django.db import connections
 from django.db.utils import IntegrityError
@@ -43,7 +43,9 @@ def walk(paths):
 
 
 def get_hash(data):
-    return hashlib.md5(json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8")).hexdigest()
+    return hashlib.md5(
+        json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
+    ).hexdigest()
 
 
 class Consumer(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
