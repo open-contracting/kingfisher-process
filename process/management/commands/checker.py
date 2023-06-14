@@ -77,7 +77,7 @@ def check_collection_file(collection_file):
         check_result = ocds_json_output(
             "",
             "",
-            schema_version="1.0",
+            schema_version="1.1",
             convert=False,
             cache_schema=True,
             file_type="json",
