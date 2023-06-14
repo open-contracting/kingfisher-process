@@ -98,7 +98,7 @@ class LoadTests(TransactionTestCase):
 
             self.assertEqual(
                 str(e.exception),
-                "source_id: 'nonexistent' is not a spider in the kingfisher project " "of Scrapyd (can be forced)",
+                "source_id: 'nonexistent' is not a spider in the kingfisher project of Scrapyd (can be forced)",
             )
 
     @patch("process.scrapyd.spiders")
@@ -111,7 +111,7 @@ class LoadTests(TransactionTestCase):
 
             self.assertEqual(
                 str(e.exception),
-                "source_id: 'farnce' is not a spider in the kingfisher project of " "Scrapyd. Did you mean: france",
+                "source_id: 'farnce' is not a spider in the kingfisher project of Scrapyd. Did you mean: france",
             )
 
     @patch("process.scrapyd.spiders")

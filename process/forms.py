@@ -52,7 +52,7 @@ class CollectionForm(KingfisherForm):
                 if match := get_close_matches(source_id, options, n=1):
                     params["match"] = match[0]
                     message = _(
-                        "%(value)r is not a spider in the %(project)s project of Scrapyd. Did you mean: " "%(match)s"
+                        "%(value)r is not a spider in the %(project)s project of Scrapyd. Did you mean: %(match)s"
                     )
                 else:
                     message = _("%(value)r is not a spider in the %(project)s project of Scrapyd (can be forced)")

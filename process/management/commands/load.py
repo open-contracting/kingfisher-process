@@ -57,19 +57,19 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--sample",
-            help=_("whether the files represent a sample from the source, if loading into " "a new collection"),
+            help=_("whether the files represent a sample from the source, if loading into a new collection"),
             action="store_true",
         )
         parser.add_argument("-n", "--note", help=_("add a note to the collection (required for a new collection)"))
         parser.add_argument(
             "-f",
             "--force",
-            help=_("use the provided --source value, regardless of whether it is " "recognized"),
+            help=_("use the provided --source value, regardless of whether it is recognized"),
             action="store_true",
         )
         parser.add_argument("-u", "--upgrade", help=_("upgrade collection to latest version"), action="store_true")
         parser.add_argument("-c", "--compile", help=_("compile collection"), action="store_true")
-        parser.add_argument("-e", "--check", help=_("compile collection"), action="store_true")
+        parser.add_argument("-e", "--check", help=_("check collection"), action="store_true")
         parser.add_argument(
             "-k", "--keep-open", help=_("keep collection open for future file additions"), action="store_true"
         )
