@@ -19,7 +19,7 @@ def save_compiled_release(merged, collection, ocid):
     collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
     collection_file_item.save()
 
-    hash_md5 = get_hash(str(merged))
+    hash_md5 = get_hash(merged)
 
     try:
         data = Data.objects.get(hash_md5=hash_md5)

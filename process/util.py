@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import os
 import signal
@@ -42,7 +43,7 @@ def walk(paths):
 
 
 def get_hash(data):
-    return hashlib.md5(data.encode("utf-8")).hexdigest()
+    return hashlib.md5(json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8")).hexdigest()
 
 
 class Consumer(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):

@@ -244,7 +244,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
 
 
 def _store_deduplicated_data(klass, data):
-    hash_md5 = get_hash(str(data))
+    hash_md5 = get_hash(data)
 
     try:
         obj = klass.objects.get(hash_md5=hash_md5)
