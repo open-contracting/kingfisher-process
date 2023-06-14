@@ -60,11 +60,13 @@ def check_collection_file(collection_file):
         items = Release.objects.filter(collection_file_item__collection_file=collection_file).select_related(
             "data", "package_data"
         )
+        kwargs = {}
     else:
         items_key = "records"
         items = Record.objects.filter(collection_file_item__collection_file=collection_file).select_related(
             "data", "package_data"
         )
+        kwargs = {"record_pkg": True}
 
     for item in items:
         logger.debug("Checking %s form item %s", items_key, item)
@@ -82,6 +84,7 @@ def check_collection_file(collection_file):
             cache_schema=True,
             file_type="json",
             json_data=data_to_check,
+            **kwargs,
         )
 
         # eliminate nonrequired check results
