@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 
 from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
-from process.util import get_publisher
+from process.util import create_note, get_publisher
 
 logger = logging.getLogger(__name__)
 
@@ -71,34 +71,20 @@ def close_collection(request):
             upgraded_collection.save()
 
         if "reason" in input_message and input_message["reason"]:
-            CollectionNote(
-                collection=collection,
-                code=CollectionNote.Level.INFO,
-                note=f"Spider close reason: {input_message['reason']}",
-            ).save()
+            create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}")
 
             if upgraded_collection:
-                CollectionNote(
-                    collection=upgraded_collection,
-                    code=CollectionNote.Level.INFO,
-                    note=f"Spider close reason: {input_message['reason']}",
-                ).save()
+                create_note(
+                    upgraded_collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}"
+                )
 
         if "stats" in input_message and input_message["stats"]:
-            CollectionNote(
-                collection=collection,
-                code=CollectionNote.Level.INFO,
-                note="Spider stats",
-                data=input_message["stats"],
-            ).save()
+            create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"])
 
             if upgraded_collection:
-                CollectionNote(
-                    collection=upgraded_collection,
-                    code=CollectionNote.Level.INFO,
-                    note="Spider stats",
-                    data=input_message["stats"],
-                ).save()
+                create_note(
+                    upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"]
+                )
 
     with get_publisher() as client:
         message = {"collection_id": collection.pk}

@@ -7,6 +7,7 @@ from django.utils.translation import gettext as t
 from process.exceptions import InvalidFormError
 from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
 from process.models import Collection, ProcessingStep
+from process.util import create_note, create_step
 
 logger = logging.getLogger(__name__)
 
@@ -36,17 +37,10 @@ def create_collection_file(collection, file_path=None, url=None, errors=None):
     if form.is_valid():
         collection_file = form.save()
         if not errors:
-            ProcessingStep(
-                collection=collection,
-                collection_file=collection_file,
-                name=ProcessingStep.Name.LOAD,
-            ).save()
+            create_step(ProcessingStep.Name.LOAD, collection.pk, collection_file=collection_file)
         else:
-            CollectionNote(
-                collection=collection,
-                code=(CollectionNote.Level.ERROR,),
-                note=f"Errors when downloading collection_file_id {collection_file}\n{errors}",
-            ).save()
+            note = f"Errors when downloading collection_file_id {collection_file}\n{errors}"
+            create_note(collection, CollectionNote.Level.ERROR, note)
 
         return collection_file
 

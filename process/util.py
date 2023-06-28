@@ -128,10 +128,10 @@ def decorator(decode, callback, state, channel, method, properties, body):
     decorate(decode, callback, state, channel, method, properties, body, errback, finalback)
 
 
-def create_note(collection, code, note):
+def create_note(collection, code, note, **kwargs):
     if isinstance(note, list):
         note = " ".join(note)
-    CollectionNote(collection=collection, code=code, note=note).save()
+    CollectionNote(collection=collection, code=code, note=note, **kwargs).save()
 
 
 def create_step(name, collection_id, **kwargs):
