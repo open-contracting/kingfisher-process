@@ -9,6 +9,7 @@ from process.models import Collection
 from process.processors.loader import create_collection_file
 from process.util import consume, decorator
 
+# Other applications use this routing key.
 consume_routing_keys = ["api"]
 routing_key = "api_loader"
 

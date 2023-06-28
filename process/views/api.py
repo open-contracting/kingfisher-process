@@ -1,7 +1,5 @@
 import json
 import logging
-import os
-from os.path import isfile
 
 from django.conf import settings
 from django.db import transaction
@@ -98,25 +96,6 @@ def close_collection(request):
         if compiled_collection:
             message = {"collection_id": compiled_collection.pk}
             client.publish(message, routing_key="collection_closed")
-
-    return HttpResponse(status=204)
-
-
-@csrf_exempt
-@require_POST
-def create_collection_file(request):
-    input_message = json.loads(request.body)
-    if "collection_id" not in input_message or not ("path" in input_message or "errors" in input_message):
-        return HttpResponseBadRequest(
-            'Unable to parse input. Please provide {"path": "<some_path>", "collection_id": <some_number>}'
-        )
-
-    input_path = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
-    if not isfile(input_path):
-        return HttpResponseBadRequest(f"{input_path} is not a file")
-
-    with get_publisher() as client:
-        client.publish(input_message, routing_key="api")
 
     return HttpResponse(status=204)
 
