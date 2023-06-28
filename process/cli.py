@@ -1,3 +1,5 @@
+import logging
+
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
@@ -22,6 +24,8 @@ class CollectionCommand(BaseCommand):
         """
         Gets the collection.
         """
+        logging.getLogger("process").setLevel(logging.DEBUG)
+
         collection_id = options["collection_id"]
 
         try:
