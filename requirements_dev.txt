@@ -14,7 +14,7 @@ attrs==20.3.0
     #   jsonschema
 backports-entry-points-selectable==1.2.0
     # via virtualenv
-black==21.12b0
+black==23.3.0
     # via -r requirements_dev.in
 bleach==4.1.0
     # via
@@ -170,9 +170,10 @@ orjson==3.6.1
     # via
     #   -r requirements.txt
     #   yapw
-packaging==20.8
+packaging==23.1
     # via
     #   -r requirements.txt
+    #   black
     #   bleach
     #   build
 pathspec==0.9.0
@@ -201,10 +202,6 @@ pycodestyle==2.10.0
     # via flake8
 pyflakes==3.0.1
     # via flake8
-pyparsing==2.4.7
-    # via
-    #   -r requirements.txt
-    #   packaging
 pyproject-hooks==1.0.0
     # via build
 pyrsistent==0.17.3

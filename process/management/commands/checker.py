@@ -1,4 +1,5 @@
 import logging
+from tempfile import TemporaryDirectory
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -55,18 +56,20 @@ def check_collection_file(collection_file):
 
     logger.info("Checking data for collection file %s", collection_file)
 
-    if collection_file.collection.data_type and collection_file.collection.data_type["format"] == RELEASE_PACKAGE:
+    release_package = (
+        collection_file.collection.data_type and collection_file.collection.data_type["format"] == RELEASE_PACKAGE
+    )
+
+    if release_package:
         items_key = "releases"
         items = Release.objects.filter(collection_file_item__collection_file=collection_file).select_related(
             "data", "package_data"
         )
-        kwargs = {}
     else:
         items_key = "records"
         items = Record.objects.filter(collection_file_item__collection_file=collection_file).select_related(
             "data", "package_data"
         )
-        kwargs = {"record_pkg": True}
 
     for item in items:
         logger.debug("Checking %s form item %s", items_key, item)
@@ -76,16 +79,17 @@ def check_collection_file(collection_file):
             data_to_check = item.package_data.data
             data_to_check[items_key] = item.data.data
 
-        check_result = ocds_json_output(
-            "",
-            "",
-            schema_version="1.1",
-            convert=False,
-            cache_schema=True,
-            file_type="json",
-            json_data=data_to_check,
-            **kwargs,
-        )
+        with TemporaryDirectory() as d:
+            check_result = ocds_json_output(
+                d,
+                "",  # optional if file_type="json", convert=False and json_data is set.
+                schema_version="1.1",
+                convert=False,
+                cache_schema=True,
+                file_type="json",
+                json_data=data_to_check,
+                record_pkg=not release_package,
+            )
 
         # eliminate nonrequired check results
         check_result.pop("releases_aggregates", None)
