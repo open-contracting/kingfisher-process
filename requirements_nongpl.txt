@@ -4,7 +4,9 @@
 #
 #    pip-compile requirements_nongpl.in
 #
-asgiref==3.3.4
+asgiref==3.7.2
+    # via django
+backports-zoneinfo==0.2.1
     # via django
 certifi==2022.12.7
     # via
@@ -12,19 +14,20 @@ certifi==2022.12.7
     #   sentry-sdk
 charset-normalizer==2.0.8
     # via requests
-dj-database-url==0.5.0
+dj-database-url==2.0.0
     # via -r requirements_nongpl.in
-django==3.2.19
+django==4.2.2
     # via
     #   -r requirements_nongpl.in
+    #   dj-database-url
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
-django-cors-headers==3.6.0
+django-cors-headers==4.1.0
     # via -r requirements_nongpl.in
-django-filter==2.4.0
+django-filter==23.2
     # via -r requirements_nongpl.in
-djangorestframework==3.12.4
+djangorestframework==3.14.0
     # via -r requirements_nongpl.in
 gunicorn[setproctitle]==20.1.0
     # via -r requirements_nongpl.in
@@ -60,7 +63,7 @@ pika==1.2.0
 psycopg2==2.9.2
     # via -r requirements_nongpl.in
 pytz==2019.3
-    # via django
+    # via djangorestframework
 requests==2.31.0
     # via
     #   -r requirements_nongpl.in
@@ -77,6 +80,10 @@ simplejson==3.17.2
     # via -r requirements_nongpl.in
 sqlparse==0.4.4
     # via django
+typing-extensions==4.7.0
+    # via
+    #   asgiref
+    #   dj-database-url
 urllib3==1.26.15
     # via
     #   requests

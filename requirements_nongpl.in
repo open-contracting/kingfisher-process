@@ -1,7 +1,7 @@
 dj-database-url
 django-cors-headers
 django-filter
-Django<4
+Django<5
 djangorestframework
 gunicorn[setproctitle]
 ijson

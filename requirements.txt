@@ -4,12 +4,16 @@
 #
 #    pip-compile
 #
-asgiref==3.3.4
+asgiref==3.7.2
     # via
     #   -r requirements_nongpl.txt
     #   django
 attrs==20.3.0
     # via jsonschema
+backports-zoneinfo==0.2.1
+    # via
+    #   -r requirements_nongpl.txt
+    #   django
 bleach==4.1.0
     # via libcoveocds
 certifi==2022.12.7
@@ -27,20 +31,21 @@ contextlib2==0.6.0.post1
     # via schema
 defusedxml==0.6.0
     # via odfpy
-dj-database-url==0.5.0
+dj-database-url==2.0.0
     # via -r requirements_nongpl.txt
-django==3.2.19
+django==4.2.2
     # via
     #   -r requirements_nongpl.txt
+    #   dj-database-url
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
     #   libcoveocds
-django-cors-headers==3.6.0
+django-cors-headers==4.1.0
     # via -r requirements_nongpl.txt
-django-filter==2.4.0
+django-filter==23.2
     # via -r requirements_nongpl.txt
-djangorestframework==3.12.4
+djangorestframework==3.14.0
     # via -r requirements_nongpl.txt
 et-xmlfile==1.0.1
     # via openpyxl
@@ -120,7 +125,7 @@ pyrsistent==0.17.3
 pytz==2019.3
     # via
     #   -r requirements_nongpl.txt
-    #   django
+    #   djangorestframework
     #   flattentool
 requests==2.31.0
     # via
@@ -156,6 +161,11 @@ sqlparse==0.4.4
     # via
     #   -r requirements_nongpl.txt
     #   django
+typing-extensions==4.7.0
+    # via
+    #   -r requirements_nongpl.txt
+    #   asgiref
+    #   dj-database-url
 urllib3==1.26.15
     # via
     #   -r requirements_nongpl.txt

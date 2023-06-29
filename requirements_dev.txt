@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements_dev.in
 #
-asgiref==3.3.4
+asgiref==3.7.2
     # via
     #   -r requirements.txt
     #   django
@@ -14,6 +14,10 @@ attrs==20.3.0
     #   jsonschema
 backports-entry-points-selectable==1.2.0
     # via virtualenv
+backports-zoneinfo==0.2.1
+    # via
+    #   -r requirements.txt
+    #   django
 black==23.3.0
     # via -r requirements_dev.in
 bleach==4.1.0
@@ -55,20 +59,21 @@ defusedxml==0.6.0
     #   odfpy
 distlib==0.3.3
     # via virtualenv
-dj-database-url==0.5.0
+dj-database-url==2.0.0
     # via -r requirements.txt
-django==3.2.19
+django==4.2.2
     # via
     #   -r requirements.txt
+    #   dj-database-url
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
     #   libcoveocds
-django-cors-headers==3.6.0
+django-cors-headers==4.1.0
     # via -r requirements.txt
-django-filter==2.4.0
+django-filter==23.2
     # via -r requirements.txt
-djangorestframework==3.12.4
+djangorestframework==3.14.0
     # via -r requirements.txt
 docopt==0.6.2
     # via coveralls
@@ -211,7 +216,7 @@ pyrsistent==0.17.3
 pytz==2019.3
     # via
     #   -r requirements.txt
-    #   django
+    #   djangorestframework
     #   flattentool
 pyyaml==6.0
     # via pre-commit
@@ -264,8 +269,12 @@ tomli==1.2.2
     # via
     #   black
     #   build
-typing-extensions==4.1.1
-    # via black
+typing-extensions==4.7.0
+    # via
+    #   -r requirements.txt
+    #   asgiref
+    #   black
+    #   dj-database-url
 urllib3==1.26.15
     # via
     #   -r requirements.txt
