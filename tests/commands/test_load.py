@@ -1,3 +1,4 @@
+import logging
 import os.path
 from unittest.mock import patch
 
@@ -7,6 +8,8 @@ from django.test import TransactionTestCase
 from django.test.utils import captured_stderr
 
 from tests.fixtures import collection
+
+logging.getLogger("process.management.commands.load").setLevel(logging.INFO)
 
 
 def path(filename):

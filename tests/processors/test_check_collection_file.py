@@ -1,8 +1,12 @@
+import logging
+
 from django.db.utils import IntegrityError
 from django.test import TransactionTestCase
 
 from process.management.commands.checker import check_collection_file
 from process.models import CollectionFile, ReleaseCheck
+
+logging.getLogger("process.management.commands.checker").setLevel(logging.INFO)
 
 
 class CheckCollectionFileTests(TransactionTestCase):

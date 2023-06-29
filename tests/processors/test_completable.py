@@ -1,8 +1,12 @@
+import logging
+
 from django.db.models.functions import Now
 from django.test import TransactionTestCase
 
 from process.management.commands.finisher import completable
 from process.models import Collection, CollectionFile, ProcessingStep
+
+logging.getLogger("process.management.commands.finisher").setLevel(logging.INFO)
 
 
 class CompletableTests(TransactionTestCase):

@@ -1,7 +1,11 @@
+import logging
+
 from django.test import TransactionTestCase
 
 from process.management.commands.compiler import compilable
 from process.models import Collection, CollectionFile, ProcessingStep
+
+logging.getLogger("process.management.commands.compiler").setLevel(logging.INFO)
 
 
 class CompilableTests(TransactionTestCase):
