@@ -1,4 +1,3 @@
-from django.db.utils import IntegrityError
 from django.test import TransactionTestCase
 
 from process.models import Collection, CollectionNote
@@ -19,11 +18,11 @@ class CreateCollectionsTests(TransactionTestCase):
         )
 
     def test_integrity_error(self):
-        with self.assertRaises(IntegrityError) as e:
+        with self.assertRaises(ValueError) as e:
             create_collections(
                 "portugal-releases", "2020-12-29 09:22:08", "testing note", upgrade=False, compile=False, sample=False
             )
-        self.assertTrue(str(e.exception).startswith("duplicate key value violates unique constraint "))
+        self.assertTrue(str(e.exception).startswith("A matching collection already exists."))
 
     def test_happy_day(self):
         collection, upgraded_collection, compiled_collection = create_collections(
