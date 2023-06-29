@@ -6,7 +6,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models.functions import Now
-from django.db.utils import IntegrityError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
@@ -122,22 +121,23 @@ class Command(BaseCommand):
                 sample=options["sample"],
                 force=options["force"],
             )
-        except IntegrityError:
-            data = {
-                "source_id": options["source"],
-                "data_version": data_version,
-                "sample": options["sample"],
-            }
-            collection = Collection.objects.get(**data, transform_type="")
-            if collection.deleted_at:
-                message = _("A collection %(id)s matching those arguments is being deleted")
-            elif collection.store_end_at:
-                message = _("A closed collection %(id)s matching those arguments already exists")
-            else:
-                message = _("An open collection %(id)s matching those arguments already exists.")
-            raise CommandError(message % {"id": collection.pk})
         except ValueError as error:
-            raise CommandError(error)
+            if str(error) == _("A matching collection already exists."):
+                data = {
+                    "source_id": options["source"],
+                    "data_version": data_version,
+                    "sample": options["sample"],
+                }
+                collection = Collection.objects.get(**data, transform_type="")
+                if collection.deleted_at:
+                    message = _("A collection %(id)s matching those arguments is being deleted.")
+                elif collection.store_end_at:
+                    message = _("A closed collection %(id)s matching those arguments already exists.")
+                else:
+                    message = _("An open collection %(id)s matching those arguments already exists.")
+                raise CommandError(message % {"id": collection.pk})
+            else:
+                raise CommandError(error)
 
         logger.debug("Processing path %s", options["PATH"])
 

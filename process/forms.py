@@ -26,6 +26,8 @@ class KingfisherForm(forms.ModelForm):
             message = error.message % error.params
         else:
             message = error.message
+        if field == "__all__":
+            return message
         return f"{field}: {message}"
 
 
