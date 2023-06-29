@@ -210,9 +210,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
 
     for release_or_record in releases_or_records:
         if upgrade:
-            # this is not the prettiest solution
-            # however there is no way to tell upgrade_10_11 to not to reorder keys
-            # simplejson is used here as it supports Decimal natively
+            # upgrade_10_11() requires an OrderedDict. simplejson is used for native decimal support.
             release_or_record = upgrade_10_11(
                 json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
             )
