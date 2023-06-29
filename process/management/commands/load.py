@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from argparse import RawDescriptionHelpFormatter
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -22,17 +23,22 @@ routing_key = "loader"
 class Command(BaseCommand):
     help = w(
         t(
-            "Load data into a collection, asynchronously\n"
-            "To load data into a new collection, set at least --source and --note. --time defaults to the earliest "
-            "file modification time; if files were copied into place, set --time explicitly.\n"
-            'The collection is automatically "closed" to new files.'
-            "All files must have the same encoding (default UTF-8).\n"
+            "Load data into a collection, asynchronously\n\n"
+            "To load data into a new collection, set at least --source and --note.\n\n"
+            "--time defaults to the earliest file modification time. If files were copied into place, set --time "
+            "explicitly.\n\n"
+            'The collection is automatically "closed" to new files. Use --keep-open to keep the collection open for '
+            "future file additions.\n\n"
+            "All files must have the same encoding (default UTF-8).\n\n"
             "The formats of files are automatically detected (release package, record package, release, record, "
-            "compiled release), including JSON arrays and concatenated JSON of these.\n"
-            "Additional processing is not automatically configured (upgrading, merging, etc.). To add a "
-            "pre-processing step, use --upgrade or --compile."
+            "compiled release), including JSON arrays and concatenated JSON of these.\n\n"
+            "Additional processing is not automatically configured (upgrading, merging, checking, etc.). To add a "
+            "step, use --upgrade, --compile and/or --check."
         )
     )
+
+    def create_parser(self, prog_name, subcommand, **kwargs):
+        return super().create_parser(prog_name, subcommand, formatter_class=RawDescriptionHelpFormatter, **kwargs)
 
     def add_arguments(self, parser):
         parser.add_argument("PATH", help=_("a file or directory to load"), nargs="+", type=file_or_directory)

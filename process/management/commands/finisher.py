@@ -16,10 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    """
-    Mark a collection as completed.
-    """
-
     def handle(self, *args, **options):
         consume(callback, routing_key, consume_routing_keys, decorator=decorator)
 
