@@ -72,14 +72,6 @@ class CollectionNoteForm(KingfisherForm):
         model = CollectionNote
         fields = ["collection", "note", "code"]
 
-    def error_message_formatter(self, field, error):
-        if error.code == "unique_together" and error.params["unique_check"] == ("collection", "note"):
-            return _("Collection %(id)s already has the note %(value)r") % {
-                "id": self["collection"].data.pk,
-                "value": self["note"].data,
-            }
-        return super().error_message_formatter(field, error)
-
 
 class CollectionFileForm(KingfisherForm):
     class Meta:
