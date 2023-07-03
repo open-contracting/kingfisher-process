@@ -2,7 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from yapw.methods.blocking import ack, publish
+from yapw.methods import ack, publish
 
 from process.exceptions import AlreadyExists
 from process.models import Collection, CompiledRelease, ProcessingStep, Release
@@ -20,7 +20,9 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):

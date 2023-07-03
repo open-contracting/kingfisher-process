@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from yapw.methods.blocking import ack, publish
+from yapw.methods import ack, publish
 
 try:
     from libcoveocds.api import ocds_json_output
@@ -28,7 +28,9 @@ class Command(BaseCommand):
         if not using_libcoveocds:
             raise CommandError("Checker is unavailable. Install the libcoveocds Python package.")
 
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):

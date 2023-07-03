@@ -78,7 +78,7 @@ class LoadTests(TransactionTestCase):
                     f"data_version '{value}' is not in \"YYYY-MM-DD HH:MM:SS\" format or is an invalid date/time",
                 )
 
-    @patch("yapw.methods.blocking.publish")
+    @patch("yapw.methods.publish")
     def test_source_invalid(self, publish):
         with captured_stderr() as stderr:
             try:
@@ -118,7 +118,7 @@ class LoadTests(TransactionTestCase):
             )
 
     @patch("process.scrapyd.spiders")
-    @patch("yapw.methods.blocking.publish")
+    @patch("yapw.methods.publish")
     def test_source_invalid_scrapyd_force(self, spiders, publish):
         spiders.return_value = ["france"]
 
@@ -129,7 +129,7 @@ class LoadTests(TransactionTestCase):
                 self.fail(f"Unexpected exception {e}")
 
     @patch("process.scrapyd.spiders")
-    @patch("yapw.methods.blocking.publish")
+    @patch("yapw.methods.publish")
     def test_source_local(self, spiders, publish):
         spiders.return_value = ["france"]
 

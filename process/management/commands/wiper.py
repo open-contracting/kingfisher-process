@@ -3,7 +3,7 @@ import types
 
 from django.core.management.base import BaseCommand
 from django.db import connections
-from yapw.methods.blocking import ack
+from yapw.methods import ack
 
 from process.models import Collection
 from process.util import consume, decorator
@@ -20,7 +20,9 @@ def bulk_batch_size(self, fields, objs):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):

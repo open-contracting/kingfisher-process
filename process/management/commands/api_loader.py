@@ -3,7 +3,7 @@ import os.path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from yapw.methods.blocking import ack, publish
+from yapw.methods import ack, publish
 
 from process.models import Collection
 from process.processors.loader import create_collection_file
@@ -16,7 +16,9 @@ routing_key = "api_loader"
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):

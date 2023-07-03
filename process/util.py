@@ -5,14 +5,13 @@ import signal
 from contextlib import contextmanager
 from textwrap import fill
 
-import pika.exceptions
 import simplejson as json
 from django.conf import settings
 from django.db import connections
 from django.db.utils import IntegrityError
-from yapw import clients
+from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
-from yapw.methods.blocking import nack
+from yapw.methods import nack
 
 from process.exceptions import AlreadyExists, InvalidFormError
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
@@ -22,6 +21,7 @@ logger = logging.getLogger(__name__)
 # These must match the output of ocdskit.util.detect_format().
 RELEASE_PACKAGE = "release package"
 RECORD_PACKAGE = "record package"
+YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
 
 
 def wrap(string):
@@ -48,42 +48,18 @@ def get_hash(data):
     ).hexdigest()
 
 
-class Consumer(clients.Threaded, clients.Durable, clients.Blocking, clients.Base):
-    pass
-
-
-class Publisher(clients.Durable, clients.Blocking, clients.Base):
-    pass
-
-
-def get_client(klass, **kwargs):
-    return klass(url=settings.RABBIT_URL, exchange=settings.RABBIT_EXCHANGE_NAME, **kwargs)
-
-
 @contextmanager
 def get_publisher():
-    client = get_client(Publisher)
+    client = Blocking(**YAPW_KWARGS)
     try:
         yield client
     finally:
         client.close()
 
 
-# https://github.com/pika/pika/blob/master/examples/blocking_consume_recover_multiple_hosts.py
 def consume(*args, **kwargs):
-    while True:
-        try:
-            client = get_client(Consumer, prefetch_count=20)
-            client.consume(*args, **kwargs)
-            break
-        # Do not recover if the connection was closed by the broker.
-        except pika.exceptions.ConnectionClosedByBroker as e:  # subclass of AMQPConnectionError
-            logger.warning(e)
-            break
-        # Recover from "Connection reset by peer".
-        except pika.exceptions.StreamLostError as e:  # subclass of AMQPConnectionError
-            logger.warning(e)
-            continue
+    client = AsyncConsumer(*args, **kwargs, **YAPW_KWARGS)
+    client.start()
 
 
 def decorator(decode, callback, state, channel, method, properties, body):

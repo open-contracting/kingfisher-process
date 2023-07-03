@@ -10,7 +10,7 @@ from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
-from yapw.methods.blocking import ack, nack, publish
+from yapw.methods import ack, nack, publish
 
 from process.models import (
     CollectionFile,
@@ -42,7 +42,9 @@ SUPPORTED_FORMATS = [RELEASE_PACKAGE, RECORD_PACKAGE]
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):

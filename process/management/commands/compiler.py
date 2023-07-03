@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from yapw.methods.blocking import ack, publish
+from yapw.methods import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record
 from process.util import RECORD_PACKAGE, RELEASE_PACKAGE, consume, create_step, decorator
@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        consume(callback, routing_key, consume_routing_keys, decorator=decorator)
+        consume(
+            on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
+        )
 
 
 def callback(client_state, channel, method, properties, input_message):
