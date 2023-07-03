@@ -106,7 +106,7 @@ orjson==3.9.1
     #   yapw
 packaging==23.1
     # via bleach
-pika==1.2.0
+pika==1.3.2
     # via
     #   -r requirements_nongpl.txt
     #   yapw

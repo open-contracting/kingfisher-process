@@ -175,7 +175,7 @@ packaging==23.1
     #   build
 pathspec==0.9.0
     # via black
-pika==1.2.0
+pika==1.3.2
     # via
     #   -r requirements.txt
     #   yapw
