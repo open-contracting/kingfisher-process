@@ -1,7 +1,6 @@
 import hashlib
 import logging
 import os
-import signal
 from contextlib import contextmanager
 from textwrap import fill
 
@@ -11,7 +10,7 @@ from django.db import connections
 from django.db.utils import IntegrityError
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
-from yapw.methods import nack
+from yapw.methods import add_callback_threadsafe, nack
 
 from process.exceptions import AlreadyExists, InvalidFormError
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
@@ -66,7 +65,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
     """
     Close the database connections opened by the callback, before returning.
 
-    If the callback raises an exception, send the SIGUSR1 signal to the main thread, without acknowledgment. For some
+    If the callback raises an exception, shut down the client in the main thread, without acknowledgment. For some
     exceptions, assume that the same message was delivered twice, log an error, and nack the message.
     """
 
@@ -94,8 +93,8 @@ def decorator(decode, callback, state, channel, method, properties, body):
             logger.exception("Unprocessable message %r, skipping", body)
             nack(state, channel, method.delivery_tag, requeue=False)
         else:
-            logger.exception("Unhandled exception when consuming %r, sending SIGUSR1", body)
-            os.kill(os.getpid(), signal.SIGUSR1)
+            logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
+            add_callback_threadsafe(state.connection, state.interrupt)
 
     def finalback():
         for conn in connections.all():
