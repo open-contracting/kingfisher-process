@@ -8,7 +8,6 @@ ijson
 ocdsextensionregistry
 ocdskit
 ocdsmerge
-pika
 psycopg2
 requests
 sentry-sdk
