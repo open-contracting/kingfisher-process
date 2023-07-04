@@ -38,12 +38,15 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        data_type = collection.data_type["format"]
-        if collection.data_type["array"]:
-            data_type = f"a JSON array of {data_type}s"
+        if collection.data_type:
+            data_type = collection.data_type["format"]
+            if collection.data_type["array"]:
+                data_type = f"a JSON array of {data_type}s"
 
-        if collection.data_type["concatenated"]:
-            data_type = f"concatenated JSON, starting with {data_type}"
+            if collection.data_type["concatenated"]:
+                data_type = f"concatenated JSON, starting with {data_type}"
+        else:
+            data_type = "to be determined"
 
         # Fields
         print(f"steps: {', '.join(collection.steps)}")
