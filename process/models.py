@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 # DjangoJSONEncoder serializes Decimal values as strings. simplejson serializes Decimal values as numbers.
@@ -97,29 +97,6 @@ class Collection(models.Model):
         return "{source_id}:{data_version} (id: {id})".format_map(
             Default(source_id=self.source_id, data_version=self.data_version, id=self.pk)
         )
-
-    @transaction.atomic()
-    def add_step(self, step):
-        """
-        Adds a step to the collection's processing pipeline. If the step is a transformation, returns the transformed
-        collection. If the collection had not yet been saved, this method will save it.
-        """
-        self.steps[step] = True
-        self.full_clean()
-        self.save()
-
-        if step in Collection.Transform.values:
-            collection = Collection(
-                source_id=self.source_id,
-                data_version=self.data_version,
-                sample=self.sample,
-                expected_files_count=self.expected_files_count,
-                parent=self,
-                transform_type=step,
-            )
-            collection.full_clean()
-            collection.save()
-            return collection
 
     # https://docs.djangoproject.com/en/4.2/ref/forms/validation/#raising-validationerror
     def clean_fields(self, exclude=None):
