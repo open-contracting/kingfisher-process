@@ -52,10 +52,8 @@ def compile_release(compiled_collection_id, ocid):
     except CompiledRelease.DoesNotExist:
         pass
 
-    releases = (
-        Release.objects.filter(collection_id=collection.parent_id, ocid=ocid)
-        .order_by()  # avoid default order
-        .select_related("data", "package_data")
+    releases = Release.objects.select_related("data", "package_data").filter(
+        collection_id=collection.parent_id, ocid=ocid
     )
 
     if len(releases) < 1:
