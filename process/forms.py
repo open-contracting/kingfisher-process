@@ -78,7 +78,7 @@ class CollectionNoteForm(KingfisherForm):
 class CollectionFileForm(KingfisherForm):
     class Meta:
         model = CollectionFile
-        fields = ["collection", "filename", "url", "warnings", "errors"]
+        fields = ["collection", "filename", "url"]
 
     def error_message_formatter(self, field, error):
         if error.code == "unique_together" and error.params["unique_check"] == ("collection", "filename"):

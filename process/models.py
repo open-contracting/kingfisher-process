@@ -63,12 +63,12 @@ class Collection(models.Model):
     sample = models.BooleanField(default=False)
 
     # Routing slip
-    steps = models.JSONField(blank=True, null=True, default=dict)
+    steps = models.JSONField(blank=True, default=list)
     options = models.JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
 
     # Process management
-    data_type = models.JSONField(null=True, blank=True)
+    data_type = models.JSONField(blank=True, default=dict)
     compilation_started = models.BooleanField(default=False)
 
     # Provenance
@@ -195,7 +195,7 @@ class CollectionNote(models.Model):
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     note = models.TextField()
-    data = models.JSONField(encoder=JSONEncoder, null=True, blank=True)
+    data = models.JSONField(encoder=JSONEncoder, blank=True, default=dict)
     stored_at = models.DateTimeField(auto_now_add=True)
 
     class Level(models.TextChoices):
@@ -227,9 +227,6 @@ class CollectionFile(models.Model):
 
     filename = models.TextField(blank=True)
     url = models.TextField(blank=True)
-
-    warnings = models.JSONField(null=True, blank=True)
-    errors = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{filename} (id: {id})".format_map(Default(filename=self.filename, id=self.pk))
@@ -282,9 +279,6 @@ class CollectionFileItem(models.Model):
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
     number = models.IntegerField(blank=True)
-
-    warnings = models.JSONField(null=True, blank=True)
-    errors = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return "step no. {number} (id: {id})".format_map(Default(number=self.number, id=self.pk))

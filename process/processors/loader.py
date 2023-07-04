@@ -65,40 +65,35 @@ def create_collections(
     """
     data = {"source_id": source_id, "data_version": data_version, "sample": sample, "force": force}
 
-    collection_steps = []
+    steps = []
     if check:
-        collection_steps.append("check")
-
+        steps.append("check")
     if upgrade:
-        collection_steps.append("upgrade")
+        steps.append("upgrade")
     elif compile:
-        collection_steps.append("compile")
+        steps.append("compile")
 
-    # create main collection
-    collection = _create_collection(data, collection_steps, note, None, None)
+    collection = _create_collection(data, steps, note, None, None)
 
-    # handling potential upgrade
     upgraded_collection = None
-    if upgrade and compile:
-        # main -> upgrade -> compile
+    if upgrade:
+        if compile:  # main -> upgrade -> compile
+            upgrade_steps = ["compile"]
+        else:  # main -> upgrade
+            upgrade_steps = []
         upgraded_collection = _create_collection(
-            data, ["compile"], note, collection, Collection.Transform.UPGRADE_10_11
+            data, upgrade_steps, note, collection, Collection.Transform.UPGRADE_10_11
         )
-    if upgrade and not compile:
-        # main -> upgrade
-        upgraded_collection = _create_collection(data, [], note, collection, Collection.Transform.UPGRADE_10_11)
 
-    # handling compiled collection
     compiled_collection = None
-    if compile and upgrade:
-        # main -> upgrade -> compile
+    if compile:
+        if upgrade:  # main -> upgrade -> compile
+            base_collection = upgraded_collection
+        else:  # main -> compile
+            base_collection = collection
         compiled_collection = _create_collection(
-            data, [], note, upgraded_collection, Collection.Transform.COMPILE_RELEASES
+            data, [], note, base_collection, Collection.Transform.COMPILE_RELEASES
         )
-
-    if compile and not upgraded_collection:
-        # main -> compile
-        compiled_collection = _create_collection(data, [], note, collection, Collection.Transform.COMPILE_RELEASES)
 
     return collection, upgraded_collection, compiled_collection
 
