@@ -100,9 +100,11 @@ def create_collections(
 
 def _create_collection(data, steps, note, parent, transform_type):
     collection_data = data.copy()
-    collection_data["steps"] = steps
     collection_data["transform_type"] = transform_type
     collection_data["parent"] = parent
+    # If steps is empty, Django attempts to save it as NULL, but the column has a NOT NULL constraint.
+    if steps:
+        collection_data["steps"] = steps
 
     form = CollectionForm(collection_data)
 
