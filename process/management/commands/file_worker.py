@@ -101,6 +101,7 @@ def process_file(collection_file):
 
     package, releases_or_records = _read_data_from_file(collection_file.filename, data_type)
 
+    logger.debug("Writing data for collection_file %s", collection_file.pk)
     _store_data(collection_file, package, releases_or_records, data_type, upgrade=False)
 
     upgraded_collection = collection_file.collection.get_upgraded_collection()
