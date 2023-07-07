@@ -193,16 +193,15 @@ class CollectionNote(models.Model):
             models.Index(name="collection_note_collection_id_idx", fields=["collection"]),
         ]
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    note = models.TextField()
-    data = models.JSONField(encoder=JSONEncoder, blank=True, default=dict)
-    stored_at = models.DateTimeField(auto_now_add=True)
-
     class Level(models.TextChoices):
         INFO = "INFO"
         ERROR = "ERROR"
         WARNING = "WARNING"
 
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
+    note = models.TextField()
+    data = models.JSONField(encoder=JSONEncoder, blank=True, default=dict)
+    stored_at = models.DateTimeField(auto_now_add=True)
     code = models.TextField(blank=True, choices=Level.choices)
 
     def __str__(self):
