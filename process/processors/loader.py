@@ -58,8 +58,9 @@ def create_collections(
     :param str note: text description
     :param boolean upgrade: whether to plan collection upgrade
     :param boolean compile: whether to plan collection compile
+    :param boolean check: whether to plan schema-based checks
     :param boolean sample: is this sample only
-
+    :param boolean force: skip validation of the source_id against the Scrapyd project
     :returns: created main collection, upgraded collection, compiled_collection
     :rtype: Collection, Collection, Collection
     """
