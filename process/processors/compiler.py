@@ -1,13 +1,15 @@
 import functools
 import logging
+import warnings
 
 import ocdsmerge
 import ocdsmerge.exceptions
 from django.conf import settings
+from ocdsextensionregistry.exceptions import ExtensionWarning
 from ocdsextensionregistry.profile_builder import ProfileBuilder
 
-from process.models import CollectionFile, CollectionFileItem, CompiledRelease, Data
-from process.util import get_hash
+from process.models import CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data
+from process.util import create_note, get_hash
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +40,13 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     if collection.source_id == "colombia_api":
         extensions = {extension.replace(":8443", "") for extension in extensions}
 
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", category=ExtensionWarning)
+
         merger = _get_merger(frozenset(extensions))
-    # TODO Replace this with more specific exceptions, e.g. failed HTTP requests, bad ZIP files, etc.
-    # and reduce logging level as appropriate, once more errors appear in Sentry.
-    except Exception:
-        logger.exception("Using unpatched schema after failing to patch schema")
-        merger = _get_merger(frozenset())
+
+        if note := [str(warning.message) for warning in w if issubclass(warning.category, ExtensionWarning)]:
+            create_note(collection, CollectionNote.LEVEL.WARNING, note)
 
     return merger.create_compiled_release(releases)
 
