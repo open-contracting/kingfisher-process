@@ -8,10 +8,17 @@ asgiref==3.7.2
     # via
     #   -r requirements_nongpl.txt
     #   django
-attrs==20.3.0
-    # via jsonschema
-bleach==6.0.0
-    # via libcoveocds
+attrs==23.1.0
+    # via
+    #   -r requirements_nongpl.txt
+    #   cattrs
+    #   jsonschema
+    #   referencing
+    #   requests-cache
+cattrs==23.1.2
+    # via
+    #   -r requirements_nongpl.txt
+    #   requests-cache
 certifi==2022.12.7
     # via
     #   -r requirements_nongpl.txt
@@ -32,7 +39,6 @@ django==4.2.2
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
-    #   libcoveocds
 django-cors-headers==4.1.0
     # via -r requirements_nongpl.txt
 django-filter==23.2
@@ -45,43 +51,42 @@ idna==2.9
     # via
     #   -r requirements_nongpl.txt
     #   requests
-ijson==3.1.3
+ijson==3.2.2
     # via
     #   -r requirements_nongpl.txt
     #   ocdskit
 json-merge-patch==0.2
     # via
     #   -r requirements_nongpl.txt
-    #   libcoveocds
     #   ocdsextensionregistry
 jsonref==1.1.0
     # via
     #   -r requirements_nongpl.txt
     #   libcove
+    #   libcoveocds
     #   ocdsextensionregistry
     #   ocdskit
     #   ocdsmerge
-jsonschema==4.17.3
+jsonschema==4.18.0
     # via
     #   libcove
     #   libcoveocds
+jsonschema-specifications==2023.6.1
+    # via jsonschema
 libcove @ git+https://github.com/jpmckinney/lib-cove.git@hotfix
     # via
     #   -r requirements.in
     #   libcoveocds
-libcoveocds==0.11.3
+libcoveocds==0.12.2
     # via -r requirements.in
-markdown-it-py==2.2.0
-    # via libcoveocds
-mdurl==0.1.2
-    # via markdown-it-py
-ocdsextensionregistry==0.3.0
+ocdsextensionregistry==0.3.4
     # via
     #   -r requirements_nongpl.txt
+    #   libcoveocds
     #   ocdskit
 ocdskit==1.1.8
     # via -r requirements_nongpl.txt
-ocdsmerge==0.6.4
+ocdsmerge==0.6.6
     # via
     #   -r requirements_nongpl.txt
     #   ocdskit
@@ -93,14 +98,22 @@ pika==1.3.2
     # via
     #   -r requirements_nongpl.txt
     #   yapw
+platformdirs==3.8.1
+    # via
+    #   -r requirements_nongpl.txt
+    #   requests-cache
 psycopg2==2.9.6
     # via -r requirements_nongpl.txt
-pyrsistent==0.17.3
-    # via jsonschema
 pytz==2019.3
     # via
     #   -r requirements_nongpl.txt
     #   djangorestframework
+referencing==0.29.1
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+    #   libcove
+    #   libcoveocds
 requests==2.31.0
     # via
     #   -r requirements_nongpl.txt
@@ -109,7 +122,7 @@ requests==2.31.0
     #   ocdsextensionregistry
     #   ocdsmerge
     #   requests-cache
-requests-cache==0.5.2
+requests-cache==1.1.0
     # via
     #   -r requirements_nongpl.txt
     #   ocdsextensionregistry
@@ -117,6 +130,10 @@ rfc3339-validator==0.1.4
     # via libcove
 rfc3987==1.3.8
     # via libcove
+rpds-py==0.8.10
+    # via
+    #   jsonschema
+    #   referencing
 sentry-sdk==1.19.0
     # via -r requirements_nongpl.txt
 setproctitle==1.2.2
@@ -127,8 +144,9 @@ simplejson==3.17.2
     # via -r requirements_nongpl.txt
 six==1.16.0
     # via
-    #   bleach
+    #   -r requirements_nongpl.txt
     #   rfc3339-validator
+    #   url-normalize
 sqlparse==0.4.4
     # via
     #   -r requirements_nongpl.txt
@@ -137,13 +155,16 @@ typing-extensions==4.7.0
     # via
     #   -r requirements_nongpl.txt
     #   dj-database-url
+url-normalize==1.4.3
+    # via
+    #   -r requirements_nongpl.txt
+    #   requests-cache
 urllib3==1.26.15
     # via
     #   -r requirements_nongpl.txt
     #   requests
+    #   requests-cache
     #   sentry-sdk
-webencodings==0.5.1
-    # via bleach
 yapw[perf]==0.1.3
     # via -r requirements_nongpl.txt
 

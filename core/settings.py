@@ -172,6 +172,11 @@ LOGGING = {
             "handlers": ["null"],
             "propagate": False,
         },
+        "requests_cache.policy.actions": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "process": {
             "handlers": ["console"],
             "level": os.getenv("LOG_LEVEL", "INFO"),

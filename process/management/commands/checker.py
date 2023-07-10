@@ -8,6 +8,16 @@ from yapw.methods import ack, publish
 
 try:
     from libcoveocds.api import ocds_json_output
+    from libcoveocds.config import LibCoveOCDSConfig
+
+    CONFIG = LibCoveOCDSConfig()
+    CONFIG.config["standard_zip"] = f"file://{settings.BASE_DIR / '1__1__5.zip'}"
+    CONFIG.config["cache_all_requests"] = True
+    # Skip empty field checks, covered by Pelican.
+    CONFIG.config["additional_checks"] = "none"
+    # Skip award reference checks, covered by Pelican, and duplicate release IDs, covered by notebooks.
+    CONFIG.config["skip_aggregates"] = True
+    CONFIG.config["context"] = "api"
 
     using_libcoveocds = True
 except ImportError:
@@ -74,33 +84,26 @@ def check_collection_file(collection_file):
         )
 
     for item in items:
-        logger.debug("Checking %s form item %s", items_key, item)
-        data_to_check = item.data.data
-        if item.package_data:
-            logger.debug("Repacking for key %s object %s", items_key, item)
-            data_to_check = item.package_data.data
-            data_to_check[items_key] = item.data.data
+        logger.debug("Repackaging %s of %s", items_key, item)
+        json_data = item.package_data.data
+        json_data[items_key] = item.data.data
 
+        logger.debug("Checking %s of %s", items_key, item)
         with TemporaryDirectory() as d:
-            check_result = ocds_json_output(
+            cove_output = ocds_json_output(
                 d,
                 "",  # optional if file_type="json", convert=False and json_data is set.
                 schema_version="1.1",
                 convert=False,
-                cache_schema=True,
                 file_type="json",
-                json_data=data_to_check,
+                json_data=json_data,
+                lib_cove_ocds_config=CONFIG,
                 record_pkg=not release_package,
             )
 
-        # eliminate nonrequired check results
-        check_result.pop("releases_aggregates", None)
-        check_result.pop("records_aggregates", None)
-
-        if items_key == "releases":
+        if release_package:
             check = ReleaseCheck(release=item)
         else:
             check = RecordCheck(record=item)
-
-        check.cove_output = check_result
+        check.cove_output = cove_output
         check.save()
