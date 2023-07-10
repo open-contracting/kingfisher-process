@@ -56,7 +56,7 @@ def callback(client_state, channel, method, properties, input_message):
             items = Record.objects.filter(collection_file_item__collection_file=collection_file)
             publish_routing_key = "compiler_record"
 
-        for item in items.values("ocid").distinct():
+        for item in items.values("ocid").distinct().iterator():
             create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
             message = {
