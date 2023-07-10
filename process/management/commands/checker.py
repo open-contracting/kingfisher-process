@@ -86,7 +86,7 @@ def check_collection_file(collection_file):
     for item in items:
         logger.debug("Repackaging %s of %s", items_key, item)
         json_data = item.package_data.data
-        json_data[items_key] = item.data.data
+        json_data[items_key] = [item.data.data]
 
         logger.debug("Checking %s of %s", items_key, item)
         with TemporaryDirectory() as d:
