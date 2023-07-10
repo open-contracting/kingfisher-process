@@ -244,17 +244,17 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
             ).save()
 
 
-def _store_deduplicated_data(klass, data):
+def _store_deduplicated_data(model, data):
     hash_md5 = get_hash(data)
 
     try:
-        obj = klass.objects.get(hash_md5=hash_md5)
-    except (klass.DoesNotExist, klass.MultipleObjectsReturned):
-        obj = klass(data=data, hash_md5=hash_md5)
+        obj = model.objects.get(hash_md5=hash_md5)
+    except (model.DoesNotExist, model.MultipleObjectsReturned):
+        obj = model(data=data, hash_md5=hash_md5)
         try:
             with transaction.atomic():
                 obj.save()
         except IntegrityError:
-            obj = klass.objects.get(hash_md5=hash_md5)
+            obj = model.objects.get(hash_md5=hash_md5)
 
     return obj
