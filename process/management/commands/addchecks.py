@@ -1,3 +1,5 @@
+import logging
+
 from django.core.management.base import CommandError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
@@ -8,6 +10,7 @@ from process.util import get_publisher
 from process.util import wrap as w
 
 routing_key = "addchecks"
+logger = logging.getLogger(__name__)
 
 
 class Command(CollectionCommand):
@@ -20,13 +23,26 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        with get_publisher() as client:
-            for model in (Record, Release):
-                qs = (
-                    model.objects.filter(**{"collection": collection, f"{model.__name__.lower()}check__isnull": True})
-                    .values_list("collection_file_item__collection_file", flat=True)
-                    .distinct()
-                )
+        for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
+            logger.debug(
+                "Getting collection files with missing %s checks for collection %s", model.__name__, collection
+            )
+
+            # SELECT DISTINCT collection_file_id FROM release
+            # LEFT OUTER JOIN release_check ON release.id = release_check.release_id
+            # INNER JOIN collection_file_item ON collection_file_item_id = collection_file_item.id
+            # WHERE collection_id = :collection_id AND release_check.id IS NULL
+            qs = (
+                model.objects.filter(**{"collection": collection, f"{related_name}__isnull": True})
+                .values_list("collection_file_item__collection_file", flat=True)
+                .distinct()
+            )
+
+            logger.debug(
+                "Publishing collection files with missing %s checks for collection %s", model.__name__, collection
+            )
+
+            with get_publisher() as client:
                 for collection_file_id in qs.iterator():
                     message = {"collection_id": collection.pk, "collection_file_id": collection_file_id}
                     client.publish(message, routing_key=routing_key)
