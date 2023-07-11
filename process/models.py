@@ -411,14 +411,8 @@ class ReleaseCheck(models.Model):
 
     class Meta:
         db_table = "release_check"
-        indexes = [
-            models.Index(name="release_check_release_id_idx", fields=["release"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(name="unique_release_check_release_id_and_more", fields=["release"]),
-        ]
 
-    release = models.ForeignKey(Release, on_delete=models.CASCADE, db_index=False)
+    release = models.OneToOneField(Release, on_delete=models.CASCADE)
     cove_output = models.JSONField()
 
 
@@ -429,12 +423,6 @@ class RecordCheck(models.Model):
 
     class Meta:
         db_table = "record_check"
-        indexes = [
-            models.Index(name="record_check_record_id_idx", fields=["record"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(name="unique_record_check_record_id_and_more", fields=["record"]),
-        ]
 
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, db_index=False)
+    record = models.OneToOneField(Record, on_delete=models.CASCADE)
     cove_output = models.JSONField()
