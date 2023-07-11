@@ -27,6 +27,6 @@ class Command(CollectionCommand):
                     .values_list("collection_file_item__collection_file", flat=True)
                     .distinct()
                 )
-                for collection_file in qs.iterator():
-                    message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
+                for collection_file_id in qs.iterator():
+                    message = {"collection_id": collection.pk, "collection_file_id": collection_file_id}
                     client.publish(message, routing_key=routing_key)
