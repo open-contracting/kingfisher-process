@@ -19,7 +19,7 @@ except ImportError:
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
 from process.util import RELEASE_PACKAGE, consume, decorator, delete_step
 
-consume_routing_keys = ["file_worker"]
+consume_routing_keys = ["file_worker", "addchecks"]
 routing_key = "checker"
 logger = logging.getLogger(__name__)
 
