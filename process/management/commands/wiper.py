@@ -10,7 +10,6 @@ from process.util import consume, decorator
 
 consume_routing_keys = ["wiper"]
 routing_key = "wiper"
-
 logger = logging.getLogger(__name__)
 
 

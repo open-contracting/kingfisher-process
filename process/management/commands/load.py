@@ -16,8 +16,8 @@ from process.scrapyd import configured
 from process.util import get_publisher, walk
 from process.util import wrap as w
 
-logger = logging.getLogger(__name__)
 routing_key = "loader"
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
