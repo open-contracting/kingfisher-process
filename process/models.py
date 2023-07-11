@@ -415,13 +415,10 @@ class ReleaseCheck(models.Model):
             models.Index(name="release_check_release_id_idx", fields=["release"]),
         ]
         constraints = [
-            models.UniqueConstraint(
-                name="unique_release_check_release_id_and_more", fields=["release", "override_schema_version"]
-            ),
+            models.UniqueConstraint(name="unique_release_check_release_id_and_more", fields=["release"]),
         ]
 
     release = models.ForeignKey(Release, on_delete=models.CASCADE, db_index=False)
-    override_schema_version = models.TextField(blank=True)
     cove_output = models.JSONField()
 
 
@@ -436,11 +433,8 @@ class RecordCheck(models.Model):
             models.Index(name="record_check_record_id_idx", fields=["record"]),
         ]
         constraints = [
-            models.UniqueConstraint(
-                name="unique_record_check_record_id_and_more", fields=["record", "override_schema_version"]
-            ),
+            models.UniqueConstraint(name="unique_record_check_record_id_and_more", fields=["record"]),
         ]
 
     record = models.ForeignKey(Record, on_delete=models.CASCADE, db_index=False)
-    override_schema_version = models.TextField(blank=True)
     cove_output = models.JSONField()
