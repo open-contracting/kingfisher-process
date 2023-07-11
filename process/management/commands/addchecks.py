@@ -25,7 +25,7 @@ class Command(CollectionCommand):
 
         for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
             logger.debug(
-                "Getting collection files with missing %s checks for collection %s", model.__name__, collection
+                "Publishing collection files with missing %s checks for collection %s", model.__name__, collection
             )
 
             # SELECT DISTINCT collection_file_id FROM release
@@ -36,10 +36,6 @@ class Command(CollectionCommand):
                 model.objects.filter(**{"collection": collection, f"{related_name}__isnull": True})
                 .values_list("collection_file_item__collection_file", flat=True)
                 .distinct()
-            )
-
-            logger.debug(
-                "Publishing collection files with missing %s checks for collection %s", model.__name__, collection
             )
 
             with get_publisher() as client:
