@@ -23,7 +23,7 @@ class Command(CollectionCommand):
         with get_publisher() as client:
             for model in (Record, Release):
                 qs = (
-                    model.objects.filter(**{"collection": collection, f"{model.lower()}check__isnull": True})
+                    model.objects.filter(**{"collection": collection, f"{model.__name__.lower()}check__isnull": True})
                     .values_list("collection_file_item__collection_file", flat=True)
                     .distinct()
                 )
