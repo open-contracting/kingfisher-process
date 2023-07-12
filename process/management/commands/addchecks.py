@@ -5,8 +5,8 @@ from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
 from process.cli import CollectionCommand
-from process.models import Record, Release
-from process.util import get_publisher
+from process.models import ProcessingStep, Record, Release
+from process.util import create_step, get_publisher
 from process.util import wrap as w
 
 routing_key = "addchecks"
@@ -40,5 +40,6 @@ class Command(CollectionCommand):
 
             with get_publisher() as client:
                 for collection_file_id in qs.iterator():
+                    create_step(ProcessingStep.Name.CHECK, collection.pk, collection_file_id=collection_file_id)
                     message = {"collection_id": collection.pk, "collection_file_id": collection_file_id}
                     client.publish(message, routing_key=routing_key)
