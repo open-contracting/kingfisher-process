@@ -79,7 +79,7 @@ libcove @ https://github.com/jpmckinney/lib-cove/archive/hotfix2.zip
     #   libcoveocds
 libcoveocds==0.12.5
     # via -r requirements.in
-ocdsextensionregistry==0.3.4
+ocdsextensionregistry==0.3.5
     # via
     #   -r requirements_nongpl.txt
     #   libcoveocds

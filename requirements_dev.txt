@@ -116,7 +116,7 @@ mypy-extensions==0.4.3
     # via black
 nodeenv==1.6.0
     # via pre-commit
-ocdsextensionregistry==0.3.4
+ocdsextensionregistry==0.3.5
     # via
     #   -r requirements.txt
     #   libcoveocds
