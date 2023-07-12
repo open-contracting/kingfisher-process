@@ -17,7 +17,8 @@ jobs:
       - run: pip install -r requirements_dev.txt
       - name: Run checks and tests
         env:
-          PYTHONWARNINGS: error
+          # https://github.com/OpenDataServices/lib-cove/issues/112
+          PYTHONWARNINGS: error,ignore::DeprecationWarning:libcove.lib.common
           DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres
           RABBIT_URL: amqp://127.0.0.1:${{ job.services.rabbitmq.ports[5672] }}
         shell: bash
