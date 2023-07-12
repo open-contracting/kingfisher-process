@@ -108,7 +108,7 @@ libcove @ https://github.com/jpmckinney/lib-cove/archive/hotfix2.zip
     # via
     #   -r requirements.txt
     #   libcoveocds
-libcoveocds==0.12.5
+libcoveocds==0.12.6
     # via -r requirements.txt
 mccabe==0.7.0
     # via flake8

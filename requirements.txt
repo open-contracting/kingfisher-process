@@ -77,7 +77,7 @@ libcove @ https://github.com/jpmckinney/lib-cove/archive/hotfix2.zip
     # via
     #   -r requirements.in
     #   libcoveocds
-libcoveocds==0.12.5
+libcoveocds==0.12.6
     # via -r requirements.in
 ocdsextensionregistry==0.3.6
     # via
