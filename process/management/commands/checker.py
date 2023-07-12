@@ -75,7 +75,7 @@ def callback(client_state, channel, method, properties, input_message):
 @functools.lru_cache
 def _get_schema(items_key, extensions):
     # Construct a package to fulfill the initialization logic.
-    package_data = {items_key: [], extensions: list(extensions)}
+    package_data = {items_key: [], "extensions": list(extensions)}
     return SchemaOCDS("1.1", package_data, lib_cove_ocds_config=CONFIG, record_pkg=items_key == "records")
 
 
