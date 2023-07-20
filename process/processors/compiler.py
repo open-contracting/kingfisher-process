@@ -46,7 +46,7 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         merger = _get_merger(frozenset(extensions))
 
         if note := [str(warning.message) for warning in w if issubclass(warning.category, ExtensionWarning)]:
-            create_note(collection, CollectionNote.LEVEL.WARNING, note)
+            create_note(collection, CollectionNote.Level.WARNING, note)
 
     return merger.create_compiled_release(releases)
 
