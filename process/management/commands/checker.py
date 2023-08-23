@@ -95,13 +95,15 @@ def _check_collection_file(collection_file):
     if release_package:
         items_key = "releases"
         model = Release
+        related_name = "releasecheck"
     else:
         items_key = "records"
         model = Record
+        related_name = "recordcheck"
 
-    items = model.objects.filter(collection_file_item__collection_file=collection_file).select_related(
-        "data", "package_data"
-    )
+    items = model.objects.filter(
+        **{"collection_file_item__collection_file": collection_file, f"{related_name}__isnull": True}
+    ).select_related("data", "package_data")
 
     for item in items.iterator():
         logger.debug("Repackaging %s of %s", items_key, item)
