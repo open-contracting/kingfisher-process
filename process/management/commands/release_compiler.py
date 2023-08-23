@@ -56,7 +56,7 @@ def compile_release(compiled_collection_id, ocid):
         collection_id=collection.parent_id, ocid=ocid
     )
 
-    if not len(releases):
+    if not releases.count():
         raise ValueError(f"OCID {ocid} has 0 releases.")
 
     data = []

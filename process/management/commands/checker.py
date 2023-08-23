@@ -105,7 +105,7 @@ def _check_collection_file(collection_file):
         **{"collection_file_item__collection_file": collection_file, f"{related_name}__isnull": True}
     ).select_related("data", "package_data")
 
-    logger.info("Checking data for collection file %s", collection_file)
+    logger.info("Checking %s %s for collection file %s", items.count(), items_key, collection_file)
 
     for item in items.iterator():
         logger.debug("Repackaging %s of %s", items_key, item)
