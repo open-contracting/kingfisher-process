@@ -86,7 +86,7 @@ def _check_collection_file(collection_file):
     :param int collection_file: collection file for which should be releases checked
     """
 
-    logger.info("Checking data for collection file %s", collection_file)
+    logger.info("Collecting data to check for collection file %s", collection_file)
 
     release_package = (
         collection_file.collection.data_type and collection_file.collection.data_type["format"] == RELEASE_PACKAGE
@@ -104,6 +104,8 @@ def _check_collection_file(collection_file):
     items = model.objects.filter(
         **{"collection_file_item__collection_file": collection_file, f"{related_name}__isnull": True}
     ).select_related("data", "package_data")
+
+    logger.info("Checking data for collection file %s", collection_file)
 
     for item in items.iterator():
         logger.debug("Repackaging %s of %s", items_key, item)
