@@ -109,9 +109,10 @@ def process_file(collection_file):
             f"Unsupported data type '{data_type}' for file {collection_file}. Must be one of {SUPPORTED_FORMATS}."
         )
 
-    package, releases_or_records = _read_data_from_file(collection_file.filename, data_type)
+    package = _read_package_data_from_file(collection_file.filename, data_type)
 
     logger.debug("Writing data for collection_file %s", collection_file.pk)
+    releases_or_records = _read_data_from_file(collection_file.filename, data_type)
     _store_data(collection_file, package, releases_or_records, data_type, upgrade=False)
 
     if upgraded_collection := collection_file.collection.get_upgraded_collection():
@@ -121,6 +122,7 @@ def process_file(collection_file):
         upgraded_collection_file.save()
 
         logger.debug("Writing data for upgraded collection_file %s", upgraded_collection_file.pk)
+        releases_or_records = _read_data_from_file(collection_file.filename, data_type)
         _store_data(upgraded_collection_file, package, releases_or_records, data_type, upgrade=True)
 
         return upgraded_collection_file.pk
@@ -159,57 +161,68 @@ class ControlCodesFilter:
         return self.file.read(buf_size).replace(b"\\u0000", b"")
 
 
-def _read_data_from_file(filename, data_type):
-    package_key = ""
+def _get_data_key(data_type):
     data_key = ""
 
     if data_type["array"]:
-        package_key = "item"
         data_key = "item."
 
     if data_type["format"] == RECORD_PACKAGE:
-        data_key += "records"
-    elif data_type["format"] == RELEASE_PACKAGE:
-        data_key += "releases"
+        return f"{data_key}records"
+
+    if data_type["format"] == RELEASE_PACKAGE:
+        return f"{data_key}releases"
+
+
+def _read_package_data_from_file(filename, data_type):
+    package = None
+
+    package_key = "item" if data_type["array"] else ""
+    data_key = _get_data_key(data_type)
 
     with open(filename, "rb") as f:
-        build_package = False
-        build_data = False
-
-        package_builder = ObjectBuilder()
-        data_builder = ObjectBuilder()
-
-        package = None
-        releases_or_records = []
+        build = False
+        builder = ObjectBuilder()
 
         # Constructs Decimal values. https://github.com/ICRAR/ijson#options
         for prefix, event, value in ijson.parse(ControlCodesFilter(f)):
             if prefix == package_key:
                 # Start of package.
                 if event == "start_map":
-                    build_package = True
-                    package_builder = ObjectBuilder()
+                    build = True
+                    builder = ObjectBuilder()
                 # End of package.
                 elif event == "end_map":
-                    build_package = False
-                    package = package_builder.value
-            elif prefix == f"{data_key}.item":
+                    build = False
+                    package = builder.value
+
+            if build and not prefix.startswith(data_key):
+                builder.event(event, value)
+
+    return package
+
+
+def _read_data_from_file(filename, data_type):
+    data_key = _get_data_key(data_type)
+
+    with open(filename, "rb") as f:
+        build = False
+        builder = ObjectBuilder()
+
+        # Constructs Decimal values. https://github.com/ICRAR/ijson#options
+        for prefix, event, value in ijson.parse(ControlCodesFilter(f)):
+            if prefix == f"{data_key}.item":
                 # Start of an item of data.
                 if event == "start_map":
-                    build_data = True
-                    data_builder = ObjectBuilder()
+                    build = True
+                    builder = ObjectBuilder()
                 # End of an item of data.
                 elif event == "end_map":
-                    build_data = False
-                    releases_or_records.append(OrderedDict(data_builder.value))
+                    build = False
+                    yield OrderedDict(builder.value)
 
-            if build_package:
-                if not prefix.startswith(data_key):
-                    package_builder.event(event, value)
-            if build_data:
-                data_builder.event(event, value)
-
-    return package, releases_or_records
+            if build:
+                builder.event(event, value)
 
 
 def _store_data(collection_file, package, releases_or_records, data_type, upgrade=False):
