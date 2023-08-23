@@ -13,8 +13,10 @@ class CheckCollectionFileTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_already_compiled(self):
-        with self.assertRaises(IntegrityError):
+        try:
             _check_collection_file(CollectionFile.objects.get(id=2))
+        except IntegrityError:
+            self.fail("Unexpected IntegrityError")
 
     def test_happy_day(self):
         ReleaseCheck.objects.filter(release__collection_file_item__collection_file=1).delete()
