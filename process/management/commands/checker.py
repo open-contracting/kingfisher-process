@@ -139,3 +139,5 @@ def _check_collection_file(collection_file):
             check = RecordCheck(record=item)
         check.cove_output = cove_output
         check.save()
+
+    logger.info("Checked data for collection file %s", collection_file)
