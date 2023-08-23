@@ -77,7 +77,7 @@ idna==2.9
     # via
     #   -r requirements.txt
     #   requests
-ijson==3.2.2
+ijson==3.2.3
     # via
     #   -r requirements.txt
     #   ocdskit
@@ -108,7 +108,7 @@ libcove @ https://github.com/jpmckinney/lib-cove/archive/hotfix2.zip
     # via
     #   -r requirements.txt
     #   libcoveocds
-libcoveocds==0.12.6
+libcoveocds[perf]==0.12.6
     # via -r requirements.txt
 mccabe==0.7.0
     # via flake8
@@ -121,7 +121,7 @@ ocdsextensionregistry==0.3.6
     #   -r requirements.txt
     #   libcoveocds
     #   ocdskit
-ocdskit==1.1.8
+ocdskit[perf]==1.1.8
     # via -r requirements.txt
 ocdsmerge==0.6.6
     # via
@@ -130,6 +130,8 @@ ocdsmerge==0.6.6
 orjson==3.9.1
     # via
     #   -r requirements.txt
+    #   libcoveocds
+    #   ocdskit
     #   yapw
 packaging==23.1
     # via

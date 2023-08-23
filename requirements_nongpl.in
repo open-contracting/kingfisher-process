@@ -6,7 +6,7 @@ djangorestframework
 gunicorn[setproctitle]
 ijson
 ocdsextensionregistry
-ocdskit
+ocdskit[perf]
 ocdsmerge
 psycopg2
 requests
