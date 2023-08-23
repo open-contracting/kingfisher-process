@@ -114,8 +114,7 @@ def process_file(collection_file):
     logger.debug("Writing data for collection_file %s", collection_file.pk)
     _store_data(collection_file, package, releases_or_records, data_type, upgrade=False)
 
-    upgraded_collection = collection_file.collection.get_upgraded_collection()
-    if upgraded_collection:
+    if upgraded_collection := collection_file.collection.get_upgraded_collection():
         upgraded_collection_file = CollectionFile(
             collection=upgraded_collection, filename=collection_file.filename, url=collection_file.url
         )
@@ -133,18 +132,17 @@ def _get_data_type(collection_file):
     """
     collection = collection_file.collection
     if not collection.data_type:
-        detected_format = detect_format(collection_file.filename)
+        detected_format, is_concatenated, is_array = detect_format(collection_file.filename)
         data_type = {
-            "format": detected_format[0],
-            "concatenated": detected_format[1],
-            "array": detected_format[2],
+            "format": detected_format,
+            "concatenated": is_concatenated,
+            "array": is_array,
         }
 
         collection.data_type = data_type
         collection.save(update_fields=["data_type"])
 
-        upgraded_collection = collection.get_upgraded_collection()
-        if upgraded_collection:
+        if upgraded_collection := collection.get_upgraded_collection():
             upgraded_collection.data_type = data_type
             upgraded_collection.save(update_fields=["data_type"])
 

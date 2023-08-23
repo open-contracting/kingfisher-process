@@ -92,8 +92,7 @@ def close_collection(request):
             message = {"collection_id": upgraded_collection.pk}
             client.publish(message, routing_key="collection_closed")
 
-        compiled_collection = collection.get_compiled_collection()
-        if compiled_collection:
+        if compiled_collection := collection.get_compiled_collection():
             message = {"collection_id": compiled_collection.pk}
             client.publish(message, routing_key="collection_closed")
 

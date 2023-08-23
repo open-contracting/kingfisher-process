@@ -35,8 +35,7 @@ def callback(client_state, channel, method, properties, input_message):
                 updated = _set_complete_at(collection)
 
             if updated:
-                upgraded_collection = collection.get_upgraded_collection()
-                if upgraded_collection:
+                if upgraded_collection := collection.get_upgraded_collection():
                     _set_complete_at(upgraded_collection)
 
     ack(client_state, channel, method.delivery_tag)
@@ -52,7 +51,7 @@ def completable(collection):
         return False
 
     # The compiler worker changes `compilation_started` to `True`, then creates the processing steps. This check is
-    # required, to avoid a false positive from the `has_steps_remaining` check, below.
+    # required, to avoid a false positive from the "steps remaining" check, below.
     if collection.transform_type == Collection.Transform.COMPILE_RELEASES and not collection.compilation_started:
         logger.debug("Collection %s not completable (compile steps not created)", collection)
         return False
@@ -69,8 +68,7 @@ def completable(collection):
         logger.debug("Collection %s not completable (load incomplete)", collection)
         return False
 
-    has_steps_remaining = collection.processing_steps.exists()
-    if has_steps_remaining:
+    if collection.processing_steps.exists():
         logger.debug("Collection %s not completable (steps remaining)", collection)
         return False
 

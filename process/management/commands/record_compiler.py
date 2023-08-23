@@ -96,8 +96,7 @@ def compile_record(compiled_collection_id, ocid):
     else:
         note.append(f"OCID {ocid} has 0 releases.")
 
-    compiled_release = record.data.data.get("compiledRelease", [])
-    if compiled_release:
+    if compiled_release := record.data.data.get("compiledRelease", []):
         note.append("Its compiledRelease was used.")
         create_note(collection, CollectionNote.Level.WARNING, note)
         return save_compiled_release(compiled_release, collection, ocid)

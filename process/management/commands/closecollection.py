@@ -28,8 +28,7 @@ class Command(CollectionCommand):
         collection.store_end_at = Now()
         collection.save()
 
-        upgraded_collection = collection.get_upgraded_collection()
-        if upgraded_collection:
+        if upgraded_collection := collection.get_upgraded_collection():
             upgraded_collection.store_end_at = Now()
             upgraded_collection.save()
 
