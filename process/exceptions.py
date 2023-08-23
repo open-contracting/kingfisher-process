@@ -8,3 +8,7 @@ class AlreadyExists(KingfisherProcessError):
 
 class InvalidFormError(KingfisherProcessError, ValueError):
     """Raised if a form is invalid"""
+
+
+class UnsupportedFormatError(KingfisherProcessError):
+    """Raised if a collection file's data type is not supported"""

@@ -8,10 +8,12 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
+from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
 from yapw.methods import ack, nack, publish
 
+from process.exceptions import UnsupportedFormatError
 from process.models import (
     CollectionFile,
     CollectionFileItem,
@@ -72,10 +74,14 @@ def callback(client_state, channel, method, properties, input_message):
 
             message = {"collection_id": collection_id, "collection_file_id": upgraded_collection_file_id}
             publish(client_state, channel, message, routing_key)
-    # An irrecoverable error, raised by ijson.parse(). Discard the message to allow other messages to be processed.
-    except ijson.common.IncompleteJSONError:
-        logger.exception("Spider %s yields invalid JSON, skipping", collection.source_id)
-        create_note(collection, CollectionNote.Level.ERROR, f"Spider {collection.source_id} yields invalid JSON")
+    # Irrecoverable errors. Discard the message to allow other messages to be processed.
+    except (UnknownFormatError, UnsupportedFormatError):  # raised by detect_format() or process_file()
+        logger.exception("Source %s yields an unknown or unsupported format, skipping", collection.source_id)
+        create_note(collection, CollectionNote.Level.ERROR, f"Source {collection.source_id} yields unknown format")
+        nack(client_state, channel, method.delivery_tag, requeue=False)
+    except ijson.common.IncompleteJSONError:  # raised by ijson.parse()
+        logger.exception("Source %s yields invalid JSON, skipping", collection.source_id)
+        create_note(collection, CollectionNote.Level.ERROR, f"Source {collection.source_id} yields invalid JSON")
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
         ack(client_state, channel, method.delivery_tag)
@@ -95,7 +101,7 @@ def process_file(collection_file):
     data_type = _get_data_type(collection_file)
 
     if data_type["format"] not in SUPPORTED_FORMATS:
-        raise ValueError(
+        raise UnsupportedFormatError(
             f"Unsupported data type '{data_type}' for file {collection_file}. Must be one of {SUPPORTED_FORMATS}."
         )
 
@@ -111,11 +117,10 @@ def process_file(collection_file):
         )
         upgraded_collection_file.save()
 
+        logger.debug("Writing data for upgraded collection_file %s", upgraded_collection_file.pk)
         _store_data(upgraded_collection_file, package, releases_or_records, data_type, upgrade=True)
 
         return upgraded_collection_file.pk
-
-    return None
 
 
 def _get_data_type(collection_file):
