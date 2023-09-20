@@ -6,18 +6,19 @@ import simplejson as json
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.utils import IntegrityError
 from ijson.common import ObjectBuilder
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import detect_format
 from yapw.methods import ack, nack, publish
 
+from process import util
 from process.exceptions import UnsupportedFormatError
 from process.models import (
     CollectionFile,
     CollectionFileItem,
     CollectionNote,
+    CompiledRelease,
     Data,
     PackageData,
     ProcessingStep,
@@ -25,6 +26,7 @@ from process.models import (
     Release,
 )
 from process.util import (
+    COMPILED_RELEASE,
     RECORD_PACKAGE,
     RELEASE_PACKAGE,
     consume,
@@ -32,14 +34,14 @@ from process.util import (
     create_step,
     decorator,
     delete_step,
-    get_hash,
+    get_or_create,
 )
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
-SUPPORTED_FORMATS = [RELEASE_PACKAGE, RECORD_PACKAGE]
+SUPPORTED_FORMATS = {COMPILED_RELEASE, RECORD_PACKAGE, RELEASE_PACKAGE}
 
 
 class Command(BaseCommand):
@@ -109,7 +111,10 @@ def process_file(collection_file):
             f"Unsupported data type '{data_type}' for file {collection_file}. Must be one of {SUPPORTED_FORMATS}."
         )
 
-    package = _read_package_data_from_file(collection_file.filename, data_type)
+    if data_type["format"] == COMPILED_RELEASE:
+        package = None
+    else:
+        package = _read_package_data_from_file(collection_file.filename, data_type)
 
     logger.debug("Writing data for collection_file %s", collection_file.pk)
     releases_or_records = _read_data_from_file(collection_file.filename, data_type)
@@ -162,30 +167,32 @@ class ControlCodesFilter:
 
 
 def _get_data_key(data_type):
-    data_key = ""
+    data_key = []
 
     if data_type["array"]:
-        data_key = "item."
+        data_key.append("item")
 
-    if data_type["format"] == RECORD_PACKAGE:
-        return f"{data_key}records"
+    match data_type["format"]:
+        case util.RECORD_PACKAGE:
+            data_key.extend(["records", "item"])
+        case util.RELEASE_PACKAGE:
+            data_key.extend(["releases", "item"])
 
-    if data_type["format"] == RELEASE_PACKAGE:
-        return f"{data_key}releases"
+    return ".".join(data_key)
 
 
 def _read_package_data_from_file(filename, data_type):
-    package = None
+    package = {}
 
     package_key = "item" if data_type["array"] else ""
-    data_key = _get_data_key(data_type)
+    data_key = _get_data_key(data_type).removesuffix(".item")
 
     with open(filename, "rb") as f:
         build = False
         builder = ObjectBuilder()
 
         # Constructs Decimal values. https://github.com/ICRAR/ijson#options
-        for prefix, event, value in ijson.parse(ControlCodesFilter(f)):
+        for prefix, event, value in ijson.parse(ControlCodesFilter(f), multiple_values=True):
             if prefix == package_key:
                 # Start of package.
                 if event == "start_map":
@@ -194,7 +201,7 @@ def _read_package_data_from_file(filename, data_type):
                 # End of package.
                 elif event == "end_map":
                     build = False
-                    package = builder.value
+                    return builder.value
 
             if build and not prefix.startswith(data_key):
                 builder.event(event, value)
@@ -210,8 +217,8 @@ def _read_data_from_file(filename, data_type):
         builder = ObjectBuilder()
 
         # Constructs Decimal values. https://github.com/ICRAR/ijson#options
-        for prefix, event, value in ijson.parse(ControlCodesFilter(f)):
-            if prefix == f"{data_key}.item":
+        for prefix, event, value in ijson.parse(ControlCodesFilter(f), multiple_values=True):
+            if prefix == data_key:
                 # Start of an item of data.
                 if event == "start_map":
                     build = True
@@ -229,8 +236,6 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
     collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
     collection_file_item.save()
 
-    package_data = _store_deduplicated_data(PackageData, package)
-
     for release_or_record in releases_or_records:
         if upgrade:
             # upgrade_10_11() requires an OrderedDict. simplejson is used for native decimal support.
@@ -238,43 +243,35 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
                 json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
             )
 
-        data = _store_deduplicated_data(Data, release_or_record)
+        data = get_or_create(Data, release_or_record)
 
         # The ocid is required to find all the releases relating to the same record, during compilation.
         if "ocid" not in release_or_record:
             logger.error("Skipped release or record without ocid: %s", release_or_record)
             continue
 
-        if data_type["format"] == RECORD_PACKAGE:
-            Record(
-                collection=collection_file.collection,
-                collection_file_item=collection_file_item,
-                package_data=package_data,
-                data=data,
-                ocid=release_or_record["ocid"],
-            ).save()
-        elif data_type["format"] == RELEASE_PACKAGE:
-            Release(
-                collection=collection_file.collection,
-                collection_file_item=collection_file_item,
-                package_data=package_data,
-                data=data,
-                ocid=release_or_record["ocid"],
-                release_id=release_or_record["id"],
-            ).save()
-
-
-def _store_deduplicated_data(model, data):
-    hash_md5 = get_hash(data)
-
-    try:
-        obj = model.objects.get(hash_md5=hash_md5)
-    except (model.DoesNotExist, model.MultipleObjectsReturned):
-        obj = model(data=data, hash_md5=hash_md5)
-        try:
-            with transaction.atomic():
-                obj.save()
-        except IntegrityError:
-            obj = model.objects.get(hash_md5=hash_md5)
-
-    return obj
+        match data_type["format"]:
+            case util.RECORD_PACKAGE:
+                Record(
+                    collection=collection_file.collection,
+                    collection_file_item=collection_file_item,
+                    package_data=get_or_create(PackageData, package),
+                    data=data,
+                    ocid=release_or_record["ocid"],
+                ).save()
+            case util.RELEASE_PACKAGE:
+                Release(
+                    collection=collection_file.collection,
+                    collection_file_item=collection_file_item,
+                    package_data=get_or_create(PackageData, package),
+                    data=data,
+                    ocid=release_or_record["ocid"],
+                    release_id=release_or_record["id"],
+                ).save()
+            case util.COMPILED_RELEASE:
+                CompiledRelease(
+                    collection=collection_file.collection,
+                    collection_file_item=collection_file_item,
+                    data=data,
+                    ocid=release_or_record["ocid"],
+                ).save()

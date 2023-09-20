@@ -6,7 +6,7 @@ from textwrap import fill
 
 import simplejson as json
 from django.conf import settings
-from django.db import connections
+from django.db import connections, transaction
 from django.db.utils import IntegrityError
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # These must match the output of ocdskit.util.detect_format().
 RELEASE_PACKAGE = "release package"
 RECORD_PACKAGE = "record package"
+COMPILED_RELEASE = "compiled release"
 YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
 
 
@@ -39,12 +40,6 @@ def walk(paths):
                 for name in files:
                     if not name.startswith("."):
                         yield os.path.join(root, name)
-
-
-def get_hash(data):
-    return hashlib.md5(
-        json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
-    ).hexdigest()
 
 
 @contextmanager
@@ -101,6 +96,24 @@ def decorator(decode, callback, state, channel, method, properties, body):
             conn.close()
 
     decorate(decode, callback, state, channel, method, properties, body, errback, finalback)
+
+
+def get_or_create(model, data):
+    hash_md5 = hashlib.md5(
+        json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
+    ).hexdigest()
+
+    try:
+        obj = model.objects.get(hash_md5=hash_md5)
+    except (model.DoesNotExist, model.MultipleObjectsReturned):
+        obj = model(data=data, hash_md5=hash_md5)
+        try:
+            with transaction.atomic():
+                obj.save()
+        except IntegrityError:
+            obj = model.objects.get(hash_md5=hash_md5)
+
+    return obj
 
 
 def create_note(collection, code, note, **kwargs):

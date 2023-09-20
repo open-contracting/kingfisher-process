@@ -9,7 +9,7 @@ from ocdsextensionregistry.exceptions import ExtensionWarning
 from ocdsextensionregistry.profile_builder import ProfileBuilder
 
 from process.models import CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data
-from process.util import create_note, get_hash
+from process.util import create_note, get_or_create
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +21,7 @@ def save_compiled_release(merged, collection, ocid):
     collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
     collection_file_item.save()
 
-    hash_md5 = get_hash(merged)
-
-    try:
-        data = Data.objects.get(hash_md5=hash_md5)
-    except (Data.DoesNotExist, Data.MultipleObjectsReturned):
-        data = Data(data=merged, hash_md5=hash_md5)
-        data.save()
+    data = get_or_create(Data, merged)
 
     release = CompiledRelease(collection=collection, collection_file_item=collection_file_item, data=data, ocid=ocid)
     release.save()
