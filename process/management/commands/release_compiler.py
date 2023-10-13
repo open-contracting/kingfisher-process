@@ -68,7 +68,7 @@ def compile_release(compiled_collection_id, ocid):
             package_extensions = release.package_data.data.get("extensions", [])
             if isinstance(package_extensions, list):
                 extensions.update(package_extensions)
-            else:
+            elif package_extensions is not None:
                 logger.error("Ignored malformed extensions for release %s: %s", release, package_extensions)
 
     # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
