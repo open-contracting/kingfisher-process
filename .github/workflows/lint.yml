@@ -34,7 +34,6 @@ jobs:
       - run: pip install -r requirements_dev.txt
       - env:
           # libcoveocds is optional (try-except block).
-          # https://github.com/OpenDataServices/lib-cove/pull/123
-          STANDARD_MAINTENANCE_SCRIPTS_IGNORE: libcove,libcoveocds
+          STANDARD_MAINTENANCE_SCRIPTS_IGNORE: libcoveocds
           STANDARD_MAINTENANCE_SCRIPTS_FILES: requirements_nongpl.in
         run: pytest /tmp/test_requirements.py

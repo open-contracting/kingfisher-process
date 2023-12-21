@@ -1,3 +1,2 @@
 -r requirements_nongpl.txt
-libcove @ https://github.com/jpmckinney/lib-cove/archive/hotfix2.zip
 libcoveocds[perf]
