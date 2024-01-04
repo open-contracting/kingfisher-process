@@ -66,7 +66,7 @@ def callback(client_state, channel, method, properties, input_message):
         with delete_step(
             ProcessingStep.Name.LOAD,
             finish=finish,
-            finish_kwargs={"collection_id": collection_id, "collection_file_id": collection_file_id},
+            finish_args=(collection_id, collection_file_id),
             collection_file_id=collection_file_id,
         ):
             with transaction.atomic():

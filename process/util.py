@@ -127,7 +127,7 @@ def create_step(name, collection_id, **kwargs):
 
 
 @contextmanager
-def delete_step(*args, finish=None, finish_kwargs={}, **kwargs):
+def delete_step(*args, finish=None, finish_args=(), **kwargs):
     try:
         yield
     # See the errback() function in the decorator() function. If a duplicate message is received, delete the step, so
@@ -139,7 +139,7 @@ def delete_step(*args, finish=None, finish_kwargs={}, **kwargs):
         _delete_step(*args, **kwargs)
     finally:
         if finish:
-            finish(**finish_kwargs)
+            finish(*finish_args)
 
 
 def _delete_step(step_type, **kwargs):
