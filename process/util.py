@@ -127,16 +127,19 @@ def create_step(name, collection_id, **kwargs):
 
 
 @contextmanager
-def delete_step(*args, **kwargs):
+def delete_step(*args, finish=None, finish_kwargs={}, **kwargs):
     try:
         yield
-    # See the errback() function in the decorator() function. If a duplicate message is received, we want to ensure
-    # that the step was deleted, so that the collection is completable, before re-raising the exception.
+    # See the errback() function in the decorator() function. If a duplicate message is received, delete the step, so
+    # that the collection is completable. Don't delete the step if the error was unexpected.
     except (AlreadyExists, InvalidFormError, IntegrityError):
         _delete_step(*args, **kwargs)
         raise
     else:
         _delete_step(*args, **kwargs)
+    finally:
+        if finish:
+            finish(**finish_kwargs)
 
 
 def _delete_step(step_type, **kwargs):

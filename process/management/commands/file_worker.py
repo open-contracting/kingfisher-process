@@ -51,26 +51,35 @@ class Command(BaseCommand):
         )
 
 
+def finish(collection_id, collection_file_id):
+    # If a duplicate message is received causing an IntegrityError, we still want to create the next step, in case it
+    # was not created the first time. delete_step() will delete any duplicate steps.
+    if settings.ENABLE_CHECKER:
+        create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=collection_file_id)
+
+
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
     try:
-        with delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id):
+        with delete_step(
+            ProcessingStep.Name.LOAD,
+            finish=finish,
+            finish_kwargs={"collection_id": collection_id, "collection_file_id": collection_file_id},
+            collection_file_id=collection_file_id,
+        ):
             with transaction.atomic():
                 collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
                 collection = collection_file.collection
                 upgraded_collection_file_id = process_file(collection_file)
 
-        # If a duplicate message is received causing an IntegrityError above, we still want to create the next step, in
-        # case it was not created the first time. delete_step() will delete any duplicate steps.
-        if settings.ENABLE_CHECKER:
-            create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=collection_file_id)
-
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
         publish(client_state, channel, message, routing_key)
 
         if upgraded_collection_file_id:
+            # The delete_step() context manager sets upgraded_collection_file_id only if successful, so we don't need
+            # to create this step in the finish() function.
             if settings.ENABLE_CHECKER:
                 create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=upgraded_collection_file_id)
 
