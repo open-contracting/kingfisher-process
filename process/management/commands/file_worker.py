@@ -65,9 +65,9 @@ def callback(client_state, channel, method, properties, input_message):
     try:
         with delete_step(
             ProcessingStep.Name.LOAD,
+            collection_file_id=collection_file_id,
             finish=finish,
             finish_args=(collection_id, collection_file_id),
-            collection_file_id=collection_file_id,
         ):
             with transaction.atomic():
                 collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)

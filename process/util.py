@@ -127,22 +127,19 @@ def create_step(name, collection_id, **kwargs):
 
 
 @contextmanager
-def delete_step(*args, finish=None, finish_args=(), **kwargs):
+def delete_step(*args, **kwargs):
     try:
         yield
     # See the errback() function in the decorator() function. If a duplicate message is received, delete the step, so
     # that the collection is completable. Don't delete the step if the error was unexpected.
     except (AlreadyExists, InvalidFormError, IntegrityError):
-        _delete_step(*args, **kwargs)
+        _delete_step_and_finish(*args, **kwargs)
         raise
     else:
-        _delete_step(*args, **kwargs)
-    finally:
-        if finish:
-            finish(*finish_args)
+        _delete_step_and_finish(*args, **kwargs)
 
 
-def _delete_step(step_type, **kwargs):
+def _delete_step_and_finish(step_type, finish=None, finish_args=(), **kwargs):
     # kwargs can include collection_id, collection_file_id and ocid.
     processing_steps = ProcessingStep.objects.filter(name=step_type, **kwargs)
 
@@ -150,3 +147,6 @@ def _delete_step(step_type, **kwargs):
         processing_steps.delete()
     else:
         logger.warning("No such processing step found: %s: %s", step_type, kwargs)
+
+    if finish:
+        finish(*finish_args)
