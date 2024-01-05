@@ -52,7 +52,7 @@ ocdsextensionregistry==0.3.6
     # via
     #   -r requirements_nongpl.in
     #   ocdskit
-ocdskit[perf]==1.1.8
+ocdskit[perf]==1.1.9
     # via -r requirements_nongpl.in
 ocdsmerge==0.6.6
     # via

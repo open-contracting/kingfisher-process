@@ -65,7 +65,8 @@ def compile_record(compiled_collection_id, ocid):
     for release in releases:
         if "date" in release:
             dated.append(release)
-            if is_linked_release(release):
+            # For example, peru_osce_bulk has a `details` field in its linked releases.
+            if is_linked_release(release, maximum_properties=4):
                 linked += 1
         else:
             undated += 1
