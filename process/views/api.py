@@ -103,7 +103,7 @@ def close_collection(request):
 @require_POST
 def wipe_collection(request):
     input_message = json.loads(request.body)
-    if "collection_id" not in input_message:
+    if not input_message.get("collection_id"):
         return HttpResponseBadRequest('Unable to parse input. Please provide {"collection_id":<some_number>}')
 
     with get_publisher() as client:
