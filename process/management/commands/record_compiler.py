@@ -83,7 +83,7 @@ def compile_record(compiled_collection_id, ocid):
                 f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled.",
             )
 
-        extensions = record.package_data.data.get("extensions", [])
+        extensions = set(record.package_data.data.get("extensions", []))
         merged = compile_releases_by_ocdskit(collection, ocid, dated, extensions)
         return save_compiled_release(merged, collection, ocid)
 

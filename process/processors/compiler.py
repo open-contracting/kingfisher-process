@@ -34,6 +34,15 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     if collection.source_id == "colombia_api":
         extensions = {extension.replace(":8443", "") for extension in extensions}
 
+    # The master version of the lots extension depends on OCDS 1.2 or the submission terms extension.
+    if (
+        "https://raw.githubusercontent.com/open-contracting-extensions/ocds_lots_extension/master/extension.json"
+        in extensions
+    ):
+        extensions.add(
+            "https://raw.githubusercontent.com/open-contracting-extensions/ocds_submissionTerms_extension/master/extension.json"  # noqa: E501
+        )
+
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", category=ExtensionWarning)
 
