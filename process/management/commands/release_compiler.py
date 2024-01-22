@@ -84,5 +84,5 @@ def compile_release(compiled_collection_id, ocid):
             seenlist.append(d)
             unique.append(d)
 
-    merged = compile_releases_by_ocdskit(collection, ocid, unique, extensions)
-    return save_compiled_release(merged, collection, ocid)
+    if merged := compile_releases_by_ocdskit(collection, ocid, unique, extensions):
+        return save_compiled_release(merged, collection, ocid)
