@@ -12,6 +12,7 @@ from process.models import CollectionFile, CollectionFileItem, CollectionNote, C
 from process.util import create_note, get_or_create
 
 logger = logging.getLogger(__name__)
+format_string = "https://raw.githubusercontent.com/open-contracting-extensions/ocds_{}_extension/master/extension.json"
 
 
 def save_compiled_release(merged, collection, ocid):
@@ -35,13 +36,8 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         extensions = {extension.replace(":8443", "") for extension in extensions}
 
     # The master version of the lots extension depends on OCDS 1.2 or the submission terms extension.
-    if (
-        "https://raw.githubusercontent.com/open-contracting-extensions/ocds_lots_extension/master/extension.json"
-        in extensions
-    ):
-        extensions.add(
-            "https://raw.githubusercontent.com/open-contracting-extensions/ocds_submissionTerms_extension/master/extension.json"  # noqa: E501
-        )
+    if format_string.format("lots") in extensions:
+        extensions.add(format_string.format("submissionTerms"))
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", category=ExtensionWarning)
@@ -51,7 +47,11 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         if note := [str(warning.message) for warning in w if issubclass(warning.category, ExtensionWarning)]:
             create_note(collection, CollectionNote.Level.WARNING, note)
 
-    return merger.create_compiled_release(releases)
+    try:
+        return merger.create_compiled_release(releases)
+    except ocdsmerge.exceptions.OCDSMergeError:
+        logger.exception("OCID %s can't be compiled, skipping", ocid)
+        create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} can't be compiled")
 
 
 @functools.lru_cache
