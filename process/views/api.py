@@ -56,7 +56,7 @@ def close_collection(request):
 
     with transaction.atomic():
         collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
-        if "stats" in input_message and input_message["stats"]:
+        if input_message.get("stats"):
             # this value is used later on to detect, whether all collection has been processed yet
             collection.expected_files_count = input_message["stats"].get("kingfisher_process_items_sent_rabbit", 0)
         collection.store_end_at = Now()
@@ -68,7 +68,7 @@ def close_collection(request):
             upgraded_collection.store_end_at = Now()
             upgraded_collection.save()
 
-        if "reason" in input_message and input_message["reason"]:
+        if input_message.get("reason"):
             create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}")
 
             if upgraded_collection:
@@ -76,7 +76,7 @@ def close_collection(request):
                     upgraded_collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}"
                 )
 
-        if "stats" in input_message and input_message["stats"]:
+        if input_message.get("stats"):
             create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"])
 
             if upgraded_collection:
