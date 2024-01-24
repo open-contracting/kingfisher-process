@@ -171,6 +171,3 @@ class LoadTests(TransactionTestCase):
             )
 
         self.assertEqual(str(e.exception), f"An open collection {source.pk} matching those arguments already exists.")
-
-
-# TODO: test files with: bad encoding, nested data
