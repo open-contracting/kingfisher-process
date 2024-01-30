@@ -333,6 +333,8 @@ class Release(models.Model):
             models.Index(name="release_data_id_idx", fields=["data"]),
             models.Index(name="release_package_data_id_idx", fields=["package_data"]),
         ]
+        # It is possible to add a constraint on collection, ocid, release_id. However, some publications have repeated
+        # release IDs. Example: https://github.com/open-contracting/kingfisher-collect/issues/1049
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
