@@ -20,7 +20,7 @@ charset-normalizer==2.0.8
     # via requests
 dj-database-url==2.0.0
     # via -r requirements_nongpl.in
-django==4.2.7
+django==4.2.10
     # via
     #   -r requirements_nongpl.in
     #   dj-database-url
