@@ -114,7 +114,7 @@ odfpy==1.4.1
     # via flattentool
 openpyxl==3.1.2
     # via flattentool
-orjson==3.9.1
+orjson==3.9.15
     # via
     #   -r requirements_nongpl.txt
     #   libcoveocds
