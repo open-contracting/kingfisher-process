@@ -23,6 +23,7 @@ class Command(BaseCommand):
 
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
+    # In Kingfisher Collect, `path` isn't set if `errors` is set.
     if input_message.get("errors") and not input_message.get("path"):
         input_message["path"] = input_message.get("url")
     else:
