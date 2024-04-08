@@ -42,6 +42,7 @@ routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = {COMPILED_RELEASE, RECORD_PACKAGE, RELEASE_PACKAGE}
+ERROR = CollectionNote.Level.ERROR
 
 
 class Command(BaseCommand):
@@ -94,15 +95,15 @@ def callback(client_state, channel, method, properties, input_message):
     # Irrecoverable errors. Discard the message to allow other messages to be processed.
     except FileNotFoundError:  # raised by detect_format() or open()
         logger.exception("%s has disappeared, skipping", collection_file.filename)
-        create_note(collection, CollectionNote.Level.ERROR, f"{collection_file.filename} has disappeared")
+        create_note(collection, ERROR, f"{collection_file.filename} has disappeared", data=input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     except (UnknownFormatError, UnsupportedFormatError):  # raised by detect_format() or process_file()
         logger.exception("Source %s yields an unknown or unsupported format, skipping", collection.source_id)
-        create_note(collection, CollectionNote.Level.ERROR, f"Source {collection.source_id} yields unknown format")
+        create_note(collection, ERROR, f"Source {collection.source_id} yields unknown format", data=input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     except ijson.common.IncompleteJSONError:  # raised by ijson.parse()
         logger.exception("Source %s yields invalid JSON, skipping", collection.source_id)
-        create_note(collection, CollectionNote.Level.ERROR, f"Source {collection.source_id} yields invalid JSON")
+        create_note(collection, ERROR, f"Source {collection.source_id} yields invalid JSON", data=input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
         ack(client_state, channel, method.delivery_tag)
