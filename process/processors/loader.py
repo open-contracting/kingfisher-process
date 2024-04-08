@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 
@@ -39,8 +40,8 @@ def create_collection_file(collection, filename=None, url=None, errors=None):
         if not errors:
             create_step(ProcessingStep.Name.LOAD, collection.pk, collection_file=collection_file)
         else:
-            note = f"Errors when downloading collection_file_id {collection_file}\n{errors}"
-            create_note(collection, CollectionNote.Level.ERROR, note)
+            note = f"Couldn't download {collection_file}"  # path is set to url in api_loader
+            create_note(collection, CollectionNote.Level.ERROR, note, data=json.loads(errors))
 
         return collection_file
 
