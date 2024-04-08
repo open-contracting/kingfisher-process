@@ -77,38 +77,35 @@ def compile_record(compiled_collection_id, ocid):
     # See discussion in https://github.com/open-contracting/kingfisher-process/pull/284
     if dated and not linked:
         if undated:
-            create_note(
-                collection,
-                CollectionNote.Level.WARNING,
-                f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled.",
-            )
+            note = f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled."
+            create_note(collection, CollectionNote.Level.WARNING, note)
 
         extensions = set(record.package_data.data.get("extensions", []))
         if merged := compile_releases_by_ocdskit(collection, ocid, dated, extensions):
             return save_compiled_release(merged, collection, ocid)
 
-    note = []
+    notes = []
     if linked:
-        note.append(
+        notes.append(
             f"OCID {ocid} has {linked} linked releases among {len(dated)} dated releases and {len(releases)} releases."
         )
     elif undated:
-        note.append(f"OCID {ocid} has {len(releases)} releases, all undated.")
+        notes.append(f"OCID {ocid} has {len(releases)} releases, all undated.")
     else:
-        note.append(f"OCID {ocid} has 0 releases.")
+        notes.append(f"OCID {ocid} has 0 releases.")
 
     if compiled_release := record.data.data.get("compiledRelease", []):
-        note.append("Its compiledRelease was used.")
-        create_note(collection, CollectionNote.Level.WARNING, note)
+        notes.append("Its compiledRelease was used.")
+        create_note(collection, CollectionNote.Level.WARNING, notes)
         return save_compiled_release(compiled_release, collection, ocid)
 
     if tagged:
         if len(tagged) > 1:
-            note.append("Its first release tagged 'compiled' was used.")
+            notes.append("Its first release tagged 'compiled' was used.")
         else:
-            note.append("Its only release tagged 'compiled' was used.")
-        create_note(collection, CollectionNote.Level.WARNING, note)
+            notes.append("Its only release tagged 'compiled' was used.")
+        create_note(collection, CollectionNote.Level.WARNING, notes)
         return save_compiled_release(tagged[0], collection, ocid)
 
-    note.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
-    create_note(collection, CollectionNote.Level.ERROR, note)
+    notes.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
+    create_note(collection, CollectionNote.Level.ERROR, notes)
