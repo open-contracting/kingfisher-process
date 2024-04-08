@@ -19,20 +19,20 @@ def file_or_directory(string):
     return string
 
 
-def create_collection_file(collection, file_path=None, url=None, errors=None):
+def create_collection_file(collection, filename=None, url=None, errors=None):
     """
     Creates file for a collection and steps for this file.
 
     :param Collection collection: collection
-    :param str file_path path to file data
-    :param json errors to be stored
+    :param str filename: path to file data
+    :param json errors: errors to be stored
 
     :returns: created collection file
     :rtype: CollectionFile
 
     :raises InvalidFormError: if there is a validation error
     """
-    form = CollectionFileForm({"collection": collection, "filename": file_path, "url": url})
+    form = CollectionFileForm({"collection": collection, "filename": filename, "url": url})
 
     if form.is_valid():
         collection_file = form.save()

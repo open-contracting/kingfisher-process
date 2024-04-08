@@ -32,7 +32,7 @@ def callback(client_state, channel, method, properties, input_message):
         collection = Collection.objects.get(pk=collection_id)
         collection_file = create_collection_file(
             collection,
-            file_path=input_message.get("path"),
+            filename=input_message.get("path"),
             url=input_message.get("url"),
             errors=input_message.get("errors"),
         )

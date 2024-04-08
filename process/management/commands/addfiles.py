@@ -42,7 +42,7 @@ class Command(CollectionCommand):
                 # The transaction is inside the loop, since we can't rollback RabbitMQ messages, only PostgreSQL
                 # statements. This ensures that any published message is paired with a database commit.
                 with transaction.atomic():
-                    collection_file = create_collection_file(collection, file_path=path)
+                    collection_file = create_collection_file(collection, filename=path)
 
                 message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
                 client.publish(message, routing_key=routing_key)
