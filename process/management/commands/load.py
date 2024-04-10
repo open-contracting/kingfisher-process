@@ -118,13 +118,16 @@ class Command(BaseCommand):
                 logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
 
             collection, upgraded_collection, compiled_collection = create_collections(
+                # Identification
                 options["source"],
                 data_version,
-                options["note"],
+                sample=options["sample"],
+                # Steps
                 upgrade=options["upgrade"],
                 compile=options["compile"],
                 check=options["check"],
-                sample=options["sample"],
+                # Other
+                note=options["note"],
                 force=options["force"],
             )
         except ValueError as error:

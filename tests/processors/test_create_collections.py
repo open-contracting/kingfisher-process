@@ -10,7 +10,16 @@ class CreateCollectionsTests(TransactionTestCase):
     def test_malformed_input(self):
         with self.assertRaises(ValueError) as e:
             create_collections(
-                "test", "wrong_data_version", "testing note", upgrade=True, compile=True, check=True, sample=False
+                # Identification
+                "test",
+                "wrong_data_version",
+                sample=False,
+                # Steps
+                upgrade=True,
+                compile=True,
+                check=True,
+                # Other
+                note="testing note",
             )
         self.assertEqual(
             str(e.exception),
@@ -20,13 +29,30 @@ class CreateCollectionsTests(TransactionTestCase):
     def test_integrity_error(self):
         with self.assertRaises(ValueError) as e:
             create_collections(
-                "portugal-releases", "2020-12-29 09:22:08", "testing note", upgrade=False, compile=False, sample=False
+                # Identification
+                "portugal-releases",
+                "2020-12-29 09:22:08",
+                sample=False,
+                # Steps
+                upgrade=False,
+                compile=False,
+                # Other
+                note="testing note",
             )
         self.assertTrue(str(e.exception).startswith("A matching collection already exists."))
 
     def test_happy_day(self):
         collection, upgraded_collection, compiled_collection = create_collections(
-            "test", "2020-12-29 09:22:09", "testing note", upgrade=True, compile=True, check=True, sample=False
+            # Identification
+            "test",
+            "2020-12-29 09:22:09",
+            sample=False,
+            # Steps
+            upgrade=True,
+            compile=True,
+            check=True,
+            # Other
+            note="testing note",
         )
 
         self.assertEqual(upgraded_collection.parent.id, collection.id)

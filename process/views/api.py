@@ -28,13 +28,16 @@ def create_collection(request):
         logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
 
     collection, upgraded_collection, compiled_collection = create_collections(
+        # Identification
         input_message["source_id"],
         input_message["data_version"],
-        note=input_message.get("note"),
+        sample=input_message.get("sample", False),
+        # Steps
         upgrade=input_message.get("upgrade", False),
         compile=input_message.get("compile", False),
         check=input_message.get("check", False),
-        sample=input_message.get("sample", False),
+        # Other
+        note=input_message.get("note"),
     )
 
     result = {"collection_id": collection.pk}

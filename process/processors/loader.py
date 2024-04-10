@@ -49,18 +49,18 @@ def create_collection_file(collection, filename=None, url=None, errors=None):
 
 
 def create_collections(
-    source_id, data_version, note=None, upgrade=False, compile=False, check=False, sample=False, force=False
+    source_id, data_version, sample=False, note=None, upgrade=False, compile=False, check=False, force=False
 ):
     """
     Creates main collection, note, upgraded collection, compiled collection etc. based on provided data
 
     :param str source_id: collection source
     :param str data_version: data version in ISO format
-    :param str note: text description
+    :param boolean sample: is this sample only
     :param boolean upgrade: whether to plan collection upgrade
     :param boolean compile: whether to plan collection compile
     :param boolean check: whether to plan schema-based checks
-    :param boolean sample: is this sample only
+    :param str note: text description
     :param boolean force: skip validation of the source_id against the Scrapyd project
     :returns: created main collection, upgraded collection, compiled_collection
     :rtype: Collection, Collection, Collection
