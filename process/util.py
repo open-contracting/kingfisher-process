@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import warnings
 from contextlib import contextmanager
 from textwrap import fill
 
@@ -150,3 +151,14 @@ def _delete_step_and_finish(step_type, finish=None, finish_args=(), **kwargs):
 
     if finish:
         finish(*finish_args)
+
+
+@contextmanager
+def create_warnings_note(collection, category):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", category=category)
+
+        yield
+
+        if note := [str(warning.message) for warning in w if issubclass(warning.category, category)]:
+            create_note(collection, CollectionNote.Level.WARNING, note)

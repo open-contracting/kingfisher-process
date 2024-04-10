@@ -1,6 +1,5 @@
 import functools
 import logging
-import warnings
 
 import ocdsmerge
 import ocdsmerge.exceptions
@@ -9,7 +8,7 @@ from ocdsextensionregistry.exceptions import ExtensionWarning
 from ocdsextensionregistry.profile_builder import ProfileBuilder
 
 from process.models import CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data
-from process.util import create_note, get_or_create
+from process.util import create_note, create_warnings_note, get_or_create
 
 logger = logging.getLogger(__name__)
 format_string = "https://raw.githubusercontent.com/open-contracting-extensions/ocds_{}_extension/master/extension.json"
@@ -39,16 +38,12 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     if format_string.format("lots") in extensions:
         extensions.add(format_string.format("submissionTerms"))
 
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", category=ExtensionWarning)
-
+    with create_warnings_note(collection, ExtensionWarning):
         merger = _get_merger(frozenset(extensions))
 
-        if note := [str(warning.message) for warning in w if issubclass(warning.category, ExtensionWarning)]:
-            create_note(collection, CollectionNote.Level.WARNING, note)
-
     try:
-        return merger.create_compiled_release(releases)
+        with create_warnings_note(collection, ocdsmerge.exceptions.OCDSMergeWarning):
+            return merger.create_compiled_release(releases)
     except ocdsmerge.exceptions.OCDSMergeError:
         logger.exception("OCID %s can't be compiled, skipping", ocid)
         create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} can't be compiled")
