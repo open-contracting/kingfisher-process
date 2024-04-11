@@ -35,7 +35,7 @@ djangorestframework==3.14.0
     # via -r requirements_nongpl.in
 gunicorn[setproctitle]==20.1.0
     # via -r requirements_nongpl.in
-idna==2.9
+idna==3.7
     # via requests
 ijson==3.2.3
     # via
