@@ -37,6 +37,7 @@ def create_collection(request):
         compile=input_message.get("compile", False),
         check=input_message.get("check", False),
         # Other
+        scrapyd_job=input_message.get("job", ""),
         note=input_message.get("note"),
     )
 

@@ -1,4 +1,5 @@
 import argparse
+import copy
 import json
 import logging
 import os
@@ -49,7 +50,18 @@ def create_collection_file(collection, filename=None, url=None, errors=None):
 
 
 def create_collections(
-    source_id, data_version, sample=False, note=None, upgrade=False, compile=False, check=False, force=False
+    # Identification
+    source_id,
+    data_version,
+    sample=False,
+    # Steps
+    upgrade=False,
+    compile=False,
+    check=False,
+    # Other
+    scrapyd_job=None,
+    note=None,
+    force=False,
 ):
     """
     Creates main collection, note, upgraded collection, compiled collection etc. based on provided data
@@ -60,12 +72,19 @@ def create_collections(
     :param boolean upgrade: whether to plan collection upgrade
     :param boolean compile: whether to plan collection compile
     :param boolean check: whether to plan schema-based checks
+    :param dict scrapyd_job: Scrapyd job ID
     :param str note: text description
     :param boolean force: skip validation of the source_id against the Scrapyd project
     :returns: created main collection, upgraded collection, compiled_collection
     :rtype: Collection, Collection, Collection
     """
-    data = {"source_id": source_id, "data_version": data_version, "sample": sample, "force": force}
+    data = {
+        "source_id": source_id,
+        "data_version": data_version,
+        "sample": sample,
+        "scrapyd_job": scrapyd_job,
+        "force": force,
+    }
 
     steps = []
     if check:
@@ -75,7 +94,7 @@ def create_collections(
     elif compile:
         steps.append("compile")
 
-    collection = _create_collection(data, steps, note, None, None)
+    collection = _create_collection(data, note, steps=steps)
 
     upgraded_collection = None
     if upgrade:
@@ -84,7 +103,7 @@ def create_collections(
         else:  # main -> upgrade
             upgrade_steps = []
         upgraded_collection = _create_collection(
-            data, upgrade_steps, note, collection, Collection.Transform.UPGRADE_10_11
+            data, note, steps=upgrade_steps, parent=collection, transform_type=Collection.Transform.UPGRADE_10_11
         )
 
     compiled_collection = None
@@ -94,19 +113,18 @@ def create_collections(
         else:  # main -> compile
             base_collection = collection
         compiled_collection = _create_collection(
-            data, [], note, base_collection, Collection.Transform.COMPILE_RELEASES
+            data, note, parent=base_collection, transform_type=Collection.Transform.COMPILE_RELEASES
         )
 
     return collection, upgraded_collection, compiled_collection
 
 
-def _create_collection(data, steps, note, parent, transform_type):
-    collection_data = data.copy()
-    collection_data["transform_type"] = transform_type
-    collection_data["parent"] = parent
+def _create_collection(data, note, **kwargs):
+    collection_data = copy.deepcopy(data)
+    collection_data.update(kwargs)
     # If steps is empty, Django attempts to save it as NULL, but the column has a NOT NULL constraint.
-    if steps:
-        collection_data["steps"] = steps
+    if "steps" in collection_data and not collection_data["steps"]:
+        collection_data.pop("steps")
 
     form = CollectionForm(collection_data)
 

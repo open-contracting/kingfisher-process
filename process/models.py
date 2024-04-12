@@ -81,6 +81,7 @@ class Collection(models.Model):
         db_column="transform_from_collection_id",
     )
     transform_type = models.TextField(blank=True, choices=Transform.choices)
+    scrapyd_job = models.TextField(blank=True)
 
     # Calculated fields
     cached_releases_count = models.IntegerField(null=True, blank=True)
