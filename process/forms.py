@@ -42,16 +42,16 @@ class CollectionForm(KingfisherForm):
         cleaned_data = super().clean()
 
         if process.scrapyd.configured():
-            options = cache.get_or_set("scrapyd_spiders", process.scrapyd.spiders)
-            for spider in list(options):
-                options.append(spider + "_local")
+            scrapyd_spiders = cache.get_or_set("scrapyd_spiders", process.scrapyd.spiders)
+            for spider in list(scrapyd_spiders):
+                scrapyd_spiders.append(spider + "_local")
 
             source_id = cleaned_data.get("source_id")
             force = cleaned_data.get("force")
 
-            if source_id not in options and not force:
+            if source_id not in scrapyd_spiders and not force:
                 params = {"value": source_id, "project": settings.SCRAPYD["project"]}
-                if match := get_close_matches(source_id, options, n=1):
+                if match := get_close_matches(source_id, scrapyd_spiders, n=1):
                     params["match"] = match[0]
                     message = _(
                         "%(value)r is not a spider in the %(project)s project of Scrapyd. Did you mean: %(match)s"
