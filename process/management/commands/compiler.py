@@ -36,7 +36,7 @@ def callback(client_state, channel, method, properties, input_message):
     if collection.data_type and collection.data_type["format"] == RECORD_PACKAGE and not collection_file:
         return
 
-    # There is already a guard in the file_worker worker's process_file function to halt on non-packages, so we only
+    # There is already a guard in the file_worker worker's process_file() function to halt on non-packages, so we only
     # test the "format" to decide the logic, not to decide whether to proceed.
     if compilable(collection):
         compiled_collection = collection.get_compiled_collection()
@@ -46,10 +46,15 @@ def callback(client_state, channel, method, properties, input_message):
             compilation_started=True
         )
 
+        # Return if the collection expected no files.
+        if collection.expected_files_count == 0 and collection.collectionfile_set.count() == 0:
+            return
+
         if collection.data_type["format"] == RELEASE_PACKAGE:
             # Return if another compiler worker received a message for the same compilable collection.
             if not updated:
                 return
+
             items = collection.release_set
             publish_routing_key = "compiler_release"
         elif collection.data_type["format"] == RECORD_PACKAGE:
@@ -70,11 +75,16 @@ def callback(client_state, channel, method, properties, input_message):
 def compilable(collection):
     # 1. Check whether compilation *should* occur.
 
+    # This also matches when collection.transform_type == Collection.Transform.COMPILE_RELEASES.
     if not collection.steps or "compile" not in collection.steps:
         logger.debug("Collection %s not compilable ('compile' step not set)", collection)
         return False
 
     # 2. Check whether compilation *can* occur.
+
+    # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
+    if collection.expected_files_count == 0 and collection.collectionfile_set.count() == 0:
+        return True
 
     # This can occur if the close_collection endpoint is called before the file_worker worker can process any messages.
     if not collection.data_type:
@@ -85,6 +95,7 @@ def compilable(collection):
     if collection.data_type["format"] == RECORD_PACKAGE:
         return True
 
+    # Run after collection.data_type["format"] == RECORD_PACKAGE, because records can be compiled immediately.
     if collection.store_end_at is None:
         logger.debug("Collection %s not compilable (load incomplete)", collection)
         return False
