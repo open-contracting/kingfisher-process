@@ -61,7 +61,7 @@ def close_collection(request):
         collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
         if input_message.get("stats"):
             # this value is used later on to detect, whether all collection has been processed yet
-            collection.expected_files_count = input_message["stats"].get("kingfisher_process_items_sent_rabbit", 0)
+            collection.expected_files_count = input_message["stats"].get("kingfisher_process_expected_files_count", 0)
         collection.store_end_at = Now()
         collection.save()
 
