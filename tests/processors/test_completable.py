@@ -16,6 +16,7 @@ class CompletableTests(TransactionTestCase):
         collection = Collection.objects.get(id=3)
         collection.completed_at = Now()
         collection.save()
+
         self.assertEqual(completable(collection), False)
 
     def test_not_fully_processed(self):
@@ -34,6 +35,7 @@ class CompletableTests(TransactionTestCase):
 
         collection.store_end_at = None
         collection.save()
+
         self.assertEqual(completable(collection), False)
 
     def test_happy_day_compiled(self):
@@ -42,4 +44,5 @@ class CompletableTests(TransactionTestCase):
         collection.store_end_at = None
         collection.compilation_started = True
         collection.save()
+
         self.assertEqual(completable(collection), True)

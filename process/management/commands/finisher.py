@@ -42,7 +42,12 @@ def callback(client_state, channel, method, properties, input_message):
 
 
 def _set_complete_at(collection, **kwargs):
-    return Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now(), **kwargs)
+    count = {
+        "cached_releases_count": collection.release_set.count(),
+        "cached_records_count": collection.record_set.count(),
+        "cached_compiled_releases_count": collection.compiledrelease_set.count(),
+    }
+    return Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now(), **count, **kwargs)
 
 
 def completable(collection):
