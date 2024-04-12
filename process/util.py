@@ -1,4 +1,5 @@
 import hashlib
+import io
 import logging
 import os
 import warnings
@@ -162,3 +163,19 @@ def create_warnings_note(collection, category):
 
         if note := [str(warning.message) for warning in w if issubclass(warning.category, category)]:
             create_note(collection, CollectionNote.Level.WARNING, note)
+
+
+@contextmanager
+def create_logger_note(collection, name):
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setLevel(logging.WARNING)
+    logger = logging.getLogger(name)
+    logger.addHandler(handler)
+
+    yield
+
+    logger.removeHandler(handler)
+
+    if note := stream.getvalue():
+        create_note(collection, CollectionNote.Level.WARNING, note)

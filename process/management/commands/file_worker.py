@@ -30,6 +30,7 @@ from process.util import (
     RECORD_PACKAGE,
     RELEASE_PACKAGE,
     consume,
+    create_logger_note,
     create_note,
     create_step,
     decorator,
@@ -254,10 +255,11 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
 
     for release_or_record in releases_or_records:
         if upgrade:
-            # upgrade_10_11() requires an OrderedDict. simplejson is used for native decimal support.
-            release_or_record = upgrade_10_11(
-                json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
-            )
+            with create_logger_note(collection_file.collection, "ocdskit"):
+                # upgrade_10_11() requires an OrderedDict. simplejson is used for native decimal support.
+                release_or_record = upgrade_10_11(
+                    json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
+                )
 
         data = get_or_create(Data, release_or_record)
 
