@@ -19,10 +19,6 @@ from process.models import Collection, CollectionFile, CollectionNote, Processin
 
 logger = logging.getLogger(__name__)
 
-# These must match the output of ocdskit.util.detect_format().
-RELEASE_PACKAGE = "release package"
-RECORD_PACKAGE = "record package"
-COMPILED_RELEASE = "compiled release"
 YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
 
 

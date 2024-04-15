@@ -100,7 +100,7 @@ ocdsextensionregistry==0.3.6
     #   -r requirements_nongpl.txt
     #   libcoveocds
     #   ocdskit
-ocdskit[perf]==1.1.9
+ocdskit[perf]==1.1.10
     # via -r requirements_nongpl.txt
 ocdsmerge==0.6.6
     # via

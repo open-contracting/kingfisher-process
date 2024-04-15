@@ -1,7 +1,46 @@
 from django.test import TransactionTestCase
+from ocdskit.exceptions import UnknownFormatError
 
+from process.exceptions import EmptyFormatError, UnsupportedFormatError
 from process.management.commands.file_worker import process_file
 from process.models import CollectionFile, CollectionFileItem, PackageData, Release
+from tests.fixtures import collection
+
+
+class DetectFormatTests(TransactionTestCase):
+    def test_empty_format(self):
+        source = collection()
+        source.save()
+
+        with self.assertRaisesRegex(
+            EmptyFormatError,
+            r"^Empty format 'empty package' for file tests/fixtures/detect-format_empty\.json \(id: {id}\)\.$",
+        ):
+            process_file(CollectionFile(collection=source, filename="tests/fixtures/detect-format_empty.json"))
+
+        self.assertEqual(source.data_type, {"array": False, "format": "empty package", "concatenated": False})
+
+    def test_unsupported_format(self):
+        source = collection()
+        source.save()
+
+        with self.assertRaisesRegex(
+            UnsupportedFormatError,
+            r"^Unsupported format 'versioned release' for file tests/fixtures/detect-format_versioned.json "
+            r"\(id: {id}\). Must be one of: compiled release, record package, release package\.$",
+        ):
+            process_file(CollectionFile(collection=source, filename="tests/fixtures/detect-format_versioned.json"))
+
+        self.assertEqual(source.data_type, {"array": False, "format": "versioned release", "concatenated": False})
+
+    def test_unknown_format(self):
+        source = collection()
+        source.save()
+
+        with self.assertRaisesRegex(UnknownFormatError, r"^top-level JSON value is a non-OCDS object$"):
+            process_file(CollectionFile(collection=source, filename="tests/fixtures/detect-format_object.json"))
+
+        self.assertEqual(source.data_type, {})
 
 
 class ProcessFileTests(TransactionTestCase):

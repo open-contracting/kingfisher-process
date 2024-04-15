@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from ocdskit.util import Format
 from yapw.methods import ack, publish
 
 try:
@@ -17,7 +18,7 @@ except ImportError:
     using_libcoveocds = False
 
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
-from process.util import RELEASE_PACKAGE, consume, decorator, delete_step
+from process.util import consume, decorator, delete_step
 
 consume_routing_keys = ["file_worker", "addchecks"]
 routing_key = "checker"
@@ -89,7 +90,8 @@ def _check_collection_file(collection_file):
     logger.info("Collecting data to check for collection file %s", collection_file)
 
     release_package = (
-        collection_file.collection.data_type and collection_file.collection.data_type["format"] == RELEASE_PACKAGE
+        collection_file.collection.data_type
+        and collection_file.collection.data_type["format"] == Format.release_package
     )
 
     if release_package:

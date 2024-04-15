@@ -9,11 +9,10 @@ from django.db import transaction
 from ijson.common import ObjectBuilder
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
-from ocdskit.util import detect_format
+from ocdskit.util import Format, detect_format
 from yapw.methods import ack, nack, publish
 
-from process import util
-from process.exceptions import UnsupportedFormatError
+from process.exceptions import EmptyFormatError, UnsupportedFormatError
 from process.models import (
     CollectionFile,
     CollectionFileItem,
@@ -25,24 +24,14 @@ from process.models import (
     Record,
     Release,
 )
-from process.util import (
-    COMPILED_RELEASE,
-    RECORD_PACKAGE,
-    RELEASE_PACKAGE,
-    consume,
-    create_logger_note,
-    create_note,
-    create_step,
-    decorator,
-    delete_step,
-    get_or_create,
-)
+from process.util import consume, create_logger_note, create_note, create_step, decorator, delete_step, get_or_create
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
-SUPPORTED_FORMATS = {COMPILED_RELEASE, RECORD_PACKAGE, RELEASE_PACKAGE}
+EMPTY_FORMATS = {Format.empty_package}
+SUPPORTED_FORMATS = {Format.compiled_release, Format.record_package, Format.release_package}
 ERROR = CollectionNote.Level.ERROR
 
 
@@ -93,6 +82,10 @@ def callback(client_state, channel, method, properties, input_message):
 
             message = {"collection_id": collection_id, "collection_file_id": upgraded_collection_file_id}
             publish(client_state, channel, message, routing_key)
+    # "Expected" errors.
+    except EmptyFormatError as e:  # raised by process_file()
+        create_note(collection, CollectionNote.Level.WARNING, str(e), data=input_message)
+        nack(client_state, channel, method.delivery_tag, requeue=False)
     # Irrecoverable errors. Discard the message to allow other messages to be processed.
     except FileNotFoundError:  # raised by detect_format() or open()
         logger.exception("%s has disappeared, skipping", collection_file.filename)
@@ -123,12 +116,17 @@ def process_file(collection_file):
 
     data_type = _get_data_type(collection_file)
 
-    if data_type["format"] not in SUPPORTED_FORMATS:
+    data_format = data_type["format"]
+
+    if data_format in EMPTY_FORMATS:
+        raise EmptyFormatError(f"Empty format '{data_format}' for file {collection_file}.")
+    if data_format not in SUPPORTED_FORMATS:
         raise UnsupportedFormatError(
-            f"Unsupported data type '{data_type}' for file {collection_file}. Must be one of {SUPPORTED_FORMATS}."
+            f"Unsupported format '{data_format}' for file {collection_file}. "
+            f"Must be one of: {', '.join(sorted(SUPPORTED_FORMATS))}."
         )
 
-    if data_type["format"] == COMPILED_RELEASE:
+    if data_format == Format.compiled_release:
         package = None
     else:
         package = _read_package_data_from_file(collection_file.filename, data_type)
@@ -190,9 +188,9 @@ def _get_data_key(data_type):
         data_key.append("item")
 
     match data_type["format"]:
-        case util.RECORD_PACKAGE:
+        case Format.record_package:
             data_key.extend(["records", "item"])
-        case util.RELEASE_PACKAGE:
+        case Format.release_package:
             data_key.extend(["releases", "item"])
 
     return ".".join(data_key)
@@ -269,7 +267,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
             continue
 
         match data_type["format"]:
-            case util.RECORD_PACKAGE:
+            case Format.record_package:
                 Record(
                     collection=collection_file.collection,
                     collection_file_item=collection_file_item,
@@ -277,7 +275,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
                     data=data,
                     ocid=release_or_record["ocid"],
                 ).save()
-            case util.RELEASE_PACKAGE:
+            case Format.release_package:
                 Release(
                     collection=collection_file.collection,
                     collection_file_item=collection_file_item,
@@ -286,7 +284,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
                     ocid=release_or_record["ocid"],
                     release_id=release_or_record["id"],
                 ).save()
-            case util.COMPILED_RELEASE:
+            case Format.compiled_release:
                 CompiledRelease(
                     collection=collection_file.collection,
                     collection_file_item=collection_file_item,
