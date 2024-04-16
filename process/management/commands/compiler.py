@@ -84,7 +84,8 @@ def compilable(collection):
     # 2. Check whether compilation *can* occur.
 
     # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
-    if collection.expected_files_count == 0 and collection.collectionfile_set.count() == 0:
+    if collection.expected_files_count == 0:
+        assert collection.collectionfile_set.count() == 0
         return True
 
     # This can occur if the close_collection endpoint is called before the file_worker worker can process any messages.
