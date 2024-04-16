@@ -48,19 +48,20 @@ def callback(client_state, channel, method, properties, input_message):
         )
 
         # Return if the collection expected no files.
-        if collection.expected_files_count == 0 and collection.collectionfile_set.count() == 0:
+        if _collection_is_empty(collection):
             return
 
-        if collection.data_type["format"] == Format.release_package:
-            # Return if another compiler worker received a message for the same compilable collection.
-            if not updated:
-                return
+        match collection.data_type["format"]:
+            case Format.record_package:
+                items = Record.objects.filter(collection_file_item__collection_file=collection_file)
+                publish_routing_key = "compiler_record"
+            case Format.release_package:
+                # Return if another compiler worker received a message for the same compilable collection.
+                if not updated:
+                    return
 
-            items = collection.release_set
-            publish_routing_key = "compiler_release"
-        elif collection.data_type["format"] == Format.record_package:
-            items = Record.objects.filter(collection_file_item__collection_file=collection_file)
-            publish_routing_key = "compiler_record"
+                items = collection.release_set
+                publish_routing_key = "compiler_release"
 
         for item in items.values("ocid").distinct().iterator():
             create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
@@ -83,9 +84,7 @@ def compilable(collection):
 
     # 2. Check whether compilation *can* occur.
 
-    # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
-    if collection.expected_files_count == 0:
-        assert collection.collectionfile_set.count() == 0
+    if _collection_is_empty(collection):
         return True
 
     # This can occur if the close_collection endpoint is called before the file_worker worker can process any messages.
@@ -129,3 +128,11 @@ def compilable(collection):
         return False
 
     return True
+
+
+def _collection_is_empty(collection):
+    # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
+    is_empty = collection.expected_files_count == 0
+    if is_empty:
+        assert collection.collectionfile_set.count() == 0
+    return is_empty

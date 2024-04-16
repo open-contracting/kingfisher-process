@@ -106,6 +106,7 @@ def get_or_create(model, data):
     except (model.DoesNotExist, model.MultipleObjectsReturned):
         obj = model(data=data, hash_md5=hash_md5)
         try:
+            # A transaction is needed here, to catch the integrity error.
             with transaction.atomic():
                 obj.save()
         except IntegrityError:
