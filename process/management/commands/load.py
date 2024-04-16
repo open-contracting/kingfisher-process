@@ -163,14 +163,14 @@ class Command(BaseCommand):
 
         if not options["keep_open"]:
             collection.store_end_at = Now()
-            collection.save()
+            collection.save(update_fields=["store_end_at"])
 
             if upgraded_collection:
                 upgraded_collection.store_end_at = Now()
-                upgraded_collection.save()
+                upgraded_collection.save(update_fields=["store_end_at"])
 
             if compiled_collection:
                 compiled_collection.store_end_at = Now()
-                compiled_collection.save()
+                compiled_collection.save(update_fields=["store_end_at"])
 
         logger.info("Load command completed")
