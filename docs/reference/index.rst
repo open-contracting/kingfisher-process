@@ -96,7 +96,8 @@ In each :doc:`worker and command<../cli>`, the queue name and the routing key of
        -  ``collection_closed``
      - -  ``compiler_record`` for **each** OCID among records in the collection file
        -  ``compiler_release`` for **each** OCID among releases in the entire collection
-     - Create ``COMPILE`` for **each** OCID
+     - -  For release packages, do nothing if a ``LOAD`` remains
+       -  Create ``COMPILE`` for **each** OCID
    * - ``record_compiler`` worker
      - ``compiler_record``
      - ``record_compiler`` for the OCID
@@ -112,7 +113,7 @@ In each :doc:`worker and command<../cli>`, the queue name and the routing key of
        -  ``release_compiler``
        -  ``collection_closed``
      - N/A
-     - N/A
+     - Do nothing if a step remains
    * - ``wiper`` worker
      - ``wiper``
      - N/A
