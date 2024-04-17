@@ -62,7 +62,7 @@ class Collection(models.Model):
     data_version = models.DateTimeField(help_text=_("The time at which the data was collected (not loaded)."))
     sample = models.BooleanField(default=False)
 
-    # Process manager pattern
+    # Process Manager pattern
     steps = models.JSONField(blank=True, default=list)
     options = models.JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)

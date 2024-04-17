@@ -35,6 +35,7 @@ def callback(client_state, channel, method, properties, input_message):
         collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
         collection = collection_file.collection
 
+    # Acknowledge early when using the Splitter pattern.
     ack(client_state, channel, method.delivery_tag)
 
     # No action is performed for "collection_closed" messages for "record package" collections.
