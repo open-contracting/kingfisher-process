@@ -229,11 +229,6 @@ REST_FRAMEWORK = {
 
 # Project configuration
 
-FATHOM = {
-    "domain": os.getenv("FATHOM_ANALYTICS_DOMAIN") or "cdn.usefathom.com",
-    "id": os.getenv("FATHOM_ANALYTICS_ID"),
-}
-
 # An infix for API routes.
 API_VERSION = "v1"
 
