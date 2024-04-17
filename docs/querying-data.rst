@@ -7,8 +7,8 @@ Querying data
 
 Since most analysis is much easier to perform on compiled releases, we recommend working with compiled release collections to begin with.
 
-Get a list of compiled release collections from a particular source
--------------------------------------------------------------------
+Find compiled collections for a given source
+--------------------------------------------
 
 The following query returns a list of compiled release collections downloaded with the ``canada_montreal`` spider in Kingfisher Collect:
 
@@ -57,14 +57,14 @@ To get data from a collection containing releases or records, join to the ``rele
 
    If you are using OCP's Redash instance, you can render the results of a query as pretty printed and collapsible JSON by clicking the '+ New Visualization' button, setting the visualization type to 'table' and setting the data column to display as JSON.
 
-Calculate the total value of completed tenders in a collection
---------------------------------------------------------------
+Calculate the total value of completed contracting processes in a collection
+----------------------------------------------------------------------------
 
-In OCDS, the tender value is stored in the ``tender.value`` `Value <https://standard.open-contracting.org/latest/en/schema/reference/#value>`__ object which consists of a numeric ``.amount`` field and a string ``.currency`` field. The tender status is stored in the ``tender.status`` field.
+In OCDS, the estimated value is stored in the ``tender.value`` `Value <https://standard.open-contracting.org/latest/en/schema/reference/#value>`__ object which consists of a numeric ``.amount`` field and a string ``.currency`` field. The tender status is stored in the ``tender.status`` field.
 
 To access the properties of a JSON object use the PostgreSQL ``->`` operator. The ``->`` operator takes a JSONB object and a property's name as input, and returns the property's value as a JSONB value. The ``->>`` operator returns the value as text.
 
-The following query calculates the total value of completed tenders in collection 584:
+The following query calculates the total value of completed contracting processes in collection 584:
 
 .. code-block:: sql
 

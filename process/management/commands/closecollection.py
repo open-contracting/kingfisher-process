@@ -24,7 +24,7 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        self.stderr.write("Working... ", end="")
+        self.stderr.write("Working... ", ending="")
 
         collection.store_end_at = Now()
         collection.save()

@@ -2,7 +2,7 @@ Database tables reference
 =========================
 
 .. image:: _static/relationships.real.large.png
-   :target: _static/relationships.real.large.png
+   :target: _images/relationships.real.large.png
 
 ..
    To update the diagram, see https://ocp-software-handbook.readthedocs.io/en/latest/services/postgresql.html#generate-entity-relationship-diagram
