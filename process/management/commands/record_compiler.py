@@ -2,6 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.translation import gettext as t
 from ocdskit.util import is_linked_release
 from yapw.methods import ack, publish
 
@@ -9,6 +10,7 @@ from process.exceptions import AlreadyExists
 from process.models import Collection, CollectionNote, CompiledRelease, ProcessingStep, Record
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
 from process.util import consume, create_note, decorator, delete_step
+from process.util import wrap as w
 
 consume_routing_keys = ["compiler_record"]
 routing_key = "record_compiler"
@@ -16,9 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    """
-    Create a compiled release from a record.
-    """
+    help = w(t("Create compiled releases from records"))
 
     def handle(self, *args, **options):
         consume(

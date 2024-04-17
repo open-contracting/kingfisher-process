@@ -2,11 +2,13 @@ import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.translation import gettext as t
 from ocdskit.util import Format
 from yapw.methods import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record
 from process.util import consume, create_step, decorator
+from process.util import wrap as w
 
 consume_routing_keys = ["file_worker", "collection_closed"]
 routing_key = "compiler"
@@ -14,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    help = w(t("Start compilation and route messages to the record or release compilers"))
+
     def handle(self, *args, **options):
         consume(
             on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator

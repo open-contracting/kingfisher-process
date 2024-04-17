@@ -138,9 +138,6 @@ def _create_collection(data, note, **kwargs):
 
 
 def _save_note(collection, note):
-    """
-    Creates note for a given collection
-    """
     form = CollectionNoteForm({"collection": collection, "note": note, "code": CollectionNote.Level.INFO})
 
     if form.is_valid():
