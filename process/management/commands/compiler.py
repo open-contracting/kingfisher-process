@@ -83,7 +83,7 @@ def compilable(collection):
     # 1. Check whether compilation *should* occur.
 
     # This also matches when collection.transform_type == Collection.Transform.COMPILE_RELEASES.
-    if not collection.steps or "compile" not in collection.steps:
+    if "compile" not in collection.steps:
         logger.debug("Collection %s not compilable ('compile' step not set)", collection)
         return False
 

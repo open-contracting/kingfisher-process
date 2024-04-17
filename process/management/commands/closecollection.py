@@ -8,6 +8,8 @@ from process.cli import CollectionCommand
 from process.util import get_publisher
 from process.util import wrap as w
 
+routing_key = "collection_closed"
+
 
 class Command(CollectionCommand):
     help = w(t("Close an open root collection and its upgraded child collection, if any"))
@@ -37,14 +39,14 @@ class Command(CollectionCommand):
 
         with get_publisher() as client:
             message = {"collection_id": collection.pk}
-            client.publish(message, routing_key="collection_closed")
+            client.publish(message, routing_key=routing_key)
 
             if upgraded_collection:
                 message = {"collection_id": upgraded_collection.pk}
-                client.publish(message, routing_key="collection_closed")
+                client.publish(message, routing_key=routing_key)
 
             if compiled_collection := collection.get_compiled_collection():
                 message = {"collection_id": compiled_collection.pk}
-                client.publish(message, routing_key="collection_closed")
+                client.publish(message, routing_key=routing_key)
 
         self.stderr.write(self.style.SUCCESS("done"))

@@ -12,6 +12,7 @@ from process.util import wrap as w
 
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
 # compiling are performed, and if the "collection_closed" message is processed before the "file_worker" message.
+# Or, in other words, read all messages published by workers that delete steps (since this checks for steps remaining).
 consume_routing_keys = ["file_worker", "checker", "release_compiler", "record_compiler", "collection_closed"]
 routing_key = "finisher"
 logger = logging.getLogger(__name__)

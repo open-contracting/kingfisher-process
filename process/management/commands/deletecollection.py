@@ -12,5 +12,7 @@ class Command(CollectionCommand):
 
         if confirm.lower() == "y":
             self.stderr.write("Working... ", ending="")
+
             collection.delete()
+
             self.stderr.write(self.style.SUCCESS("done"))
