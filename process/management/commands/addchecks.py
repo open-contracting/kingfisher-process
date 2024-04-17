@@ -27,8 +27,9 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        collection.steps["check"] = True
-        collection.save(update_fields=["steps"])
+        if "check" not in collection.steps:
+            collection.steps.append("check")
+            collection.save(update_fields=["steps"])
 
         for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
             self.stderr.write(
