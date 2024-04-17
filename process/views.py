@@ -126,7 +126,8 @@ def get_collection_metadata(request, collection_id):
     with connection.cursor() as cursor:
 
         # Data period
-        cursor.execute("""\
+        cursor.execute(
+            """\
         SELECT MAX(ocid) as ocid_prefix, MIN(data.data->>'date') as published_from,
                MAX(data.data->>'date') as published_to
         FROM compiled_release
@@ -135,7 +136,9 @@ def get_collection_metadata(request, collection_id):
             compiled_release.collection_id = %(collection_id)s
             AND data.data ? 'date'
             AND data.data->>'date' <> ''
-        """, {"collection_id": collection_id},)
+        """,
+            {"collection_id": collection_id},
+        )
         compiled_release_metadata = dict(zip(["ocid_prefix", "published_from", "published_to"], cursor.fetchone()))
         if compiled_release_metadata["ocid_prefix"]:
             compiled_release_metadata["ocid_prefix"] = compiled_release_metadata["ocid_prefix"][:11]
@@ -143,7 +146,8 @@ def get_collection_metadata(request, collection_id):
         meta_data.update(compiled_release_metadata)
 
         # Publication policy and license
-        cursor.execute("""\
+        cursor.execute(
+            """\
             SELECT DATA->>'publicationPolicy' AS publication_policy,
                           DATA->>'license' AS license
             FROM package_data
@@ -152,7 +156,9 @@ def get_collection_metadata(request, collection_id):
             LEFT JOIN release r2 ON package_data.id = r2.package_data_id
             AND r2.collection_id = %(collection_id)s
             LIMIT 1
-        """, {"collection_id": root_collection.id},)
+        """,
+            {"collection_id": root_collection.id},
+        )
 
         meta_data.update(dict(zip(["publication_policy", "license"], cursor.fetchone())))
 
