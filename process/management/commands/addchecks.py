@@ -12,7 +12,6 @@ routing_key = "addchecks"
 
 class Command(CollectionCommand):
     help = w(t("Add processing steps to check data, if unchecked"))
-    select_for_update = True
 
     def handle_collection(self, collection, *args, **options):
         if not collection.store_end_at:

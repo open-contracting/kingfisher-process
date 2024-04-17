@@ -7,8 +7,6 @@ from process.models import Collection
 
 
 class CollectionCommand(BaseCommand):
-    select_for_update = False
-
     def add_arguments(self, parser):
         """
         Adds default arguments to the command.
@@ -22,15 +20,6 @@ class CollectionCommand(BaseCommand):
         """
         pass
 
-    def collection_queryset(self):
-        """
-        Returns the query set for collections.
-        """
-        queryset = Collection.objects
-        if self.select_for_update:
-            return queryset.select_for_update()
-        return queryset
-
     def handle(self, *args, **options):
         """
         Gets the collection.
@@ -40,7 +29,7 @@ class CollectionCommand(BaseCommand):
         collection_id = options["collection_id"]
 
         try:
-            collection = self.collection_queryset().get(pk=collection_id)
+            collection = Collection.objects.get(pk=collection_id)
         except Collection.DoesNotExist:
             raise CommandError(_("Collection %(id)s does not exist") % {"id": collection_id})
 
