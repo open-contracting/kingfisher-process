@@ -19,3 +19,4 @@ The base collection can be tranformed into new collections: either by upgrading 
    database
    querying-data
    contributing/index
+   api/index
