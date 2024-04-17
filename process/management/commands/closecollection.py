@@ -23,7 +23,7 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        print("Working... ", end="")
+        self.stderr.write("Working... ", end="")
 
         collection.store_end_at = Now()
         collection.save()
@@ -32,4 +32,4 @@ class Command(CollectionCommand):
             upgraded_collection.store_end_at = Now()
             upgraded_collection.save()
 
-        print("done")
+        self.stderr.write(self.style.SUCCESS("done"))

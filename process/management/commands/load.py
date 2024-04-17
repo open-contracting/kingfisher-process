@@ -1,4 +1,3 @@
-import logging
 import os
 import time
 from argparse import RawDescriptionHelpFormatter
@@ -17,7 +16,6 @@ from process.util import get_publisher, walk
 from process.util import wrap as w
 
 routing_key = "loader"
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -94,8 +92,7 @@ class Command(BaseCommand):
         if not configured() and not options["force"]:
             self.stderr.write(
                 self.style.WARNING(
-                    "The --source argument can't be validated, because a Scrapyd URL "
-                    "is not configured in settings.py."
+                    "The --source argument can't be validated, because a Scrapyd URL is not configured in settings.py."
                 )
             )
 
@@ -115,7 +112,7 @@ class Command(BaseCommand):
 
         try:
             if not settings.ENABLE_CHECKER and options["check"]:
-                logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
+                self.stderr.write(self.style.ERROR("Checker is disabled in settings - see ENABLE_CHECKER value."))
 
             collection, upgraded_collection, compiled_collection = create_collections(
                 # Identification
@@ -148,14 +145,14 @@ class Command(BaseCommand):
             else:
                 raise CommandError(error)
 
-        logger.debug("Processing path %s", options["PATH"])
+        self.stderr.write(f"Processing path {options['PATH']}")
 
         with get_publisher() as client:
             for path in walk(options["PATH"]):
                 # The transaction is inside the loop, since we can't rollback RabbitMQ messages, only PostgreSQL
                 # statements. This ensures that any published message is paired with a database commit.
                 with transaction.atomic():
-                    logger.debug("Storing file %s", path)
+                    self.stderr.write(f"Storing file {path}")
                     collection_file = create_collection_file(collection, filename=path)
 
                 message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
@@ -173,4 +170,4 @@ class Command(BaseCommand):
                 compiled_collection.store_end_at = Now()
                 compiled_collection.save(update_fields=["store_end_at"])
 
-        logger.info("Load command completed")
+        self.stderr.write(self.style.SUCCESS("Done"))

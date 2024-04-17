@@ -1,5 +1,3 @@
-import logging
-
 from django.core.management.base import CommandError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
@@ -10,7 +8,6 @@ from process.util import create_step, get_publisher
 from process.util import wrap as w
 
 routing_key = "addchecks"
-logger = logging.getLogger(__name__)
 
 
 class Command(CollectionCommand):
@@ -24,8 +21,8 @@ class Command(CollectionCommand):
             )
 
         for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
-            logger.debug(
-                "Publishing collection files with missing %s checks for collection %s", model.__name__, collection
+            self.stderr.write(
+                f"Publishing collection files with missing {model.__name__} checks for collection {collection}"
             )
 
             # SELECT DISTINCT collection_file_id FROM release
