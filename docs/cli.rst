@@ -87,6 +87,8 @@ api_loader
 
 Create collection files.
 
+Consumes messages published by other software, like Kingfisher Collect.
+
 .. code-block:: bash
 
    ./manage.py api_loader
@@ -100,10 +102,27 @@ Create records, releases and compiled releases.
 
    ./manage.py file_worker
 
+checker
+~~~~~~~
+
+Check collection files.
+
+Performs no checks if the collection's ``steps`` field excludes "check".
+
+Errors if the ``ENABLE_CHECKER`` :ref:`environment variable<environment-variables>` is not set.
+
+.. code-block:: bash
+
+   ./manage.py checker
+
 compiler
 ~~~~~~~~
 
 Start compilation and route messages to the record or release compilers.
+
+Performs no checks if the collection's ``steps`` field excludes "compile".
+
+For a collection of release packages, starts compilation at most once if all collection files are loaded and the collection is closed.
 
 .. code-block:: bash
 
@@ -126,15 +145,6 @@ Create compiled releases from releases with the same OCID.
 .. code-block:: bash
 
    ./manage.py release_compiler
-
-checker
-~~~~~~~
-
-Check collection files.
-
-.. code-block:: bash
-
-   ./manage.py checker
 
 finisher
 ~~~~~~~~

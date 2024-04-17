@@ -36,3 +36,84 @@ ENABLE_CHECKER
 
 It is recommended to set ``REQUESTS_POOL_MAXSIZE`` to ``20``, to set the maximum number of connections to save in the `connection pool <https://urllib3.readthedocs.io/en/latest/advanced-usage.html#customizing-pool-behavior>`__ used by the `ocdsextensionregistry <https://ocdsextensionregistry.readthedocs.io/en/latest/changelog.html>`__ package. This is the same value as the `prefetch_count <https://www.rabbitmq.com/docs/consumer-prefetch>`__ used by RabbitMQ consumers.
 
+Message routing
+---------------
+
+.. seealso::
+
+   `RabbitMQ design decisions <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html#design-decisions>`__
+
+In each :doc:`worker and command<../cli>`, the queue name and the routing key of published messages (with one exception) is set by a ``routing_key`` variable. The binding keys are set by a ``consume_routing_keys`` variable. Queue names and routing keys are prefixed by the exchange name, set by the ``RABBIT_EXCHANGE_NAME`` :ref:`environment variable<environment-variables>`.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Actor
+     - Consumer routing keys (input)
+     - Publisher routing keys (output)
+     - Processing step
+   * - ``load`` command
+     - N/A
+     - ``loader`` for **each** collection file
+     - Create ``LOAD`` for **each** collection file
+   * - ``addfiles`` command
+     - N/A
+     - ``loader`` for **each** collection file
+     - Create ``LOAD`` for **each** collection file
+   * - ``addchecks`` command
+     - N/A
+     - ``addchecks`` for **each** collection file with missing checks
+     - Create ``CHECK`` for **each** collection file
+   * - ``closecollection`` command
+     - N/A
+     - ``collection_closed`` for the original and derived collections
+     - N/A
+   * - ``close_collection`` API
+     - N/A
+     - ``collection_closed`` for the original and derived collections
+     - N/A
+   * - ``wipe_collection`` API
+     - N/A
+     - ``wiper`` for the collection
+     - N/A
+   * - ``api_loader`` worker
+     - ``api``
+     - ``api_loader`` for the collection file
+     - Create ``LOAD`` for the collection file
+   * - ``file_worker`` worker
+     - -  ``api_loader``
+       -  ``loader``
+     - ``file_worker`` for the collection file in the original and upgraded collections
+     - -  Delete ``LOAD`` for the collection file
+       -  Create ``CHECK`` for the collection file in the original and upgraded collections, if the ``ENABLE_CHECKER`` environment variable is set
+   * - ``checker`` worker
+     - -  ``file_worker``
+       -  ``addchecks``
+     - ``checker`` for the collection file
+     - Delete ``CHECK`` for the collection file
+   * - ``compiler`` worker
+     - -  ``file_worker``
+       -  ``collection_closed``
+     - -  ``compiler_record`` for **each** OCID among records in the collection file
+       -  ``compiler_release`` for **each** OCID among releases in the entire collection
+     - Create ``COMPILE`` for **each** OCID
+   * - ``record_compiler`` worker
+     - ``compiler_record``
+     - ``record_compiler`` for the OCID
+     - Delete ``COMPILE`` for the OCID
+   * - ``release_compiler`` worker
+     - ``compiler_release``
+     - ``release_compiler`` for the OCID
+     - Delete ``COMPILE`` for the OCID
+   * - ``finisher`` worker
+     - -  ``file_worker``
+       -  ``checker``
+       -  ``record_compiler``
+       -  ``release_compiler``
+       -  ``collection_closed``
+     - N/A
+     - N/A
+   * - ``wiper`` worker
+     - ``wiper``
+     - N/A
+     - N/A

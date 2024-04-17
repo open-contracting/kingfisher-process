@@ -1,5 +1,5 @@
-Database tables reference
-=========================
+Database tables
+===============
 
 .. image:: _static/relationships.real.large.png
    :target: _images/relationships.real.large.png
@@ -48,8 +48,8 @@ The format of the ``cove_output`` column of the ``*_check`` tables is described 
 -  ``records_aggregates``
 -  ``releases_aggregates``
 
-collection
-~~~~~~~~~~
+collection table
+~~~~~~~~~~~~~~~~
 
 source_id
   The source from which the files were retrieved, like the spider name from Kingfisher Collect

@@ -3,10 +3,7 @@ Contributing
 
 .. seealso::
 
-   In the Software Development Handbook:
-
-   -  `Django <https://ocp-software-handbook.readthedocs.io/en/latest/python/django.html>`__
-   -  `RabbitMQ <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html>`__
+   `Django <https://ocp-software-handbook.readthedocs.io/en/latest/python/django.html>`__ and `RabbitMQ <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html>`__ in the Software Development Handbook
 
 Setup
 -----
