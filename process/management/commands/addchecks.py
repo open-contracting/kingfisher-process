@@ -11,7 +11,8 @@ routing_key = "addchecks"
 
 
 class Command(CollectionCommand):
-    help = w(t("Add processing steps to check data"))
+    help = w(t("Add processing steps to check data, if unchecked"))
+    select_for_update = True
 
     def handle_collection(self, collection, *args, **options):
         if collection.parent_id:
@@ -19,6 +20,9 @@ class Command(CollectionCommand):
                 _("Collection %(id)s is not a root collection. Its parent is collection %(parent_id)s.")
                 % collection.__dict__
             )
+
+        collection.steps["check"] = True
+        collection.save(update_fields=["steps"])
 
         for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
             self.stderr.write(
