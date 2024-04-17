@@ -13,12 +13,6 @@ Setup
 
 #. Install PostgreSQL and RabbitMQ
 #. Create a Python 3.11 virtual environment
-#. Set up the git pre-commit hook:
-
-   .. code-block:: bash
-
-      pip install pre-commit
-      pre-commit install
 
 #. Install development dependencies:
 
@@ -26,6 +20,18 @@ Setup
 
       pip install pip-tools
       pip-sync requirements_dev.txt
+
+#. Set up the git pre-commit hook:
+
+   .. code-block:: bash
+
+      pre-commit install
+
+#. Create the database:
+
+   .. code-block:: bash
+
+      createdb kingfisher_process
 
 #. Run database migrations:
 
@@ -38,22 +44,35 @@ Setup
 Development
 -----------
 
-Run the server (API):
+The default values in the settings.py file should be appropriate as-is. You can override them by setting :ref:`environment-variables`.
 
-.. code-block:: bash
+You can now:
 
-   ./manage.py runserver
+-  Run the server (API):
 
-.. seealso::
+   .. code-block:: bash
 
-   :ref:`cli-workers`
+      ./manage.py runserver
 
-Testing
--------
+-  :ref:`Start workers<cli-workers>`
 
-.. code-block:: bash
+   .. tip::
 
-   ./manage.py test
+      Set the ``LOG_LEVEL`` environment variable to ``DEBUG`` to see log messages about message processing. For example:
+
+      .. code-block:: bash
+
+         env LOG_LEVEL=DEBUG ./manage.py finisher
+
+   .. note::
+
+      Remember: `Consumers declare and bind queues, not publishers <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html#bindings>`__. Start each worker before publishing messages.
+
+-  Run tests:
+
+   .. code-block:: bash
+
+      ./manage.py test
 
 API
 ---
@@ -65,28 +84,6 @@ The API is used by `Kingfisher Collect <https://kingfisher-collect.readthedocs.i
 .. warning::
 
    The ``create_collection``, ``close_collection`` and ``wipe_collection`` endpoints are not documented yet.
-
-Environment variables
----------------------
-
-See `OCP's approach to Django settings <https://ocp-software-handbook.readthedocs.io/en/latest/python/django.html#settings>`__. New variables are:
-
-LOG_LEVEL
-  The log level of the root logger
-RABBIT_URL
-  The `connection string <https://pika.readthedocs.io/en/stable/examples/using_urlparameters.html#using-urlparameters>`__ for RabbitMQ
-RABBIT_EXCHANGE_NAME
-  The name of the RabbitMQ exchange. Follow the pattern ``kingfisher_process_{service}_{environment}`` like ``kingfisher_process_data_registry_production``
-SCRAPYD_URL
-  The base URL of Scrapyd, for example: ``http://localhost:6800``
-SCRAPYD_PROJECT
-  The project within Scrapyd
-KINGFISHER_COLLECT_FILES_STORE
-  The directory from which to read the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher Process share a filesystem, this will be the same value for both services.
-ENABLE_CHECKER
-  Whether to enable the ``checker`` worker
-
-It is recommended to set ``REQUESTS_POOL_MAXSIZE`` to ``20``, to set the maximum number of connections to save in the `connection pool <https://urllib3.readthedocs.io/en/latest/advanced-usage.html#customizing-pool-behavior>`__ used by the `ocdsextensionregistry <https://ocdsextensionregistry.readthedocs.io/en/latest/changelog.html>`__ package. This is the same value as the `prefetch_count <https://www.rabbitmq.com/docs/consumer-prefetch>`__ used by RabbitMQ consumers.
 
 PostgreSQL
 ----------

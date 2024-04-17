@@ -17,5 +17,6 @@ The base collection can be tranformed into new collections: either by upgrading 
    cli
    database
    querying-data
+   reference/index
    contributing/index
    api/index
