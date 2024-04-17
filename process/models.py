@@ -247,7 +247,6 @@ class ProcessingStep(models.Model):
 
     class Name(models.TextChoices):
         LOAD = "LOAD"
-        UPGRADE = "UPGRADE"
         COMPILE = "COMPILE"
         CHECK = "CHECK"
 

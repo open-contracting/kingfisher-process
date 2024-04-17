@@ -10,15 +10,11 @@ from process.models import Collection, ProcessingStep
 
 class CollectionSerializer(serializers.ModelSerializer):
     steps_remaining_LOAD = serializers.SerializerMethodField()
-    steps_remaining_UPGRADE = serializers.SerializerMethodField()
     steps_remaining_COMPILE = serializers.SerializerMethodField()
     steps_remaining_CHECK = serializers.SerializerMethodField()
 
     def get_steps_remaining_LOAD(self, obj):
         return obj.steps_remaining_LOAD
-
-    def get_steps_remaining_UPGRADE(self, obj):
-        return obj.steps_remaining_UPGRADE
 
     def get_steps_remaining_COMPILE(self, obj):
         return obj.steps_remaining_COMPILE
@@ -47,7 +43,6 @@ class CollectionSerializer(serializers.ModelSerializer):
             "deleted_at",
             "completed_at",
             "steps_remaining_LOAD",
-            "steps_remaining_UPGRADE",
             "steps_remaining_COMPILE",
             "steps_remaining_CHECK",
         ]
@@ -59,14 +54,6 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
             steps_remaining_LOAD=Count(
                 Case(
                     When(processing_steps__name=ProcessingStep.Name.LOAD, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        .annotate(
-            steps_remaining_UPGRADE=Count(
-                Case(
-                    When(processing_steps__name=ProcessingStep.Name.UPGRADE, then=1),
                     output_field=IntegerField(),
                 )
             )
