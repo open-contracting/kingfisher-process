@@ -2,11 +2,12 @@ import json
 import logging
 
 from django.conf import settings
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models.functions import Now
 from django.http.response import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
@@ -114,3 +115,45 @@ def wipe_collection(request):
         client.publish(input_message, routing_key="wiper")
 
     return HttpResponse(status=204)
+
+
+@csrf_exempt
+@require_GET
+def get_collection_metadata(request, collection_id):
+    compiled_collection = get_object_or_404(Collection, id=collection_id)
+    root_collection = compiled_collection.get_root_parent()
+    meta_data = {}
+    with connection.cursor() as cursor:
+
+        # Data period
+        cursor.execute("""\
+        SELECT MAX(ocid) as ocid_prefix, MIN(data.data->>'date') as published_from,
+               MAX(data.data->>'date') as published_to
+        FROM compiled_release
+        JOIN data ON compiled_release.data_id = data.id
+        WHERE
+            compiled_release.collection_id = %(collection_id)s
+            AND data.data ? 'date'
+            AND data.data->>'date' <> ''
+        """, {"collection_id": collection_id},)
+        compiled_release_metadata = dict(zip(["ocid_prefix", "published_from", "published_to"], cursor.fetchone()))
+        if compiled_release_metadata["ocid_prefix"]:
+            compiled_release_metadata["ocid_prefix"] = compiled_release_metadata["ocid_prefix"][:11]
+
+        meta_data.update(compiled_release_metadata)
+
+        # Publication policy and license
+        cursor.execute("""\
+            SELECT DATA->>'publicationPolicy' AS publication_policy,
+                          DATA->>'license' AS license
+            FROM package_data
+            LEFT JOIN record r ON package_data.id = r.package_data_id
+            AND r.collection_id = %(collection_id)s
+            LEFT JOIN release r2 ON package_data.id = r2.package_data_id
+            AND r2.collection_id = %(collection_id)s
+            LIMIT 1
+        """, {"collection_id": root_collection.id},)
+
+        meta_data.update(dict(zip(["publication_policy", "license"], cursor.fetchone())))
+
+        return JsonResponse(meta_data)

@@ -14,5 +14,7 @@ urlpatterns = [
     path(f"api/{settings.API_VERSION}/create_collection", views.create_collection, name="create_collection"),
     path(f"api/{settings.API_VERSION}/close_collection", views.close_collection, name="close_collection"),
     path(f"api/{settings.API_VERSION}/wipe_collection", views.wipe_collection, name="wipe_collection"),
+    path(f"api/{settings.API_VERSION}/collection_metadata/<int:collection_id>", views.get_collection_metadata,
+         name="collection_metadata"),
     path(f"api/{settings.API_VERSION}/", include(router.urls)),
 ]
