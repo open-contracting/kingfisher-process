@@ -17,6 +17,8 @@ Kingfisher Process does a lot of work concurrently. As such, it is important to 
 
    Although OCP typically uses an ``en_US.UTF-8`` collation, the database has an ``en_GB.UTF-8`` collation, for `no particular reason <https://github.com/open-contracting/kingfisher-process/issues/239>`__.
 
+.. _integration-patterns:
+
 Integration patterns
 --------------------
 

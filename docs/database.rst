@@ -62,7 +62,7 @@ transform_type
 transform_from_collection_id
   The parent collection from which this collection is derived
 options
-  A JSON object for the `routing slip <https://www.enterpriseintegrationpatterns.com/patterns/messaging/RoutingTable.html>`__ pattern
+  A JSON object for the :ref:`process manager<integration-patterns>` pattern
 steps
   A JSON array with one or more of "upgrade", "compile", "check"
 data_type

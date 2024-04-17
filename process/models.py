@@ -62,12 +62,12 @@ class Collection(models.Model):
     data_version = models.DateTimeField(help_text=_("The time at which the data was collected (not loaded)."))
     sample = models.BooleanField(default=False)
 
-    # Routing slip
+    # Process manager pattern
     steps = models.JSONField(blank=True, default=list)
     options = models.JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
 
-    # Process management
+    # Internal state
     data_type = models.JSONField(blank=True, default=dict)
     compilation_started = models.BooleanField(default=False)
 
