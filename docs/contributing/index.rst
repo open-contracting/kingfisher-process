@@ -11,7 +11,24 @@ Contributing
 PostgreSQL
 ----------
 
-Kingfisher Process does a lot of work concurrently. As such, it is important to understand `Transaction Isolation <https://www.postgresql.org/docs/current/transaction-iso.html>`__ and `Explicit Locking <https://www.postgresql.org/docs/current/explicit-locking.html>`__, to guarantee that work isn't duplicated or missed.
+Kingfisher Process works concurrently. As such, it is important to understand `Transaction Isolation <https://www.postgresql.org/docs/current/transaction-iso.html>`__ and `Explicit Locking <https://www.postgresql.org/docs/current/explicit-locking.html>`__, to guarantee that work isn't duplicated or missed. As appropriate:
+
+-  Use optimistic locking to not overwrite data, for example:
+
+   .. code-block:: python
+
+      updated = Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now())
+
+-  Use optimistic locking to not repeat work, for example:
+
+   .. code-block:: python
+
+      updated = Collection.objects.filter(pk=collection.pk, compilation_started=False).update(compilation_started=True)
+      if not updated:
+          return
+
+-  `Specify which fields to save <https://docs.djangoproject.com/en/4.2/ref/models/instances/#ref-models-update-fields>`__ on a ``Collection`` instance
+-  `Lock rows using SELECT ... FOR UPDATE <https://docs.djangoproject.com/en/4.2/ref/models/querysets/#select-for-update>`__ on the ``collection`` table
 
 .. note::
 
@@ -19,10 +36,10 @@ Kingfisher Process does a lot of work concurrently. As such, it is important to 
 
 .. _integration-patterns:
 
-Integration patterns
---------------------
+RabbitMQ
+--------
 
-`Enterprise Integration Patterns <https://en.wikipedia.org/wiki/Enterprise_Integration_Patterns>`__ describes many patterns used in this project and in RabbitMQ itself. In this project, we use, for example:
+`Enterprise Integration Patterns <https://en.wikipedia.org/wiki/Enterprise_Integration_Patterns>`__ describes many patterns used in this project and in RabbitMQ. We use:
 
 -  `Process Manager <https://www.enterpriseintegrationpatterns.com/patterns/messaging/ProcessManager.html>`__: The collection's configuration determines how messages are routed through a series of steps. See also `Routing Slip <https://www.enterpriseintegrationpatterns.com/patterns/messaging/RoutingTable.html>`__.
 -  `Idempotent Receiver <https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html>`__: Each worker should be able to safely receive the same message multiple times.
@@ -40,12 +57,6 @@ You can compare ``models.py`` to the output of:
 .. code-block:: shell
 
    env DATABASE_URL=postgresql://user@host/dbname ./manage.py inspectdb
-
-To avoid an error when migrating from the SQLAlchemy-managed database to the Django-managed database, `run <https://docs.djangoproject.com/en/4.2/topics/migrations/#initial-migrations>`__:
-
-.. code-block:: shell
-
-   ./manage.py migrate --fake-initial
 
 .. seealso::
 
