@@ -14,7 +14,6 @@ The base collection can be tranformed into new collections: either by upgrading 
    :maxdepth: 2
    :caption: Contents:
 
-   get-started
    cli
    database
    querying-data

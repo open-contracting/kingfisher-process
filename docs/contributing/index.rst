@@ -11,27 +11,40 @@ Contributing
 Setup
 -----
 
-Create a Python 3.11 virtual environment.
+#. Install PostgreSQL and RabbitMQ
+#. Create a Python 3.11 virtual environment
+#. Set up the git pre-commit hook:
 
-Set up the git pre-commit hook:
+   .. code-block:: bash
+
+      pip install pre-commit
+      pre-commit install
+
+#. Install development dependencies:
+
+   .. code-block:: bash
+
+      pip install pip-tools
+      pip-sync requirements_dev.txt
+
+#. Run database migrations:
+
+   .. code-block:: bash
+
+      ./manage.py migrate
+
+Development
+-----------
+
+Run the server (API):
 
 .. code-block:: bash
 
-   pip install pre-commit
-   pre-commit install
+   ./manage.py runserver
 
-Install development dependencies:
+.. seealso::
 
-.. code-block:: bash
-
-   pip install pip-tools
-   pip-sync requirements_dev.txt
-
-Run database migrations:
-
-.. code-block:: bash
-
-   ./manage.py migrate
+   :ref:`cli-workers`
 
 Testing
 -------

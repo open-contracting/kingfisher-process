@@ -33,7 +33,7 @@ Load data into a collection, asynchronously.
 addfiles
 ~~~~~~~~
 
-Load data into an open root collection, asynchronously.
+Load data into an **open** root collection, asynchronously.
 
 .. code-block:: bash
 
@@ -42,7 +42,7 @@ Load data into an open root collection, asynchronously.
 closecollection
 ~~~~~~~~~~~~~~~
 
-Close an open root collection and its upgraded child collection, if any.
+Close an **open** root collection and its upgraded child collection, if any.
 
 .. code-block:: bash
 
@@ -60,7 +60,9 @@ Add processing steps to check data, if unchecked.
 deletecollection
 ~~~~~~~~~~~~~~~~
 
-Delete a collection and its ancestors. (Rows in the ``package_data`` and ``data`` tables are not deleted.)
+Delete a collection and its ancestors.
+
+Rows in the ``package_data`` and ``data`` tables are not deleted.
 
 .. code-block:: bash
 
@@ -74,6 +76,8 @@ Get the status of a root collection and its children.
 .. code-block:: bash
 
    ./manage.py collectionstatus collection_id
+
+.. _cli-workers:
 
 Workers
 -------
@@ -144,7 +148,9 @@ Set collections as completed, close compiled collections and cache row counts.
 wiper
 ~~~~~
 
-Delete collections and their ancestors. (Rows in the ``package_data`` and ``data`` tables are not deleted.)
+Delete collections and their ancestors.
+
+Rows in the ``package_data`` and ``data`` tables are not deleted.
 
 .. code-block:: bash
 
