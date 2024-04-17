@@ -15,6 +15,12 @@ class Command(CollectionCommand):
     select_for_update = True
 
     def handle_collection(self, collection, *args, **options):
+        if not collection.store_end_at:
+            raise CommandError(
+                _("Collection %(id)s is not a closed collection. It was started at %(store_start_at)s.")
+                % collection.__dict__
+            )
+
         if collection.parent_id:
             raise CommandError(
                 _("Collection %(id)s is not a root collection. Its parent is collection %(parent_id)s.")
