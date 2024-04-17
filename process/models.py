@@ -59,7 +59,7 @@ class Collection(models.Model):
 
     # Identification
     source_id = models.TextField(help_text=_("If sourced from Scrapy, this should be the name of the spider."))
-    data_version = models.DateTimeField(help_text=_("The time at which the data was collected (not loaded)."))
+    data_version = models.DateTimeField(help_text=_("The time at which the files were retrieved (not loaded)."))
     sample = models.BooleanField(default=False)
 
     # Process Manager pattern
