@@ -109,6 +109,7 @@ class TreeSerializer(serializers.ModelSerializer):
 
 class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
     queryset = Collection.objects.filter(parent__isnull=True)
+    serializer_class = TreeSerializer
 
     def retrieve(self, request, pk=None):
         result = Collection.objects.raw(
@@ -134,6 +135,5 @@ class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
         if not result:
             raise Http404
 
-        serialized = TreeSerializer(result, many=True)
-
-        return Response(serialized.data)
+        serializer = TreeSerializer(result, many=True)
+        return Response(serializer.data)

@@ -284,6 +284,8 @@ typing-extensions==4.7.0
     # via
     #   -r requirements.txt
     #   dj-database-url
+uritemplate==4.1.1
+    # via -r requirements.txt
 url-normalize==1.4.3
     # via
     #   -r requirements.txt
