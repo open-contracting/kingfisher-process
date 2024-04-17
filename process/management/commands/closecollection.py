@@ -27,10 +27,10 @@ class Command(CollectionCommand):
         self.stderr.write("Working... ", ending="")
 
         collection.store_end_at = Now()
-        collection.save()
+        collection.save(update_fields=["store_end_at"])
 
         if upgraded_collection := collection.get_upgraded_collection():
             upgraded_collection.store_end_at = Now()
-            upgraded_collection.save()
+            upgraded_collection.save(update_fields=["store_end_at"])
 
         self.stderr.write(self.style.SUCCESS("done"))

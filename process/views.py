@@ -64,17 +64,16 @@ def close_collection(request):
             # this value is used later on to detect, whether all collection has been processed yet
             collection.expected_files_count = input_message["stats"].get("kingfisher_process_expected_files_count", 0)
         collection.store_end_at = Now()
-        collection.save()
+        collection.save(update_fields=["expected_files_count", "store_end_at"])
 
         upgraded_collection = collection.get_upgraded_collection()
         if upgraded_collection:
             upgraded_collection.expected_files_count = collection.expected_files_count
             upgraded_collection.store_end_at = Now()
-            upgraded_collection.save()
+            upgraded_collection.save(update_fields=["expected_files_count", "store_end_at"])
 
         if input_message.get("reason"):
             create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}")
-
             if upgraded_collection:
                 create_note(
                     upgraded_collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}"
@@ -82,7 +81,6 @@ def close_collection(request):
 
         if input_message.get("stats"):
             create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"])
-
             if upgraded_collection:
                 create_note(
                     upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"]
