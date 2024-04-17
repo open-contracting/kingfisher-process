@@ -46,7 +46,7 @@ def callback(client_state, channel, method, properties, input_message):
     if compilable(collection):
         compiled_collection = collection.get_compiled_collection()
 
-        # Use optimistic locking to update the collection.
+        # Use optimistic locking to update the collection. (Here, it's the return value that's important.)
         updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
             compilation_started=True
         )
