@@ -1,4 +1,3 @@
-import json
 import logging
 
 from django.db import connection, transaction
@@ -6,6 +5,7 @@ from django.db.models import Case, Count, IntegerField, When
 from django.db.models.functions import Now
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
@@ -99,8 +99,10 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
         "completed_at",
     ]
 
-    def create(self, request):
-        input_message = json.loads(request.data)
+    @csrf_exempt
+    @action(methods=["post"], detail=False)
+    def new(self, request):
+        input_message = request.data
         if "source_id" not in input_message or "data_version" not in input_message:
             return Response(
                 'Unable to parse input. Please provide {"source_id": "<source_id>", "data_version": "<data_version>"}',
@@ -132,9 +134,10 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
 
         return Response(result)
 
+    @csrf_exempt
     @action(methods=["post"], detail=False)
     def close(self, request):
-        input_message = json.loads(request.data)
+        input_message = request.data
 
         if "collection_id" not in input_message:
             return Response(
@@ -188,8 +191,10 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
+    @csrf_exempt
+    @action(methods=["post"], detail=False)
     def wipe(self, request):
-        input_message = json.loads(request.data)
+        input_message = request.data
         if not input_message.get("collection_id"):
             return Response(
                 'Unable to parse input. Please provide {"collection_id":<some_number>}',
@@ -201,6 +206,7 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
+    @csrf_exempt
     @action(detail=True)
     def metadata(self, request, pk=None):
         compiled_collection = get_object_or_404(Collection, id=pk)
