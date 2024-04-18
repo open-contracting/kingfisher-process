@@ -37,7 +37,7 @@ class Command(CollectionCommand):
 
         with get_publisher() as client:
             for path in walk(options["path"]):
-                print(f"Adding {path}")
+                self.stderr.write(f"Adding {path}")
 
                 # The transaction is inside the loop, since we can't rollback RabbitMQ messages, only PostgreSQL
                 # statements. This ensures that any published message is paired with a database commit.
@@ -47,4 +47,4 @@ class Command(CollectionCommand):
                 message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
                 client.publish(message, routing_key=routing_key)
 
-        print("done")
+        self.stderr.write(self.style.SUCCESS("Done"))

@@ -11,6 +11,8 @@ class Command(CollectionCommand):
         confirm = input(f"Collection {collection} will be deleted. Do you want to continue? [y/N] ")
 
         if confirm.lower() == "y":
-            print("Working... ", end="")
+            self.stderr.write("Working... ", ending="")
+
             collection.delete()
-            print("done")
+
+            self.stderr.write(self.style.SUCCESS("done"))

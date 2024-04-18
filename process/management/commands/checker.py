@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.utils.translation import gettext as t
 from ocdskit.util import Format
 from yapw.methods import ack, publish
 
@@ -19,6 +20,7 @@ except ImportError:
 
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
 from process.util import consume, decorator, delete_step
+from process.util import wrap as w
 
 consume_routing_keys = ["file_worker", "addchecks"]
 routing_key = "checker"
@@ -37,6 +39,8 @@ if using_libcoveocds:
 
 
 class Command(BaseCommand):
+    help = w(t("Check collection files"))
+
     def handle(self, *args, **options):
         if not settings.ENABLE_CHECKER:
             raise CommandError("Checker is disabled. Set the ENABLE_CHECKER environment variable to enable.")
@@ -81,12 +85,6 @@ def _get_schema(items_key, extensions):
 
 
 def _check_collection_file(collection_file):
-    """
-    Checks releases for a given collection_file.
-
-    :param int collection_file: collection file for which should be releases checked
-    """
-
     logger.info("Collecting data to check for collection file %s", collection_file)
 
     release_package = (
@@ -103,9 +101,9 @@ def _check_collection_file(collection_file):
         model = Record
         related_name = "recordcheck"
 
-    items = model.objects.filter(
+    items = model.objects.select_related("data", "package_data").filter(
         **{"collection_file_item__collection_file": collection_file, f"{related_name}__isnull": True}
-    ).select_related("data", "package_data")
+    )
 
     logger.info("Checking %s %s for collection file %s", items.count(), items_key, collection_file)
 

@@ -106,6 +106,7 @@ def get_or_create(model, data):
     except (model.DoesNotExist, model.MultipleObjectsReturned):
         obj = model(data=data, hash_md5=hash_md5)
         try:
+            # A transaction is needed here, to catch the integrity error.
             with transaction.atomic():
                 obj.save()
         except IntegrityError:
@@ -126,6 +127,9 @@ def create_step(name, collection_id, **kwargs):
 
 @contextmanager
 def delete_step(*args, **kwargs):
+    """
+    Delete the named step and run any finish callback only if successful or if the error is expected.
+    """
     try:
         yield
     # See the errback() function in the decorator() function. If a duplicate message is received, delete the step, so
@@ -137,14 +141,14 @@ def delete_step(*args, **kwargs):
         _delete_step_and_finish(*args, **kwargs)
 
 
-def _delete_step_and_finish(step_type, finish=None, finish_args=(), **kwargs):
+def _delete_step_and_finish(name, finish=None, finish_args=(), **kwargs):
     # kwargs can include collection_id, collection_file_id and ocid.
-    processing_steps = ProcessingStep.objects.filter(name=step_type, **kwargs)
+    processing_steps = ProcessingStep.objects.filter(name=name, **kwargs)
 
     if processing_steps.exists():
         processing_steps.delete()
     else:
-        logger.warning("No such processing step found: %s: %s", step_type, kwargs)
+        logger.warning("No such processing step found: %s: %s", name, kwargs)
 
     if finish:
         finish(*finish_args)

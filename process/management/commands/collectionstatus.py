@@ -49,36 +49,36 @@ class Command(CollectionCommand):
             data_type = "to be determined"
 
         # Fields
-        print(f"steps: {', '.join(collection.steps)}")
-        print(f"data_type: {data_type}")
-        print(f"store_end_at: {collection.store_end_at}")
-        print(f"completed_at: {collection.completed_at}")
-        print(f"expected_files_count: {collection.expected_files_count}")
+        self.stdout.write(f"steps: {', '.join(collection.steps)}")
+        self.stdout.write(f"data_type: {data_type}")
+        self.stdout.write(f"store_end_at: {collection.store_end_at}")
+        self.stdout.write(f"completed_at: {collection.completed_at}")
+        self.stdout.write(f"expected_files_count: {collection.expected_files_count}")
 
         # Relations
-        print(f"collection_files: {collection.collectionfile_set.count()}")
-        print(f"processing_steps: {collection.processing_steps.count()}")
+        self.stdout.write(f"collection_files: {collection.collectionfile_set.count()}")
+        self.stdout.write(f"processing_steps: {collection.processing_steps.count()}")
 
         compiled_collection = collection.get_compiled_collection()
 
         # Logic
         if not compiled_collection or not compiled_collection.compilation_started:
-            print(f"compilable: {compilable(collection)}")
+            self.stdout.write(f"compilable: {compilable(collection)}")
         if not collection.completed_at:
-            print(f"completable: {completable(collection)}")
+            self.stdout.write(f"completable: {completable(collection)}")
 
         if compiled_collection:
-            print("\nCompiled collection")
+            self.stdout.write("\nCompiled collection")
 
             # Fields
-            print(f"compilation_started: {compiled_collection.compilation_started}")
-            print(f"store_end_at: {compiled_collection.store_end_at}")
-            print(f"completed_at: {compiled_collection.completed_at}")
+            self.stdout.write(f"compilation_started: {compiled_collection.compilation_started}")
+            self.stdout.write(f"store_end_at: {compiled_collection.store_end_at}")
+            self.stdout.write(f"completed_at: {compiled_collection.completed_at}")
 
             # Relations
-            print(f"collection_files: {compiled_collection.collectionfile_set.count()}")
-            print(f"processing_steps: {compiled_collection.processing_steps.count()}")
+            self.stdout.write(f"collection_files: {compiled_collection.collectionfile_set.count()}")
+            self.stdout.write(f"processing_steps: {compiled_collection.processing_steps.count()}")
 
             # Logic
             if not compiled_collection.completed_at:
-                print(f"completable: {completable(compiled_collection)}")
+                self.stdout.write(f"completable: {completable(compiled_collection)}")

@@ -24,6 +24,8 @@ class CollectionCommand(BaseCommand):
         """
         Gets the collection.
         """
+        self.stderr.style_func = None
+
         logging.getLogger("process").setLevel(logging.DEBUG)
 
         collection_id = options["collection_id"]

@@ -2,11 +2,13 @@ import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.translation import gettext as t
 from ocdskit.util import Format
 from yapw.methods import ack, publish
 
 from process.models import Collection, CollectionFile, ProcessingStep, Record
 from process.util import consume, create_step, decorator
+from process.util import wrap as w
 
 consume_routing_keys = ["file_worker", "collection_closed"]
 routing_key = "compiler"
@@ -14,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    help = w(t("Start compilation and route messages to the record or release compilers"))
+
     def handle(self, *args, **options):
         consume(
             on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator
@@ -31,6 +35,7 @@ def callback(client_state, channel, method, properties, input_message):
         collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
         collection = collection_file.collection
 
+    # Acknowledge early when using the Splitter pattern.
     ack(client_state, channel, method.delivery_tag)
 
     # No action is performed for "collection_closed" messages for "record package" collections.
@@ -42,25 +47,26 @@ def callback(client_state, channel, method, properties, input_message):
     if compilable(collection):
         compiled_collection = collection.get_compiled_collection()
 
-        # Use optimistic locking to update the collection.
+        # Use optimistic locking to update the collection. (Here, it's the return value that's important.)
         updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
             compilation_started=True
         )
 
         # Return if the collection expected no files.
-        if collection.expected_files_count == 0 and collection.collectionfile_set.count() == 0:
+        if _collection_is_empty(collection):
             return
 
-        if collection.data_type["format"] == Format.release_package:
-            # Return if another compiler worker received a message for the same compilable collection.
-            if not updated:
-                return
+        match collection.data_type["format"]:
+            case Format.record_package:
+                items = Record.objects.filter(collection_file_item__collection_file=collection_file)
+                publish_routing_key = "compiler_record"
+            case Format.release_package:
+                # Return if another compiler worker received a message for the same compilable collection.
+                if not updated:
+                    return
 
-            items = collection.release_set
-            publish_routing_key = "compiler_release"
-        elif collection.data_type["format"] == Format.record_package:
-            items = Record.objects.filter(collection_file_item__collection_file=collection_file)
-            publish_routing_key = "compiler_record"
+                items = collection.release_set
+                publish_routing_key = "compiler_release"
 
         for item in items.values("ocid").distinct().iterator():
             create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
@@ -77,15 +83,13 @@ def compilable(collection):
     # 1. Check whether compilation *should* occur.
 
     # This also matches when collection.transform_type == Collection.Transform.COMPILE_RELEASES.
-    if not collection.steps or "compile" not in collection.steps:
+    if "compile" not in collection.steps:
         logger.debug("Collection %s not compilable ('compile' step not set)", collection)
         return False
 
     # 2. Check whether compilation *can* occur.
 
-    # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
-    if collection.expected_files_count == 0:
-        assert collection.collectionfile_set.count() == 0
+    if _collection_is_empty(collection):
         return True
 
     # This can occur if the close_collection endpoint is called before the file_worker worker can process any messages.
@@ -129,3 +133,11 @@ def compilable(collection):
         return False
 
     return True
+
+
+def _collection_is_empty(collection):
+    # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
+    is_empty = collection.expected_files_count == 0
+    if is_empty:
+        assert collection.collectionfile_set.count() == 0
+    return is_empty

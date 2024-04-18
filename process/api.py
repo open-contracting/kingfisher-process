@@ -22,15 +22,11 @@ logger = logging.getLogger(__name__)
 
 class CollectionSerializer(serializers.ModelSerializer):
     steps_remaining_LOAD = serializers.SerializerMethodField()
-    steps_remaining_UPGRADE = serializers.SerializerMethodField()
     steps_remaining_COMPILE = serializers.SerializerMethodField()
     steps_remaining_CHECK = serializers.SerializerMethodField()
 
     def get_steps_remaining_LOAD(self, obj):
         return obj.steps_remaining_LOAD
-
-    def get_steps_remaining_UPGRADE(self, obj):
-        return obj.steps_remaining_UPGRADE
 
     def get_steps_remaining_COMPILE(self, obj):
         return obj.steps_remaining_COMPILE
@@ -59,7 +55,6 @@ class CollectionSerializer(serializers.ModelSerializer):
             "deleted_at",
             "completed_at",
             "steps_remaining_LOAD",
-            "steps_remaining_UPGRADE",
             "steps_remaining_COMPILE",
             "steps_remaining_CHECK",
         ]
@@ -71,14 +66,6 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
             steps_remaining_LOAD=Count(
                 Case(
                     When(processing_steps__name=ProcessingStep.Name.LOAD, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        .annotate(
-            steps_remaining_UPGRADE=Count(
-                Case(
-                    When(processing_steps__name=ProcessingStep.Name.UPGRADE, then=1),
                     output_field=IntegerField(),
                 )
             )
@@ -160,17 +147,16 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
                 collection.expected_files_count = input_message["stats"].get("kingfisher_process_expected_files_count",
                                                                              0)
             collection.store_end_at = Now()
-            collection.save()
+            collection.save(update_fields=["expected_files_count", "store_end_at"])
 
             upgraded_collection = collection.get_upgraded_collection()
             if upgraded_collection:
                 upgraded_collection.expected_files_count = collection.expected_files_count
                 upgraded_collection.store_end_at = Now()
-                upgraded_collection.save()
+                upgraded_collection.save(update_fields=["expected_files_count", "store_end_at"])
 
             if input_message.get("reason"):
                 create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}")
-
                 if upgraded_collection:
                     create_note(
                         upgraded_collection, CollectionNote.Level.INFO,
@@ -179,7 +165,6 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
 
             if input_message.get("stats"):
                 create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"])
-
                 if upgraded_collection:
                     create_note(
                         upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"]
@@ -258,6 +243,7 @@ class TreeSerializer(serializers.ModelSerializer):
 
 class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
     queryset = Collection.objects.filter(parent__isnull=True)
+    serializer_class = TreeSerializer
 
     def retrieve(self, request, pk=None):
         result = Collection.objects.raw(
@@ -283,6 +269,5 @@ class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
         if not result:
             raise Http404
 
-        serialized = TreeSerializer(result, many=True)
-
-        return Response(serialized.data)
+        serializer = TreeSerializer(result, many=True)
+        return Response(serializer.data)

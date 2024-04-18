@@ -3,19 +3,24 @@ import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models.functions import Now
+from django.utils.translation import gettext as t
 from yapw.methods import ack
 
 from process.models import Collection
 from process.util import consume, decorator
+from process.util import wrap as w
 
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
 # compiling are performed, and if the "collection_closed" message is processed before the "file_worker" message.
+# Or, in other words, read all messages published by workers that delete steps (since this checks for steps remaining).
 consume_routing_keys = ["file_worker", "checker", "release_compiler", "record_compiler", "collection_closed"]
 routing_key = "finisher"
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    help = w(t("Set collections as completed, close compiled collections and cache row counts"))
+
     def handle(self, *args, **options):
         consume(
             on_message_callback=callback, queue=routing_key, routing_keys=consume_routing_keys, decorator=decorator

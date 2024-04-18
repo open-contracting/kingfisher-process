@@ -39,6 +39,7 @@ class Collection(models.Model):
     class Meta:
         db_table = "collection"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_transform_from_collection_id_idx", fields=["parent"]),
         ]
         constraints = [
@@ -59,15 +60,15 @@ class Collection(models.Model):
 
     # Identification
     source_id = models.TextField(help_text=_("If sourced from Scrapy, this should be the name of the spider."))
-    data_version = models.DateTimeField(help_text=_("The time at which the data was collected (not loaded)."))
+    data_version = models.DateTimeField(help_text=_("The time at which the files were retrieved (not loaded)."))
     sample = models.BooleanField(default=False)
 
-    # Routing slip
+    # Process Manager pattern
     steps = models.JSONField(blank=True, default=list)
     options = models.JSONField(blank=True, default=dict)
     expected_files_count = models.IntegerField(null=True, blank=True)
 
-    # Process management
+    # Internal state
     data_type = models.JSONField(blank=True, default=dict)
     compilation_started = models.BooleanField(default=False)
 
@@ -191,6 +192,7 @@ class CollectionNote(models.Model):
     class Meta:
         db_table = "collection_note"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_note_collection_id_idx", fields=["collection"]),
         ]
 
@@ -217,6 +219,7 @@ class CollectionFile(models.Model):
     class Meta:
         db_table = "collection_file"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_file_collection_id_idx", fields=["collection"]),
         ]
         constraints = [
@@ -239,25 +242,19 @@ class ProcessingStep(models.Model):
 
     class Meta:
         db_table = "processing_step"
-        indexes = [
-            models.Index(name="processing_step_collection_file_id_idx", fields=["collection_file"]),
-            models.Index(name="processing_step_ocid_idx", fields=["ocid"]),
-            models.Index(name="processing_step_name_idx", fields=["name"]),
-        ]
 
     class Name(models.TextChoices):
         LOAD = "LOAD"
-        UPGRADE = "UPGRADE"
         COMPILE = "COMPILE"
         CHECK = "CHECK"
 
     collection = models.ForeignKey(
-        Collection, null=True, on_delete=models.CASCADE, db_index=True, related_name="processing_steps"
+        Collection, on_delete=models.CASCADE, db_index=True, related_name="processing_steps"
     )
 
-    collection_file = models.ForeignKey(CollectionFile, null=True, on_delete=models.CASCADE, db_index=True)
-    ocid = models.TextField(null=True)
-    name = models.TextField(choices=Name.choices, db_index=True)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, null=True, db_index=True)
+    ocid = models.TextField(blank=True)
+    name = models.TextField(choices=Name.choices)
 
 
 class CollectionFileItem(models.Model):
@@ -268,6 +265,7 @@ class CollectionFileItem(models.Model):
     class Meta:
         db_table = "collection_file_item"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_file_item_collection_file_id_idx", fields=["collection_file"]),
         ]
         constraints = [
@@ -292,6 +290,7 @@ class Data(models.Model):
     class Meta:
         db_table = "data"
         constraints = [
+            # process.util.get_or_create()
             models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
         ]
 
@@ -310,6 +309,7 @@ class PackageData(models.Model):
     class Meta:
         db_table = "package_data"
         constraints = [
+            # process.util.get_or_create()
             models.UniqueConstraint(name="unique_package_data_hash_md5", fields=["hash_md5"]),
         ]
 
@@ -328,9 +328,11 @@ class Release(models.Model):
     class Meta:
         db_table = "release"
         indexes = [
+            # process.management.commands.release_compiler.compile_release()
+            models.Index(fields=["collection", "ocid"]),
+            # ForeignKey with db_index=False.
             models.Index(name="release_collection_id_idx", fields=["collection"]),
             models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="release_ocid_idx", fields=["ocid"]),
             models.Index(name="release_data_id_idx", fields=["data"]),
             models.Index(name="release_package_data_id_idx", fields=["package_data"]),
         ]
@@ -360,15 +362,16 @@ class Record(models.Model):
     class Meta:
         db_table = "record"
         indexes = [
+            # process.management.commands.record_compiler.compile_record()
+            models.Index(fields=["collection", "ocid"]),
+            # ForeignKey with db_index=False.
             models.Index(name="record_collection_id_idx", fields=["collection"]),
             models.Index(name="record_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="record_ocid_idx", fields=["ocid"]),
             models.Index(name="record_data_id_idx", fields=["data"]),
             models.Index(name="record_package_data_id_idx", fields=["package_data"]),
         ]
-        constraints = [
-            models.UniqueConstraint(name="unique_record_identifiers", fields=["collection", "ocid"]),
-        ]
+        # It is possible to add a constraint on collection, ocid. However, some publications have repeated
+        # OCIDs. Example: https://github.com/open-contracting/kingfisher-process/issues/420
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
@@ -390,9 +393,11 @@ class CompiledRelease(models.Model):
     class Meta:
         db_table = "compiled_release"
         indexes = [
+            # compile_record() and compile_release()
+            models.Index(fields=["collection", "ocid"]),
+            # ForeignKey with db_index=False.
             models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
             models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="compiled_release_ocid_idx", fields=["ocid"]),
             models.Index(name="compiled_release_data_id_idx", fields=["data"]),
         ]
 

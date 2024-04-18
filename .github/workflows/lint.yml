@@ -34,6 +34,7 @@ jobs:
       - run: pip install -r requirements_dev.txt
       - env:
           # libcoveocds is optional (try-except block).
-          STANDARD_MAINTENANCE_SCRIPTS_IGNORE: libcoveocds
+          # https://www.django-rest-framework.org/api-guide/schemas/#generating-an-openapi-schema
+          STANDARD_MAINTENANCE_SCRIPTS_IGNORE: libcoveocds,uritemplate
           STANDARD_MAINTENANCE_SCRIPTS_FILES: requirements_nongpl.in
         run: pytest /tmp/test_requirements.py

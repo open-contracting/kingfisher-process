@@ -6,6 +6,7 @@ import simplejson as json
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.translation import gettext as t
 from ijson.common import ObjectBuilder
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
@@ -25,6 +26,7 @@ from process.models import (
     Release,
 )
 from process.util import consume, create_logger_note, create_note, create_step, decorator, delete_step, get_or_create
+from process.util import wrap as w
 
 consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
@@ -36,6 +38,8 @@ ERROR = CollectionNote.Level.ERROR
 
 
 class Command(BaseCommand):
+    help = w(t("Create records, releases and compiled releases"))
+
     def handle(self, *args, **options):
         consume(
             on_message_callback=callback,
@@ -149,9 +153,6 @@ def process_file(collection_file):
 
 
 def _get_data_type(collection_file):
-    """
-    Returns the expected data type of the collection_file.
-    """
     collection = collection_file.collection
     if not collection.data_type:
         detected_format, is_concatenated, is_array = detect_format(collection_file.filename)

@@ -1,5 +1,3 @@
-import logging
-
 from django.core.management.base import CommandError
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
@@ -10,22 +8,31 @@ from process.util import create_step, get_publisher
 from process.util import wrap as w
 
 routing_key = "addchecks"
-logger = logging.getLogger(__name__)
 
 
 class Command(CollectionCommand):
-    help = w(t("Add processing steps to check data"))
+    help = w(t("Add processing steps to check data, if unchecked"))
 
     def handle_collection(self, collection, *args, **options):
+        if not collection.store_end_at:
+            raise CommandError(
+                _("Collection %(id)s is not a closed collection. It was started at %(store_start_at)s.")
+                % collection.__dict__
+            )
+
         if collection.parent_id:
             raise CommandError(
                 _("Collection %(id)s is not a root collection. Its parent is collection %(parent_id)s.")
                 % collection.__dict__
             )
 
+        if "check" not in collection.steps:
+            collection.steps.append("check")
+            collection.save(update_fields=["steps"])
+
         for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
-            logger.debug(
-                "Publishing collection files with missing %s checks for collection %s", model.__name__, collection
+            self.stderr.write(
+                f"Publishing collection files with missing {model.__name__} checks for collection {collection}"
             )
 
             # SELECT DISTINCT collection_file_id FROM release

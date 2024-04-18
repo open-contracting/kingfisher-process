@@ -2,12 +2,14 @@ import logging
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.translation import gettext as t
 from yapw.methods import ack, publish
 
 from process.exceptions import AlreadyExists
 from process.models import Collection, CompiledRelease, ProcessingStep, Release
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
 from process.util import consume, decorator, delete_step
+from process.util import wrap as w
 
 consume_routing_keys = ["compiler_release"]
 routing_key = "release_compiler"
@@ -15,9 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    """
-    Create a compiled release from the releases for a given OCID.
-    """
+    help = w(t("Create compiled releases from releases with the same OCID"))
 
     def handle(self, *args, **options):
         consume(
