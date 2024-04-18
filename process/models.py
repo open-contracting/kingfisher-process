@@ -39,6 +39,7 @@ class Collection(models.Model):
     class Meta:
         db_table = "collection"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_transform_from_collection_id_idx", fields=["parent"]),
         ]
         constraints = [
@@ -191,6 +192,7 @@ class CollectionNote(models.Model):
     class Meta:
         db_table = "collection_note"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_note_collection_id_idx", fields=["collection"]),
         ]
 
@@ -217,6 +219,7 @@ class CollectionFile(models.Model):
     class Meta:
         db_table = "collection_file"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_file_collection_id_idx", fields=["collection"]),
         ]
         constraints = [
@@ -267,6 +270,7 @@ class CollectionFileItem(models.Model):
     class Meta:
         db_table = "collection_file_item"
         indexes = [
+            # ForeignKey with db_index=False.
             models.Index(name="collection_file_item_collection_file_id_idx", fields=["collection_file"]),
         ]
         constraints = [
@@ -291,6 +295,7 @@ class Data(models.Model):
     class Meta:
         db_table = "data"
         constraints = [
+            # process.util.get_or_create().
             models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
         ]
 
@@ -309,6 +314,7 @@ class PackageData(models.Model):
     class Meta:
         db_table = "package_data"
         constraints = [
+            # process.util.get_or_create().
             models.UniqueConstraint(name="unique_package_data_hash_md5", fields=["hash_md5"]),
         ]
 
@@ -327,9 +333,10 @@ class Release(models.Model):
     class Meta:
         db_table = "release"
         indexes = [
+            models.Index(name="release_ocid_idx", fields=["ocid"]),
+            # ForeignKey with db_index=False.
             models.Index(name="release_collection_id_idx", fields=["collection"]),
             models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="release_ocid_idx", fields=["ocid"]),
             models.Index(name="release_data_id_idx", fields=["data"]),
             models.Index(name="release_package_data_id_idx", fields=["package_data"]),
         ]
@@ -359,9 +366,10 @@ class Record(models.Model):
     class Meta:
         db_table = "record"
         indexes = [
+            models.Index(name="record_ocid_idx", fields=["ocid"]),
+            # ForeignKey with db_index=False.
             models.Index(name="record_collection_id_idx", fields=["collection"]),
             models.Index(name="record_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="record_ocid_idx", fields=["ocid"]),
             models.Index(name="record_data_id_idx", fields=["data"]),
             models.Index(name="record_package_data_id_idx", fields=["package_data"]),
         ]
@@ -389,9 +397,10 @@ class CompiledRelease(models.Model):
     class Meta:
         db_table = "compiled_release"
         indexes = [
+            models.Index(name="compiled_release_ocid_idx", fields=["ocid"]),
+            # ForeignKey with db_index=False.
             models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
             models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="compiled_release_ocid_idx", fields=["ocid"]),
             models.Index(name="compiled_release_data_id_idx", fields=["data"]),
         ]
 
