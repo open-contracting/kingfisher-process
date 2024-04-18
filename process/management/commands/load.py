@@ -78,6 +78,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        self.stderr.style_func = None
+
         if not options["source"]:
             raise CommandError(
                 _(
