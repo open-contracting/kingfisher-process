@@ -7,15 +7,15 @@ from django.db.models.functions import Now
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, viewsets, status
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from core import settings
-from process.models import Collection, ProcessingStep, CollectionNote
+from process.models import Collection, CollectionNote, ProcessingStep
 from process.processors.loader import create_collections
-from process.util import get_publisher, create_note
+from process.util import create_note, get_publisher
 
 logger = logging.getLogger(__name__)
 
