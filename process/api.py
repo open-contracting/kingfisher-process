@@ -199,6 +199,8 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
     def metadata(self, request, pk=None):
         compiled_collection = get_object_or_404(Collection, id=pk)
         root_collection = compiled_collection.get_root_parent()
+        if compiled_collection.transform_type != Collection.Transform.COMPILE_RELEASES:
+            return Response("The collection id must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
         meta_data = {}
         with connection.cursor() as cursor:
             # Data period
