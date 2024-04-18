@@ -290,7 +290,7 @@ class Data(models.Model):
     class Meta:
         db_table = "data"
         constraints = [
-            # process.util.get_or_create().
+            # process.util.get_or_create()
             models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
         ]
 
@@ -309,7 +309,7 @@ class PackageData(models.Model):
     class Meta:
         db_table = "package_data"
         constraints = [
-            # process.util.get_or_create().
+            # process.util.get_or_create()
             models.UniqueConstraint(name="unique_package_data_hash_md5", fields=["hash_md5"]),
         ]
 
@@ -328,7 +328,8 @@ class Release(models.Model):
     class Meta:
         db_table = "release"
         indexes = [
-            models.Index(name="release_ocid_idx", fields=["ocid"]),
+            # process.management.commands.release_compiler.compile_release()
+            models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="release_collection_id_idx", fields=["collection"]),
             models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
@@ -361,7 +362,8 @@ class Record(models.Model):
     class Meta:
         db_table = "record"
         indexes = [
-            models.Index(name="record_ocid_idx", fields=["ocid"]),
+            # process.management.commands.record_compiler.compile_record()
+            models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="record_collection_id_idx", fields=["collection"]),
             models.Index(name="record_collection_file_item_id_idx", fields=["collection_file_item"]),
@@ -392,7 +394,8 @@ class CompiledRelease(models.Model):
     class Meta:
         db_table = "compiled_release"
         indexes = [
-            models.Index(name="compiled_release_ocid_idx", fields=["ocid"]),
+            # compile_record() and compile_release()
+            models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
             models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
