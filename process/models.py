@@ -370,9 +370,6 @@ class Record(models.Model):
             models.Index(name="record_data_id_idx", fields=["data"]),
             models.Index(name="record_package_data_id_idx", fields=["package_data"]),
         ]
-        constraints = [
-            models.UniqueConstraint(name="unique_record_identifiers", fields=["collection", "ocid"]),
-        ]
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
