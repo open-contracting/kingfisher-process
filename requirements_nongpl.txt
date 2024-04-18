@@ -9,6 +9,8 @@ asgiref==3.7.2
 attrs==23.1.0
     # via
     #   cattrs
+    #   jsonschema
+    #   referencing
     #   requests-cache
 cattrs==23.1.2
     # via requests-cache
@@ -27,11 +29,16 @@ django==4.2.11
     #   django-cors-headers
     #   django-filter
     #   djangorestframework
+    #   drf-spectacular
 django-cors-headers==4.1.0
     # via -r requirements_nongpl.in
-django-filter==23.2
+django-filter==24.2
     # via -r requirements_nongpl.in
-djangorestframework==3.14.0
+djangorestframework==3.15.1
+    # via
+    #   -r requirements_nongpl.in
+    #   drf-spectacular
+drf-spectacular==0.27.2
     # via -r requirements_nongpl.in
 gunicorn[setproctitle]==20.1.0
     # via -r requirements_nongpl.in
@@ -41,6 +48,8 @@ ijson==3.2.3
     # via
     #   -r requirements_nongpl.in
     #   ocdskit
+inflection==0.5.1
+    # via drf-spectacular
 json-merge-patch==0.2
     # via ocdsextensionregistry
 jsonref==1.1.0
@@ -48,6 +57,10 @@ jsonref==1.1.0
     #   ocdsextensionregistry
     #   ocdskit
     #   ocdsmerge
+jsonschema==4.21.1
+    # via drf-spectacular
+jsonschema-specifications==2023.12.1
+    # via jsonschema
 ocdsextensionregistry==0.3.6
     # via
     #   -r requirements_nongpl.in
@@ -68,8 +81,12 @@ platformdirs==3.8.1
     # via requests-cache
 psycopg2==2.9.6
     # via -r requirements_nongpl.in
-pytz==2019.3
-    # via djangorestframework
+pyyaml==6.0.1
+    # via drf-spectacular
+referencing==0.34.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
 requests==2.31.0
     # via
     #   -r requirements_nongpl.in
@@ -78,6 +95,10 @@ requests==2.31.0
     #   requests-cache
 requests-cache==1.1.0
     # via ocdsextensionregistry
+rpds-py==0.18.0
+    # via
+    #   jsonschema
+    #   referencing
 sentry-sdk==1.19.0
     # via -r requirements_nongpl.in
 setproctitle==1.2.2
@@ -91,7 +112,7 @@ sqlparse==0.5.0
 typing-extensions==4.7.0
     # via dj-database-url
 uritemplate==4.1.1
-    # via -r requirements_nongpl.in
+    # via drf-spectacular
 url-normalize==1.4.3
     # via requests-cache
 urllib3==2.0.7

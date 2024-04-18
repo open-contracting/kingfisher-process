@@ -4,7 +4,7 @@ Reference
 API
 ---
 
-To view the API's documentation, :ref:`run the server<development>` and open http://127.0.0.1:8000/api/swagger-ui/.
+To view the API's documentation, :ref:`run the server<development>` and open http://127.0.0.1:8000/api/schema/swagger-ui/ or http://127.0.0.1:8000/api/schema/redoc/.
 
 The API is used by `Kingfisher Collect <https://kingfisher-collect.readthedocs.io/en/latest/kingfisher_process.html>`__ and the `Data Registry <https://github.com/open-contracting/data-registry>`__.
 

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_filters",
     "corsheaders",
+    "drf_spectacular",
     "process.apps.ProcessConfig",
     "rest_framework",
 ]
@@ -222,6 +223,7 @@ CORS_EXPOSE_HEADERS = ["Content-Disposition"]
 
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 

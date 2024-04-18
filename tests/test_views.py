@@ -9,12 +9,12 @@ class CollectionViewTests(APITestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_openapi(self):
-        response = self.client.get("/openapi")
+        response = self.client.get("/api/schema/")
 
         self.assertEqual(response.status_code, 200)
 
     def test_swagger_ui(self):
-        response = self.client.get("/swagger-ui/")
+        response = self.client.get("/api/schema/swagger-ui/")
 
         self.assertEqual(response.status_code, 200)
 

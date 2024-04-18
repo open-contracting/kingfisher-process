@@ -25,13 +25,13 @@ class CollectionSerializer(serializers.ModelSerializer):
     steps_remaining_COMPILE = serializers.SerializerMethodField()
     steps_remaining_CHECK = serializers.SerializerMethodField()
 
-    def get_steps_remaining_LOAD(self, obj):
+    def get_steps_remaining_LOAD(self, obj) -> int:
         return obj.steps_remaining_LOAD
 
-    def get_steps_remaining_COMPILE(self, obj):
+    def get_steps_remaining_COMPILE(self, obj) -> int:
         return obj.steps_remaining_COMPILE
 
-    def get_steps_remaining_CHECK(self, obj):
+    def get_steps_remaining_CHECK(self, obj) -> int:
         return obj.steps_remaining_CHECK
 
     class Meta:
