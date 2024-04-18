@@ -104,7 +104,7 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
         if "source_id" not in input_message or "data_version" not in input_message:
             return Response(
                 'Unable to parse input. Please provide {"source_id": "<source_id>", "data_version": "<data_version>"}',
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if not settings.ENABLE_CHECKER and input_message.get("check"):
@@ -137,15 +137,18 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
         input_message = json.loads(request.data)
 
         if "collection_id" not in input_message:
-            return Response('Unable to parse input. Please provide {"collection_id": "<collection_id>"}',
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                'Unable to parse input. Please provide {"collection_id": "<collection_id>"}',
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         with transaction.atomic():
             collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
             if input_message.get("stats"):
                 # this value is used later on to detect, whether all collection has been processed yet
-                collection.expected_files_count = input_message["stats"].get("kingfisher_process_expected_files_count",
-                                                                             0)
+                collection.expected_files_count = input_message["stats"].get(
+                    "kingfisher_process_expected_files_count", 0
+                )
             collection.store_end_at = Now()
             collection.save(update_fields=["expected_files_count", "store_end_at"])
 
@@ -159,8 +162,9 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
                 create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}")
                 if upgraded_collection:
                     create_note(
-                        upgraded_collection, CollectionNote.Level.INFO,
-                        f"Spider close reason: {input_message['reason']}"
+                        upgraded_collection,
+                        CollectionNote.Level.INFO,
+                        f"Spider close reason: {input_message['reason']}",
                     )
 
             if input_message.get("stats"):
@@ -187,8 +191,10 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
     def wipe(self, request):
         input_message = json.loads(request.data)
         if not input_message.get("collection_id"):
-            return Response('Unable to parse input. Please provide {"collection_id":<some_number>}',
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                'Unable to parse input. Please provide {"collection_id":<some_number>}',
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         with get_publisher() as client:
             client.publish(input_message, routing_key="wiper")
@@ -202,7 +208,8 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
         meta_data = {}
         with connection.cursor() as cursor:
             # Data period
-            cursor.execute("""\
+            cursor.execute(
+                """\
             SELECT MAX(ocid) as ocid_prefix, MIN(data.data->>'date') as published_from,
                    MAX(data.data->>'date') as published_to
             FROM compiled_release
@@ -211,7 +218,9 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
                 compiled_release.collection_id = %(collection_id)s
                 AND data.data ? 'date'
                 AND data.data->>'date' <> ''
-            """, {"collection_id": pk}, )
+            """,
+                {"collection_id": pk},
+            )
             compiled_release_metadata = dict(zip(["ocid_prefix", "published_from", "published_to"], cursor.fetchone()))
             if compiled_release_metadata["ocid_prefix"]:
                 compiled_release_metadata["ocid_prefix"] = compiled_release_metadata["ocid_prefix"][:11]
@@ -219,7 +228,8 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
             meta_data.update(compiled_release_metadata)
 
             # Publication policy and license
-            cursor.execute("""\
+            cursor.execute(
+                """\
                 SELECT DATA->>'publicationPolicy' AS publication_policy,
                               DATA->>'license' AS license
                 FROM package_data
@@ -228,7 +238,9 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
                 LEFT JOIN release r2 ON package_data.id = r2.package_data_id
                 AND r2.collection_id = %(collection_id)s
                 LIMIT 1
-            """, {"collection_id": root_collection.id}, )
+            """,
+                {"collection_id": root_collection.id},
+            )
 
             meta_data.update(dict(zip(["publication_policy", "license"], cursor.fetchone())))
 
