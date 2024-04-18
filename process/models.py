@@ -370,6 +370,8 @@ class Record(models.Model):
             models.Index(name="record_data_id_idx", fields=["data"]),
             models.Index(name="record_package_data_id_idx", fields=["package_data"]),
         ]
+        # It is possible to add a constraint on collection, ocid. However, some publications have repeated
+        # OCIDs. Example: https://github.com/open-contracting/kingfisher-process/issues/420
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
