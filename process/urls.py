@@ -11,7 +11,6 @@ router.register(r"collections", CollectionViewSet, basename="collection")
 router.register(r"tree", TreeViewSet, basename="tree")
 
 urlpatterns = [
-    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path(f"api/{settings.API_VERSION}/", include(router.urls)),
     # https://www.django-rest-framework.org/api-guide/schemas/#generating-a-dynamic-schema-with-schemaview
     path(
