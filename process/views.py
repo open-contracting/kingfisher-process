@@ -78,7 +78,6 @@ class CloseCollectionSerializer(serializers.Serializer):
 
 
 class CollectionViewSet(viewsets.ViewSet, ListAPIView):
-
     queryset = (
         Collection.objects.annotate(
             steps_remaining_LOAD=Count(
@@ -198,7 +197,6 @@ class CollectionViewSet(viewsets.ViewSet, ListAPIView):
         return Response(status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk=None):
-        get_object_or_404(Collection, id=pk)
         with get_publisher() as client:
             client.publish({"collection_id": pk}, routing_key="wiper")
 

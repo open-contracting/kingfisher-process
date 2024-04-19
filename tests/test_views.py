@@ -105,9 +105,9 @@ class CollectionViewTests(APITestCase):
 
         self.assertEqual(len(notes_reason_stats), 2)
 
-    def test_destroy_404(self):
+    def test_destroy_nonexistent(self):
         response = self.client.delete(f"{base_url}/100/")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 202)
 
     def test_destroy_ok(self):
         response = self.client.delete(f"{base_url}/1/")
