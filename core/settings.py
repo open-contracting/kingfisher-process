@@ -48,11 +48,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_filters",
     "corsheaders",
+    "django_filters",
     "drf_spectacular",
-    "process.apps.ProcessConfig",
     "rest_framework",
+    "process.apps.ProcessConfig",
 ]
 
 MIDDLEWARE = [
@@ -228,9 +228,6 @@ REST_FRAMEWORK = {
 
 
 # Project configuration
-
-# An infix for API routes.
-API_VERSION = "v1"
 
 # The version of OCDS with which to initialize the ProfileBuilder.
 COMPILER_OCDS_VERSION = "1__1__5"

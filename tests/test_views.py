@@ -1,9 +1,8 @@
 from rest_framework.test import APITestCase
 
-from core import settings
 from process.models import Collection, CollectionNote
 
-base_url = f"/api/{settings.API_VERSION}/collections/"
+base_url = "/api/collections"
 
 
 class CollectionViewTests(APITestCase):
@@ -25,20 +24,20 @@ class CollectionViewTests(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_collection_list_ok(self):
-        response = self.client.get(f"{base_url}?format=json")
+        response = self.client.get(f"{base_url}/?format=json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)
 
     def test_collection_metadata_404(self):
-        response = self.client.get(f"{base_url}900/metadata/?format=json")
+        response = self.client.get(f"{base_url}/900/metadata/?format=json")
         self.assertEqual(response.status_code, 404)
 
     def test_collection_metadata_not_compiled(self):
-        response = self.client.get(f"{base_url}1/metadata/?format=json")
+        response = self.client.get(f"{base_url}/1/metadata/?format=json")
         self.assertEqual(response.status_code, 400)
 
     def test_collection_metadata_ok(self):
-        response = self.client.get(f"{base_url}3/metadata/?format=json")
+        response = self.client.get(f"{base_url}/3/metadata/?format=json")
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(
             response.content,
@@ -52,17 +51,17 @@ class CollectionViewTests(APITestCase):
         )
 
     def test_create_400(self):
-        response = self.client.post(f"{base_url}", {})
+        response = self.client.post(f"{base_url}/", {})
         self.assertEqual(response.status_code, 400)
 
     def test_create_ok(self):
-        response = self.client.post(f"{base_url}", {"source_id": "test", "data_version": "2024-04-18 00:00:00"})
+        response = self.client.post(f"{base_url}/", {"source_id": "test", "data_version": "2024-04-18 00:00:00"})
         self.assertEqual(response.status_code, 200)
 
         self.assertJSONEqual(response.content, {"collection_id": 4})
 
         response = self.client.post(
-            f"{base_url}",
+            f"{base_url}/",
             {"source_id": "test2", "data_version": "2024-04-18 00:00:00", "upgrade": True, "compile": True},
         )
         self.assertEqual(response.status_code, 200)
@@ -72,11 +71,11 @@ class CollectionViewTests(APITestCase):
         )
 
     def test_close_404(self):
-        response = self.client.post(f"{base_url}100/close/", {})
+        response = self.client.post(f"{base_url}/100/close/", {})
         self.assertEqual(response.status_code, 404)
 
     def test_close_ok(self):
-        response = self.client.post(f"{base_url}1/close/", {})
+        response = self.client.post(f"{base_url}/1/close/", {})
         self.assertEqual(response.status_code, 202)
 
     def test_close_ok_full(self):
@@ -84,7 +83,7 @@ class CollectionViewTests(APITestCase):
 
         collection_id = 1
 
-        response = self.client.post(f"{base_url}{collection_id}/close/", data, format="json")
+        response = self.client.post(f"{base_url}/{collection_id}/close/", data, format="json")
         self.assertEqual(response.status_code, 202)
 
         collection = Collection.objects.get(id=collection_id)
@@ -107,18 +106,18 @@ class CollectionViewTests(APITestCase):
         self.assertEqual(len(notes_reason_stats), 2)
 
     def test_destroy_404(self):
-        response = self.client.delete(f"{base_url}100/")
+        response = self.client.delete(f"{base_url}/100/")
         self.assertEqual(response.status_code, 404)
 
     def test_destroy_ok(self):
-        response = self.client.delete(f"{base_url}1/")
+        response = self.client.delete(f"{base_url}/1/")
         self.assertEqual(response.status_code, 202)
 
     def test_retrieve_404(self):
-        response = self.client.get(f"{base_url}tree/2/")
+        response = self.client.get("/api/tree/2/")
         self.assertEqual(response.status_code, 404)
 
     def test_retrieve_ok(self):
-        response = self.client.get(f"/api/{settings.API_VERSION}/tree/1/")
+        response = self.client.get("/api/tree/1/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)
