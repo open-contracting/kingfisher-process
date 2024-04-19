@@ -23,11 +23,6 @@ class CollectionViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_collection_list_ok(self):
-        response = self.client.get(f"{base_url}/?format=json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 3)
-
     def test_collection_metadata_404(self):
         response = self.client.get(f"{base_url}/900/metadata/?format=json")
         self.assertEqual(response.status_code, 404)

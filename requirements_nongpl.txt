@@ -27,12 +27,9 @@ django==4.2.11
     #   -r requirements_nongpl.in
     #   dj-database-url
     #   django-cors-headers
-    #   django-filter
     #   djangorestframework
     #   drf-spectacular
 django-cors-headers==4.1.0
-    # via -r requirements_nongpl.in
-django-filter==24.2
     # via -r requirements_nongpl.in
 djangorestframework==3.15.1
     # via

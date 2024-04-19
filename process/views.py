@@ -1,62 +1,20 @@
 import logging
 
 from django.db import connection, transaction
-from django.db.models import Case, Count, IntegerField, When
 from django.db.models.functions import Now
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
 from core import settings
-from process.models import Collection, CollectionNote, ProcessingStep
+from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
 from process.util import create_note, get_publisher
 
 logger = logging.getLogger(__name__)
-
-
-class CollectionSerializer(serializers.ModelSerializer):
-    steps_remaining_LOAD = serializers.SerializerMethodField()
-    steps_remaining_COMPILE = serializers.SerializerMethodField()
-    steps_remaining_CHECK = serializers.SerializerMethodField()
-
-    def get_steps_remaining_LOAD(self, obj) -> int:
-        return obj.steps_remaining_LOAD
-
-    def get_steps_remaining_COMPILE(self, obj) -> int:
-        return obj.steps_remaining_COMPILE
-
-    def get_steps_remaining_CHECK(self, obj) -> int:
-        return obj.steps_remaining_CHECK
-
-    class Meta:
-        model = Collection
-        fields = [
-            "source_id",
-            "data_version",
-            "sample",
-            "steps",
-            "options",
-            "expected_files_count",
-            "compilation_started",
-            "parent",
-            "transform_type",
-            "data_type",
-            "cached_releases_count",
-            "cached_records_count",
-            "cached_compiled_releases_count",
-            "store_start_at",
-            "store_end_at",
-            "deleted_at",
-            "completed_at",
-            "steps_remaining_LOAD",
-            "steps_remaining_COMPILE",
-            "steps_remaining_CHECK",
-        ]
 
 
 class CreateCollectionSerializer(serializers.Serializer):
@@ -77,45 +35,7 @@ class CloseCollectionSerializer(serializers.Serializer):
     reason = serializers.CharField(help_text="The reason the crawl was finished", required=False)
 
 
-class CollectionViewSet(viewsets.ViewSet, ListAPIView):
-    queryset = (
-        Collection.objects.annotate(
-            steps_remaining_LOAD=Count(
-                Case(
-                    When(processing_steps__name=ProcessingStep.Name.LOAD, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        .annotate(
-            steps_remaining_COMPILE=Count(
-                Case(
-                    When(processing_steps__name=ProcessingStep.Name.COMPILE, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-        .annotate(
-            steps_remaining_CHECK=Count(
-                Case(
-                    When(processing_steps__name=ProcessingStep.Name.CHECK, then=1),
-                    output_field=IntegerField(),
-                )
-            )
-        )
-    )
-
-    serializer_class = CollectionSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = [
-        "source_id",
-        "data_version",
-        "store_start_at",
-        "store_end_at",
-        "transform_type",
-        "completed_at",
-    ]
-
+class CollectionViewSet(viewsets.ViewSet):
     def create(self, request):
         serializer = CreateCollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -277,7 +197,7 @@ class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
             JOIN collection c on (t.id = c.id)
             WHERE t.root = %s
             ORDER BY deep ASC;
-        """,
+            """,
             [pk],
         )
 

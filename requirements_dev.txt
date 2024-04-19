@@ -75,12 +75,9 @@ django==4.2.11
     #   -r requirements.txt
     #   dj-database-url
     #   django-cors-headers
-    #   django-filter
     #   djangorestframework
     #   drf-spectacular
 django-cors-headers==4.1.0
-    # via -r requirements.txt
-django-filter==24.2
     # via -r requirements.txt
 djangorestframework==3.15.1
     # via

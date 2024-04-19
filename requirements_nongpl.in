@@ -1,6 +1,5 @@
 dj-database-url
 django-cors-headers
-django-filter
 Django<5
 djangorestframework
 drf-spectacular
