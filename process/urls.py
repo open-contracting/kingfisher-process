@@ -1,10 +1,10 @@
 from django.urls import path
 from drf_spectacular import views as drfviews
-from rest_framework import routers
+from rest_framework.routers import SimpleRouter
 
 from process import views
 
-router = routers.DefaultRouter()
+router = SimpleRouter()
 router.register(r"collections", views.CollectionViewSet, basename="collection")
 router.register(r"tree", views.TreeViewSet, basename="tree")
 
