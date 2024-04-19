@@ -5,7 +5,6 @@ from django.db.models import Case, Count, IntegerField, When
 from django.db.models.functions import Now
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
@@ -60,7 +59,26 @@ class CollectionSerializer(serializers.ModelSerializer):
         ]
 
 
-class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
+class CreateCollectionSerializer(serializers.Serializer):
+    source_id = serializers.CharField(help_text="The spider name from Kingfisher Collect")
+    data_version = serializers.CharField(help_text="The date when the collection's data was downloaded")
+    check = serializers.BooleanField(help_text="Whether to run validation checks or not", required=False)
+    compile = serializers.BooleanField(help_text="Whether to compile the collection's data or not", required=False)
+    upgrade = serializers.BooleanField(
+        help_text="Whether to upgrade the collection's data version or not", required=False
+    )
+    sample = serializers.BooleanField(help_text="Whether the collection contains only a sample", required=False)
+    job = serializers.CharField(help_text="The job id", required=False)
+    note = serializers.CharField(help_text="A note from the Kingfisher Collect crawl", required=False)
+
+
+class CloseCollectionSerializer(serializers.Serializer):
+    stats = serializers.JSONField(help_text="The statistics about the collection crawl", required=False)
+    reason = serializers.CharField(help_text="The reason the crawl was finished", required=False)
+
+
+class CollectionViewSet(viewsets.ViewSet, ListAPIView):
+
     queryset = (
         Collection.objects.annotate(
             steps_remaining_LOAD=Count(
@@ -99,31 +117,25 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
         "completed_at",
     ]
 
-    @csrf_exempt
-    @action(methods=["post"], detail=False)
-    def new(self, request):
-        input_message = request.data
-        if "source_id" not in input_message or "data_version" not in input_message:
-            return Response(
-                'Unable to parse input. Please provide {"source_id": "<source_id>", "data_version": "<data_version>"}',
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+    def create(self, request):
+        serializer = CreateCollectionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not settings.ENABLE_CHECKER and input_message.get("check"):
+        if not settings.ENABLE_CHECKER and serializer.data.get("check"):
             logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
 
         collection, upgraded_collection, compiled_collection = create_collections(
             # Identification
-            input_message["source_id"],
-            input_message["data_version"],
-            sample=input_message.get("sample", False),
+            serializer.data.get("source_id"),
+            serializer.data.get("data_version"),
+            sample=serializer.data.get("sample", False),
             # Steps
-            upgrade=input_message.get("upgrade", False),
-            compile=input_message.get("compile", False),
-            check=input_message.get("check", False),
+            upgrade=serializer.data.get("upgrade", False),
+            compile=serializer.data.get("compile", False),
+            check=serializer.data.get("check", False),
             # Other
-            scrapyd_job=input_message.get("job", ""),
-            note=input_message.get("note"),
+            scrapyd_job=serializer.data.get("job", ""),
+            note=serializer.data.get("note"),
         )
 
         result = {"collection_id": collection.pk}
@@ -134,22 +146,16 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
 
         return Response(result)
 
-    @csrf_exempt
-    @action(methods=["post"], detail=False)
-    def close(self, request):
-        input_message = request.data
-
-        if "collection_id" not in input_message:
-            return Response(
-                'Unable to parse input. Please provide {"collection_id": "<collection_id>"}',
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
+    @action(methods=["post"], detail=True)
+    def close(self, request, pk=None):
+        serializer = CloseCollectionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        get_object_or_404(Collection, id=pk)
         with transaction.atomic():
-            collection = Collection.objects.select_for_update().get(pk=input_message["collection_id"])
-            if input_message.get("stats"):
+            collection = Collection.objects.select_for_update().get(pk=pk)
+            if serializer.data.get("stats"):
                 # this value is used later on to detect, whether all collection has been processed yet
-                collection.expected_files_count = input_message["stats"].get(
+                collection.expected_files_count = serializer.data["stats"].get(
                     "kingfisher_process_expected_files_count", 0
                 )
             collection.store_end_at = Now()
@@ -161,20 +167,20 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
                 upgraded_collection.store_end_at = Now()
                 upgraded_collection.save(update_fields=["expected_files_count", "store_end_at"])
 
-            if input_message.get("reason"):
-                create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {input_message['reason']}")
+            if serializer.data.get("reason"):
+                create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {serializer.data['reason']}")
                 if upgraded_collection:
                     create_note(
                         upgraded_collection,
                         CollectionNote.Level.INFO,
-                        f"Spider close reason: {input_message['reason']}",
+                        f"Spider close reason: {serializer.data['reason']}",
                     )
 
-            if input_message.get("stats"):
-                create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"])
+            if serializer.data.get("stats"):
+                create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=serializer.data["stats"])
                 if upgraded_collection:
                     create_note(
-                        upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=input_message["stats"]
+                        upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=serializer.data["stats"]
                     )
 
         with get_publisher() as client:
@@ -191,22 +197,13 @@ class CollectionViewSet(viewsets.ViewSetMixin, ListAPIView):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    @csrf_exempt
-    @action(methods=["post"], detail=False)
-    def wipe(self, request):
-        input_message = request.data
-        if not input_message.get("collection_id"):
-            return Response(
-                'Unable to parse input. Please provide {"collection_id":<some_number>}',
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
+    def destroy(self, request, pk=None):
+        get_object_or_404(Collection, id=pk)
         with get_publisher() as client:
-            client.publish(input_message, routing_key="wiper")
+            client.publish({"collection_id": pk}, routing_key="wiper")
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    @csrf_exempt
     @action(detail=True)
     def metadata(self, request, pk=None):
         compiled_collection = get_object_or_404(Collection, id=pk)
