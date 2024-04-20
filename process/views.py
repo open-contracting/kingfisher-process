@@ -171,11 +171,11 @@ class CollectionViewSet(viewsets.ViewSet):
             200: {
                 "type": "object",
                 "properties": {
-                    "ocid_prefix": {},
-                    "published_from": {},
-                    "published_to": {},
-                    "license": {},
-                    "publication_policy": {},
+                    "ocid_prefix": {"type": "string"},
+                    "published_from": {"type": "string"},
+                    "published_to": {"type": "string"},
+                    "license": {"type": "string"},
+                    "publication_policy": {"type": "string"},
                 },
             }
         }
