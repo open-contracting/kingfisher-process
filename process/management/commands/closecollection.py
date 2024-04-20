@@ -12,7 +12,7 @@ routing_key = "collection_closed"
 
 
 class Command(CollectionCommand):
-    help = w(t("Close an open root collection and its upgraded child collection, if any"))
+    help = w(t("Close an open root collection and its derived collections, if any"))
 
     def handle_collection(self, collection, *args, **options):
         if collection.store_end_at:

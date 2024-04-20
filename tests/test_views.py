@@ -109,10 +109,10 @@ class CollectionViewTests(APITestCase):
         self.assertEqual(response.status_code, 202)
 
     def test_retrieve_404(self):
-        response = self.client.get("/api/tree/2/")
+        response = self.client.get(f"{base_url}/2/tree/")
         self.assertEqual(response.status_code, 404)
 
     def test_retrieve_ok(self):
-        response = self.client.get("/api/tree/1/")
+        response = self.client.get(f"{base_url}/1/tree/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)

@@ -4,9 +4,9 @@ from django.db import connection, transaction
 from django.db.models.functions import Now
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
 from core import settings
@@ -23,6 +23,12 @@ def dictfetchone(cursor):
         columns = [col[0] for col in cursor.description]
         return dict(zip(columns, row))
     return {}
+
+
+class TreeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = "__all__"
 
 
 class CreateCollectionSerializer(serializers.Serializer):
@@ -55,7 +61,23 @@ class CloseCollectionSerializer(serializers.Serializer):
 
 
 class CollectionViewSet(viewsets.ViewSet):
+    @extend_schema(
+        request=CreateCollectionSerializer,
+        responses={
+            201: {
+                "type": "object",
+                "properties": {
+                    "collection_id": {"type": "integer"},
+                    "upgraded_collection_id": {"type": "integer"},
+                    "compiled_collection_id": {"type": "integer"},
+                },
+            },
+        },
+    )
     def create(self, request):
+        """
+        Create an original collection and any derived collections.
+        """
         serializer = CreateCollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -84,8 +106,12 @@ class CollectionViewSet(viewsets.ViewSet):
 
         return Response(result)
 
-    @action(methods=["post"], detail=True)
+    @extend_schema(request=CloseCollectionSerializer, responses={202: None})
+    @action(detail=True, methods=["post"])
     def close(self, request, pk=None):
+        """
+        Publish a message to RabbitMQ to close a root collection and its derived collections, if any.
+        """
         serializer = CloseCollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -130,14 +156,35 @@ class CollectionViewSet(viewsets.ViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
+    @extend_schema(responses={202: None})
     def destroy(self, request, pk=None):
+        """
+        Publish a message to RabbitMQ to wipe the dataset.
+        """
         with get_publisher() as client:
             client.publish({"collection_id": pk}, routing_key="wiper")
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
+    @extend_schema(
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "ocid_prefix": {},
+                    "published_from": {},
+                    "published_to": {},
+                    "license": {},
+                    "publication_policy": {},
+                },
+            }
+        }
+    )
     @action(detail=True)
     def metadata(self, request, pk=None):
+        """
+        Return the compiled collection's metadata.
+        """
         compiled_collection = get_object_or_404(Collection, id=pk)
         root_collection = compiled_collection.get_root_parent()
 
@@ -169,8 +216,8 @@ class CollectionViewSet(viewsets.ViewSet):
             cursor.execute(
                 """\
                 SELECT
-                    data ->> 'publicationPolicy' AS publication_policy,
-                    data ->> 'license' AS license
+                    data ->> 'license' AS license,
+                    data ->> 'publicationPolicy' AS publication_policy
                 FROM
                     package_data
                     LEFT JOIN record ON package_data.id = record.package_data_id
@@ -185,20 +232,14 @@ class CollectionViewSet(viewsets.ViewSet):
 
         return Response(metadata)
 
-
-class TreeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Collection
-        fields = "__all__"
-
-
-class TreeViewSet(viewsets.ViewSetMixin, RetrieveAPIView):
-    queryset = Collection.objects.filter(parent__isnull=True)
-    serializer_class = TreeSerializer
-
-    def retrieve(self, request, pk=None):
+    @extend_schema(responses=TreeSerializer(many=True))
+    @action(detail=True)
+    def tree(self, request, pk=None):
+        """
+        Return the original collection and its derived collections, if any.
+        """
         result = Collection.objects.raw(
-            """
+            """\
             WITH RECURSIVE tree(id, parent, root, deep) AS (
                 SELECT c.id, c.transform_from_collection_id AS parent, id AS root, 1 AS deep
                 FROM collection c

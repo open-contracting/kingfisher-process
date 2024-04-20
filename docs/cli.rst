@@ -42,7 +42,7 @@ Load data into an **open** root collection, asynchronously.
 closecollection
 ~~~~~~~~~~~~~~~
 
-Close an **open** root collection and its upgraded child collection, if any.
+Close an **open** root collection and its derived collections, if any.
 
 .. code-block:: bash
 

@@ -6,7 +6,6 @@ from process import views
 
 router = SimpleRouter()
 router.register(r"collections", views.CollectionViewSet, basename="collection")
-router.register(r"tree", views.TreeViewSet, basename="tree")
 
 urlpatterns = router.urls + [
     path("schema/", drfviews.SpectacularAPIView.as_view(), name="schema"),
