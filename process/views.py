@@ -18,21 +18,32 @@ logger = logging.getLogger(__name__)
 
 
 class CreateCollectionSerializer(serializers.Serializer):
-    source_id = serializers.CharField(help_text="The spider name from Kingfisher Collect")
-    data_version = serializers.CharField(help_text="The date when the collection's data was downloaded")
-    check = serializers.BooleanField(help_text="Whether to run validation checks or not", required=False)
-    compile = serializers.BooleanField(help_text="Whether to compile the collection's data or not", required=False)
-    upgrade = serializers.BooleanField(
-        help_text="Whether to upgrade the collection's data version or not", required=False
+    # Identification
+    source_id = serializers.CharField(
+        help_text="The source from which the files were retrieved (the name of the spider if sourced from Scrapy)"
     )
-    sample = serializers.BooleanField(help_text="Whether the collection contains only a sample", required=False)
-    job = serializers.CharField(help_text="The job id", required=False)
-    note = serializers.CharField(help_text="A note from the Kingfisher Collect crawl", required=False)
+    data_version = serializers.CharField(
+        help_text="The time at which the files were retrieved in 'YYYY-MM-DD HH:MM:SS' format"
+    )
+    sample = serializers.BooleanField(help_text="Whether the files represent a sample from the source", required=False)
+
+    # Steps
+    upgrade = serializers.BooleanField(
+        help_text="Whether to upgrade the collection to the latest OCDS version", required=False
+    )
+    compile = serializers.BooleanField(
+        help_text="Whether to create compiled releases from the collection", required=False
+    )
+    check = serializers.BooleanField(help_text="Whether to run structural checks on the collection", required=False)
+
+    # Other
+    job = serializers.CharField(help_text="The Scrapyd job ID of the Kingfisher Collect crawl", required=False)
+    note = serializers.CharField(help_text="A note to add to the collection", required=False)
 
 
 class CloseCollectionSerializer(serializers.Serializer):
-    stats = serializers.JSONField(help_text="The statistics about the collection crawl", required=False)
-    reason = serializers.CharField(help_text="The reason the crawl was finished", required=False)
+    reason = serializers.CharField(help_text="The reason why the spider was closed", required=False)
+    stats = serializers.JSONField(help_text="The crawl statistics", required=False)
 
 
 class CollectionViewSet(viewsets.ViewSet):
@@ -41,7 +52,7 @@ class CollectionViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
 
         if not settings.ENABLE_CHECKER and serializer.data.get("check"):
-            logger.error("Checker is disabled in settings - see ENABLE_CHECKER value.")
+            logger.error("Checker is disabled. Set the ENABLE_CHECKER environment variable to enable.")
 
         collection, upgraded_collection, compiled_collection = create_collections(
             # Identification
