@@ -57,10 +57,12 @@ class CreateCollectionSerializer(serializers.Serializer):
 
 class CloseCollectionSerializer(serializers.Serializer):
     reason = serializers.CharField(help_text="The reason why the spider was closed", required=False)
-    stats = serializers.JSONField(help_text="The crawl statistics", required=False)
+    stats = serializers.DictField(help_text="The crawl statistics", required=False)
 
 
 class CollectionViewSet(viewsets.ViewSet):
+    lookup_value_converter = "int"
+
     @extend_schema(
         request=CreateCollectionSerializer,
         responses={
