@@ -17,6 +17,14 @@ from process.util import create_note, get_publisher
 logger = logging.getLogger(__name__)
 
 
+# https://docs.djangoproject.com/en/4.2/topics/db/sql/#executing-custom-sql-directly
+def dictfetchone(cursor):
+    if row := cursor.fetchone():
+        columns = [col[0] for col in cursor.description]
+        return dict(zip(columns, row))
+    return {}
+
+
 class CreateCollectionSerializer(serializers.Serializer):
     # Identification
     source_id = serializers.CharField(
@@ -132,48 +140,50 @@ class CollectionViewSet(viewsets.ViewSet):
     def metadata(self, request, pk=None):
         compiled_collection = get_object_or_404(Collection, id=pk)
         root_collection = compiled_collection.get_root_parent()
+
         if compiled_collection.transform_type != Collection.Transform.COMPILE_RELEASES:
             return Response("The collection id must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
-        meta_data = {}
+
+        metadata = {}
+
         with connection.cursor() as cursor:
-            # Data period
             cursor.execute(
                 """\
-            SELECT MAX(ocid) as ocid_prefix, MIN(data.data->>'date') as published_from,
-                   MAX(data.data->>'date') as published_to
-            FROM compiled_release
-            JOIN data ON compiled_release.data_id = data.id
-            WHERE
-                compiled_release.collection_id = %(collection_id)s
-                AND data.data ? 'date'
-                AND data.data->>'date' <> ''
-            """,
+                SELECT
+                    LEFT(MAX(ocid), 11) as ocid_prefix,
+                    MIN(data ->> 'date') as published_from,
+                    MAX(data ->> 'date') as published_to
+                FROM
+                    compiled_release
+                    JOIN data ON compiled_release.data_id = data.id
+                WHERE
+                    collection_id = %(collection_id)s
+                    AND data ? 'date'
+                    AND data ->> 'date' IS NOT NULL
+                    AND data ->> 'date' <> ''
+                """,
                 {"collection_id": pk},
             )
-            compiled_release_metadata = dict(zip(["ocid_prefix", "published_from", "published_to"], cursor.fetchone()))
-            if compiled_release_metadata["ocid_prefix"]:
-                compiled_release_metadata["ocid_prefix"] = compiled_release_metadata["ocid_prefix"][:11]
+            metadata.update(dictfetchone(cursor))
 
-            meta_data.update(compiled_release_metadata)
-
-            # Publication policy and license
             cursor.execute(
                 """\
-                SELECT DATA->>'publicationPolicy' AS publication_policy,
-                              DATA->>'license' AS license
-                FROM package_data
-                LEFT JOIN record r ON package_data.id = r.package_data_id
-                AND r.collection_id = %(collection_id)s
-                LEFT JOIN release r2 ON package_data.id = r2.package_data_id
-                AND r2.collection_id = %(collection_id)s
+                SELECT
+                    data ->> 'publicationPolicy' AS publication_policy,
+                    data ->> 'license' AS license
+                FROM
+                    package_data
+                    LEFT JOIN record ON package_data.id = record.package_data_id
+                        AND record.collection_id = %(collection_id)s
+                    LEFT JOIN release ON package_data.id = release.package_data_id
+                        AND release.collection_id = %(collection_id)s
                 LIMIT 1
             """,
                 {"collection_id": root_collection.id},
             )
+            metadata.update(dictfetchone(cursor))
 
-            meta_data.update(dict(zip(["publication_policy", "license"], cursor.fetchone())))
-
-            return Response(meta_data)
+        return Response(metadata)
 
 
 class TreeSerializer(serializers.ModelSerializer):
