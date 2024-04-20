@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.db import connection, transaction
 from django.db.models.functions import Now
 from django.http.response import Http404
@@ -9,7 +10,6 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from core import settings
 from process.models import Collection, CollectionNote
 from process.processors.loader import create_collections
 from process.util import create_note, get_publisher
