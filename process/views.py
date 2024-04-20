@@ -51,7 +51,7 @@ class CreateCollectionSerializer(serializers.Serializer):
     check = serializers.BooleanField(help_text="Whether to run structural checks on the collection", required=False)
 
     # Other
-    job = serializers.CharField(help_text="The Scrapyd job ID of the Kingfisher Collect crawl", required=False)
+    job = serializers.CharField(help_text="The Scrapyd job ID of the Scrapy crawl", required=False)
     note = serializers.CharField(help_text="A note to add to the collection", required=False)
 
 
@@ -88,8 +88,8 @@ class CollectionViewSet(viewsets.ViewSet):
 
         collection, upgraded_collection, compiled_collection = create_collections(
             # Identification
-            serializer.data.get("source_id"),
-            serializer.data.get("data_version"),
+            serializer.data["source_id"],
+            serializer.data["data_version"],
             sample=serializer.data.get("sample", False),
             # Steps
             upgrade=serializer.data.get("upgrade", False),
@@ -118,11 +118,7 @@ class CollectionViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            try:
-                collection = Collection.objects.select_for_update().get(pk=pk)
-            except Collection.DoesNotExist:
-                raise Http404
-
+            collection = get_object_or_404(Collection, pk=pk)
             upgraded_collection = collection.get_upgraded_collection()
 
             expected_files_count = serializer.data.get("stats", {}).get("kingfisher_process_expected_files_count", 0)
@@ -187,11 +183,11 @@ class CollectionViewSet(viewsets.ViewSet):
         """
         Return the compiled collection's metadata.
         """
-        compiled_collection = get_object_or_404(Collection, id=pk)
-        root_collection = compiled_collection.get_root_parent()
+        compiled_collection = get_object_or_404(Collection, pk=pk)
+        collection = compiled_collection.get_root_parent()
 
         if compiled_collection.transform_type != Collection.Transform.COMPILE_RELEASES:
-            return Response("The collection id must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
+            return Response("The collection must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
 
         metadata = {}
 
@@ -199,9 +195,9 @@ class CollectionViewSet(viewsets.ViewSet):
             cursor.execute(
                 """\
                 SELECT
-                    LEFT(MAX(ocid), 11) as ocid_prefix,
-                    MIN(data ->> 'date') as published_from,
-                    MAX(data ->> 'date') as published_to
+                    LEFT(MAX(ocid), 11) AS ocid_prefix,
+                    MIN(data ->> 'date') AS published_from,
+                    MAX(data ->> 'date') AS published_to
                 FROM
                     compiled_release
                     JOIN data ON compiled_release.data_id = data.id
@@ -228,7 +224,7 @@ class CollectionViewSet(viewsets.ViewSet):
                         AND release.collection_id = %(collection_id)s
                 LIMIT 1
             """,
-                {"collection_id": root_collection.id},
+                {"collection_id": collection.id},
             )
             metadata.update(dictfetchone(cursor))
 
@@ -242,22 +238,42 @@ class CollectionViewSet(viewsets.ViewSet):
         """
         result = Collection.objects.raw(
             """\
-            WITH RECURSIVE tree(id, parent, root, deep) AS (
-                SELECT c.id, c.transform_from_collection_id AS parent, id AS root, 1 AS deep
-                FROM collection c
-                WHERE c.transform_from_collection_id IS NULL
-            UNION ALL
-                SELECT c.id, c.transform_from_collection_id, t.root, t.deep + 1
-                FROM collection c, tree t
-                WHERE c.transform_from_collection_id = t.id
+            WITH RECURSIVE tree (
+                id,
+                transform_from_collection_id,
+                root,
+                deep
+            ) AS (
+                SELECT
+                    collection.id,
+                    collection.transform_from_collection_id,
+                    id AS root,
+                    1 AS deep
+                FROM
+                    collection
+                WHERE
+                    collection.transform_from_collection_id IS NULL
+                UNION ALL
+                SELECT
+                    collection.id,
+                    collection.transform_from_collection_id,
+                    tree.root,
+                    tree.deep + 1
+                FROM
+                    collection
+                    JOIN tree ON collection.transform_from_collection_id = tree.id
             )
-            SELECT c.*
-            FROM tree t
-            JOIN collection c on (t.id = c.id)
-            WHERE t.root = %s
-            ORDER BY deep ASC;
+            SELECT
+                collection.*
+            FROM
+                tree
+                JOIN collection ON tree.id = collection.id
+            WHERE
+                tree.root = %(collection_id)s
+            ORDER BY
+                deep ASC
             """,
-            [pk],
+            {"collection_id": pk},
         )
 
         if not result:
