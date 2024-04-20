@@ -80,50 +80,45 @@ class CollectionViewSet(viewsets.ViewSet):
     def close(self, request, pk=None):
         serializer = CloseCollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        get_object_or_404(Collection, id=pk)
+
         with transaction.atomic():
-            collection = Collection.objects.select_for_update().get(pk=pk)
-            if serializer.data.get("stats"):
-                # this value is used later on to detect, whether all collection has been processed yet
-                collection.expected_files_count = serializer.data["stats"].get(
-                    "kingfisher_process_expected_files_count", 0
-                )
-            collection.store_end_at = Now()
-            collection.save(update_fields=["expected_files_count", "store_end_at"])
+            try:
+                collection = Collection.objects.select_for_update().get(pk=pk)
+            except Collection.DoesNotExist:
+                raise Http404
 
             upgraded_collection = collection.get_upgraded_collection()
+
+            expected_files_count = serializer.data.get("stats", {}).get("kingfisher_process_expected_files_count", 0)
+
+            collection.expected_files_count = expected_files_count
+            collection.store_end_at = Now()
+            collection.save(update_fields=["expected_files_count", "store_end_at"])
             if upgraded_collection:
-                upgraded_collection.expected_files_count = collection.expected_files_count
+                upgraded_collection.expected_files_count = expected_files_count
                 upgraded_collection.store_end_at = Now()
                 upgraded_collection.save(update_fields=["expected_files_count", "store_end_at"])
 
             if serializer.data.get("reason"):
-                create_note(collection, CollectionNote.Level.INFO, f"Spider close reason: {serializer.data['reason']}")
+                note = f"Spider close reason: {serializer.data['reason']}"
+
+                create_note(collection, CollectionNote.Level.INFO, note)
                 if upgraded_collection:
-                    create_note(
-                        upgraded_collection,
-                        CollectionNote.Level.INFO,
-                        f"Spider close reason: {serializer.data['reason']}",
-                    )
+                    create_note(upgraded_collection, CollectionNote.Level.INFO, note)
 
             if serializer.data.get("stats"):
-                create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=serializer.data["stats"])
+                stats = serializer.data["stats"]
+
+                create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=stats)
                 if upgraded_collection:
-                    create_note(
-                        upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=serializer.data["stats"]
-                    )
+                    create_note(upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=stats)
 
         with get_publisher() as client:
-            message = {"collection_id": collection.pk}
-            client.publish(message, routing_key="collection_closed")
-
+            client.publish({"collection_id": collection.pk}, routing_key="collection_closed")
             if upgraded_collection:
-                message = {"collection_id": upgraded_collection.pk}
-                client.publish(message, routing_key="collection_closed")
-
+                client.publish({"collection_id": upgraded_collection.pk}, routing_key="collection_closed")
             if compiled_collection := collection.get_compiled_collection():
-                message = {"collection_id": compiled_collection.pk}
-                client.publish(message, routing_key="collection_closed")
+                client.publish({"collection_id": compiled_collection.pk}, routing_key="collection_closed")
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
