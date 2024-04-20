@@ -20,10 +20,10 @@ Load data into a collection, asynchronously.
    ./manage.py load [OPTIONS] PATH [PATH ...]
 
 -s SOURCE, --source SOURCE
-                      the source from which the files were retrieved, if loading into a new collection (please append "_local" if the data was not collected by Kingfisher Collect)
--t TIME, --time TIME  the time at which the files were retrieved, if loading into a new collection, in "YYYY-MM-DD HH:MM:SS" format (defaults to the earliest file modification time)
---sample              whether the files represent a sample from the source, if loading into a new collection
--n NOTE, --note NOTE  add a note to the collection (required for a new collection)
+                      the source from which the files were retrieved (please append '_local' if the data was not collected by Kingfisher Collect)
+-t TIME, --time TIME  the time at which the files were retrieved in 'YYYY-MM-DD HH:MM:SS' format (defaults to the earliest file modification time)
+--sample              whether the files represent a sample from the source
+-n NOTE, --note NOTE  add a note to the collection
 -f, --force           use the provided --source value, regardless of whether it is recognized
 -u, --upgrade         upgrade collection to latest version
 -c, --compile         compile collection
