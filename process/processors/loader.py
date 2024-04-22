@@ -59,8 +59,8 @@ def create_collections(
     compile=False,
     check=False,
     # Other
-    scrapyd_job=None,
-    note=None,
+    scrapyd_job="",
+    note="",
     force=False,
 ):
     """
@@ -72,7 +72,7 @@ def create_collections(
     :param boolean upgrade: whether to plan collection upgrade
     :param boolean compile: whether to plan collection compile
     :param boolean check: whether to plan schema-based checks
-    :param dict scrapyd_job: Scrapyd job ID
+    :param str scrapyd_job: Scrapyd job ID
     :param str note: text description
     :param boolean force: skip validation of the source_id against the Scrapyd project
     :returns: created main collection, upgraded collection, compiled_collection

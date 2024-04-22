@@ -97,7 +97,7 @@ class CollectionViewSet(viewsets.ViewSet):
             check=serializer.data.get("check", False),
             # Other
             scrapyd_job=serializer.data.get("job", ""),
-            note=serializer.data.get("note"),
+            note=serializer.data.get("note", ""),
         )
 
         result = {"collection_id": collection.pk}
