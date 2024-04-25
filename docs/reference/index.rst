@@ -4,13 +4,14 @@ Reference
 API
 ---
 
-To view the API's documentation, :ref:`run the server<development>` and open http://127.0.0.1:8000/api/swagger-ui/.
+.. toctree::
 
-The API is used by `Kingfisher Collect <https://kingfisher-collect.readthedocs.io/en/latest/kingfisher_process.html>`__ and the `Data Registry <https://github.com/open-contracting/data-registry>`__.
+   redoc
+   swagger-ui
 
-.. warning::
+To view the API's documentation in development, :ref:`run the server<development>` and open http://127.0.0.1:8000/api/swagger-ui/.
 
-   The ``create_collection``, ``close_collection`` and ``wipe_collection`` endpoints are not documented yet.
+The API is used for managing collections (see `Kingfisher Collect <https://kingfisher-collect.readthedocs.io/en/latest/kingfisher_process.html>`__ and ``KINGFISHER_PROCESS_URL`` in the `Data Registry <https://ocp-data-registry.readthedocs.io/en/latest/reference/>`__).
 
 .. _environment-variables:
 

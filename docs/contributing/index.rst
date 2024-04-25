@@ -70,6 +70,15 @@ You can now:
 
       ./manage.py test
 
+API documentation
+~~~~~~~~~~~~~~~~~
+
+If you edit ``views.py``, regenerate the OpenAPI document by running the server and:
+
+.. code-block:: bash
+
+   curl http://127.0.0.1:8000/api/schema/ -o docs/_static/openapi.yaml
+
 Database concurrency
 ~~~~~~~~~~~~~~~~~~~~
 

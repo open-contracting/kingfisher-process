@@ -35,7 +35,11 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"
-html_static_path = []
+html_static_path = ["_static"]
+html_additional_pages = {
+    "reference/redoc": "redoc.html",
+    "reference/swagger-ui": "swagger-ui.html",
+}
 
 # -- Extension configuration -------------------------------------------------
 
