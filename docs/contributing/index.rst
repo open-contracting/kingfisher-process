@@ -10,7 +10,6 @@ Setup
 
 #. Install PostgreSQL and RabbitMQ
 #. Create a Python 3.11 virtual environment
-
 #. Install development dependencies:
 
    .. code-block:: bash
@@ -24,7 +23,7 @@ Setup
 
       pre-commit install
 
-#. Create the database:
+#. Create the database (your user should have access without requiring a password):
 
    .. code-block:: bash
 
