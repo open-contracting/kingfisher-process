@@ -1,8 +1,8 @@
 dj-database-url
 django-cors-headers
-django-filter
 Django<5
 djangorestframework
+drf-spectacular
 gunicorn[setproctitle]
 ijson
 ocdsextensionregistry
@@ -12,5 +12,4 @@ psycopg2
 requests
 sentry-sdk
 simplejson
-uritemplate
 yapw[perf]

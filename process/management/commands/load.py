@@ -21,8 +21,7 @@ routing_key = "loader"
 class Command(BaseCommand):
     help = w(
         t(
-            "Load data into a collection, asynchronously\n\n"
-            "To load data into a new collection, set at least --source and --note.\n\n"
+            "Load data into a new collection, asynchronously\n\n"
             "--time defaults to the earliest file modification time. If files were copied into place, set --time "
             "explicitly.\n\n"
             'The collection is automatically "closed" to new files. Use --keep-open to keep the collection open for '
@@ -43,53 +42,40 @@ class Command(BaseCommand):
         parser.add_argument(
             "-s",
             "--source",
-            help=_(
-                "the source from which the files were retrieved, if loading into "
-                'a new collection (please append "_local" if the data was not '
-                "collected by Kingfisher Collect)"
-            ),
+            required=True,
+            help=_("the source from which the files were retrieved (append '_local' if not sourced from Scrapy)"),
         )
         parser.add_argument(
             "-t",
             "--time",
             help=_(
-                "the time at which the files were retrieved, if loading into a new "
-                'collection, in "YYYY-MM-DD HH:MM:SS" format (defaults to the '
-                "earliest file modification time)"
+                "the time at which the files were retrieved in 'YYYY-MM-DD HH:MM:SS' format "
+                "(defaults to the earliest file modification time)"
             ),
         )
         parser.add_argument(
-            "--sample",
-            help=_("whether the files represent a sample from the source, if loading into a new collection"),
-            action="store_true",
+            "--sample", action="store_true", help=_("whether the files represent a sample from the source")
         )
-        parser.add_argument("-n", "--note", help=_("add a note to the collection (required for a new collection)"))
+        parser.add_argument("-n", "--note", required=True, help=_("a note to add to the collection"))
         parser.add_argument(
             "-f",
             "--force",
-            help=_("use the provided --source value, regardless of whether it is recognized"),
             action="store_true",
+            help=_("use the provided --source value, regardless of whether it is recognized"),
         )
-        parser.add_argument("-u", "--upgrade", help=_("upgrade collection to latest version"), action="store_true")
-        parser.add_argument("-c", "--compile", help=_("compile collection"), action="store_true")
-        parser.add_argument("-e", "--check", help=_("check collection"), action="store_true")
         parser.add_argument(
-            "-k", "--keep-open", help=_("keep collection open for future file additions"), action="store_true"
+            "-u", "--upgrade", action="store_true", help=_("upgrade the collection to the latest OCDS version")
+        )
+        parser.add_argument(
+            "-c", "--compile", action="store_true", help=_("create compiled releases from the collection")
+        )
+        parser.add_argument("-e", "--check", action="store_true", help=_("run structural checks on the collection"))
+        parser.add_argument(
+            "-k", "--keep-open", action="store_true", help=_("keep collection open for future file additions")
         )
 
     def handle(self, *args, **options):
         self.stderr.style_func = None
-
-        if not options["source"]:
-            raise CommandError(
-                _(
-                    "Please indicate collection source (using --source and --note and, optionally, "
-                    "--time and --sample)"
-                )
-            )
-
-        if options["source"] and not options["note"]:
-            raise CommandError(_("You must add a note (using --note) when loading into a new collection"))
 
         if not configured() and not options["force"]:
             self.stderr.write(

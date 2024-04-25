@@ -12,7 +12,7 @@ routing_key = "collection_closed"
 
 
 class Command(CollectionCommand):
-    help = w(t("Close an open root collection and its upgraded child collection, if any"))
+    help = w(t("Close an open root collection and its derived collections, if any"))
 
     def handle_collection(self, collection, *args, **options):
         if collection.store_end_at:
@@ -38,15 +38,10 @@ class Command(CollectionCommand):
                 upgraded_collection.save(update_fields=["store_end_at"])
 
         with get_publisher() as client:
-            message = {"collection_id": collection.pk}
-            client.publish(message, routing_key=routing_key)
-
+            client.publish({"collection_id": collection.pk}, routing_key=routing_key)
             if upgraded_collection:
-                message = {"collection_id": upgraded_collection.pk}
-                client.publish(message, routing_key=routing_key)
-
+                client.publish({"collection_id": upgraded_collection.pk}, routing_key=routing_key)
             if compiled_collection := collection.get_compiled_collection():
-                message = {"collection_id": compiled_collection.pk}
-                client.publish(message, routing_key=routing_key)
+                client.publish({"collection_id": compiled_collection.pk}, routing_key=routing_key)
 
         self.stderr.write(self.style.SUCCESS("done"))

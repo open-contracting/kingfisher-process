@@ -139,5 +139,6 @@ def _collection_is_empty(collection):
     # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
     is_empty = collection.expected_files_count == 0
     if is_empty:
-        assert collection.collectionfile_set.count() == 0
+        count = collection.collectionfile_set.count()
+        assert count == 0, f"{count} is not 0"
     return is_empty

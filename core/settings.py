@@ -48,10 +48,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_filters",
     "corsheaders",
-    "process.apps.ProcessConfig",
+    "drf_spectacular",
     "rest_framework",
+    "process.apps.ProcessConfig",
 ]
 
 MIDDLEWARE = [
@@ -221,16 +221,11 @@ CORS_URLS_REGEX = r"^/api/.*$"
 CORS_EXPOSE_HEADERS = ["Content-Disposition"]
 
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions, or allow read-only access for unauthenticated users.
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"],
-    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 
 # Project configuration
-
-# An infix for API routes.
-API_VERSION = "v1"
 
 # The version of OCDS with which to initialize the ProfileBuilder.
 COMPILER_OCDS_VERSION = "1__1__5"

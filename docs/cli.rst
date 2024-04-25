@@ -20,14 +20,14 @@ Load data into a collection, asynchronously.
    ./manage.py load [OPTIONS] PATH [PATH ...]
 
 -s SOURCE, --source SOURCE
-                      the source from which the files were retrieved, if loading into a new collection (please append "_local" if the data was not collected by Kingfisher Collect)
--t TIME, --time TIME  the time at which the files were retrieved, if loading into a new collection, in "YYYY-MM-DD HH:MM:SS" format (defaults to the earliest file modification time)
---sample              whether the files represent a sample from the source, if loading into a new collection
--n NOTE, --note NOTE  add a note to the collection (required for a new collection)
+                      the source from which the files were retrieved (append '_local' if not sourced from Scrapy)
+-t TIME, --time TIME  the time at which the files were retrieved in 'YYYY-MM-DD HH:MM:SS' format (defaults to the earliest file modification time)
+--sample              whether the files represent a sample from the source
+-n NOTE, --note NOTE  a note to add to the collection
 -f, --force           use the provided --source value, regardless of whether it is recognized
--u, --upgrade         upgrade collection to latest version
--c, --compile         compile collection
--e, --check           check collection
+-u, --upgrade         upgrade the collection to the latest OCDS version
+-c, --compile         create compiled releases from the collection
+-e, --check           run structural checks on the collection
 -k, --keep-open       keep collection open for future file additions
 
 addfiles
@@ -42,7 +42,7 @@ Load data into an **open** root collection, asynchronously.
 closecollection
 ~~~~~~~~~~~~~~~
 
-Close an **open** root collection and its upgraded child collection, if any.
+Close an **open** root collection and its derived collections, if any.
 
 .. code-block:: bash
 

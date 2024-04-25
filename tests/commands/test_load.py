@@ -21,14 +21,13 @@ class LoadTests(TransactionTestCase):
         with self.assertRaises(CommandError) as e:
             call_command("load", path("file.json"))
 
-        message = "Please indicate collection source (using --source and --note and, optionally, --time and --sample)"
-        self.assertEqual(str(e.exception), message)
+        self.assertEqual(str(e.exception), "Error: the following arguments are required: -s/--source, -n/--note")
 
     def test_missing_note(self):
         with self.assertRaises(CommandError) as e:
             call_command("load", "--source", "france", path("file.json"))
 
-        self.assertEqual(str(e.exception), "You must add a note (using --note) when loading into a new collection")
+        self.assertEqual(str(e.exception), "Error: the following arguments are required: -n/--note")
 
     def test_collection_deleted_at(self):
         source = collection(deleted_at="2001-01-01 00:00:00")
