@@ -73,6 +73,10 @@ You can now:
 API documentation
 ~~~~~~~~~~~~~~~~~
 
+.. seealso::
+
+   :ref:`api`
+
 If you edit ``views.py``, regenerate the OpenAPI document by running the server and:
 
 .. code-block:: bash
