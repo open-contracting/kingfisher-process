@@ -10,7 +10,6 @@ Setup
 
 #. Install PostgreSQL and RabbitMQ
 #. Create a Python 3.11 virtual environment
-
 #. Install development dependencies:
 
    .. code-block:: bash
@@ -24,7 +23,7 @@ Setup
 
       pre-commit install
 
-#. Create the database:
+#. Create the database (your user should have access without requiring a password):
 
    .. code-block:: bash
 
@@ -70,6 +69,15 @@ You can now:
    .. code-block:: bash
 
       ./manage.py test
+
+API documentation
+~~~~~~~~~~~~~~~~~
+
+If you edit ``views.py``, regenerate the OpenAPI document by running the server and:
+
+.. code-block:: bash
+
+   curl http://127.0.0.1:8000/api/schema/ -o docs/_static/openapi.yaml
 
 Database concurrency
 ~~~~~~~~~~~~~~~~~~~~
