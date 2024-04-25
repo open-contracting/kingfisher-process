@@ -30,7 +30,7 @@ SCRAPYD_URL
 SCRAPYD_PROJECT
   The project within Scrapyd
 KINGFISHER_COLLECT_FILES_STORE
-  The directory from which to read the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher Process share a filesystem, this will be the same value for both services.
+  The directory from which to **read** the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher Process share a filesystem, this will be the same value for both services.
 ENABLE_CHECKER
   Whether to enable the ``checker`` worker
 
