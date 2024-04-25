@@ -38,6 +38,6 @@ def callback(client_state, channel, method, properties, input_message):
     # 2. https://code.djangoproject.com/ticket/21961
     connections["default"].ops.bulk_batch_size = types.MethodType(bulk_batch_size, connections["default"].ops)
 
-    Collection.objects.get(pk=collection_id).delete()
+    Collection.objects.filter(pk=collection_id).delete()
 
     ack(client_state, channel, method.delivery_tag)
