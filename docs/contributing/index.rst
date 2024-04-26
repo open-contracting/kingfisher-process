@@ -50,20 +50,6 @@ You can now:
 
       ./manage.py runserver
 
--  :ref:`Start workers<cli-workers>`
-
-   .. tip::
-
-      Set the ``LOG_LEVEL`` environment variable to ``DEBUG`` to see log messages about message processing. For example:
-
-      .. code-block:: bash
-
-         env LOG_LEVEL=DEBUG ./manage.py finisher
-
-   .. note::
-
-      Remember: `Consumers declare and bind queues, not publishers <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html#bindings>`__. Start each worker before publishing messages.
-
 -  Run tests:
 
    .. code-block:: bash

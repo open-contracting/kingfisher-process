@@ -82,6 +82,18 @@ Get the status of a root collection and its children.
 Workers
 -------
 
+.. note::
+
+   Remember: `Consumers declare and bind queues, not publishers <https://ocp-software-handbook.readthedocs.io/en/latest/services/rabbitmq.html#bindings>`__. Start each worker before publishing messages (for example, with the :ref:`cli-load` command).
+
+.. tip::
+
+   Set the ``LOG_LEVEL`` environment variable to ``DEBUG`` to see log messages about message processing. For example:
+
+   .. code-block:: bash
+
+      env LOG_LEVEL=DEBUG ./manage.py finisher
+
 api_loader
 ~~~~~~~~~~
 
