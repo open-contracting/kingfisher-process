@@ -12,7 +12,7 @@ Tables
 ------
 
 collection
-  A collection, like the files written to the crawl directory by Kingfisher Collect
+  A collection, like the collection of files written to a crawl directory by Kingfisher Collect
 collection_file
   A file containing a record package or release package, like from Kingfisher Collect
 collection_file_item
