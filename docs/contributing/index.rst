@@ -40,9 +40,7 @@ Setup
 Development
 -----------
 
-The default values in the settings.py file should be appropriate as-is. You can override them by setting :ref:`environment-variables`.
-
-You can now:
+The default values in the ``settings.py`` file should be appropriate as-is. You can override them by setting :ref:`environment-variables`.
 
 -  Run the server (API):
 
