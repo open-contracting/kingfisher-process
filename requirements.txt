@@ -61,7 +61,7 @@ et-xmlfile==1.1.0
     # via openpyxl
 flattentool==0.24.0
     # via libcove
-gunicorn[setproctitle]==20.1.0
+gunicorn[setproctitle]==22.0.0
     # via -r requirements_nongpl.txt
 idna==3.7
     # via
@@ -126,6 +126,10 @@ orjson==3.9.15
     #   libcoveocds
     #   ocdskit
     #   yapw
+packaging==24.0
+    # via
+    #   -r requirements_nongpl.txt
+    #   gunicorn
 persistent==5.1
     # via
     #   btrees
