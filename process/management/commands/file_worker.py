@@ -256,6 +256,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, upgrad
         if upgrade:
             with create_logger_note(collection_file.collection, "ocdskit"):
                 # upgrade_10_11() requires an OrderedDict. simplejson is used for native decimal support.
+                # This requirement can be removed: https://github.com/open-contracting/ocdskit/issues/164
                 release_or_record = upgrade_10_11(
                     json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
                 )
