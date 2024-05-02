@@ -200,6 +200,7 @@ def _get_data_key(data_type):
 def _read_package_data_from_file(filename, data_type):
     package = {}
 
+    # If the file is an array of packages, only the first package metadata is extracted.
     package_key = "item" if data_type["array"] else ""
     data_key = _get_data_key(data_type).removesuffix(".item")
 

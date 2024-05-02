@@ -30,6 +30,10 @@ Load data into a collection, asynchronously.
 -e, --check           run structural checks on the collection
 -k, --keep-open       keep collection open for future file additions
 
+.. note::
+
+   If the files are arrays of packages, only the first package's metadata is saved. In other words, it is assumed that all packages have the same metadata.
+
 addfiles
 ~~~~~~~~
 
@@ -121,7 +125,7 @@ checker
 
 Check collection files.
 
-Performs no checks if the collection's ``steps`` field excludes "check".
+Performs no work if the collection's ``steps`` field excludes "check".
 
 Errors if the ``ENABLE_CHECKER`` :ref:`environment variable<environment-variables>` is not set.
 
@@ -134,7 +138,7 @@ compiler
 
 Start compilation and route messages to the record or release compilers.
 
-Performs no checks if the collection's ``steps`` field excludes "compile".
+Performs no work if the collection's ``steps`` field excludes "compile".
 
 For a collection of release packages, starts compilation at most once if all collection files are loaded and the collection is closed.
 
