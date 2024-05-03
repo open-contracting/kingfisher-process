@@ -66,7 +66,7 @@ deletecollection
 
 Delete a collection and its ancestors.
 
-Rows in the ``package_data`` and ``data`` tables are not deleted.
+Rows in the ``package_data`` and ``data`` tables are not deleted. Use :ref:`cli-deleteorphan` instead.
 
 .. code-block:: bash
 
@@ -80,6 +80,17 @@ Get the status of a root collection and its children.
 .. code-block:: bash
 
    ./manage.py collectionstatus collection_id
+
+.. cli-deleteorphan:
+
+deleteorphan
+~~~~~~~~~~~~
+
+Delete rows from the data and package_data tables that relate to no collections.
+
+.. code-block:: bash
+
+   ./manage.py deleteorphan
 
 .. _cli-workers:
 
