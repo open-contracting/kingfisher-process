@@ -81,7 +81,7 @@ Get the status of a root collection and its children.
 
    ./manage.py collectionstatus collection_id
 
-.. cli-deleteorphan:
+.. _cli-deleteorphan:
 
 deleteorphan
 ~~~~~~~~~~~~
