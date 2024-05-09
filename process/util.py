@@ -156,11 +156,18 @@ def _delete_step_and_finish(name, finish=None, finish_args=(), **kwargs):
 
 @contextmanager
 def create_warnings_note(collection, category):
-    with warnings.catch_warnings(record=True, action="always", category=category) as w:
+    with warnings.catch_warnings(record=True, action="always", category=category) as wlist:
         yield
 
-        if note := [str(warning.message) for warning in w if issubclass(warning.category, category)]:
-            create_note(collection, CollectionNote.Level.WARNING, note)
+    note = []
+    for w in wlist:
+        if issubclass(w.category, category):
+            note.append(w.message)
+        else:
+            warnings.warn_explicit(w.message, w.category, w.filename, w.lineno, source=w.source)
+
+    if note:
+        create_note(collection, CollectionNote.Level.WARNING, note)
 
 
 @contextmanager
