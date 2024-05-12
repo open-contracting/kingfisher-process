@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from django.conf import settings
@@ -203,11 +204,10 @@ class CollectionViewSet(viewsets.ViewSet):
                     JOIN data ON compiled_release.data_id = data.id
                 WHERE
                     collection_id = %(collection_id)s
-                    AND data ? 'date'
-                    AND data ->> 'date' IS NOT NULL
-                    AND data ->> 'date' <> ''
+                    AND data ->> 'date' > '1970-01-01'
+                    AND data ->> 'date' <= %(today)s
                 """,
-                {"collection_id": pk},
+                {"collection_id": pk, "today": datetime.date.today()},
             )
             metadata.update(dictfetchone(cursor))
 
