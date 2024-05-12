@@ -207,7 +207,7 @@ class CollectionViewSet(viewsets.ViewSet):
                     AND data ->> 'date' > '1970-01-01'
                     AND data ->> 'date' <= %(today)s
                 """,
-                {"collection_id": pk, "today": datetime.date.today()},
+                {"collection_id": pk, "today": str(datetime.date.today())},
             )
             metadata.update(dictfetchone(cursor))
 
