@@ -162,7 +162,7 @@ def create_warnings_note(collection, category):
     note = []
     for w in wlist:
         if issubclass(w.category, category):
-            note.append(w.message)
+            note.append(str(w.message))
         else:
             warnings.warn_explicit(w.message, w.category, w.filename, w.lineno, source=w.source)
 
