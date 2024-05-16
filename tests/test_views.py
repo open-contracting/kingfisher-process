@@ -92,13 +92,13 @@ class CollectionViewTests(APITestCase):
             collection_id__in=[collection_id, upgraded_collection.id], note=f"Spider close reason: {data['reason']}"
         )
 
-        self.assertEqual(len(notes_reason), 2)
+        self.assertEqual(len(notes_reason), 1)
 
         notes_reason_stats = CollectionNote.objects.filter(
             collection_id__in=[collection_id, upgraded_collection.id], note="Spider stats", data=data["stats"]
         )
 
-        self.assertEqual(len(notes_reason_stats), 2)
+        self.assertEqual(len(notes_reason_stats), 1)
 
     def test_destroy_nonexistent(self):
         response = self.client.delete(f"{base_url}/100/")
