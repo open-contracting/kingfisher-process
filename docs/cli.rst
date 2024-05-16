@@ -111,6 +111,8 @@ Workers
 
       env LOG_LEVEL=DEBUG ./manage.py finisher
 
+.. _cli-api_loader:
+
 api_loader
 ~~~~~~~~~~
 
@@ -121,6 +123,8 @@ Consumes messages published by other software, like Kingfisher Collect.
 .. code-block:: bash
 
    ./manage.py api_loader
+
+.. _cli-file_worker:
 
 file_worker
 ~~~~~~~~~~~
@@ -157,6 +161,8 @@ For a collection of release packages, starts compilation at most once if all col
 
    ./manage.py compiler
 
+.. _cli-record_compiler:
+
 record_compiler
 ~~~~~~~~~~~~~~~
 
@@ -165,6 +171,8 @@ Create compiled releases from records.
 .. code-block:: bash
 
    ./manage.py record_compiler
+
+.. _cli-release_compiler:
 
 release_compiler
 ~~~~~~~~~~~~~~~~
