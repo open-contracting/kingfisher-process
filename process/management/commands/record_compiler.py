@@ -110,7 +110,7 @@ def compile_record(compiled_collection_id, ocid):
         create_note(
             collection,
             # Use INFO level if all releases are dated and linked.
-            CollectionNote.Level.INFO if linked == len(dated) == len(releases) else CollectionNote.Level.WARNING,
+            CollectionNote.Level.INFO if linked == len(dated) == len(releases) > 0 else CollectionNote.Level.WARNING,
             notes,
         )
         return save_compiled_release(compiled_release, collection, ocid)
