@@ -134,17 +134,11 @@ class CollectionViewSet(viewsets.ViewSet):
 
             if serializer.data.get("reason"):
                 note = f"Spider close reason: {serializer.data['reason']}"
-
                 create_note(collection, CollectionNote.Level.INFO, note)
-                if upgraded_collection:
-                    create_note(upgraded_collection, CollectionNote.Level.INFO, note)
 
             if serializer.data.get("stats"):
                 stats = serializer.data["stats"]
-
                 create_note(collection, CollectionNote.Level.INFO, "Spider stats", data=stats)
-                if upgraded_collection:
-                    create_note(upgraded_collection, CollectionNote.Level.INFO, "Spider stats", data=stats)
 
         with get_publisher() as client:
             client.publish({"collection_id": collection.pk}, routing_key="collection_closed")
