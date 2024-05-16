@@ -122,6 +122,7 @@ def process_file(collection_file):
 
     data_format = data_type["format"]
 
+    # https://github.com/open-contracting/kingfisher-collect/issues/1012
     if data_format in EMPTY_FORMATS:
         raise EmptyFormatError(f"Empty format '{data_format}' for file {collection_file}.")
     if data_format not in SUPPORTED_FORMATS:
