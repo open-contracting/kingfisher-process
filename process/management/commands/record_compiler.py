@@ -107,7 +107,12 @@ def compile_record(compiled_collection_id, ocid):
 
     if compiled_release := record.data.data.get("compiledRelease", []):
         notes.append("Its compiledRelease was used.")
-        create_note(collection, CollectionNote.Level.WARNING, notes)
+        create_note(
+            collection,
+            # Use INFO level if all releases are dated and linked.
+            CollectionNote.Level.INFO if linked == len(dated) == len(releases) else CollectionNote.Level.WARNING,
+            notes,
+        )
         return save_compiled_release(compiled_release, collection, ocid)
 
     if tagged:
@@ -115,12 +120,7 @@ def compile_record(compiled_collection_id, ocid):
             notes.append("Its first release tagged 'compiled' was used.")
         else:
             notes.append("Its only release tagged 'compiled' was used.")
-        create_note(
-            collection,
-            # Use INFO level if all releases are dated and linked.
-            CollectionNote.Level.INFO if linked == len(dated) == len(releases) else CollectionNote.Level.WARNING,
-            notes,
-        )
+        create_note(collection, CollectionNote.Level.WARNING, notes)
         return save_compiled_release(tagged[0], collection, ocid)
 
     notes.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
