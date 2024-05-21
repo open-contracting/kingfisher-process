@@ -159,7 +159,7 @@ referencing==0.34.0
     #   jsonschema-specifications
     #   libcove
     #   libcoveocds
-requests==2.31.0
+requests==2.32.0
     # via
     #   -r requirements_nongpl.txt
     #   libcove
