@@ -210,13 +210,29 @@ class CollectionViewSet(viewsets.ViewSet):
                 SELECT
                     data ->> 'license' AS license,
                     data ->> 'publicationPolicy' AS publication_policy
-                FROM
-                    package_data
-                    LEFT JOIN record ON package_data.id = record.package_data_id
-                        AND record.collection_id = %(collection_id)s
-                    LEFT JOIN release ON package_data.id = release.package_data_id
-                        AND release.collection_id = %(collection_id)s
-                LIMIT 1
+                FROM (
+                    (
+                        SELECT
+                            data
+                        FROM
+                            package_data
+                            JOIN record ON package_data_id = package_data.id
+                        WHERE
+                            collection_id = %(collection_id)s
+                        LIMIT 1
+                    )
+                    UNION ALL
+                    (
+                        SELECT
+                            data
+                        FROM
+                            package_data
+                            JOIN release ON package_data_id = package_data.id
+                        WHERE
+                            collection_id = %(collection_id)s
+                        LIMIT 1
+                    )
+                ) t
             """,
                 {"collection_id": collection.id},
             )
