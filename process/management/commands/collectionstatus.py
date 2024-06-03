@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from process.cli import CollectionCommand
 from process.management.commands.compiler import compilable
 from process.management.commands.finisher import completable
+from process.models import CollectionNote
 from process.util import wrap as w
 
 
@@ -31,6 +32,11 @@ class Command(CollectionCommand):
     def create_parser(self, prog_name, subcommand, **kwargs):
         return super().create_parser(prog_name, subcommand, formatter_class=RawDescriptionHelpFormatter, **kwargs)
 
+    def bool_to_str(self, boolean):
+        if boolean:
+            return self.style.SUCCESS("yes")
+        return self.style.WARNING("no (or not yet)")
+
     def handle_collection(self, collection, *args, **options):
         if collection.parent_id:
             raise CommandError(
@@ -46,7 +52,7 @@ class Command(CollectionCommand):
             if collection.data_type["concatenated"]:
                 data_type = f"concatenated JSON, starting with {data_type}"
         else:
-            data_type = "to be determined"
+            data_type = self.style.WARNING("to be determined")
 
         # Fields
         self.stdout.write(f"steps: {', '.join(collection.steps)}")
@@ -63,9 +69,20 @@ class Command(CollectionCommand):
 
         # Logic
         if not compiled_collection or not compiled_collection.compilation_started:
-            self.stdout.write(f"compilable: {compilable(collection)}")
+            self.stdout.write(f"compilable: {self.bool_to_str(compilable(collection))}")
         if not collection.completed_at:
-            self.stdout.write(f"completable: {completable(collection)}")
+            self.stdout.write(f"completable: {self.bool_to_str(completable(collection))}")
+
+        # Notes
+        notes = (
+            collection.collectionnote_set.filter(code=CollectionNote.Level.ERROR)
+            .exclude(data__has_key="http_error")  # Exclude "Couldn't download {url}"
+            .all()
+        )
+        if notes:
+            self.stdout.write(self.style.ERROR("Error-level collection notes:"))
+            for note in notes:
+                self.stdout.write(self.style.ERROR(f"- {note.note} ({note.data})"))
 
         if compiled_collection:
             self.stdout.write("\nCompiled collection")
@@ -81,4 +98,4 @@ class Command(CollectionCommand):
 
             # Logic
             if not compiled_collection.completed_at:
-                self.stdout.write(f"completable: {completable(compiled_collection)}")
+                self.stdout.write(f"completable: {self.bool_to_str(completable(compiled_collection))}")
