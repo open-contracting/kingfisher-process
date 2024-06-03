@@ -33,9 +33,24 @@ class Command(CollectionCommand):
         return super().create_parser(prog_name, subcommand, formatter_class=RawDescriptionHelpFormatter, **kwargs)
 
     def bool_to_str(self, boolean):
-        if boolean:
-            return self.style.SUCCESS("yes")
-        return self.style.WARNING("no (or not yet)")
+        if not boolean:
+            return self.style.WARNING("no (or not yet)")
+        return "yes"
+
+    def warn_none(self, value):
+        if value is None:
+            return self.style.WARNING(str(value))
+        return value
+
+    def warn_zero(self, value):
+        if value == 0:
+            return self.style.WARNING(str(value))
+        return value
+
+    def warn_nonzero(self, value):
+        if value > 0:
+            return self.style.WARNING(str(value))
+        return value
 
     def handle_collection(self, collection, *args, **options):
         if collection.parent_id:
@@ -57,13 +72,13 @@ class Command(CollectionCommand):
         # Fields
         self.stdout.write(f"steps: {', '.join(collection.steps)}")
         self.stdout.write(f"data_type: {data_type}")
-        self.stdout.write(f"store_end_at: {collection.store_end_at}")
-        self.stdout.write(f"completed_at: {collection.completed_at}")
+        self.stdout.write(f"store_end_at: {self.warn_none(collection.store_end_at)}")
+        self.stdout.write(f"completed_at: {self.warn_none(collection.completed_at)}")
         self.stdout.write(f"expected_files_count: {collection.expected_files_count}")
 
         # Relations
-        self.stdout.write(f"collection_files: {collection.collectionfile_set.count()}")
-        self.stdout.write(f"processing_steps: {collection.processing_steps.count()}")
+        self.stdout.write(f"collection_files: {self.warn_zero(collection.collectionfile_set.count())}")
+        self.stdout.write(f"processing_steps: {self.warn_nonzero(collection.processing_steps.count())}")
 
         compiled_collection = collection.get_compiled_collection()
 
@@ -80,7 +95,7 @@ class Command(CollectionCommand):
             .all()
         )
         if notes:
-            self.stdout.write(self.style.ERROR("Error-level collection notes:"))
+            self.stdout.write("Error-level collection notes:")
             for note in notes:
                 self.stdout.write(self.style.ERROR(f"- {note.note} ({note.data})"))
 
@@ -89,12 +104,12 @@ class Command(CollectionCommand):
 
             # Fields
             self.stdout.write(f"compilation_started: {compiled_collection.compilation_started}")
-            self.stdout.write(f"store_end_at: {compiled_collection.store_end_at}")
-            self.stdout.write(f"completed_at: {compiled_collection.completed_at}")
+            self.stdout.write(f"store_end_at: {self.warn_none(compiled_collection.store_end_at)}")
+            self.stdout.write(f"completed_at: {self.warn_none(compiled_collection.completed_at)}")
 
             # Relations
-            self.stdout.write(f"collection_files: {compiled_collection.collectionfile_set.count()}")
-            self.stdout.write(f"processing_steps: {compiled_collection.processing_steps.count()}")
+            self.stdout.write(f"collection_files: {self.warn_zero(compiled_collection.collectionfile_set.count())}")
+            self.stdout.write(f"processing_steps: {self.warn_nonzero(compiled_collection.processing_steps.count())}")
 
             # Logic
             if not compiled_collection.completed_at:
