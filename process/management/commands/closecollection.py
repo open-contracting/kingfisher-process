@@ -15,12 +15,6 @@ class Command(CollectionCommand):
     help = w(t("Close an open root collection and its derived collections, if any"))
 
     def handle_collection(self, collection, *args, **options):
-        if collection.store_end_at:
-            raise CommandError(
-                _("Collection %(id)s is not an open collection. It was closed at %(store_end_at)s.")
-                % collection.__dict__
-            )
-
         if collection.parent_id:
             raise CommandError(
                 _("Collection %(id)s is not a root collection. Its parent is collection %(parent_id)s.")
@@ -29,13 +23,14 @@ class Command(CollectionCommand):
 
         self.stderr.write("Working... ", ending="")
 
-        with transaction.atomic():
-            collection.store_end_at = Now()
-            collection.save(update_fields=["store_end_at"])
+        if not collection.store_end_at:
+            with transaction.atomic():
+                collection.store_end_at = Now()
+                collection.save(update_fields=["store_end_at"])
 
-            if upgraded_collection := collection.get_upgraded_collection():
-                upgraded_collection.store_end_at = Now()
-                upgraded_collection.save(update_fields=["store_end_at"])
+                if upgraded_collection := collection.get_upgraded_collection():
+                    upgraded_collection.store_end_at = Now()
+                    upgraded_collection.save(update_fields=["store_end_at"])
 
         with get_publisher() as client:
             client.publish({"collection_id": collection.pk}, routing_key=routing_key)
