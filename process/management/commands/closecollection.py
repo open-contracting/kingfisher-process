@@ -23,12 +23,13 @@ class Command(CollectionCommand):
 
         self.stderr.write("Working... ", ending="")
 
+        upgraded_collection = collection.get_upgraded_collection()
+
         if not collection.store_end_at:
             with transaction.atomic():
                 collection.store_end_at = Now()
                 collection.save(update_fields=["store_end_at"])
-
-                if upgraded_collection := collection.get_upgraded_collection():
+                if upgraded_collection:
                     upgraded_collection.store_end_at = Now()
                     upgraded_collection.save(update_fields=["store_end_at"])
 
