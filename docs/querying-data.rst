@@ -52,11 +52,6 @@ To get data from a different collection, change the ``collection_id`` condition.
 
 To get data from a collection containing releases or records, join to the ``release`` or ``record`` tables rather than the ``compiled_release`` table.
 
-.. admonition:: Rendering JSON using Redash
-   :class: tip
-
-   If you are using OCP's Redash instance, you can render the results of a query as pretty printed and collapsible JSON by clicking the '+ New Visualization' button, setting the visualization type to 'table' and setting the data column to display as JSON.
-
 Calculate the total value of completed contracting processes in a collection
 ----------------------------------------------------------------------------
 
