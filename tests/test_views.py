@@ -57,7 +57,7 @@ class CollectionViewTests(APITestCase):
 
         response = self.client.post(
             f"{base_url}/",
-            {"source_id": "test2", "data_version": "2024-04-18 00:00:00", "upgrade": True, "compile": True},
+            {"source_id": "test_test", "data_version": "2024-04-18 00:00:00", "upgrade": True, "compile": True},
         )
         self.assertEqual(response.status_code, 200)
 

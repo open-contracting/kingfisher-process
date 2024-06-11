@@ -30,7 +30,7 @@ class CreateCollectionsTests(TransactionTestCase):
         with self.assertRaises(ValueError) as e:
             create_collections(
                 # Identification
-                "portugal-releases",
+                "portugal_releases",
                 "2020-12-29 09:22:08",
                 sample=False,
                 # Steps
