@@ -47,10 +47,13 @@ def callback(client_state, channel, method, properties, input_message):
 
 
 def _set_complete_at(collection, **kwargs):
+    # all() avoids cached calls in count().
+    # https://docs.djangoproject.com/en/4.2/ref/models/querysets/#all
+    # https://docs.djangoproject.com/en/4.2/ref/models/querysets/#count
     count = {
-        "cached_releases_count": collection.release_set.count(),
-        "cached_records_count": collection.record_set.count(),
-        "cached_compiled_releases_count": collection.compiledrelease_set.count(),
+        "cached_releases_count": collection.release_set.all().count(),
+        "cached_records_count": collection.record_set.all().count(),
+        "cached_compiled_releases_count": collection.compiledrelease_set.all().count(),
     }
     return Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now(), **count, **kwargs)
 
