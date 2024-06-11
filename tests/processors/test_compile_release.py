@@ -18,7 +18,7 @@ class CompileReleaseTests(TransactionTestCase):
             compile_release(3, "ocds-px0z7d-17998-18005-1")
         self.assertEqual(
             str(e.exception),
-            "Compiled release ocds-px0z7d-17998-18005-1 (id: 45) already exists in collection portugal-releases:2020-12-29 09:22:08 (id: 3)",  # noqa: E501
+            "Compiled release ocds-px0z7d-17998-18005-1 (id: 45) already exists in collection portugal_releases:2020-12-29 09:22:08 (id: 3)",  # noqa: E501
         )
 
     def test_happy_day(self):
