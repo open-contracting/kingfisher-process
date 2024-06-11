@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -59,7 +60,10 @@ class Collection(models.Model):
         UPGRADE_10_11 = "upgrade-1-0-to-1-1", _("Upgrade from 1.0 to 1.1 ")
 
     # Identification
-    source_id = models.TextField(help_text=_("If sourced from Scrapy, this should be the name of the spider."))
+    source_id = models.TextField(
+        validators=[RegexValidator(r"^([a-z]+_)*[a-z]+$", _("source_id must be letters and underscores only"))],
+        help_text=_("If sourced from Scrapy, this should be the name of the spider."),
+    )
     data_version = models.DateTimeField(help_text=_("The time at which the files were retrieved (not loaded)."))
     sample = models.BooleanField(default=False)
 
