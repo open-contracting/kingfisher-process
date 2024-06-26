@@ -51,7 +51,7 @@ django==4.2.11
     #   drf-spectacular
 django-cors-headers==4.1.0
     # via -r requirements_nongpl.txt
-djangorestframework==3.15.1
+djangorestframework==3.15.2
     # via
     #   -r requirements_nongpl.txt
     #   drf-spectacular
