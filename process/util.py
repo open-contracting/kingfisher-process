@@ -145,9 +145,8 @@ def _delete_step_and_finish(name, finish=None, finish_args=(), **kwargs):
     # kwargs can include collection_id, collection_file_id and ocid.
     processing_steps = ProcessingStep.objects.filter(name=name, **kwargs)
 
-    if processing_steps.exists():
-        processing_steps.delete()
-    else:
+    deleted, _ = processing_steps.delete()
+    if not deleted:
         logger.warning("No such processing step found: %s: %s", name, kwargs)
 
     if finish:

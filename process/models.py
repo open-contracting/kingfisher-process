@@ -246,6 +246,10 @@ class ProcessingStep(models.Model):
 
     class Meta:
         db_table = "processing_step"
+        indexes = [
+            # ForeignKey with db_index=False.
+            models.Index(name="processing_step_collection_id_ocid_idx", fields=["collection", "name", "ocid"]),
+        ]
 
     class Name(models.TextChoices):
         LOAD = "LOAD"
@@ -253,7 +257,7 @@ class ProcessingStep(models.Model):
         CHECK = "CHECK"
 
     collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, db_index=True, related_name="processing_steps"
+        Collection, on_delete=models.CASCADE, db_index=False, related_name="processing_steps"
     )
 
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, null=True, db_index=True)
