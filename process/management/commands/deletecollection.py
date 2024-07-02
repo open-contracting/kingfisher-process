@@ -17,8 +17,10 @@ class Command(CollectionCommand):
             if confirm.lower() != "y":
                 return
 
-        self.stderr.write("Working... ", ending="")
+        if options["verbosity"] > 0:
+            self.stderr.write("Working... ", ending="")
 
         collection.delete()
 
-        self.stderr.write(self.style.SUCCESS("done"))
+        if options["verbosity"] > 0:
+            self.stderr.write(self.style.SUCCESS("done"))
