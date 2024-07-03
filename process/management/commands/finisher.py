@@ -50,7 +50,10 @@ def callback(client_state, channel, method, properties, input_message):
                     if upgraded_collection := collection.get_upgraded_collection():
                         _set_complete_at(upgraded_collection)
 
-            # If the collection isn't completable or completed, try again after a delay, to prevent a loop.
+            # If the collection isn't completable or completed, try again after a delay, to prevent churning.
+            # RabbitMQ won't deliver another message until ack'd, so blocking the thread with time.sleep() is
+            # effectively the same as not blocking the thread with client_state.connection.ioloop.call_later().
+            # Note: Need to monitor the queue, in case a message gets stuck.
             elif not collection.completed_at:
                 time.sleep(30)
                 nack(client_state, channel, method.delivery_tag, requeue=True)
