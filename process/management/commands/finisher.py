@@ -1,10 +1,12 @@
 import logging
+import threading
+import time
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models.functions import Now
 from django.utils.translation import gettext as t
-from yapw.methods import ack
+from yapw.methods import ack, nack
 
 from process.models import Collection
 from process.util import consume, decorator
@@ -16,6 +18,8 @@ from process.util import wrap as w
 consume_routing_keys = ["file_worker", "checker", "release_compiler", "record_compiler", "collection_closed"]
 routing_key = "finisher"
 logger = logging.getLogger(__name__)
+lock = threading.Lock()
+requeued = set()
 
 
 class Command(BaseCommand):
@@ -30,18 +34,37 @@ class Command(BaseCommand):
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 
-    with transaction.atomic():
-        collection = Collection.objects.get(pk=collection_id)
-        if completable(collection):
-            # Use optimistic locking to update the collections.
-            if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
-                updated = _set_complete_at(collection, store_end_at=Now())
-            else:
-                updated = _set_complete_at(collection)
+    # Run queries only for redelivered messages.
+    if method.redelivered:
+        with transaction.atomic():
+            collection = Collection.objects.get(pk=collection_id)
 
-            if updated:
-                if upgraded_collection := collection.get_upgraded_collection():
-                    _set_complete_at(upgraded_collection)
+            if completable(collection):
+                # Use optimistic locking to update the collections.
+                if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
+                    updated = _set_complete_at(collection, store_end_at=Now())
+                else:
+                    updated = _set_complete_at(collection)
+
+                if updated:
+                    if upgraded_collection := collection.get_upgraded_collection():
+                        _set_complete_at(upgraded_collection)
+
+            # If the collection isn't completable or completed, try again after a delay, to prevent a loop.
+            elif not collection.completed_at:
+                time.sleep(30)
+                nack(client_state, channel, method.delivery_tag, requeue=True)
+                return
+
+    # If no message has been requeued for the collection, track the collection and requeue the message.
+    elif collection_id not in requeued:  # no lock at first, for performance
+        # Use a lock and re-do the check, to prevent multiple requeues within each collection.
+        # If the collections were known in advance, we could use a non-blocking lock for each collection.
+        with lock:
+            if collection_id not in requeued:
+                requeued.add(collection_id)
+                nack(client_state, channel, method.delivery_tag, requeue=True)
+                return
 
     ack(client_state, channel, method.delivery_tag)
 
