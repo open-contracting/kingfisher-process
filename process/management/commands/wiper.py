@@ -40,6 +40,7 @@ def callback(client_state, channel, method, properties, input_message):
     if settings.ENABLE_CHECKER:
         tables = [("record_check", "record"), ("release_check", "release")] + tables
 
+    # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
     with connection.cursor() as cursor:
         for table, related in tables:
             if related:
