@@ -61,6 +61,17 @@ Add processing steps to check data, if unchecked.
 
    ./manage.py addchecks collection_id
 
+cancelcollection
+~~~~~~~~~~~~~~~~
+
+Cancel the :ref:`cli-finisher` worker for a collection.
+
+For performance, the finisher worker picks one message for each collection, and ignores the rest. It requeues the message until the collection is completed. If the collection can never be completed, run this command to stop the requeueing.
+
+.. code-block:: bash
+
+   ./manage.py cancelcollection collection_id
+
 deletecollection
 ~~~~~~~~~~~~~~~~
 
@@ -182,6 +193,8 @@ Create compiled releases from releases with the same OCID.
 .. code-block:: bash
 
    ./manage.py release_compiler
+
+.. _cli-finisher:
 
 finisher
 ~~~~~~~~

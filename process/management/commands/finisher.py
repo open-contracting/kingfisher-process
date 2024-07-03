@@ -15,11 +15,19 @@ from process.util import wrap as w
 # Read all messages that might be the final message. "file_worker" can be the final message if neither checking nor
 # compiling are performed, and if the "collection_closed" message is processed before the "file_worker" message.
 # Or, in other words, read all messages published by workers that delete steps (since this checks for steps remaining).
-consume_routing_keys = ["file_worker", "checker", "release_compiler", "record_compiler", "collection_closed"]
+consume_routing_keys = [
+    "file_worker",
+    "checker",
+    "release_compiler",
+    "record_compiler",
+    "collection_closed",
+    "collection_cancelled",
+]
 routing_key = "finisher"
 logger = logging.getLogger(__name__)
 lock = threading.Lock()
 requeued = set()
+ignored = set()
 
 
 class Command(BaseCommand):
@@ -33,6 +41,13 @@ class Command(BaseCommand):
 
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
+    cancel = input_message.get("cancel")
+
+    # See cancelcollection command and documentation.
+    if cancel or collection_id in ignored:
+        ignored.add(collection_id)
+        ack(client_state, channel, method.delivery_tag)
+        return
 
     # Run queries only for redelivered messages.
     if method.redelivered:

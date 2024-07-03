@@ -67,6 +67,10 @@ In each :doc:`worker and command<../cli>`, the queue name and the routing key of
      - N/A
      - ``addchecks`` for **each** collection file with missing checks
      - Create ``CHECK`` for **each** collection file
+   * - ``cancelcollection`` command
+     - N/A
+     - ``collection_cancelled`` for the collection
+     - N/A
    * - ``closecollection`` command
      - N/A
      - ``collection_closed`` for the original and derived collections
