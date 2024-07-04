@@ -14,7 +14,7 @@ from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
 
-from process.exceptions import AlreadyExists, InvalidFormError
+from process.exceptions import AlreadyExists, EmptyFormatError, InvalidFormError
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
 
 logger = logging.getLogger(__name__)
@@ -132,9 +132,15 @@ def delete_step(*args, **kwargs):
     """
     try:
         yield
-    # See the errback() function in the decorator() function. If a duplicate message is received, delete the step, so
-    # that the collection is completable. Don't delete the step if the error was unexpected.
-    except (AlreadyExists, InvalidFormError, IntegrityError):
+    # Delete the step so that the collection is completable, only if the error was expected.
+    except (
+        # A duplicate message is received. See the errback() function in the decorator() function.
+        AlreadyExists,
+        InvalidFormError,
+        IntegrityError,
+        # See the try/except block in the file_worker worker.
+        EmptyFormatError,
+    ):
         _delete_step_and_finish(*args, **kwargs)
         raise
     else:
