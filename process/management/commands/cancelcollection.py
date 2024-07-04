@@ -14,6 +14,6 @@ class Command(CollectionCommand):
         self.stderr.write("Working... ", ending="")
 
         with get_publisher() as client:
-            client.publish({"collection_id": collection.pk, "cancel": True}, routing_key=routing_key)
+            client.publish({"collection_id": collection.pk}, routing_key=routing_key)
 
         self.stderr.write(self.style.SUCCESS("done"))

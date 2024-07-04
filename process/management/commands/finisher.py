@@ -2,6 +2,7 @@ import logging
 import threading
 import time
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models.functions import Now
@@ -41,10 +42,9 @@ class Command(BaseCommand):
 
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
-    cancel = input_message.get("cancel")
 
     # See cancelcollection command and documentation.
-    if cancel or collection_id in ignored:
+    if method.routing_key == f"{settings.RABBIT_EXCHANGE_NAME}_collection_cancelled" or collection_id in ignored:
         ignored.add(collection_id)
         ack(client_state, channel, method.delivery_tag)
         return
