@@ -45,7 +45,7 @@ class LoadTests(TransactionTestCase):
                 "2001-01-01 00:00:00",
             )
 
-        self.assertEqual(str(e.exception), f"A collection {source.pk} matching those arguments is being deleted.")
+        self.assertEqual(str(e.exception), f"A matching collection {source.pk} is being deleted. Try again later.")
 
     def test_path_nonexistent(self):
         with self.assertRaises(CommandError) as e:
@@ -147,7 +147,7 @@ class LoadTests(TransactionTestCase):
                 "load", "--source", source.source_id, "--time", source.data_version, "--note", "x", path("file.json")
             )
 
-        self.assertEqual(str(e.exception), f"A collection {source.pk} matching those arguments is being deleted.")
+        self.assertEqual(str(e.exception), f"A matching collection {source.pk} is being deleted. Try again later.")
 
     def test_unique_store_end_at(self):
         source = collection(store_end_at="2001-01-01 00:00:00")
@@ -158,7 +158,11 @@ class LoadTests(TransactionTestCase):
                 "load", "--source", source.source_id, "--time", source.data_version, "--note", "x", path("file.json")
             )
 
-        self.assertEqual(str(e.exception), f"A closed collection {source.pk} matching those arguments already exists.")
+        self.assertEqual(
+            str(e.exception),
+            f"A matching closed collection {source.pk} already exists. "
+            "Delete this collection, or change the --source or --time options.",
+        )
 
     def test_unique(self):
         source = collection()
@@ -169,4 +173,8 @@ class LoadTests(TransactionTestCase):
                 "load", "--source", source.source_id, "--time", source.data_version, "--note", "x", path("file.json")
             )
 
-        self.assertEqual(str(e.exception), f"An open collection {source.pk} matching those arguments already exists.")
+        self.assertEqual(
+            str(e.exception),
+            f"A matching open collection {source.pk} already exists. "
+            "Delete this collection, or change the --source or --time options.",
+        )

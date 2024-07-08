@@ -124,11 +124,17 @@ class Command(BaseCommand):
                 }
                 collection = Collection.objects.get(**data, transform_type="")
                 if collection.deleted_at:
-                    message = _("A collection %(id)s matching those arguments is being deleted.")
+                    message = _("A matching collection %(id)s is being deleted. Try again later.")
                 elif collection.store_end_at:
-                    message = _("A closed collection %(id)s matching those arguments already exists.")
+                    message = _(
+                        "A matching closed collection %(id)s already exists. "
+                        "Delete this collection, or change the --source or --time options."
+                    )
                 else:
-                    message = _("An open collection %(id)s matching those arguments already exists.")
+                    message = _(
+                        "A matching open collection %(id)s already exists. "
+                        "Delete this collection, or change the --source or --time options."
+                    )
                 raise CommandError(message % {"id": collection.pk})
             else:
                 raise CommandError(error)
