@@ -71,14 +71,14 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # InvalidFormError is included, as it may be for a "unique_together" error, which is an integrity error.
         if isinstance(exception, (AlreadyExists, InvalidFormError, IntegrityError)):
-            logger.exception("%s maybe caused by duplicate message %r, skipping", exception.__class__.__name__, body)
+            logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
         # This error should only occur in the wiper worker due to a duplicate message, as above.
         #
         # It can also occur in the finisher worker if the queue became too long (e.g. the worker was stopped), and the
         # wiper ran before the finisher (e.g. it was run manually by an administrator).
         elif isinstance(exception, Collection.DoesNotExist):
-            logger.exception("%s maybe caused by duplicate message %r, skipping", exception.__class__.__name__, body)
+            logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
         # This error should never occur under normal operations. However, such messages interrupt processing, so they
         # are nack'ed.
