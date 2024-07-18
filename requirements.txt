@@ -182,7 +182,7 @@ rpds-py==0.18.0
     #   referencing
 schema==0.7.5
     # via flattentool
-sentry-sdk==1.19.0
+sentry-sdk==2.8.0
     # via -r requirements_nongpl.txt
 setproctitle==1.2.2
     # via
