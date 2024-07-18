@@ -98,7 +98,7 @@ rpds-py==0.18.0
     # via
     #   jsonschema
     #   referencing
-sentry-sdk==1.19.0
+sentry-sdk==2.8.0
     # via -r requirements_nongpl.in
 setproctitle==1.2.2
     # via gunicorn
