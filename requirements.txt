@@ -42,7 +42,7 @@ defusedxml==0.7.1
     # via odfpy
 dj-database-url==2.0.0
     # via -r requirements_nongpl.txt
-django==4.2.14
+django==4.2.15
     # via
     #   -r requirements_nongpl.txt
     #   dj-database-url
