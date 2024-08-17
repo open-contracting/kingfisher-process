@@ -13,18 +13,18 @@ class CompletableTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
     def test_already_completed(self):
-        collection = Collection.objects.get(id=3)
+        collection = Collection.objects.get(pk=3)
         collection.completed_at = Now()
         collection.save()
 
         self.assertEqual(completable(collection), False)
 
     def test_not_fully_processed(self):
-        collection = Collection.objects.get(id=2)
-        collection_file = CollectionFile.objects.get(id=1)
+        collection = Collection.objects.get(pk=2)
+        collection_file = CollectionFile.objects.get(pk=1)
         collection_file_step = ProcessingStep(
             name=ProcessingStep.Name.LOAD,
-            collection=Collection.objects.get(id=2),
+            collection=Collection.objects.get(pk=2),
             collection_file=collection_file,
         )
         collection_file_step.save()
@@ -39,7 +39,7 @@ class CompletableTests(TransactionTestCase):
         self.assertEqual(completable(collection), False)
 
     def test_happy_day_compiled(self):
-        collection = Collection.objects.get(id=2)
+        collection = Collection.objects.get(pk=2)
         collection.transform_type = Collection.Transform.COMPILE_RELEASES
         collection.store_end_at = None
         collection.compilation_started = True

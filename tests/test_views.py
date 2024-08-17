@@ -81,7 +81,7 @@ class CollectionViewTests(APITestCase):
         response = self.client.post(f"{base_url}/{collection_id}/close/", data, format="json")
         self.assertEqual(response.status_code, 202)
 
-        collection = Collection.objects.get(id=collection_id)
+        collection = Collection.objects.get(pk=collection_id)
         upgraded_collection = collection.get_upgraded_collection()
 
         for c in [collection, upgraded_collection]:

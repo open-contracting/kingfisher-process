@@ -53,17 +53,17 @@ class ProcessFileTests(TransactionTestCase):
         self.assertEqual(str(e.exception), "[Errno 2] No such file or directory: 'ocds-px0z7d-10094-10001-1'")
 
     def test_happy_day(self):
-        collection_file = CollectionFile.objects.get(id=1)
+        collection_file = CollectionFile.objects.get(pk=1)
         collection_file.filename = "tests/fixtures/collection_file.json"
         collection_file.save()
 
         CollectionFileItem.objects.filter(collection_file=collection_file).delete()
-        CollectionFile.objects.get(id=3).delete()
+        CollectionFile.objects.get(pk=3).delete()
 
         collection_file = CollectionFile.objects.select_related("collection").get(pk=1)
         upgraded_collection_file_id = process_file(collection_file)
 
-        upgraded_collection_file = CollectionFile.objects.get(id=upgraded_collection_file_id)
+        upgraded_collection_file = CollectionFile.objects.get(pk=upgraded_collection_file_id)
 
         self.assertEqual(upgraded_collection_file.filename, collection_file.filename)
         self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")

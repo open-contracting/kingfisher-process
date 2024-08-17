@@ -14,14 +14,14 @@ class CreateCollectionFileTests(TransactionTestCase):
         self.assertEqual(str(e.exception), "collection None cannot be blank")
 
     def test_integrity_error(self):
-        collection = Collection.objects.get(id=1)
+        collection = Collection.objects.get(pk=1)
         with self.assertRaises(InvalidFormError) as e:
             create_collection_file(collection, "/path")
             create_collection_file(collection, "/path")
         self.assertTrue(str(e.exception).startswith("Collection 1 already contains file '/path'"))
 
     def test_happy_day(self):
-        collection = Collection.objects.get(id=2)
+        collection = Collection.objects.get(pk=2)
         collection_file = create_collection_file(collection, "/path")
 
         self.assertEqual(collection_file.collection, collection)
