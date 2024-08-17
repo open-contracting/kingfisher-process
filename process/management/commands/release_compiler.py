@@ -6,9 +6,9 @@ from django.utils.translation import gettext as t
 from yapw.methods import ack, publish
 
 from process.exceptions import AlreadyExists
-from process.models import Collection, CompiledRelease, ProcessingStep, Release
+from process.models import Collection, CollectionNote, CompiledRelease, ProcessingStep, Release
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
-from process.util import consume, decorator, delete_step
+from process.util import consume, create_note, decorator, delete_step
 from process.util import wrap as w
 
 consume_routing_keys = ["compiler_release"]
@@ -57,7 +57,8 @@ def compile_release(compiled_collection_id, ocid):
     )
 
     if not releases.count():
-        raise ValueError(f"OCID {ocid} has 0 releases.")
+        create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} has 0 releases.")
+        return
 
     data = []
     extensions = set()
