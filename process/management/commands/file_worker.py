@@ -32,7 +32,6 @@ consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
-EMPTY_FORMATS = {Format.empty_package}
 SUPPORTED_FORMATS = {Format.compiled_release, Format.record_package, Format.release_package}
 ERROR = CollectionNote.Level.ERROR
 
@@ -123,7 +122,7 @@ def process_file(collection_file):
     data_format = data_type["format"]
 
     # https://github.com/open-contracting/kingfisher-collect/issues/1012
-    if data_format in EMPTY_FORMATS:
+    if data_format == Format.empty_package:
         raise EmptyFormatError(f"Empty format '{data_format}' for file {collection_file}.")
     if data_format not in SUPPORTED_FORMATS:
         raise UnsupportedFormatError(
