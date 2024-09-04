@@ -140,5 +140,6 @@ def _collection_is_empty(collection):
     is_empty = collection.expected_files_count == 0
     if is_empty:
         count = collection.collectionfile_set.count()
-        assert count == 0, f"{count} is not 0"
+        if count:
+            raise AssertionError(f"{count} is not 0")
     return is_empty

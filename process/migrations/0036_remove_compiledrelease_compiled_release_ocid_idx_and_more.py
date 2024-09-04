@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("process", "0035_remove_processingstep_processing_step_collection_file_id_idx_and_more"),
     ]

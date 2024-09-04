@@ -30,9 +30,11 @@ def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    with delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
-        with transaction.atomic():
-            release = compile_record(compiled_collection_id, ocid)
+    with (
+        delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
+        transaction.atomic(),
+    ):
+        release = compile_record(compiled_collection_id, ocid)
 
     message = {
         "ocid": ocid,
@@ -125,3 +127,4 @@ def compile_record(compiled_collection_id, ocid):
 
     notes.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
     create_note(collection, CollectionNote.Level.ERROR, notes)
+    return None

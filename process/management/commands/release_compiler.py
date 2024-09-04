@@ -29,9 +29,11 @@ def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    with delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid):
-        with transaction.atomic():
-            release = compile_release(compiled_collection_id, ocid)
+    with (
+        delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
+        transaction.atomic(),
+    ):
+        release = compile_release(compiled_collection_id, ocid)
 
     message = {
         "ocid": ocid,
@@ -58,7 +60,7 @@ def compile_release(compiled_collection_id, ocid):
 
     if not releases.count():
         create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} has 0 releases.")
-        return
+        return None
 
     data = []
     extensions = set()
@@ -87,3 +89,5 @@ def compile_release(compiled_collection_id, ocid):
 
     if merged := compile_releases_by_ocdskit(collection, ocid, unique, extensions):
         return save_compiled_release(merged, collection, ocid)
+
+    return None

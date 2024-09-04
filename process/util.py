@@ -24,7 +24,7 @@ YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_
 
 def wrap(string):
     """
-    Formats a long string as a help message, and returns it.
+    Format a long string as a help message, and return it.
     """
     return "\n".join(fill(paragraph, width=78, replace_whitespace=False) for paragraph in string.split("\n"))
 
@@ -34,7 +34,7 @@ def walk(paths):
         if os.path.isfile(path):
             yield path
         else:
-            for root, dirs, files in os.walk(path):
+            for root, _, files in os.walk(path):
                 for name in files:
                     if not name.startswith("."):
                         yield os.path.join(root, name)
@@ -70,14 +70,10 @@ def decorator(decode, callback, state, channel, method, properties, body):
         # and not by an error in logic. Their number should not exceed the prefetch count.
         #
         # InvalidFormError is included, as it may be for a "unique_together" error, which is an integrity error.
-        if isinstance(exception, (AlreadyExists, InvalidFormError, IntegrityError)):
-            logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
-            nack(state, channel, method.delivery_tag, requeue=False)
-        # This error should only occur in the wiper worker due to a duplicate message, as above.
         #
-        # It can also occur in the finisher worker if the queue became too long (e.g. the worker was stopped), and the
-        # wiper ran before the finisher (e.g. it was run manually by an administrator).
-        elif isinstance(exception, Collection.DoesNotExist):
+        # Collection.DoesNotExist should only occur in the wiper worker due to a duplicate message. It can also occur
+        # in the finisher worker if the worker was stopped, and the wiper ran before the finisher.
+        if isinstance(exception, AlreadyExists | InvalidFormError | IntegrityError | Collection.DoesNotExist):
             logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
         # This error should never occur under normal operations. However, such messages interrupt processing, so they

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("process", "0036_remove_compiledrelease_compiled_release_ocid_idx_and_more"),
     ]

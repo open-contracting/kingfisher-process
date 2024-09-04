@@ -30,7 +30,8 @@ def save_compiled_release(merged, collection, ocid):
 
 
 def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
-    # XXX: Hotfix. It otherwise takes a very long time for requests and retries to time out.
+    # It otherwise takes a very long time for requests and retries to time out.
+    # https://github.com/open-contracting/kingfisher-process/issues/436
     if collection.source_id == "colombia_api":
         extensions = {extension.replace(":8443", "") for extension in extensions}
 

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def dictfetchone(cursor):
     if row := cursor.fetchone():
         columns = [col[0] for col in cursor.description]
-        return dict(zip(columns, row))
+        return dict(zip(columns, row, strict=True))
     return {}
 
 
@@ -201,7 +201,7 @@ class CollectionViewSet(viewsets.ViewSet):
                     AND data ->> 'date' > '1970-01-01'
                     AND data ->> 'date' <= %(today)s
                 """,
-                {"collection_id": pk, "today": str(datetime.date.today())},
+                {"collection_id": pk, "today": str(datetime.datetime.now(tz=datetime.UTC).date())},
             )
             metadata.update(dictfetchone(cursor))
 

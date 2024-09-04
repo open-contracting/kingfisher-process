@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.utils.translation import gettext as t
+from psycopg2 import sql
 from yapw.methods import ack
 
 from process.models import Collection
@@ -41,19 +42,26 @@ def callback(client_state, channel, method, properties, input_message):
         tables = [
             ("record_check", "record"),  # references record
             ("release_check", "release"),  # references release
-        ] + tables
+            *tables,
+        ]
 
     # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
     with connection.cursor() as cursor:
         for table, related in tables:
             if related:
                 cursor.execute(
-                    f"DELETE FROM {table} WHERE {related}_id IN (SELECT id FROM {related} WHERE collection_id = %s)",
+                    sql.SQL(
+                        "DELETE FROM {table} WHERE {related_id} IN (SELECT id FROM {related} WHERE collection_id = %s)"
+                    ).format(
+                        table=sql.Identifier(table),
+                        related=sql.Identifier(related),
+                        related_id=sql.Identifier(f"{related}_id"),
+                    ),
                     [collection_id],
                 )
             else:
                 cursor.execute(
-                    f"DELETE FROM {table} WHERE collection_id = %s",
+                    sql.SQL("DELETE FROM {table} WHERE collection_id = %s").format(table=sql.Identifier(table)),
                     [collection_id],
                 )
 

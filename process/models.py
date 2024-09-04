@@ -1,3 +1,5 @@
+from typing import Self
+
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -36,24 +38,6 @@ class Collection(models.Model):
     queries to check whether it serves their needs, and then load the full file. To avoid the overhead of deleting the
     sample, we instead make ``sample`` part of the unique constraint, along with ``source_id`` and ``data_version``.
     """
-
-    class Meta:
-        db_table = "collection"
-        indexes = [
-            # ForeignKey with db_index=False.
-            models.Index(name="collection_transform_from_collection_id_idx", fields=["parent"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                name="unique_collection_identifiers",
-                fields=["source_id", "data_version", "sample"],
-                condition=models.Q(transform_type=""),
-                # Django 5 introduces violation_error_code, which can simplify the comparison in load.py.
-                # https://docs.djangoproject.com/en/dev/ref/models/constraints/#id1
-                violation_error_message=_("A matching collection already exists."),
-            ),
-            models.UniqueConstraint(name="unique_upgraded_compiled_collection", fields=["parent", "transform_type"]),
-        ]
 
     class Transform(models.TextChoices):
         COMPILE_RELEASES = "compile-releases", _("Compile releases")
@@ -99,6 +83,24 @@ class Collection(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        db_table = "collection"
+        indexes = [
+            # ForeignKey with db_index=False.
+            models.Index(name="collection_transform_from_collection_id_idx", fields=["parent"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                name="unique_collection_identifiers",
+                fields=["source_id", "data_version", "sample"],
+                condition=models.Q(transform_type=""),
+                # Django 5 introduces violation_error_code, which can simplify the comparison in load.py.
+                # https://docs.djangoproject.com/en/dev/ref/models/constraints/#id1
+                violation_error_message=_("A matching collection already exists."),
+            ),
+            models.UniqueConstraint(name="unique_upgraded_compiled_collection", fields=["parent", "transform_type"]),
+        ]
+
     def __str__(self):
         return "{source_id}:{data_version} (id: {id})".format_map(
             Default(source_id=self.source_id, data_version=self.data_version, id=self.pk)
@@ -131,13 +133,15 @@ class Collection(models.Model):
                     code="transform_duplicate_transition",
                 )
 
-            if self.transform_type == Collection.Transform.UPGRADE_10_11:
-                if self.parent.transform_type == Collection.Transform.COMPILE_RELEASES:
-                    message = _("Parent collection %(id)s is compiled and can't be upgraded")
-                    raise ValidationError(
-                        {"transform_type": ValidationError(message, params=self.parent.__dict__)},
-                        code="transform_invalid_transition",
-                    )
+            if (
+                self.transform_type == Collection.Transform.UPGRADE_10_11
+                and self.parent.transform_type == Collection.Transform.COMPILE_RELEASES
+            ):
+                message = _("Parent collection %(id)s is compiled and can't be upgraded")
+                raise ValidationError(
+                    {"transform_type": ValidationError(message, params=self.parent.__dict__)},
+                    code="transform_invalid_transition",
+                )
 
             qs = self.parent.collection_set.filter(transform_type=self.transform_type).exclude(pk=self.pk)
             if qs.exists():
@@ -148,12 +152,9 @@ class Collection(models.Model):
                     code="transform_duplicated",
                 )
 
-    def get_upgraded_collection(self):
+    def get_upgraded_collection(self) -> Self | None:
         """
-        Returns existing upgraded collection or None.
-
-        :returns: upgraded collection
-        :rtype: Collection
+        Return the upgraded collection or None.
         """
         # This is a shortcut to avoid a query. It is based on the logic in clean_fields().
         if self.transform_type:
@@ -163,42 +164,28 @@ class Collection(models.Model):
         except Collection.DoesNotExist:
             return None
 
-    def get_compiled_collection(self):
+    def get_compiled_collection(self) -> Self | None:
         """
-        Returns existing compiled collection or None.
-
-        :returns: compiled collection
-        :rtype: Collection
+        Return the compiled collection or None.
         """
         try:
             return Collection.objects.get(transform_type=Collection.Transform.COMPILE_RELEASES, parent=self)
         except Collection.DoesNotExist:
             return None
 
-    def get_root_parent(self):
+    def get_root_parent(self) -> Self:
         """
-        Returns "root" parent of collection. Basically traverses the tree to the top.
-
-        :returns: root collection
-        :rtype: Collection
+        Return the "root" ancestor of the collection.
         """
         if self.parent is None:
             return self
-        else:
-            return self.parent.get_root_parent()
+        return self.parent.get_root_parent()
 
 
 class CollectionNote(models.Model):
     """
     A note an analyst made about the collection.
     """
-
-    class Meta:
-        db_table = "collection_note"
-        indexes = [
-            # ForeignKey with db_index=False.
-            models.Index(name="collection_note_collection_id_idx", fields=["collection"]),
-        ]
 
     class Level(models.TextChoices):
         INFO = "INFO"
@@ -211,6 +198,13 @@ class CollectionNote(models.Model):
     stored_at = models.DateTimeField(auto_now_add=True)
     code = models.TextField(blank=True, choices=Level.choices)
 
+    class Meta:
+        db_table = "collection_note"
+        indexes = [
+            # ForeignKey with db_index=False.
+            models.Index(name="collection_note_collection_id_idx", fields=["collection"]),
+        ]
+
     def __str__(self):
         return "{note} (id: {id})".format_map(Default(note=self.note, id=self.pk))
 
@@ -219,6 +213,11 @@ class CollectionFile(models.Model):
     """
     A file within the collection.
     """
+
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
+
+    filename = models.TextField(blank=True)
+    url = models.TextField(blank=True)
 
     class Meta:
         db_table = "collection_file"
@@ -230,11 +229,6 @@ class CollectionFile(models.Model):
             models.UniqueConstraint(name="unique_collection_file_identifiers", fields=["collection", "filename"]),
         ]
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-
-    filename = models.TextField(blank=True)
-    url = models.TextField(blank=True)
-
     def __str__(self):
         return "{filename} (id: {id})".format_map(Default(filename=self.filename, id=self.pk))
 
@@ -243,13 +237,6 @@ class ProcessingStep(models.Model):
     """
     A step in the lifecycle of collection file.
     """
-
-    class Meta:
-        db_table = "processing_step"
-        indexes = [
-            # ForeignKey with db_index=False.
-            models.Index(name="processing_step_collection_id_ocid_idx", fields=["collection", "name", "ocid"]),
-        ]
 
     class Name(models.TextChoices):
         LOAD = "LOAD"
@@ -264,11 +251,27 @@ class ProcessingStep(models.Model):
     ocid = models.TextField(blank=True)
     name = models.TextField(choices=Name.choices)
 
+    class Meta:
+        db_table = "processing_step"
+        indexes = [
+            # ForeignKey with db_index=False.
+            models.Index(name="processing_step_collection_id_ocid_idx", fields=["collection", "name", "ocid"]),
+        ]
+
+    def __str__(self):
+        return "{collection_id}:{name} (id: {id})".format_map(
+            Default(name=self.name, collection_id=self.collection_id, id=self.pk)
+        )
+
 
 class CollectionFileItem(models.Model):
     """
     An item within a file in the collection.
     """
+
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
+
+    number = models.IntegerField(blank=True)
 
     class Meta:
         db_table = "collection_file_item"
@@ -282,12 +285,10 @@ class CollectionFileItem(models.Model):
             ),
         ]
 
-    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
-
-    number = models.IntegerField(blank=True)
-
     def __str__(self):
-        return "step no. {number} (id: {id})".format_map(Default(number=self.number, id=self.pk))
+        return "{collection_file_id}:{number} (id: {id})".format_map(
+            Default(number=self.number, collection_file_id=self.collection_file_id, id=self.pk)
+        )
 
 
 class Data(models.Model):
@@ -295,15 +296,15 @@ class Data(models.Model):
     The contents of a release, record or compiled release.
     """
 
+    hash_md5 = models.TextField()
+    data = models.JSONField(encoder=JSONEncoder)
+
     class Meta:
         db_table = "data"
         constraints = [
-            # process.util.get_or_create()
+            # Used by process.util.get_or_create().
             models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
         ]
-
-    hash_md5 = models.TextField()
-    data = models.JSONField(encoder=JSONEncoder)
 
     def __str__(self):
         return "{hash_md5} (id: {id})".format_map(Default(hash_md5=self.hash_md5, id=self.pk))
@@ -314,38 +315,24 @@ class PackageData(models.Model):
     The contents of a package, excluding the releases or records.
     """
 
-    class Meta:
-        db_table = "package_data"
-        constraints = [
-            # process.util.get_or_create()
-            models.UniqueConstraint(name="unique_package_data_hash_md5", fields=["hash_md5"]),
-        ]
-
     hash_md5 = models.TextField()
     data = models.JSONField(encoder=JSONEncoder)
 
+    class Meta:
+        db_table = "package_data"
+        constraints = [
+            # Used by process.util.get_or_create().
+            models.UniqueConstraint(name="unique_package_data_hash_md5", fields=["hash_md5"]),
+        ]
+
     def __str__(self):
-        return self.hash_md5
+        return "{hash_md5} (id: {id})".format_map(Default(hash_md5=self.hash_md5, id=self.pk))
 
 
 class Release(models.Model):
     """
     A release.
     """
-
-    class Meta:
-        db_table = "release"
-        indexes = [
-            # process.management.commands.release_compiler.compile_release()
-            models.Index(fields=["collection", "ocid"]),
-            # ForeignKey with db_index=False.
-            models.Index(name="release_collection_id_idx", fields=["collection"]),
-            models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="release_data_id_idx", fields=["data"]),
-            models.Index(name="release_package_data_id_idx", fields=["package_data"]),
-        ]
-        # It is possible to add a constraint on collection, ocid, release_id. However, some publications have repeated
-        # release IDs. Example: https://github.com/open-contracting/kingfisher-collect/issues/1049
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
@@ -355,6 +342,20 @@ class Release(models.Model):
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
+
+    class Meta:
+        db_table = "release"
+        indexes = [
+            # Used by process.management.commands.release_compiler.compile_release().
+            models.Index(fields=["collection", "ocid"]),
+            # ForeignKey with db_index=False.
+            models.Index(name="release_collection_id_idx", fields=["collection"]),
+            models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
+            models.Index(name="release_data_id_idx", fields=["data"]),
+            models.Index(name="release_package_data_id_idx", fields=["package_data"]),
+        ]
+        # It is possible to add a constraint on collection, ocid, release_id. However, some publications have repeated
+        # release IDs. Example: https://github.com/open-contracting/kingfisher-collect/issues/1049
 
     def __str__(self):
         return "{ocid}:{release_id} (id: {id})".format_map(
@@ -367,10 +368,18 @@ class Record(models.Model):
     A record.
     """
 
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
+    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
+
+    ocid = models.TextField(blank=True)
+
+    data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
+    package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
+
     class Meta:
         db_table = "record"
         indexes = [
-            # process.management.commands.record_compiler.compile_record()
+            # Used by process.management.commands.record_compiler.compile_record().
             models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="record_collection_id_idx", fields=["collection"]),
@@ -381,14 +390,6 @@ class Record(models.Model):
         # It is possible to add a constraint on collection, ocid. However, some publications have repeated
         # OCIDs. Example: https://github.com/open-contracting/kingfisher-process/issues/420
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
-
-    ocid = models.TextField(blank=True)
-
-    data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
-    package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
-
     def __str__(self):
         return "{ocid} (id: {id})".format_map(Default(ocid=self.ocid, id=self.pk))
 
@@ -398,23 +399,23 @@ class CompiledRelease(models.Model):
     A compiled release.
     """
 
-    class Meta:
-        db_table = "compiled_release"
-        indexes = [
-            # compile_record() and compile_release()
-            models.Index(fields=["collection", "ocid"]),
-            # ForeignKey with db_index=False.
-            models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
-            models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
-            models.Index(name="compiled_release_data_id_idx", fields=["data"]),
-        ]
-
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
+
+    class Meta:
+        db_table = "compiled_release"
+        indexes = [
+            # Used by compile_record() and compile_release().
+            models.Index(fields=["collection", "ocid"]),
+            # ForeignKey with db_index=False.
+            models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
+            models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
+            models.Index(name="compiled_release_data_id_idx", fields=["data"]),
+        ]
 
     def __str__(self):
         return "{ocid} (id: {id})".format_map(Default(ocid=self.ocid, id=self.pk))
@@ -425,11 +426,14 @@ class ReleaseCheck(models.Model):
     The result of checking a release.
     """
 
+    release = models.OneToOneField(Release, on_delete=models.CASCADE)
+    cove_output = models.JSONField()
+
     class Meta:
         db_table = "release_check"
 
-    release = models.OneToOneField(Release, on_delete=models.CASCADE)
-    cove_output = models.JSONField()
+    def __str__(self):
+        return "{release_id} (id: {id})".format_map(Default(release_id=self.release_id, id=self.pk))
 
 
 class RecordCheck(models.Model):
@@ -437,8 +441,11 @@ class RecordCheck(models.Model):
     The result of checking a record.
     """
 
+    record = models.OneToOneField(Record, on_delete=models.CASCADE)
+    cove_output = models.JSONField()
+
     class Meta:
         db_table = "record_check"
 
-    record = models.OneToOneField(Record, on_delete=models.CASCADE)
-    cove_output = models.JSONField()
+    def __str__(self):
+        return "{record_id} (id: {id})".format_map(Default(record_id=self.record_id, id=self.pk))

@@ -9,20 +9,19 @@ from process.models import Collection
 class CollectionCommand(BaseCommand):
     def add_arguments(self, parser):
         """
-        Adds default arguments to the command.
+        Add default arguments to the command.
         """
         parser.add_argument("collection_id", help=_("the ID of the collection"))
         self.add_collection_arguments(parser)
 
     def add_collection_arguments(self, parser):
         """
-        Adds arguments specific to this command.
+        Add arguments specific to this command.
         """
-        pass
 
     def handle(self, *args, **options):
         """
-        Gets the collection.
+        Get the collection.
         """
         self.stderr.style_func = None
 
@@ -33,12 +32,12 @@ class CollectionCommand(BaseCommand):
         try:
             collection = Collection.objects.get(pk=collection_id)
         except Collection.DoesNotExist:
-            raise CommandError(_("Collection %(id)s does not exist") % {"id": collection_id})
+            raise CommandError(_("Collection %(id)s does not exist") % {"id": collection_id}) from None
 
         self.handle_collection(collection, *args, **options)
 
     def handle_collection(self, collection, *args, **options):
         """
-        Runs the command.
+        Run the command.
         """
         raise NotImplementedError("collection commands must implement handle_collection()")

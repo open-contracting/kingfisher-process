@@ -61,9 +61,8 @@ def callback(client_state, channel, method, properties, input_message):
                 else:
                     updated = _set_complete_at(collection)
 
-                if updated:
-                    if upgraded_collection := collection.get_upgraded_collection():
-                        _set_complete_at(upgraded_collection)
+                if updated and (upgraded_collection := collection.get_upgraded_collection()):
+                    _set_complete_at(upgraded_collection)
 
             # If the collection isn't completable or completed, try again after a delay, to prevent churning.
             elif not collection.completed_at:

@@ -33,7 +33,7 @@ class Command(CollectionCommand):
         try:
             next(walk(options["path"]))
         except StopIteration:
-            raise CommandError(_("No files to load"))
+            raise CommandError(_("No files to load")) from None
 
         with get_publisher() as client:
             for path in walk(options["path"]):

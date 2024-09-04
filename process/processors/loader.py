@@ -8,30 +8,29 @@ from django.utils.translation import gettext as t
 
 from process.exceptions import InvalidFormError
 from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
-from process.models import Collection, ProcessingStep
+from process.models import Collection, CollectionFile, ProcessingStep
 from process.util import create_note, create_step
 
 logger = logging.getLogger(__name__)
 
 
-def file_or_directory(string):
-    """Checks whether the path is existing file or directory. Raises an exception if not"""
-    if not os.path.exists(string):
-        raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": string})
-    return string
-
-
-def create_collection_file(collection, filename=None, url=None, errors=None):
+def file_or_directory(path):
     """
-    Creates file for a collection and steps for this file.
+    Check whether the path exists. Raise an exception if not.
+    """
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": path})
+    return path
+
+
+def create_collection_file(collection, filename=None, url=None, errors=None) -> CollectionFile:
+    """
+    Create file for a collection and steps for this file.
 
     :param Collection collection: collection
     :param str filename: path to file data
     :param json errors: errors to be stored
-
     :returns: created collection file
-    :rtype: CollectionFile
-
     :raises InvalidFormError: if there is a validation error
     """
     form = CollectionFileForm({"collection": collection, "filename": filename, "url": url})
@@ -53,6 +52,7 @@ def create_collections(
     # Identification
     source_id,
     data_version,
+    *,
     sample=False,
     # Steps
     upgrade=False,
@@ -62,9 +62,9 @@ def create_collections(
     scrapyd_job="",
     note="",
     force=False,
-):
+) -> tuple[Collection, Collection, Collection]:
     """
-    Creates main collection, note, upgraded collection, compiled collection etc. based on provided data
+    Create the root collection, derived collections and notes.
 
     :param str source_id: collection source
     :param str data_version: data version in ISO format
@@ -75,8 +75,7 @@ def create_collections(
     :param str scrapyd_job: Scrapyd job ID
     :param str note: text description
     :param boolean force: skip validation of the source_id against the Scrapyd project
-    :returns: created main collection, upgraded collection, compiled_collection
-    :rtype: Collection, Collection, Collection
+    :returns: the root collection, upgraded collection and compiled_collection
     """
     data = {
         "source_id": source_id,
@@ -98,20 +97,16 @@ def create_collections(
 
     upgraded_collection = None
     if upgrade:
-        if compile:  # main -> upgrade -> compile
-            upgrade_steps = ["compile"]
-        else:  # main -> upgrade
-            upgrade_steps = []
+        # main -> upgrade -> compile / main -> upgrade
+        upgrade_steps = ["compile"] if compile else []
         upgraded_collection = _create_collection(
             data, note, steps=upgrade_steps, parent=collection, transform_type=Collection.Transform.UPGRADE_10_11
         )
 
     compiled_collection = None
     if compile:
-        if upgrade:  # main -> upgrade -> compile
-            base_collection = upgraded_collection
-        else:  # main -> compile
-            base_collection = collection
+        # main -> upgrade -> compile / main -> compile
+        base_collection = upgraded_collection if upgrade else collection
         compiled_collection = _create_collection(
             data, note, parent=base_collection, transform_type=Collection.Transform.COMPILE_RELEASES
         )

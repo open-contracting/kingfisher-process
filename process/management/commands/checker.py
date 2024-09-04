@@ -62,11 +62,10 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
-    with delete_step(ProcessingStep.Name.CHECK, collection_file_id=collection_file_id):
-        with transaction.atomic():
-            collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-            if "check" in collection_file.collection.steps:
-                _check_collection_file(collection_file)
+    with delete_step(ProcessingStep.Name.CHECK, collection_file_id=collection_file_id), transaction.atomic():
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+        if "check" in collection_file.collection.steps:
+            _check_collection_file(collection_file)
 
     message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
     publish(client_state, channel, message, routing_key)
@@ -137,10 +136,7 @@ def _check_collection_file(collection_file):
         if schema.json_deref_error:
             cove_output["json_deref_error"] = schema.json_deref_error
 
-        if release_package:
-            check = ReleaseCheck(release=item)
-        else:
-            check = RecordCheck(record=item)
+        check = ReleaseCheck(release=item) if release_package else RecordCheck(record=item)
         check.cove_output = cove_output
         check.save()
 

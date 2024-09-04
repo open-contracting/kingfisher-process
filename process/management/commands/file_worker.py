@@ -63,16 +63,18 @@ def callback(client_state, channel, method, properties, input_message):
     collection_file_id = input_message["collection_file_id"]
 
     try:
-        with delete_step(
-            ProcessingStep.Name.LOAD,
-            collection_file_id=collection_file_id,
-            finish=finish,
-            finish_args=(collection_id, collection_file_id),
+        with (
+            delete_step(
+                ProcessingStep.Name.LOAD,
+                collection_file_id=collection_file_id,
+                finish=finish,
+                finish_args=(collection_id, collection_file_id),
+            ),
+            transaction.atomic(),
         ):
-            with transaction.atomic():
-                collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-                collection = collection_file.collection
-                upgraded_collection_file_id = process_file(collection_file)
+            collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+            collection = collection_file.collection
+            upgraded_collection_file_id = process_file(collection_file)
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
         publish(client_state, channel, message, routing_key)
@@ -106,17 +108,16 @@ def callback(client_state, channel, method, properties, input_message):
         ack(client_state, channel, method.delivery_tag)
 
 
-def process_file(collection_file):
+def process_file(collection_file) -> int | None:
     """
-    Loads file for a given collection - created the whole collection_file, collection_file_item etc. structure.
-    If the collection should be upgraded, creates the same structure for upgraded collection as well.
+    Load file for a given collection.
+
+    Create the whole collection_file, collection_file_item, etc. structure.
+    If the collection should be upgraded, create the same structure for upgraded collection as well.
 
     :param collection_file: collection file for which should be releases checked
-
     :returns: upgraded collection file id or None (if there is no upgrade planned)
-    :rtype: int
     """
-
     data_type = _get_data_type(collection_file)
 
     data_format = data_type["format"]
@@ -150,6 +151,8 @@ def process_file(collection_file):
         _store_data(upgraded_collection_file, package, releases_or_records, data_type, upgrade=True)
 
         return upgraded_collection_file.pk
+
+    return None
 
 
 def _get_data_type(collection_file):
@@ -249,7 +252,7 @@ def _read_data_from_file(filename, data_type):
                 builder.event(event, value)
 
 
-def _store_data(collection_file, package, releases_or_records, data_type, upgrade=False):
+def _store_data(collection_file, package, releases_or_records, data_type, *, upgrade=False):
     collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
     collection_file_item.save()
 

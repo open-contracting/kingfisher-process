@@ -135,9 +135,9 @@ class Command(BaseCommand):
                         "A matching open collection %(id)s already exists. "
                         "Delete this collection, or change the --source or --time options."
                     )
-                raise CommandError(message % {"id": collection.pk})
-            else:
-                raise CommandError(error)
+                raise CommandError(message % {"id": collection.pk}) from None
+
+            raise CommandError(error) from None
 
         self.stderr.write(f"Processing path {options['PATH']}")
 

@@ -13,19 +13,16 @@ from process.models import Collection, CollectionFile, CollectionNote
 class KingfisherForm(forms.ModelForm):
     @property
     def error_messages(self):
-        messages = []
-        for field, error_list in self.errors.as_data().items():
-            for error in error_list:
-                messages.append(str(self.error_message_formatter(field, error)))
-        return "\n".join(messages)
+        return "\n".join(
+            str(self.error_message_formatter(field, error))
+            for field, error_list in self.errors.as_data().items()
+            for error in error_list
+        )
 
     def error_message_formatter(self, field, error):
         if error.code == "required":
             return _("%(field)s %(value)r cannot be blank") % {"field": field, "value": self[field].data}
-        if error.params:
-            message = error.message % error.params
-        else:
-            message = error.message
+        message = error.message % error.params if error.params else error.message
         if field == "__all__":
             return message
         return f"{field}: {message}"
