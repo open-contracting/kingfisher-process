@@ -41,7 +41,7 @@ builtins-ignorelist = ["copyright"]
   "PT",  # unittest
   "ARG002",  # mocks
   "BLE001",  # Exception
-  "PLR0913",  # Too many arguments to function call
+  "PLR0913",  # Too many arguments
   "PLR2004",  # Magic value used
   "S101",  # assert
 ]

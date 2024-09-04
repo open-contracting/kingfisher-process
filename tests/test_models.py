@@ -152,10 +152,13 @@ class CollectionFileTests(TestCase):
 class CollectionFileItemTests(TestCase):
     def test_str(self):
         obj = CollectionFileItem()
-        self.assertEqual(str(obj), "step no. {number} (id: {id})")
+        self.assertEqual(str(obj), "{collection_file_id}:{number} (id: {id})")
 
         obj.number = 10
-        self.assertEqual(str(obj), "step no. 10 (id: {id})")
+        self.assertEqual(str(obj), "{collection_file_id}:10 (id: {id})")
+
+        obj.collection_file_id = 1
+        self.assertEqual(str(obj), "1:10 (id: {id})")
 
 
 class DataTests(TestCase):
@@ -170,10 +173,10 @@ class DataTests(TestCase):
 class PackageDataTests(TestCase):
     def test_str(self):
         obj = PackageData()
-        self.assertEqual(str(obj), "")
+        self.assertEqual(str(obj), "{hash_md5} (id: {id})")
 
         obj.hash_md5 = "1bc29b36f623ba82aaf6724fd3b16718"
-        self.assertEqual(str(obj), "1bc29b36f623ba82aaf6724fd3b16718")
+        self.assertEqual(str(obj), "1bc29b36f623ba82aaf6724fd3b16718 (id: {id})")
 
 
 class ReleaseTests(TestCase):
