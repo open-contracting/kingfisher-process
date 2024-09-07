@@ -11,20 +11,16 @@ select = ["ALL"]
 ignore = [
   "ANN", "COM", "EM",
   # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
-  "W191", "E501", "D206", "Q000", "Q001", "Q002", "Q003", "ISC001",
+  "W191", "D206", "Q000", "Q001", "Q002", "Q003", "ISC001",
   "D203", "D212",  # ignore incompatible rules
   "D200",  # documentation preferences
-  "C901", "PLR0912",  # complexity preferences
+  "C901", "PLR091",  # complexity preferences
   "D1",  # docstrings
   "PTH",  # pathlib
   "A002",  # compile builtin
-  "ARG001",  # yapw callbacks
-  "ARG002",  # Django request argument
+  "ARG001", "ARG002", "RUF012",  # Django
   "N818",  # AlreadyExists error
-  "PLR0911",  # Too many returns
-  "PLR0913",  # Too many arguments
   "PLW2901",  # release_or_record overridden
-  "RUF012",  # Django class attributes
   "S104",  # Docker ALLOWED_HOSTS
   "S324",  # md5 hash
   "TRY003",  # Django command errors
@@ -41,7 +37,6 @@ builtins-ignorelist = ["copyright"]
   "PT",  # unittest
   "ARG002",  # mocks
   "BLE001",  # Exception
-  "PLR0913",  # Too many arguments
   "PLR2004",  # Magic value used
   "S101",  # assert
 ]
