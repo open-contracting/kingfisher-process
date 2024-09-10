@@ -1,4 +1,3 @@
 -r requirements.txt
 coverage
 psycopg2-binary
-pre-commit
