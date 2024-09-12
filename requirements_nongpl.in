@@ -1,6 +1,6 @@
 dj-database-url
 django-cors-headers
-Django<5
+django<5
 djangorestframework
 drf-spectacular
 gunicorn[setproctitle]
