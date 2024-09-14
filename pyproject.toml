@@ -19,10 +19,7 @@ ignore = [
   "PTH",  # pathlib
   "A002",  # compile builtin
   "ARG001", "ARG002", "RUF012",  # Django
-  "N818",  # AlreadyExists error
   "PLW2901",  # release_or_record overridden
-  "S104",  # Docker ALLOWED_HOSTS
-  "S324",  # md5 hash
   "TRY003",  # Django command errors
 ]
 

@@ -2,7 +2,7 @@ class KingfisherProcessError(Exception):
     """Base class for exceptions from within this project."""
 
 
-class AlreadyExists(KingfisherProcessError):
+class AlreadyExists(KingfisherProcessError):  # noqa: N818
     """Raised if an object is already saved to the database."""
 
 
