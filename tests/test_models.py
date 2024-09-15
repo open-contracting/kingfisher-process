@@ -37,7 +37,7 @@ class CollectionTests(TestCase):
         obj = collection(parent=source, transform_type="compile-releases")
         obj.save()
 
-        obj.clean_fields()  # no exception
+        obj.clean_fields()  # no error
 
     def test_clean_fields_conditionally_mandatory(self):
         source = collection()
