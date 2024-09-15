@@ -97,7 +97,7 @@ jsonschema-specifications==2023.12.1
     #   jsonschema
 libcove==0.32.0
     # via libcoveocds
-libcoveocds==0.13.0
+libcoveocds==0.15.0
     # via -r requirements.in
 lxml==4.9.4
     # via flattentool
