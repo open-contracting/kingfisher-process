@@ -17,7 +17,6 @@ ignore = [
   "C901", "PLR091",  # complexity preferences
   "D1",  # docstrings
   "PTH",  # pathlib
-  "A002",  # compile builtin
   "ARG001", "ARG002", "RUF012",  # Django
   "PLW2901",  # release_or_record overridden
   "TRY003",  # Django command errors
