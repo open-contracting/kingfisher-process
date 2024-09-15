@@ -56,7 +56,7 @@ def create_collections(
     sample=False,
     # Steps
     upgrade=False,
-    compile=False,  # noqa: A002
+    compile=False,  # noqa: A002 # consistency
     check=False,
     # Other
     scrapyd_job="",
