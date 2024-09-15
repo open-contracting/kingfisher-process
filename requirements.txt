@@ -101,12 +101,12 @@ libcoveocds==0.15.0
     # via -r requirements.in
 lxml==4.9.4
     # via flattentool
-ocdsextensionregistry==0.3.6
+ocdsextensionregistry==0.4.0
     # via
     #   -r requirements_nongpl.txt
     #   libcoveocds
     #   ocdskit
-ocdskit==1.1.10
+ocdskit==1.2.0
     # via -r requirements_nongpl.txt
 ocdsmerge==0.6.6
     # via

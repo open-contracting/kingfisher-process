@@ -123,12 +123,12 @@ lxml==4.9.4
     # via
     #   -r requirements.txt
     #   flattentool
-ocdsextensionregistry==0.3.6
+ocdsextensionregistry==0.4.0
     # via
     #   -r requirements.txt
     #   libcoveocds
     #   ocdskit
-ocdskit==1.1.10
+ocdskit==1.2.0
     # via -r requirements.txt
 ocdsmerge==0.6.6
     # via
