@@ -80,10 +80,7 @@ class LoadTests(TransactionTestCase):
     @patch("yapw.methods.publish")
     def test_source_invalid(self, publish):
         with captured_stderr() as stderr:
-            try:
-                call_command("load", "--source", "nonexistent", "--note", "x", path("file.json"))
-            except Exception as e:
-                self.fail(f"Unexpected exception {e}")
+            call_command("load", "--source", "nonexistent", "--note", "x", path("file.json"))  # no error
 
             self.assertTrue(
                 "The --source argument can't be validated, because a Scrapyd URL is not configured in "
@@ -122,10 +119,7 @@ class LoadTests(TransactionTestCase):
         spiders.return_value = ["france"]
 
         with self.settings(SCRAPYD={"url": "http://example.com", "project": "kingfisher"}):
-            try:
-                call_command("load", "--source", "nonexistent", "--note", "x", "--force", path("file.json"))
-            except Exception as e:
-                self.fail(f"Unexpected exception {e}")
+            call_command("load", "--source", "nonexistent", "--note", "x", "--force", path("file.json"))  # no error
 
     @patch("process.scrapyd.spiders")
     @patch("yapw.methods.publish")
@@ -133,10 +127,7 @@ class LoadTests(TransactionTestCase):
         spiders.return_value = ["france"]
 
         with self.settings(SCRAPYD={"url": "http://example.com", "project": "kingfisher"}):
-            try:
-                call_command("load", "--source", "france_local", "--note", "x", "--force", path("file.json"))
-            except Exception as e:
-                self.fail(f"Unexpected exception {e}")
+            call_command("load", "--source", "france_local", "--note", "x", "--force", path("file.json"))  # no error
 
     def test_unique_deleted_at(self):
         source = collection(deleted_at="2001-01-01 00:00:00")
