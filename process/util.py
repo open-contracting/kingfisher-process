@@ -23,9 +23,7 @@ YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_
 
 
 def wrap(string):
-    """
-    Format a long string as a help message, and return it.
-    """
+    """Format a long string as a help message, and return it."""
     return "\n".join(fill(paragraph, width=78, replace_whitespace=False) for paragraph in string.split("\n"))
 
 
@@ -123,9 +121,7 @@ def create_step(name, collection_id, **kwargs):
 
 @contextmanager
 def delete_step(*args, **kwargs):
-    """
-    Delete the named step and run any finish callback only if successful or if the error is expected.
-    """
+    """Delete the named step and run any finish callback only if successful or if the error is expected."""
     try:
         yield
     # Delete the step so that the collection is completable, only if the error was expected.

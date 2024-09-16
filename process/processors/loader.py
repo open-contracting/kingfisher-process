@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def file_or_directory(path):
-    """
-    Check whether the path exists. Raise an exception if not.
-    """
+    """Check whether the path exists. Raise an exception if not."""
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": path})
     return path

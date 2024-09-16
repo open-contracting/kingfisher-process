@@ -78,9 +78,7 @@ class CollectionViewSet(viewsets.ViewSet):
         },
     )
     def create(self, request):
-        """
-        Create an original collection and any derived collections.
-        """
+        """Create an original collection and any derived collections."""
         serializer = CreateCollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -112,9 +110,7 @@ class CollectionViewSet(viewsets.ViewSet):
     @extend_schema(request=CloseCollectionSerializer, responses={202: None})
     @action(detail=True, methods=["post"])
     def close(self, request, pk=None):
-        """
-        Publish a message to RabbitMQ to close a root collection and its derived collections, if any.
-        """
+        """Publish a message to RabbitMQ to close a root collection and its derived collections, if any."""
         serializer = CloseCollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -151,9 +147,7 @@ class CollectionViewSet(viewsets.ViewSet):
 
     @extend_schema(responses={202: None})
     def destroy(self, request, pk=None):
-        """
-        Publish a message to RabbitMQ to wipe the dataset.
-        """
+        """Publish a message to RabbitMQ to wipe the dataset."""
         with get_publisher() as client:
             client.publish({"collection_id": pk}, routing_key="wiper")
 
@@ -175,9 +169,7 @@ class CollectionViewSet(viewsets.ViewSet):
     )
     @action(detail=True)
     def metadata(self, request, pk=None):
-        """
-        Return the compiled collection's metadata.
-        """
+        """Return the compiled collection's metadata."""
         compiled_collection = get_object_or_404(Collection, pk=pk)
         collection = compiled_collection.get_root_parent()
 
@@ -243,9 +235,7 @@ class CollectionViewSet(viewsets.ViewSet):
     @extend_schema(responses=TreeSerializer(many=True))
     @action(detail=True)
     def tree(self, request, pk=None):
-        """
-        Return the original collection and its derived collections, if any.
-        """
+        """Return the original collection and its derived collections, if any."""
         result = Collection.objects.raw(
             """\
             WITH RECURSIVE tree (

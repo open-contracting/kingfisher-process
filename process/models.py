@@ -153,9 +153,7 @@ class Collection(models.Model):
                 )
 
     def get_upgraded_collection(self) -> Self | None:
-        """
-        Return the upgraded collection or None.
-        """
+        """Return the upgraded collection or None."""
         # This is a shortcut to avoid a query. It is based on the logic in clean_fields().
         if self.transform_type:
             return None
@@ -165,27 +163,21 @@ class Collection(models.Model):
             return None
 
     def get_compiled_collection(self) -> Self | None:
-        """
-        Return the compiled collection or None.
-        """
+        """Return the compiled collection or None."""
         try:
             return Collection.objects.get(transform_type=Collection.Transform.COMPILE_RELEASES, parent=self)
         except Collection.DoesNotExist:
             return None
 
     def get_root_parent(self) -> Self:
-        """
-        Return the "root" ancestor of the collection.
-        """
+        """Return the "root" ancestor of the collection."""
         if self.parent is None:
             return self
         return self.parent.get_root_parent()
 
 
 class CollectionNote(models.Model):
-    """
-    A note an analyst made about the collection.
-    """
+    """A note an analyst made about the collection."""
 
     class Level(models.TextChoices):
         INFO = "INFO"
@@ -210,9 +202,7 @@ class CollectionNote(models.Model):
 
 
 class CollectionFile(models.Model):
-    """
-    A file within the collection.
-    """
+    """A file within the collection."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
 
@@ -234,9 +224,7 @@ class CollectionFile(models.Model):
 
 
 class ProcessingStep(models.Model):
-    """
-    A step in the lifecycle of collection file.
-    """
+    """A step in the lifecycle of collection file."""
 
     class Name(models.TextChoices):
         LOAD = "LOAD"
@@ -265,9 +253,7 @@ class ProcessingStep(models.Model):
 
 
 class CollectionFileItem(models.Model):
-    """
-    An item within a file in the collection.
-    """
+    """An item within a file in the collection."""
 
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
@@ -292,9 +278,7 @@ class CollectionFileItem(models.Model):
 
 
 class Data(models.Model):
-    """
-    The contents of a release, record or compiled release.
-    """
+    """The contents of a release, record or compiled release."""
 
     hash_md5 = models.TextField()
     data = models.JSONField(encoder=JSONEncoder)
@@ -311,9 +295,7 @@ class Data(models.Model):
 
 
 class PackageData(models.Model):
-    """
-    The contents of a package, excluding the releases or records.
-    """
+    """The contents of a package, excluding the releases or records."""
 
     hash_md5 = models.TextField()
     data = models.JSONField(encoder=JSONEncoder)
@@ -330,9 +312,7 @@ class PackageData(models.Model):
 
 
 class Release(models.Model):
-    """
-    A release.
-    """
+    """A release."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
@@ -364,9 +344,7 @@ class Release(models.Model):
 
 
 class Record(models.Model):
-    """
-    A record.
-    """
+    """A record."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
@@ -395,9 +373,7 @@ class Record(models.Model):
 
 
 class CompiledRelease(models.Model):
-    """
-    A compiled release.
-    """
+    """A compiled release."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
@@ -422,9 +398,7 @@ class CompiledRelease(models.Model):
 
 
 class ReleaseCheck(models.Model):
-    """
-    The result of checking a release.
-    """
+    """The result of checking a release."""
 
     release = models.OneToOneField(Release, on_delete=models.CASCADE)
     cove_output = models.JSONField()
@@ -437,9 +411,7 @@ class ReleaseCheck(models.Model):
 
 
 class RecordCheck(models.Model):
-    """
-    The result of checking a record.
-    """
+    """The result of checking a record."""
 
     record = models.OneToOneField(Record, on_delete=models.CASCADE)
     cove_output = models.JSONField()

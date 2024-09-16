@@ -5,16 +5,12 @@ from django.conf import settings
 
 
 def configured() -> bool:
-    """
-    Return whether the connection to Scrapyd is configured.
-    """
+    """Return whether the connection to Scrapyd is configured."""
     return bool(settings.SCRAPYD["url"])
 
 
 def spiders() -> list[str]:
-    """
-    Return the names of the spiders in the Scrapyd project.
-    """
+    """Return the names of the spiders in the Scrapyd project."""
     # https://scrapyd.readthedocs.io/en/stable/api.html#listspiders-json
     url = urljoin(settings.SCRAPYD["url"], "/listspiders.json")
     response = requests.get(url, params={"project": settings.SCRAPYD["project"]}, timeout=10)

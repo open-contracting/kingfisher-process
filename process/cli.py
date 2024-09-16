@@ -8,21 +8,15 @@ from process.models import Collection
 
 class CollectionCommand(BaseCommand):
     def add_arguments(self, parser):
-        """
-        Add default arguments to the command.
-        """
+        """Add default arguments to the command."""
         parser.add_argument("collection_id", help=_("the ID of the collection"))
         self.add_collection_arguments(parser)
 
     def add_collection_arguments(self, parser):
-        """
-        Add arguments specific to this command.
-        """
+        """Add arguments specific to this command."""
 
     def handle(self, *args, **options):
-        """
-        Get the collection.
-        """
+        """Get the collection."""
         self.stderr.style_func = None
 
         logging.getLogger("process").setLevel(logging.DEBUG)
@@ -37,7 +31,5 @@ class CollectionCommand(BaseCommand):
         self.handle_collection(collection, *args, **options)
 
     def handle_collection(self, collection, *args, **options):
-        """
-        Run the command.
-        """
+        """Run the command."""
         raise NotImplementedError("collection commands must implement handle_collection()")
