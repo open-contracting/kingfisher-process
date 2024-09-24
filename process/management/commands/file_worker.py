@@ -288,7 +288,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, *, upg
                     package_data=get_or_create(PackageData, package),
                     data=data,
                     ocid=release_or_record["ocid"],
-                    release_id=release_or_record["id"],
+                    release_id=release_or_record.get("id", ""),
                 ).save()
             case Format.compiled_release:
                 CompiledRelease(
