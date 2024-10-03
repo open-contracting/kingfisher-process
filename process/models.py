@@ -289,6 +289,7 @@ class Data(models.Model):
             # Used by process.util.get_or_create().
             models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
         ]
+        # Migration 0040 adds an index on data ->> 'date'. Django would add the index on data -> 'date'.
 
     def __str__(self):
         return "{hash_md5} (id: {id})".format_map(Default(hash_md5=self.hash_md5, id=self.pk))
