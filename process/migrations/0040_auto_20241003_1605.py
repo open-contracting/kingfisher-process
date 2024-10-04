@@ -8,4 +8,4 @@ class Migration(migrations.Migration):
         ("process", "0039_alter_processingstep_collection_and_more"),
     ]
 
-    operations = [migrations.RunSQL("CREATE INDEX data_data_date_idx ON data((data->>'date'))")]
+    operations = [migrations.RunSQL("CREATE INDEX data_data_date_idx ON data((data ->> 'date'))")]

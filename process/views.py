@@ -179,6 +179,9 @@ class CollectionViewSet(viewsets.ViewSet):
         metadata = {}
 
         with connection.cursor() as cursor:
+            # Force PostgreSQL to choose bitmap index scan instead of index scan for the data_pkey index.
+            cursor.execute("SET LOCAL enable_indexscan = OFF")
+
             cursor.execute(
                 """\
                 SELECT
@@ -187,7 +190,7 @@ class CollectionViewSet(viewsets.ViewSet):
                     MAX(data ->> 'date') AS published_to
                 FROM
                     compiled_release
-                    JOIN data ON compiled_release.data_id = data.id
+                    JOIN data ON data.id = data_id
                 WHERE
                     collection_id = %(collection_id)s
                     AND data ->> 'date' > '1970-01-01'
@@ -195,6 +198,7 @@ class CollectionViewSet(viewsets.ViewSet):
                 """,
                 {"collection_id": pk, "today": str(datetime.datetime.now(tz=datetime.UTC).date())},
             )
+
             metadata.update(dictfetchone(cursor))
 
             cursor.execute(
