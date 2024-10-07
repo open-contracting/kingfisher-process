@@ -186,15 +186,14 @@ class CollectionViewSet(viewsets.ViewSet):
                 """\
                 SELECT
                     LEFT(MAX(ocid), 11) AS ocid_prefix,
-                    MIN(data ->> 'date') AS published_from,
-                    MAX(data ->> 'date') AS published_to
+                    MIN(release_date) AS published_from,
+                    MAX(release_date) AS published_to
                 FROM
                     compiled_release
-                    JOIN data ON data.id = data_id
                 WHERE
                     collection_id = %(collection_id)s
-                    AND data ->> 'date' > '1970-01-01'
-                    AND data ->> 'date' <= %(today)s
+                    AND release_date > '1970-01-01'
+                    AND release_date <= %(today)s
                 """,
                 {"collection_id": pk, "today": str(datetime.datetime.now(tz=datetime.UTC).date())},
             )

@@ -23,7 +23,13 @@ def save_compiled_release(merged, collection, ocid):
 
     data = get_or_create(Data, merged)
 
-    release = CompiledRelease(collection=collection, collection_file_item=collection_file_item, data=data, ocid=ocid)
+    release = CompiledRelease(
+        collection=collection,
+        collection_file_item=collection_file_item,
+        data=data,
+        ocid=ocid,
+        release_date=merged.get("date"),
+    )
     release.save()
 
     return release

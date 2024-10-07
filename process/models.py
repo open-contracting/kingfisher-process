@@ -289,7 +289,6 @@ class Data(models.Model):
             # Used by process.util.get_or_create().
             models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
         ]
-        # Migration 0040 adds an index on data ->> 'date'. Django would add the index on data -> 'date'.
 
     def __str__(self):
         return "{hash_md5} (id: {id})".format_map(Default(hash_md5=self.hash_md5, id=self.pk))
@@ -318,8 +317,9 @@ class Release(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
-    release_id = models.TextField(blank=True)
     ocid = models.TextField(blank=True)
+    release_id = models.TextField(blank=True)
+    release_date = models.TextField(blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
     package_data = models.ForeignKey(PackageData, on_delete=models.CASCADE, db_index=False)
@@ -380,6 +380,7 @@ class CompiledRelease(models.Model):
     collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
+    release_date = models.TextField(blank=True)
 
     data = models.ForeignKey(Data, on_delete=models.CASCADE, db_index=False)
 
