@@ -179,9 +179,6 @@ class CollectionViewSet(viewsets.ViewSet):
         metadata = {}
 
         with connection.cursor() as cursor:
-            # Force PostgreSQL to choose bitmap index scan instead of index scan for the data_pkey index.
-            cursor.execute("SET LOCAL enable_indexscan = OFF")
-
             cursor.execute(
                 """\
                 SELECT
