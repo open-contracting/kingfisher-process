@@ -52,7 +52,7 @@ defusedxml==0.7.1
     #   odfpy
 dj-database-url==2.0.0
     # via -r requirements.txt
-django==4.2.15
+django==4.2.16
     # via
     #   -r requirements.txt
     #   dj-database-url
@@ -75,7 +75,7 @@ flattentool==0.24.0
     # via
     #   -r requirements.txt
     #   libcove
-gunicorn==22.0.0
+gunicorn[setproctitle]==22.0.0
     # via -r requirements.txt
 idna==3.7
     # via
@@ -117,7 +117,7 @@ libcove==0.32.0
     # via
     #   -r requirements.txt
     #   libcoveocds
-libcoveocds==0.16.0
+libcoveocds[perf]==0.16.0
     # via -r requirements.txt
 lxml==4.9.4
     # via
@@ -128,7 +128,7 @@ ocdsextensionregistry==0.4.0
     #   -r requirements.txt
     #   libcoveocds
     #   ocdskit
-ocdskit==1.2.0
+ocdskit[perf]==1.2.0
     # via -r requirements.txt
 ocdsmerge==0.6.6
     # via
@@ -143,7 +143,11 @@ openpyxl==3.1.2
     #   -r requirements.txt
     #   flattentool
 orjson==3.9.15
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   libcoveocds
+    #   ocdskit
+    #   yapw
 packaging==24.0
     # via
     #   -r requirements.txt
@@ -216,14 +220,9 @@ schema==0.7.5
 sentry-sdk==2.8.0
     # via -r requirements.txt
 setproctitle==1.2.2
-    # via -r requirements.txt
-setuptools==74.1.1
     # via
     #   -r requirements.txt
-    #   zc-lockfile
-    #   zc-zlibstorage
-    #   zodbpickle
-    #   zope-interface
+    #   gunicorn
 simplejson==3.17.2
     # via -r requirements.txt
 six==1.16.0
@@ -262,7 +261,7 @@ xmltodict==0.13.0
     # via
     #   -r requirements.txt
     #   flattentool
-yapw==0.1.4
+yapw[perf]==0.1.4
     # via -r requirements.txt
 zc-lockfile==3.0.post1
     # via
