@@ -25,9 +25,7 @@ class Command(BaseCommand):
         )
 
 
-def callback(client_state, channel, method, properties, input_message):
-    collection_id = input_message["collection_id"]
-
+def delete_collection(collection_id):
     tables = [
         ("record", None),  # references collection_file_item
         ("release", None),  # references collection_file_item
@@ -66,5 +64,21 @@ def callback(client_state, channel, method, properties, input_message):
                 )
 
     Collection.objects.filter(pk=collection_id).delete()
+
+
+def callback(client_state, channel, method, properties, input_message):
+    collection_id = input_message["collection_id"]
+
+    try:
+        collection = Collection.objects.get(pk=collection_id)
+    except Collection.DoesNotExist:
+        pass
+    else:
+        if compiled_collection := collection.get_compiled_collection():
+            delete_collection(compiled_collection.pk)
+        if upgraded_collection := collection.get_upgraded_collection():
+            delete_collection(upgraded_collection.pk)
+
+    delete_collection(collection_id)
 
     ack(client_state, channel, method.delivery_tag)
