@@ -33,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "^0z5u6!dqjb%7s4&3nhg57q-h%)+_u*osk5k!uf-6n_0#2*p_4")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not production
+DEBUG = os.getenv("DEBUG", str(not production)) == "True"
 
 ALLOWED_HOSTS = [".localhost", "127.0.0.1", "[::1]", "0.0.0.0"]  # noqa: S104 # Docker
 if "ALLOWED_HOSTS" in os.environ:
@@ -170,6 +170,11 @@ LOGGING = {
         },
         "django.security.DisallowedHost": {
             "handlers": ["null"],
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "DEBUG" if production else os.getenv("LOG_LEVEL", "INFO"),
             "propagate": False,
         },
         "requests_cache.policy.actions": {
