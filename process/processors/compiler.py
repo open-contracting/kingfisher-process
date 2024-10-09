@@ -28,7 +28,7 @@ def save_compiled_release(merged, collection, ocid):
         collection_file_item=collection_file_item,
         data=data,
         ocid=ocid,
-        release_date=merged.get("date"),
+        release_date=merged.get("date") or "",
     )
     release.save()
 
