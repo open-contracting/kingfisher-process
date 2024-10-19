@@ -33,7 +33,6 @@ if using_libcoveocds:
     CONFIG.config["cache_all_requests"] = True
     # Skip empty field checks, covered by Pelican.
     CONFIG.config["additional_checks"] = "none"
-    # Skip duplicate release IDs, covered by notebooks.
     CONFIG.config["skip_aggregates"] = True
     CONFIG.config["context"] = "api"
 
