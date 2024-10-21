@@ -115,6 +115,7 @@ def _check_collection_file(collection_file):
             extensions = frozenset(extension for extension in extensions if isinstance(extension, str))
         else:
             extensions = frozenset()
+        # Security: Potential SSRF via extension URLs (within OCDS publication).
         schema = _get_schema(items_key, extensions)
 
         logger.debug("Checking %s of %s", items_key, item)
