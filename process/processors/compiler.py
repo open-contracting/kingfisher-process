@@ -60,6 +60,7 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
 def _get_merger(extensions):
     tag = settings.COMPILER_OCDS_VERSION
     url = f"file://{settings.BASE_DIR / f'{tag}.zip'}"
+    # Security: Potential SSRF via extension URLs (within OCDS publication).
     builder = ProfileBuilder(tag, extensions, standard_base_url=url)
     patched_schema = builder.patched_release_schema()
     return ocdsmerge.Merger(patched_schema)
