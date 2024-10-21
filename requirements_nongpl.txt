@@ -33,7 +33,7 @@ djangorestframework==3.15.2
     #   drf-spectacular
 drf-spectacular==0.27.2
     # via -r requirements_nongpl.in
-gunicorn[setproctitle]==22.0.0
+gunicorn==22.0.0
     # via -r requirements_nongpl.in
 idna==3.7
     # via requests
@@ -54,11 +54,11 @@ jsonschema==4.21.1
     # via drf-spectacular
 jsonschema-specifications==2023.12.1
     # via jsonschema
-ocdsextensionregistry==0.4.0
+ocdsextensionregistry==0.5.0
     # via
     #   -r requirements_nongpl.in
     #   ocdskit
-ocdskit[perf]==1.2.0
+ocdskit==1.2.0
     # via -r requirements_nongpl.in
 ocdsmerge==0.6.6
     # via
@@ -115,5 +115,5 @@ urllib3==2.2.2
     #   requests
     #   requests-cache
     #   sentry-sdk
-yapw[perf]==0.1.4
+yapw==0.1.4
     # via -r requirements_nongpl.in
