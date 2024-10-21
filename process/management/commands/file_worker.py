@@ -32,12 +32,12 @@ consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
-SUPPORTED_FORMATS = {Format.compiled_release, Format.record_package, Format.release_package}
+SUPPORTED_FORMATS = {Format.release_package, Format.record_package, Format.compiled_release}
 ERROR = CollectionNote.Level.ERROR
 
 
 class Command(BaseCommand):
-    help = w(t("Create records, releases and compiled releases"))
+    help = w(t("Create releases, records and compiled releases"))
 
     def handle(self, *args, **options):
         consume(

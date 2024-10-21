@@ -16,17 +16,17 @@ Database tables
    * - ``collection``
      - A collection, like the collection of files written to a crawl directory by Kingfisher Collect. See :ref:`db-collection`.
    * - ``collection_file``
-     - A file containing a record package or release package, like the files written by Kingfisher Collect.
+     - A file containing a release package or record package, like the files written by Kingfisher Collect.
    * - ``collection_file_item``
      - A passthrough table. `#324 <https://github.com/open-contracting/kingfisher-process/issues/324>`__
    * - ``collection_note``
      - A collection note. See :ref:`db-collection_note`.
    * - ``package_data``
-     - The metadata for a record package or release package.
+     - The metadata for a release package or record package.
 
        The metadata is stored separately, to only store one copy of the same metadata within the same collection or across different collections.
    * - ``data``
-     - The data for a record, release or compiled release.
+     - The data for a release, record or compiled release.
 
        The data is stored separately, to only store one copy of the same data across different collections of the same publication.
    * - ``record``
@@ -180,13 +180,13 @@ WARNING-level notes
        See OCDS Kit's `upgrade <https://ocdskit.readthedocs.io/en/latest/cli/ocds.html#upgrade>`__ command.
    * - Various
      - 🗜
-     - :ref:`cli-record_compiler` or :ref:`cli-release_compiler` extends the release schema.
+     - :ref:`cli-release_compiler` or :ref:`cli-record_compiler` extends the release schema.
      - An OCDS extension is not retrievable or is invalid UTF-8, JSON or ZIP.
 
        Any merge rules from the extension aren't applied.
    * - ``Multiple objects have the `id` value ({key}) in the `{path}` array``
      - 🗜
-     - :ref:`cli-record_compiler` or :ref:`cli-release_compiler` creates a compiled release.
+     - :ref:`cli-release_compiler` or :ref:`cli-record_compiler` creates a compiled release.
      - An array contains objects with the same ID.
 
        Potential data loss, if the duplicates differ.
@@ -236,7 +236,7 @@ ERROR-level notes
      - RabbitMQ message
    * - ``OCID {ocid} can't be compiled``
      - 🗜
-     - :ref:`cli-record_compiler` or :ref:`cli-release_compiler` fails to create a compiled release.
+     - :ref:`cli-release_compiler` or :ref:`cli-record_compiler` fails to create a compiled release.
      - The data source doesn't conform to OCDS.
      -
 

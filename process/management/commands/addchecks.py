@@ -30,7 +30,7 @@ class Command(CollectionCommand):
             collection.steps.append("check")
             collection.save(update_fields=["steps"])
 
-        for model, related_name in ((Record, "recordcheck"), (Release, "releasecheck")):
+        for model, related_name in ((Release, "releasecheck"), (Record, "recordcheck")):
             self.stderr.write(
                 f"Publishing collection files with missing {model.__name__} checks for collection {collection}"
             )

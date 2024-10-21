@@ -140,7 +140,7 @@ Consumes messages published by other software, like Kingfisher Collect.
 file_worker
 ~~~~~~~~~~~
 
-Create records, releases and compiled releases.
+Create releases, records and compiled releases.
 
 .. code-block:: bash
 
@@ -162,7 +162,7 @@ Errors if the ``ENABLE_CHECKER`` :ref:`environment variable<environment-variable
 compiler
 ~~~~~~~~
 
-Start compilation and route messages to the record or release compilers.
+Start compilation and route messages to the release compiler or record compiler.
 
 Performs no work if the collection's ``steps`` field excludes "compile".
 
