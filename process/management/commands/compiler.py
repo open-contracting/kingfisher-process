@@ -38,6 +38,10 @@ def callback(client_state, channel, method, properties, input_message):
     # Acknowledge early when using the Splitter pattern.
     ack(client_state, channel, method.delivery_tag)
 
+    # No action is performed if the collection is cancelled or deleted.
+    if collection.deleted_at:
+        return
+
     # No action is performed for "collection_closed" messages for "record package" collections.
     if collection.data_type and collection.data_type["format"] == Format.record_package and not collection_file:
         return
@@ -72,9 +76,9 @@ def callback(client_state, channel, method, properties, input_message):
             create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
 
             message = {
-                "ocid": item["ocid"],
                 "collection_id": collection.pk,
                 "compiled_collection_id": compiled_collection.pk,
+                "ocid": item["ocid"],
             }
             publish(client_state, channel, message, publish_routing_key)
 

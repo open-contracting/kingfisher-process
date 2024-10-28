@@ -64,9 +64,11 @@ Add processing steps to check data, if unchecked.
 cancelcollection
 ~~~~~~~~~~~~~~~~
 
-Cancel the :ref:`cli-finisher` worker for a collection.
+Cancel all processing of a collection.
 
-For performance, the finisher worker picks one message for each collection, and ignores the rest. It requeues the message until the collection is completed. If the collection can never be completed, run this command to stop the requeueing.
+.. note::
+
+   For performance, the finisher worker picks one message for each collection, and ignores the rest. It requeues the message until the collection is completed. If the collection can never be completed, cancel the collection to stop the requeueing.
 
 .. code-block:: bash
 

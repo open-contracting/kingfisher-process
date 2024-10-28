@@ -62,6 +62,12 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
+    collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+    collection = collection_file.collection
+    if collection.deleted_at:
+        ack(client_state, channel, method.delivery_tag)
+        return
+
     try:
         with (
             delete_step(
@@ -72,8 +78,6 @@ def callback(client_state, channel, method, properties, input_message):
             ),
             transaction.atomic(),
         ):
-            collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
-            collection = collection_file.collection
             upgraded_collection_file_id = process_file(collection_file)
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}

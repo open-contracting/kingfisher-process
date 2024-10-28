@@ -29,25 +29,28 @@ def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
+    compiled_collection = Collection.objects.get(pk=compiled_collection_id)
+    if compiled_collection.deleted_at:
+        ack(client_state, channel, method.delivery_tag)
+        return
+
     with (
         delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
         transaction.atomic(),
     ):
-        release = compile_release(compiled_collection_id, ocid)
+        release = compile_release(compiled_collection, ocid)
 
     message = {
-        "ocid": ocid,
         "collection_id": compiled_collection_id,
         "compiled_release_id": release.pk if release else None,
+        "ocid": ocid,
     }
     publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
 
 
-def compile_release(compiled_collection_id, ocid):
-    collection = Collection.objects.get(pk=compiled_collection_id)
-
+def compile_release(collection, ocid):
     try:
         compiled_release = collection.compiledrelease_set.get(ocid=ocid)
         raise AlreadyExists(f"Compiled release {compiled_release} already exists in collection {collection}")

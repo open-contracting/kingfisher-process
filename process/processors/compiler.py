@@ -4,8 +4,8 @@ import logging
 import ocdsmerge
 import ocdsmerge.exceptions
 from django.conf import settings
+from ocdsextensionregistry import ProfileBuilder
 from ocdsextensionregistry.exceptions import ExtensionWarning
-from ocdsextensionregistry.profile_builder import ProfileBuilder
 
 from process.models import CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data
 from process.util import create_note, create_warnings_note, get_or_create

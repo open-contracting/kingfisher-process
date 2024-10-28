@@ -2,7 +2,6 @@ import logging
 import threading
 import time
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models.functions import Now
@@ -22,13 +21,11 @@ consume_routing_keys = [
     "release_compiler",
     "record_compiler",
     "collection_closed",
-    "collection_cancelled",
 ]
 routing_key = "finisher"
 logger = logging.getLogger(__name__)
 lock = threading.Lock()
 requeued = set()
-ignored = set()
 
 
 class Command(BaseCommand):
@@ -43,17 +40,14 @@ class Command(BaseCommand):
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
 
-    # See cancelcollection command and documentation.
-    if method.routing_key == f"{settings.RABBIT_EXCHANGE_NAME}_collection_cancelled" or collection_id in ignored:
-        ignored.add(collection_id)
-        ack(client_state, channel, method.delivery_tag)
-        return
-
     # Run queries only for redelivered messages.
     if method.redelivered:
-        with transaction.atomic():
-            collection = Collection.objects.get(pk=collection_id)
+        collection = Collection.objects.get(pk=collection_id)
+        if collection.deleted_at:
+            ack(client_state, channel, method.delivery_tag)
+            return
 
+        with transaction.atomic():
             if completable(collection):
                 # Use optimistic locking to update the collections.
                 if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
@@ -77,7 +71,7 @@ def callback(client_state, channel, method, properties, input_message):
                 nack(client_state, channel, method.delivery_tag, requeue=True)
                 return
 
-    # If no message has been requeued for the collection, track the collection and requeue the message.
+    # If no message has yet been requeued for the collection, track the collection and requeue the message.
     elif collection_id not in requeued:  # no lock at first, for performance
         # Use a lock and re-do the check, to prevent multiple requeues within each collection.
         # If the collections were known in advance, we could use a non-blocking lock for each collection.

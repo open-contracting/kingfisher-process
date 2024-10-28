@@ -27,19 +27,22 @@ class Command(BaseCommand):
 
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
-    # In Kingfisher Collect, `path` isn't set if `errors` is set.
-    if input_message.get("errors") and not input_message.get("path"):
-        input_message["path"] = input_message.get("url")
+    collection_file_url = input_message["url"]
+
+    collection = Collection.objects.get(pk=collection_id)
+    if collection.deleted_at:
+        ack(client_state, channel, method.delivery_tag)
+        return
+
+    # In Kingfisher Collect, `path` is set if and only if `errors` isn't set.
+    if "path" in input_message:
+        filename = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
     else:
-        input_message["path"] = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, input_message["path"])
+        filename = collection_file_url
 
     with transaction.atomic():
-        collection = Collection.objects.get(pk=collection_id)
         collection_file = create_collection_file(
-            collection,
-            filename=input_message.get("path"),
-            url=input_message.get("url"),
-            errors=input_message.get("errors"),
+            collection, filename=filename, url=collection_file_url, errors=input_message.get("errors")
         )
 
     # FileError items from Kingfisher Collect are not processed further.

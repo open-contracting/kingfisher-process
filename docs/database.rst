@@ -91,7 +91,7 @@ collection table
    * - ``completed_at``
      - The time at which processing completed.
    * - ``deleted_at``
-     - The time at which the collection was deleted.
+     - The time at which the collection was cancelled.
    * - ``cached_releases_count``
      - The number of rows in the ``release`` table for this collection, once completed.
    * - ``cached_records_count``
