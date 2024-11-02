@@ -1,6 +1,5 @@
 import argparse
 import copy
-import json
 import logging
 import os
 
@@ -9,7 +8,7 @@ from django.utils.translation import gettext as t
 from process.exceptions import InvalidFormError
 from process.forms import CollectionFileForm, CollectionForm, CollectionNote, CollectionNoteForm
 from process.models import Collection, CollectionFile, ProcessingStep
-from process.util import create_note, create_step
+from process.util import create_step
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +20,12 @@ def file_or_directory(path):
     return path
 
 
-def create_collection_file(collection, filename=None, url=None, errors=None) -> CollectionFile:
+def create_collection_file(collection, filename=None, url=None) -> CollectionFile:
     """
     Create file for a collection and steps for this file.
 
     :param Collection collection: collection
     :param str filename: path to file data
-    :param json errors: errors to be stored
     :returns: created collection file
     :raises InvalidFormError: if there is a validation error
     """
@@ -35,12 +33,7 @@ def create_collection_file(collection, filename=None, url=None, errors=None) -> 
 
     if form.is_valid():
         collection_file = form.save()
-        if not errors:
-            create_step(ProcessingStep.Name.LOAD, collection.pk, collection_file=collection_file)
-        else:
-            note = f"Couldn't download {collection_file}"  # path is set to url in api_loader
-            create_note(collection, CollectionNote.Level.ERROR, note, data=json.loads(errors))
-
+        create_step(ProcessingStep.Name.LOAD, collection.pk, collection_file=collection_file)
         return collection_file
 
     raise InvalidFormError(form.error_messages)

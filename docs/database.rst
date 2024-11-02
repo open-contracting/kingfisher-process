@@ -6,7 +6,7 @@ Database tables
 
 ..
    To update the diagram, see https://ocp-software-handbook.readthedocs.io/en/latest/services/postgresql.html#generate-entity-relationship-diagram
-   java -jar schemaspy.jar -t pgsql -dp postgresql.jar -host localhost -db kingfisher_process -o schemaspy -norows -I '(django|auth).*'
+   java -jar schemaspy.jar -t pgsql -dp postgresql.jar -o schemaspy -norows -I '(django|auth).*' -host localhost -db kingfisher_process -u MYUSER
 
 .. list-table::
    :header-rows: 1
@@ -81,7 +81,7 @@ collection table
 
        Use this column to find the crawl log.
    * - ``expected_files_count``
-     - The number of messages to expect from Kingfisher Collect.
+     - The number of non-error messages to expect from Kingfisher Collect.
    * - ``store_start_at``
      - The time at which the collection was added.
    * - ``store_end_at``
