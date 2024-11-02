@@ -39,11 +39,10 @@ class CompileReleaseTests(TransactionTestCase):
         collection = Collection.objects.get(pk=3)
         ocid = "ocds-px0z7d-5052-5001-1"
         compiled_release = CompiledRelease.objects.get(collection_id=3, ocid=ocid)
-        compiled_release.collection_file_item.collection_file.delete()
+        compiled_release.collection_file.delete()
 
         release = compile_release(collection, ocid)
 
         self.assertEqual(release.ocid, ocid)
         self.assertEqual(release.collection.id, 3)
-        self.assertEqual(release.collection_file_item.number, 0)
-        self.assertEqual(release.collection_file_item.collection_file.filename, f"{ocid}.json")
+        self.assertEqual(release.collection_file.filename, f"{ocid}.json")

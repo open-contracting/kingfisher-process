@@ -4,7 +4,6 @@ from django.test import TestCase
 from process.models import (
     Collection,
     CollectionFile,
-    CollectionFileItem,
     CollectionNote,
     CompiledRelease,
     Data,
@@ -144,18 +143,6 @@ class CollectionFileTests(TestCase):
 
         obj.filename = "/path/to/file.json"
         self.assertEqual(str(obj), "/path/to/file.json (id: {id})")
-
-
-class CollectionFileItemTests(TestCase):
-    def test_str(self):
-        obj = CollectionFileItem()
-        self.assertEqual(str(obj), "{collection_file_id}:{number} (id: {id})")
-
-        obj.number = 10
-        self.assertEqual(str(obj), "{collection_file_id}:10 (id: {id})")
-
-        obj.collection_file_id = 1
-        self.assertEqual(str(obj), "1:10 (id: {id})")
 
 
 class DataTests(TestCase):

@@ -7,7 +7,7 @@ from django.conf import settings
 from ocdsextensionregistry import ProfileBuilder
 from ocdsextensionregistry.exceptions import ExtensionWarning
 
-from process.models import CollectionFile, CollectionFileItem, CollectionNote, CompiledRelease, Data
+from process.models import CollectionFile, CollectionNote, CompiledRelease, Data
 from process.util import create_note, create_warnings_note, get_or_create
 
 logger = logging.getLogger(__name__)
@@ -18,14 +18,11 @@ def save_compiled_release(merged, collection, ocid):
     collection_file = CollectionFile(collection=collection, filename=f"{ocid}.json")
     collection_file.save()
 
-    collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
-    collection_file_item.save()
-
     data = get_or_create(Data, merged)
 
     release = CompiledRelease(
         collection=collection,
-        collection_file_item=collection_file_item,
+        collection_file=collection_file,
         data=data,
         ocid=ocid,
         release_date=merged.get("date") or "",

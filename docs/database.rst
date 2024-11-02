@@ -17,8 +17,6 @@ Database tables
      - A collection, like the collection of files written to a crawl directory by Kingfisher Collect. See :ref:`db-collection`.
    * - ``collection_file``
      - A file containing a release package or record package, like the files written by Kingfisher Collect.
-   * - ``collection_file_item``
-     - A passthrough table. `#324 <https://github.com/open-contracting/kingfisher-process/issues/324>`__
    * - ``collection_note``
      - A collection note. See :ref:`db-collection_note`.
    * - ``package_data``

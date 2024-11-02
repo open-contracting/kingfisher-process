@@ -3,7 +3,7 @@ from ocdskit.exceptions import UnknownFormatError
 
 from process.exceptions import EmptyFormatError, UnsupportedFormatError
 from process.management.commands.file_worker import process_file
-from process.models import CollectionFile, CollectionFileItem, PackageData, Release
+from process.models import CollectionFile, PackageData, Release
 from tests.fixtures import collection
 
 
@@ -57,7 +57,7 @@ class ProcessFileTests(TransactionTestCase):
         collection_file.filename = "tests/fixtures/collection_file.json"
         collection_file.save()
 
-        CollectionFileItem.objects.filter(collection_file=collection_file).delete()
+        Release.objects.filter(collection_file=collection_file).delete()
         CollectionFile.objects.get(pk=3).delete()
 
         collection_file = CollectionFile.objects.select_related("collection").get(pk=1)
@@ -69,26 +69,13 @@ class ProcessFileTests(TransactionTestCase):
         self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")
         self.assertEqual(upgraded_collection_file.collection.parent.id, collection_file.collection.id)
 
-        self.assertEqual(CollectionFileItem.objects.filter(collection_file=collection_file).count(), 1)
-        self.assertEqual(CollectionFileItem.objects.filter(collection_file=upgraded_collection_file).count(), 1)
-
+        self.assertEqual(PackageData.objects.filter(release__collection_file=collection_file).distinct().count(), 1)
         self.assertEqual(
-            PackageData.objects.filter(release__collection_file_item__collection_file=collection_file)
-            .distinct()
-            .count(),
-            1,
-        )
-        self.assertEqual(
-            PackageData.objects.filter(release__collection_file_item__collection_file=upgraded_collection_file)
-            .distinct()
-            .count(),
-            1,
+            PackageData.objects.filter(release__collection_file=upgraded_collection_file).distinct().count(), 1
         )
 
-        self.assertEqual(Release.objects.filter(collection_file_item__collection_file=collection_file).count(), 100)
-        self.assertEqual(
-            Release.objects.filter(collection_file_item__collection_file=upgraded_collection_file).count(), 100
-        )
+        self.assertEqual(Release.objects.filter(collection_file=collection_file).count(), 100)
+        self.assertEqual(Release.objects.filter(collection_file=upgraded_collection_file).count(), 100)
 
         self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")
         self.assertEqual(upgraded_collection_file.filename, "tests/fixtures/collection_file.json")

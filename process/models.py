@@ -8,8 +8,8 @@ from django.utils.translation import gettext_lazy as _
 # DjangoJSONEncoder serializes Decimal values as strings. simplejson serializes Decimal values as numbers.
 from simplejson import JSONEncoder
 
-# # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version. We
-# don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
+# # We set `db_table` so that the table names are identical to those created by SQLAlchemy in an earlier version.
+# We don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
 # and `ocid`. Instead, we set `Meta.constraints` and `Meta.indexes`.
 #
 # https://docs.djangoproject.com/en/4.2/ref/databases/#indexes-for-varchar-and-text-columns
@@ -242,7 +242,6 @@ class ProcessingStep(models.Model):
     class Meta:
         db_table = "processing_step"
         indexes = [
-            # ForeignKey with db_index=False.
             models.Index(name="processing_step_collection_id_ocid_idx", fields=["collection", "name", "ocid"]),
         ]
 
@@ -315,7 +314,8 @@ class Release(models.Model):
     """A release."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False, null=True)
+    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False, null=True)
 
     ocid = models.TextField(blank=True)
     release_id = models.TextField(blank=True)
@@ -331,6 +331,7 @@ class Release(models.Model):
             models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="release_collection_id_idx", fields=["collection"]),
+            models.Index(name="release_collection_file_id_idx", fields=["collection_file"]),
             models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="release_data_id_idx", fields=["data"]),
             models.Index(name="release_package_data_id_idx", fields=["package_data"]),
@@ -348,7 +349,8 @@ class Record(models.Model):
     """A record."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False, null=True)
+    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False, null=True)
 
     ocid = models.TextField(blank=True)
 
@@ -362,6 +364,7 @@ class Record(models.Model):
             models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="record_collection_id_idx", fields=["collection"]),
+            models.Index(name="record_collection_file_id_idx", fields=["collection_file"]),
             models.Index(name="record_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="record_data_id_idx", fields=["data"]),
             models.Index(name="record_package_data_id_idx", fields=["package_data"]),
@@ -377,7 +380,8 @@ class CompiledRelease(models.Model):
     """A compiled release."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False, null=True)
+    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False, null=True)
 
     ocid = models.TextField(blank=True)
     release_date = models.TextField(blank=True)
@@ -391,6 +395,7 @@ class CompiledRelease(models.Model):
             models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
+            models.Index(name="compiled_release_collection_file_id_idx", fields=["collection_file"]),
             models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="compiled_release_data_id_idx", fields=["data"]),
         ]

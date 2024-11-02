@@ -104,7 +104,7 @@ def _check_collection_file(collection_file):
         related_name = "recordcheck"
 
     items = model.objects.select_related("data", "package_data").filter(
-        **{"collection_file_item__collection_file": collection_file, f"{related_name}__isnull": True}
+        **{"collection_file": collection_file, f"{related_name}__isnull": True}
     )
 
     logger.info("Checking %s %s for collection file %s", items.count(), items_key, collection_file)

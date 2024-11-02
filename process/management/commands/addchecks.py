@@ -37,11 +37,10 @@ class Command(CollectionCommand):
 
             # SELECT DISTINCT collection_file_id FROM release
             # LEFT OUTER JOIN release_check ON release.id = release_check.release_id
-            # INNER JOIN collection_file_item ON collection_file_item_id = collection_file_item.id
             # WHERE collection_id = :collection_id AND release_check.id IS NULL
             qs = (
                 model.objects.filter(**{"collection": collection, f"{related_name}__isnull": True})
-                .values_list("collection_file_item__collection_file", flat=True)
+                .values_list("collection_file", flat=True)
                 .distinct()
             )
 

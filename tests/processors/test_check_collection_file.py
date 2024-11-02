@@ -19,8 +19,8 @@ class CheckCollectionFileTests(TransactionTestCase):
             self.fail("Unexpected IntegrityError")
 
     def test_happy_day(self):
-        ReleaseCheck.objects.filter(release__collection_file_item__collection_file=1).delete()
+        ReleaseCheck.objects.filter(release__collection_file=1).delete()
         _check_collection_file(CollectionFile.objects.get(pk=1))
-        count = ReleaseCheck.objects.filter(release__collection_file_item__collection_file=1).count()
+        count = ReleaseCheck.objects.filter(release__collection_file=1).count()
 
         self.assertEqual(count, 100)

@@ -27,10 +27,9 @@ class Command(BaseCommand):
 
 def delete_collection(collection_id):
     tables = [
-        ("record", None),  # references collection_file_item
-        ("release", None),  # references collection_file_item
-        ("compiled_release", None),  # references collection_file_item
-        ("collection_file_item", "collection_file"),  # references collection_file
+        ("record", None),  # references collection_file
+        ("release", None),  # references collection_file
+        ("compiled_release", None),  # references collection_file
         ("processing_step", None),  # references collection_file
         ("collection_file", None),
         ("collection_note", None),

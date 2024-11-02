@@ -62,7 +62,7 @@ def callback(client_state, channel, method, properties, input_message):
 
         match collection.data_type["format"]:
             case Format.record_package:
-                items = Record.objects.filter(collection_file_item__collection_file=collection_file)
+                items = Record.objects.filter(collection_file=collection_file)
                 publish_routing_key = "compiler_record"
             case Format.release_package:
                 # Return if another compiler worker received a message for the same compilable collection.

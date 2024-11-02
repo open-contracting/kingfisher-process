@@ -16,7 +16,6 @@ from yapw.methods import ack, nack, publish
 from process.exceptions import EmptyFormatError, UnsupportedFormatError
 from process.models import (
     CollectionFile,
-    CollectionFileItem,
     CollectionNote,
     CompiledRelease,
     Data,
@@ -116,7 +115,7 @@ def process_file(collection_file) -> int | None:
     """
     Load file for a given collection.
 
-    Create the whole collection_file, collection_file_item, etc. structure.
+    Create the collection_file and either the release, record or compiled_release.
     If the collection should be upgraded, create the same structure for upgraded collection as well.
 
     :param collection_file: collection file for which should be releases checked
@@ -257,9 +256,6 @@ def _read_data_from_file(filename, data_type):
 
 
 def _store_data(collection_file, package, releases_or_records, data_type, *, upgrade=False):
-    collection_file_item = CollectionFileItem(collection_file=collection_file, number=0)
-    collection_file_item.save()
-
     for release_or_record in releases_or_records:
         if upgrade:
             with create_logger_note(collection_file.collection, "ocdskit"):
@@ -280,7 +276,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, *, upg
             case Format.record_package:
                 Record(
                     collection=collection_file.collection,
-                    collection_file_item=collection_file_item,
+                    collection_file=collection_file,
                     package_data=get_or_create(PackageData, package),
                     data=data,
                     ocid=release_or_record["ocid"],
@@ -288,7 +284,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, *, upg
             case Format.release_package:
                 Release(
                     collection=collection_file.collection,
-                    collection_file_item=collection_file_item,
+                    collection_file=collection_file,
                     package_data=get_or_create(PackageData, package),
                     data=data,
                     ocid=release_or_record["ocid"],
@@ -298,7 +294,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, *, upg
             case Format.compiled_release:
                 CompiledRelease(
                     collection=collection_file.collection,
-                    collection_file_item=collection_file_item,
+                    collection_file=collection_file,
                     data=data,
                     ocid=release_or_record["ocid"],
                     release_date=release_or_record.get("date") or "",
