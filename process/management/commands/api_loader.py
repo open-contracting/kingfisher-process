@@ -40,11 +40,14 @@ def callback(client_state, channel, method, properties, input_message):
     with transaction.atomic():
         if errors:
             create_note(collection, CollectionNote.Level.ERROR, f"Couldn't download {url}", data=json.loads(errors))
-            # FileError items from Kingfisher Collect are not processed further.
+            collection_file = None
         else:
             filename = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, path)
             collection_file = create_collection_file(collection, filename=filename, url=url)
-            message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
-            publish(client_state, channel, message, routing_key)
+
+    # FileError items from Kingfisher Collect are not processed further.
+    if collection_file:
+        message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
+        publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
