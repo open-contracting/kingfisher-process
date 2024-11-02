@@ -22,16 +22,16 @@ class CompletableTests(TransactionTestCase):
     def test_not_fully_processed(self):
         collection = Collection.objects.get(pk=2)
         collection_file = CollectionFile.objects.get(pk=1)
-        collection_file_step = ProcessingStep(
+        processing_step = ProcessingStep(
             name=ProcessingStep.Name.LOAD,
             collection=Collection.objects.get(pk=2),
             collection_file=collection_file,
         )
-        collection_file_step.save()
+        processing_step.save()
 
         self.assertEqual(completable(collection), False)
 
-        collection_file_step.delete()
+        processing_step.delete()
 
         collection.store_end_at = None
         collection.save()
