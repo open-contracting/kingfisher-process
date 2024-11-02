@@ -251,31 +251,6 @@ class ProcessingStep(models.Model):
         )
 
 
-class CollectionFileItem(models.Model):
-    """An item within a file in the collection."""
-
-    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
-
-    number = models.IntegerField(blank=True)
-
-    class Meta:
-        db_table = "collection_file_item"
-        indexes = [
-            # ForeignKey with db_index=False.
-            models.Index(name="collection_file_item_collection_file_id_idx", fields=["collection_file"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                name="unique_collection_file_item_identifiers", fields=["collection_file", "number"]
-            ),
-        ]
-
-    def __str__(self):
-        return "{collection_file_id}:{number} (id: {id})".format_map(
-            Default(number=self.number, collection_file_id=self.collection_file_id, id=self.pk)
-        )
-
-
 class Data(models.Model):
     """The contents of a release, record or compiled release."""
 
@@ -314,8 +289,7 @@ class Release(models.Model):
     """A release."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False, null=True)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False, null=True)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
     release_id = models.TextField(blank=True)
@@ -332,7 +306,6 @@ class Release(models.Model):
             # ForeignKey with db_index=False.
             models.Index(name="release_collection_id_idx", fields=["collection"]),
             models.Index(name="release_collection_file_id_idx", fields=["collection_file"]),
-            models.Index(name="release_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="release_data_id_idx", fields=["data"]),
             models.Index(name="release_package_data_id_idx", fields=["package_data"]),
         ]
@@ -349,8 +322,7 @@ class Record(models.Model):
     """A record."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False, null=True)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False, null=True)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
 
@@ -365,7 +337,6 @@ class Record(models.Model):
             # ForeignKey with db_index=False.
             models.Index(name="record_collection_id_idx", fields=["collection"]),
             models.Index(name="record_collection_file_id_idx", fields=["collection_file"]),
-            models.Index(name="record_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="record_data_id_idx", fields=["data"]),
             models.Index(name="record_package_data_id_idx", fields=["package_data"]),
         ]
@@ -380,8 +351,7 @@ class CompiledRelease(models.Model):
     """A compiled release."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, db_index=False)
-    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False, null=True)
-    collection_file_item = models.ForeignKey(CollectionFileItem, on_delete=models.CASCADE, db_index=False, null=True)
+    collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, db_index=False)
 
     ocid = models.TextField(blank=True)
     release_date = models.TextField(blank=True)
@@ -396,7 +366,6 @@ class CompiledRelease(models.Model):
             # ForeignKey with db_index=False.
             models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
             models.Index(name="compiled_release_collection_file_id_idx", fields=["collection_file"]),
-            models.Index(name="compiled_release_collection_file_item_id_idx", fields=["collection_file_item"]),
             models.Index(name="compiled_release_data_id_idx", fields=["data"]),
         ]
 
