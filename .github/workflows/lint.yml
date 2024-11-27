@@ -5,6 +5,8 @@ jobs:
     uses: open-contracting/.github/.github/workflows/lint.yml@main
     permissions:
       contents: write
+    secrets:
+      personal-access-token: ${{ secrets.PAT }}
     with:
       # libcoveocds is optional (try-except block).
       standard-maintenance-scripts-ignore: libcoveocds
