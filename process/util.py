@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import random
+import threading
 import time
 import warnings
 from contextlib import contextmanager
@@ -110,9 +111,10 @@ def get_or_create(model, data):
         except OperationalError as e:
             if attempt == MAX_ATTEMPTS:
                 raise
-            logger.warning("Deadlock maybe caused by duplicate data, retrying (%s)", e)
             # Make the threads retry at different times.
-            time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
+            seconds = random.randint(1, 5)  # noqa: S311 # non-cryptographic
+            logger.warning("Deadlock, retrying after %ds on thread %d\n%s", seconds, threading.get_ident(), e)
+            time.sleep(seconds)
         else:
             return obj
 
