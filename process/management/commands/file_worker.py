@@ -1,11 +1,13 @@
 import logging
+import random
+import time
 from collections import OrderedDict
 
 import ijson
 import simplejson as json
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import OperationalError, transaction
 from django.utils.translation import gettext as t
 from ijson.common import ObjectBuilder
 from ocdskit.exceptions import UnknownFormatError
@@ -33,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = {Format.release_package, Format.record_package, Format.compiled_release}
 ERROR = CollectionNote.Level.ERROR
+MAX_ATTEMPTS = 3
 
 
 class Command(BaseCommand):
@@ -68,16 +71,27 @@ def callback(client_state, channel, method, properties, input_message):
         return
 
     try:
-        with (
-            delete_step(
-                ProcessingStep.Name.LOAD,
-                collection_file_id=collection_file_id,
-                finish=finish,
-                finish_args=(collection_id, collection_file_id),
-            ),
-            transaction.atomic(),
-        ):
-            upgraded_collection_file_id = process_file(collection_file)
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            try:
+                with (
+                    delete_step(
+                        ProcessingStep.Name.LOAD,
+                        collection_file_id=collection_file_id,
+                        finish=finish,
+                        finish_args=(collection_id, collection_file_id),
+                    ),
+                    transaction.atomic(),
+                ):
+                    upgraded_collection_file_id = process_file(collection_file)
+            # If another transaction in another thread INSERTs the same data, concurrently.
+            except OperationalError as e:
+                if attempt == MAX_ATTEMPTS:
+                    raise
+                # Make the threads retry at different times, to avoid repeating the deadlock.
+                logger.warning("Deadlock on %s %s, retrying\n%s", collection, collection_file, e)
+                time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
+            else:
+                break
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
         publish(client_state, channel, message, routing_key)

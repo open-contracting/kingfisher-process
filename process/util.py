@@ -2,16 +2,13 @@ import hashlib
 import io
 import logging
 import os
-import random
-import threading
-import time
 import warnings
 from contextlib import contextmanager
 from textwrap import fill
 
 import simplejson as json
 from django.conf import settings
-from django.db import IntegrityError, OperationalError, connections, transaction
+from django.db import IntegrityError, connections, transaction
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
@@ -22,7 +19,6 @@ from process.models import Collection, CollectionFile, CollectionNote, Processin
 logger = logging.getLogger(__name__)
 
 YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
-MAX_ATTEMPTS = 3
 
 
 def wrap(string):
@@ -99,26 +95,15 @@ def get_or_create(model, data):
         json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
     ).hexdigest()
 
-    for attempt in range(1, MAX_ATTEMPTS + 1):
-        try:
-            # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
-            with transaction.atomic():
-                obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
-        # If another thread COMMITs the same data after the SELECT, but before the INSERT.
-        except IntegrityError:
-            return model.objects.get(hash_md5=hash_md5)
-        # If multiple threads INSERT the same data at the same time, before any COMMIT.
-        except OperationalError as e:
-            if attempt == MAX_ATTEMPTS:
-                raise
-            # Make the threads retry at different times.
-            seconds = random.randint(1, 5)  # noqa: S311 # non-cryptographic
-            logger.warning("Deadlock, retrying after %ds on thread %d\n%s", seconds, threading.get_ident(), e)
-            time.sleep(seconds)
-        else:
-            return obj
+    try:
+        # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
+        with transaction.atomic():
+            obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
+    # If another transaction in another thread COMMITs the same data after the SELECT, but before the INSERT.
+    except IntegrityError:
+        obj = model.objects.get(hash_md5=hash_md5)
 
-    return None  # unreachable
+    return obj
 
 
 def create_note(collection, code, note, **kwargs):
@@ -138,11 +123,11 @@ def delete_step(*args, **kwargs):
         yield
     # Delete the step so that the collection is completable, only if the error was expected.
     except (
-        # A duplicate message is received. See the errback() function in the decorator() function.
+        # See the errback() function in the decorator() function.
         AlreadyExists,
         InvalidFormError,
         IntegrityError,
-        # See the try/except block in the file_worker worker.
+        # See the try/except block in the callback() function of the file_worker worker.
         EmptyFormatError,
     ):
         _delete_step_and_finish(*args, **kwargs)
