@@ -105,9 +105,10 @@ def get_or_create(model, data):
                 obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
         except IntegrityError:
             return model.objects.get(hash_md5=hash_md5)
-        except OperationalError:
+        except OperationalError as e:
             if attempt == MAX_ATTEMPTS:
                 raise
+            logger.warning("Deadlock maybe caused by duplicate data, retrying (%s)", e)
             time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
         else:
             return obj
