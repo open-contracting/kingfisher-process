@@ -2,6 +2,7 @@ import hashlib
 import io
 import logging
 import os
+import time
 import warnings
 from contextlib import contextmanager
 from textwrap import fill
@@ -19,7 +20,7 @@ from process.models import Collection, CollectionFile, CollectionNote, Processin
 logger = logging.getLogger(__name__)
 
 YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
-MAX_RETRIES = 3
+MAX_ATTEMPTS = 3
 
 
 def wrap(string):
@@ -96,7 +97,7 @@ def get_or_create(model, data):
         json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
     ).hexdigest()
 
-    for attempt in range(1, MAX_RETRIES + 1):
+    for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
             # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
             with transaction.atomic():
@@ -104,8 +105,9 @@ def get_or_create(model, data):
         except IntegrityError:
             return model.objects.get(hash_md5=hash_md5)
         except OperationalError:
-            if attempt == MAX_RETRIES:
+            if attempt == MAX_ATTEMPTS:
                 raise
+            time.sleep(1)
         else:
             return obj
 
