@@ -103,12 +103,15 @@ def get_or_create(model, data):
             # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
             with transaction.atomic():
                 obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
+        # If another thread COMMITs the same data after the SELECT, but before the INSERT.
         except IntegrityError:
             return model.objects.get(hash_md5=hash_md5)
+        # If multiple threads INSERT the same data at the same time, before any COMMIT.
         except OperationalError as e:
             if attempt == MAX_ATTEMPTS:
                 raise
             logger.warning("Deadlock maybe caused by duplicate data, retrying (%s)", e)
+            # Make the threads retry at different times.
             time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
         else:
             return obj
