@@ -1,6 +1,6 @@
 import logging
 
-from django.db.utils import IntegrityError
+from django.db import IntegrityError
 from django.test import TransactionTestCase
 
 from process.management.commands.checker import _check_collection_file

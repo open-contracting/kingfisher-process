@@ -8,8 +8,7 @@ from textwrap import fill
 
 import simplejson as json
 from django.conf import settings
-from django.db import connections, transaction
-from django.db.utils import IntegrityError
+from django.db import IntegrityError, OperationalError, connections, transaction
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
@@ -20,6 +19,7 @@ from process.models import Collection, CollectionFile, CollectionNote, Processin
 logger = logging.getLogger(__name__)
 
 YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
+MAX_RETRIES = 3
 
 
 def wrap(string):
@@ -96,14 +96,20 @@ def get_or_create(model, data):
         json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
     ).hexdigest()
 
-    try:
-        # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
-        with transaction.atomic():
-            obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
-    except IntegrityError:
-        obj = model.objects.get(hash_md5=hash_md5)
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
+            with transaction.atomic():
+                obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
+        except IntegrityError:
+            return model.objects.get(hash_md5=hash_md5)
+        except OperationalError:
+            if attempt == MAX_RETRIES:
+                raise
+        else:
+            return obj
 
-    return obj
+    return None  # unreachable
 
 
 def create_note(collection, code, note, **kwargs):
