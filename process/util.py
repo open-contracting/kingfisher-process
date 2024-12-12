@@ -2,6 +2,7 @@ import hashlib
 import io
 import logging
 import os
+import random
 import time
 import warnings
 from contextlib import contextmanager
@@ -107,7 +108,7 @@ def get_or_create(model, data):
         except OperationalError:
             if attempt == MAX_ATTEMPTS:
                 raise
-            time.sleep(1)
+            time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
         else:
             return obj
 
