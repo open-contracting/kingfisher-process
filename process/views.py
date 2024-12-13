@@ -241,9 +241,8 @@ class CollectionViewSet(viewsets.ViewSet):
         if compiled_collection.transform_type != Collection.Transform.COMPILE_RELEASES:
             return Response("The collection must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
 
-        notes_db = CollectionNote.objects.filter(collection_id__in=[compiled_collection.id, collection.id])
-        notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011
-        for note in notes_db:
+        notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011 # false positive
+        for note in CollectionNote.objects.filter(collection_id__in=[compiled_collection.id, collection.id]):
             notes[note.code].append([note.note, note.data])
         return Response(notes)
 
