@@ -232,6 +232,21 @@ class CollectionViewSet(viewsets.ViewSet):
 
         return Response(metadata)
 
+    @action(detail=True)
+    def notes(self, request, pk=None):
+        """Return the notes for the compiled collection and its parent collection."""
+        compiled_collection = get_object_or_404(Collection, pk=pk)
+        collection = compiled_collection.get_root_parent()
+
+        if compiled_collection.transform_type != Collection.Transform.COMPILE_RELEASES:
+            return Response("The collection must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
+
+        notes_db = CollectionNote.objects.filter(collection_id__in=[compiled_collection.id, collection.id])
+        notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011
+        for note in notes_db:
+            notes[note.code].append([note.note, note.data])
+        return Response(notes)
+
     @extend_schema(responses=TreeSerializer(many=True))
     @action(detail=True)
     def tree(self, request, pk=None):

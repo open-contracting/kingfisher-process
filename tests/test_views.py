@@ -108,6 +108,26 @@ class CollectionViewTests(APITestCase):
         response = self.client.delete(f"{base_url}/1/")
         self.assertEqual(response.status_code, 202)
 
+    def test_notes_404(self):
+        response = self.client.get(f"{base_url}/900/notes/?format=json")
+        self.assertEqual(response.status_code, 404)
+
+    def test_notes_not_compiled(self):
+        response = self.client.get(f"{base_url}/1/notes/?format=json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_notes_ok(self):
+        response = self.client.get(f"{base_url}/3/notes/?format=json")
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "INFO": [["adsfsdfsdsadf", {}]],
+                "ERROR": [],
+                "WARNING": [],
+            },
+        )
+
     def test_retrieve_404(self):
         response = self.client.get(f"{base_url}/2/tree/")
         self.assertEqual(response.status_code, 404)

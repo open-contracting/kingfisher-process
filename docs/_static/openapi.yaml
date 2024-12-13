@@ -123,6 +123,25 @@ paths:
                   publication_policy:
                     type: string
           description: ''
+  /api/collections/{id}/notes/:
+    get:
+      operationId: collections_notes_retrieve
+      description: Return the notes for the compiled collection and its parent collection.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - collections
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/collections/{id}/tree/:
     get:
       operationId: collections_tree_list
@@ -357,6 +376,7 @@ components:
         source_id:
           type: string
           description: If sourced from Scrapy, this should be the name of the spider.
+          pattern: ^([a-z]+_)*[a-z]+$
         data_version:
           type: string
           format: date-time
