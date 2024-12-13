@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = {Format.release_package, Format.record_package, Format.compiled_release}
 ERROR = CollectionNote.Level.ERROR
-MAX_ATTEMPTS = 3
+MAX_ATTEMPTS = 5
 
 
 class Command(BaseCommand):
@@ -85,10 +85,10 @@ def callback(client_state, channel, method, properties, input_message):
                     upgraded_collection_file_id = process_file(collection_file)
             # If another transaction in another thread INSERTs the same data, concurrently.
             except OperationalError as e:
+                logger.warning("Deadlock on %s %s (%d/%d)\n%s", collection, collection_file, attempt, MAX_ATTEMPTS, e)
                 if attempt == MAX_ATTEMPTS:
                     raise
                 # Make the threads retry at different times, to avoid repeating the deadlock.
-                logger.warning("Deadlock on %s %s, retrying\n%s", collection, collection_file, e)
                 time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
             else:
                 break
