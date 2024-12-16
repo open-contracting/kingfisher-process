@@ -234,14 +234,20 @@ class CollectionViewSet(viewsets.ViewSet):
 
     @action(detail=True)
     def notes(self, request, pk=None):
-        """Return the notes for the compiled collection and its parent collection."""
-        compiled_collection = get_object_or_404(Collection, pk=pk)
-        collection = compiled_collection.get_root_parent()
+        """Return the notes for the collection and its child collections."""
+        root_collection = get_object_or_404(Collection, pk=pk)
+        if root_collection.transform_type:
+            return Response("The collection must be a root collection", status=status.HTTP_400_BAD_REQUEST)
+        compiled_collection = root_collection.get_compiled_collection()
+        upgraded_collection = root_collection.get_upgraded_collection()
 
-        if compiled_collection.transform_type != Collection.Transform.COMPILE_RELEASES:
-            return Response("The collection must be a compiled collection", status=status.HTTP_400_BAD_REQUEST)
+        ids = [
+            collection.id
+            for collection in [root_collection, compiled_collection, upgraded_collection]
+            if collection is not None
+        ]
 
-        notes_db = CollectionNote.objects.filter(collection_id__in=[compiled_collection.id, collection.id])
+        notes_db = CollectionNote.objects.filter(collection_id__in=ids)
         notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011
         for note in notes_db:
             notes[note.code].append([note.note, note.data])
