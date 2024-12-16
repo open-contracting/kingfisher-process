@@ -247,9 +247,8 @@ class CollectionViewSet(viewsets.ViewSet):
             if collection is not None
         ]
 
-        notes_db = CollectionNote.objects.filter(collection_id__in=ids)
-        notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011
-        for note in notes_db:
+        notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011 # false positive
+        for note in CollectionNote.objects.filter(collection_id__in=ids):
             notes[note.code].append([note.note, note.data])
         return Response(notes)
 
