@@ -126,7 +126,7 @@ paths:
   /api/collections/{id}/notes/:
     get:
       operationId: collections_notes_retrieve
-      description: Return the notes for the compiled collection and its parent collection.
+      description: Return the notes for the collection and its child collections.
       parameters:
       - in: path
         name: id
