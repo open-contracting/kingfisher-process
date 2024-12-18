@@ -238,18 +238,17 @@ class CollectionViewSet(viewsets.ViewSet):
         root_collection = get_object_or_404(Collection, pk=pk)
         if root_collection.transform_type:
             return Response("The collection must be a root collection", status=status.HTTP_400_BAD_REQUEST)
-        compiled_collection = root_collection.get_compiled_collection()
-        upgraded_collection = root_collection.get_upgraded_collection()
-
-        ids = [
-            collection.id
-            for collection in [root_collection, compiled_collection, upgraded_collection]
-            if collection is not None
-        ]
 
         notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011 # false positive
-        for note in CollectionNote.objects.filter(collection_id__in=ids):
+        for note in CollectionNote.objects.filter(
+            collection__in=(
+                root_collection,
+                root_collection.get_upgraded_collection(),
+                root_collection.get_compiled_collection(),
+            )
+        ):
             notes[note.code].append([note.note, note.data])
+
         return Response(notes)
 
     @extend_schema(responses=TreeSerializer(many=True))
