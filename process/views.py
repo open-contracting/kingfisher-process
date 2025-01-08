@@ -239,7 +239,7 @@ class CollectionViewSet(viewsets.ViewSet):
         if root_collection.transform_type:
             return Response("The collection must be a root collection", status=status.HTTP_400_BAD_REQUEST)
 
-        notes = {level: [] for level in CollectionNote.Level.values}  # noqa: PD011 # false positive
+        notes = {level: [] for level in CollectionNote.Level.values}
         for note in CollectionNote.objects.filter(
             collection__in=(
                 root_collection,
