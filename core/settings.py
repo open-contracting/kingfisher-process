@@ -177,14 +177,16 @@ LOGGING = {
             "level": "DEBUG" if production else os.getenv("LOG_LEVEL", "INFO"),
             "propagate": False,
         },
-        "requests_cache.policy.actions": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
+        # The app uses DEBUG messages.
         "process": {
             "handlers": ["console"],
             "level": os.getenv("LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        # Never show DEBUG messages.
+        "requests_cache.policy.actions": {
+            "handlers": ["console"],
+            "level": "INFO",
             "propagate": False,
         },
     },
