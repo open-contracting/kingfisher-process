@@ -19,7 +19,7 @@ except ImportError:
     using_libcoveocds = False
 
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
-from process.util import consume, decorator, delete_step
+from process.util import consume, decorator, delete_step, get_extensions
 from process.util import wrap as w
 
 consume_routing_keys = ["file_worker", "addchecks"]
@@ -114,13 +114,8 @@ def _check_collection_file(collection_file):
         package = item.package_data.data
         package[items_key] = [item.data.data]
 
-        extensions = package.get("extensions")
-        if isinstance(extensions, list):
-            extensions = frozenset(extension for extension in extensions if isinstance(extension, str))
-        else:
-            extensions = frozenset()
         # Security: Potential SSRF via extension URLs (within OCDS publication).
-        schema = _get_schema(items_key, extensions)
+        schema = _get_schema(items_key, get_extensions(package))
 
         logger.debug("Checking %s of %s", items_key, item)
         cove_output = context_api_transform(

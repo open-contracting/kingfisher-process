@@ -19,6 +19,7 @@ from process.models import Collection, CollectionFile, CollectionNote, Processin
 logger = logging.getLogger(__name__)
 
 YAPW_KWARGS = {"url": settings.RABBIT_URL, "exchange": settings.RABBIT_EXCHANGE_NAME, "prefetch_count": 20}
+EXTENSION_URL = "https://raw.githubusercontent.com/open-contracting-extensions/ocds_{}_extension/master/extension.json"
 
 
 def wrap(string):
@@ -178,3 +179,17 @@ def create_logger_note(collection, name):
 
     if note := stream.getvalue():
         create_note(collection, CollectionNote.Level.WARNING, note)
+
+
+def get_extensions(package):
+    extensions = set()
+
+    package_extensions = package.get("extensions")
+    if isinstance(package_extensions, list):
+        extensions = {extension for extension in package_extensions if isinstance(extension, str)}
+
+    # The master version of the lots extension depends on OCDS 1.2 or the submission terms extension.
+    if EXTENSION_URL.format("lots") in extensions:
+        extensions.add(EXTENSION_URL.format("submissionTerms"))
+
+    return frozenset(extensions)
