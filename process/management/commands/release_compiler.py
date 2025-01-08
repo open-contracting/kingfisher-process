@@ -8,7 +8,7 @@ from yapw.methods import ack, publish
 from process.exceptions import AlreadyExists
 from process.models import Collection, CollectionNote, CompiledRelease, ProcessingStep, Release
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
-from process.util import consume, create_note, decorator, delete_step
+from process.util import consume, create_note, decorator, delete_step, get_extensions
 from process.util import wrap as w
 
 consume_routing_keys = ["compiler_release"]
@@ -69,13 +69,8 @@ def compile_release(collection, ocid):
     extensions = set()
     for release in releases.iterator():
         data.append(release.data.data)
-
         if release.package_data:
-            package_extensions = release.package_data.data.get("extensions", [])
-            if isinstance(package_extensions, list):
-                extensions.update(package_extensions)
-            elif package_extensions is not None:
-                logger.error("Ignored malformed extensions for release %s: %s", release, package_extensions)
+            extensions.update(get_extensions(release.package_data.data))
 
     # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
     # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases

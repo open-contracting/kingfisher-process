@@ -11,7 +11,6 @@ from process.models import CollectionFile, CollectionNote, CompiledRelease, Data
 from process.util import create_note, create_warnings_note, get_or_create
 
 logger = logging.getLogger(__name__)
-format_string = "https://raw.githubusercontent.com/open-contracting-extensions/ocds_{}_extension/master/extension.json"
 
 
 def save_compiled_release(merged, collection, ocid):
@@ -33,15 +32,6 @@ def save_compiled_release(merged, collection, ocid):
 
 
 def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
-    # It otherwise takes a very long time for requests and retries to time out.
-    # https://github.com/open-contracting/kingfisher-process/issues/436
-    if collection.source_id == "colombia_api":
-        extensions = {extension.replace(":8443", "") for extension in extensions}
-
-    # The master version of the lots extension depends on OCDS 1.2 or the submission terms extension.
-    if format_string.format("lots") in extensions:
-        extensions.add(format_string.format("submissionTerms"))
-
     with create_warnings_note(collection, ExtensionWarning):
         merger = _get_merger(frozenset(extensions))
 
