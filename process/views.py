@@ -6,7 +6,7 @@ from django.db import connection, transaction
 from django.db.models.functions import Now
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -16,6 +16,7 @@ from process.processors.loader import create_collections
 from process.util import create_note, get_publisher
 
 logger = logging.getLogger(__name__)
+LEVELS = CollectionNote.Level.values
 
 
 # https://docs.djangoproject.com/en/4.2/topics/db/sql/#executing-custom-sql-directly
@@ -233,6 +234,16 @@ class CollectionViewSet(viewsets.ViewSet):
         return Response(metadata)
 
     @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="level",
+                location=OpenApiParameter.QUERY,
+                description="Filter by message severity",
+                enum=LEVELS,
+                explode=True,
+                many=True,
+            ),
+        ],
         responses={
             200: {
                 "type": "object",
@@ -242,10 +253,10 @@ class CollectionViewSet(viewsets.ViewSet):
                         "items": [{"type": "string"}, {"type": "object"}],
                         "additionalItems": False,
                     }
-                    for level in CollectionNote.Level.values
+                    for level in LEVELS
                 },
             }
-        }
+        },
     )
     @action(detail=True)
     def notes(self, request, pk=None):
@@ -254,13 +265,14 @@ class CollectionViewSet(viewsets.ViewSet):
         if root_collection.transform_type:
             return Response("The collection must be a root collection", status=status.HTTP_400_BAD_REQUEST)
 
-        notes = {level: [] for level in CollectionNote.Level.values}
+        notes = {level: [] for level in LEVELS}
         for note in CollectionNote.objects.filter(
             collection__in=(
                 root_collection,
                 root_collection.get_upgraded_collection(),
                 root_collection.get_compiled_collection(),
-            )
+            ),
+            code__in=set(self.request.query_params.getlist("level", LEVELS)) & set(LEVELS),
         ):
             notes[note.code].append([note.note, note.data])
 

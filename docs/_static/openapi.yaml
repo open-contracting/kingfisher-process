@@ -133,6 +133,18 @@ paths:
         schema:
           type: integer
         required: true
+      - in: query
+        name: level
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - ERROR
+            - INFO
+            - WARNING
+        description: Filter by message severity
+        explode: true
       tags:
       - collections
       security:
