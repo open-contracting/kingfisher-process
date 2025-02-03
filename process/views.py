@@ -232,6 +232,21 @@ class CollectionViewSet(viewsets.ViewSet):
 
         return Response(metadata)
 
+    @extend_schema(
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    level: {
+                        "type": "array",
+                        "items": [{"type": "string"}, {"type": "object"}],
+                        "additionalItems": False,
+                    }
+                    for level in CollectionNote.Level.values
+                },
+            }
+        }
+    )
     @action(detail=True)
     def notes(self, request, pk=None):
         """Return the notes for the collection and its child collections."""

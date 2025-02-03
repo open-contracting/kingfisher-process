@@ -141,7 +141,30 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  INFO:
+                    type: array
+                    items:
+                    - type: string
+                    - type: object
+                    additionalItems: false
+                  ERROR:
+                    type: array
+                    items:
+                    - type: string
+                    - type: object
+                    additionalItems: false
+                  WARNING:
+                    type: array
+                    items:
+                    - type: string
+                    - type: object
+                    additionalItems: false
+          description: ''
   /api/collections/{id}/tree/:
     get:
       operationId: collections_tree_list
