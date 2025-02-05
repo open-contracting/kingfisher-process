@@ -124,6 +124,17 @@ class CollectionViewTests(APITestCase):
             },
         )
 
+    def test_notes_level(self):
+        response = self.client.get(f"{base_url}/1/notes/?format=json&level=WARNING&level=ERROR")
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "ERROR": [],
+                "WARNING": [["adsfsdfsdsadf", {}]],
+            },
+        )
+
     def test_notes_compiled(self):
         response = self.client.get(f"{base_url}/3/notes/?format=json")
         self.assertEqual(response.status_code, 400)

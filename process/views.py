@@ -265,14 +265,16 @@ class CollectionViewSet(viewsets.ViewSet):
         if root_collection.transform_type:
             return Response("The collection must be a root collection", status=status.HTTP_400_BAD_REQUEST)
 
-        notes = {level: [] for level in LEVELS}
+        levels = [level for level in LEVELS if level in set(self.request.query_params.getlist("level", LEVELS))]
+
+        notes = {level: [] for level in levels}
         for note in CollectionNote.objects.filter(
             collection__in=(
                 root_collection,
                 root_collection.get_upgraded_collection(),
                 root_collection.get_compiled_collection(),
             ),
-            code__in=set(self.request.query_params.getlist("level", LEVELS)) & set(LEVELS),
+            code__in=levels,
         ):
             notes[note.code].append([note.note, note.data])
 
