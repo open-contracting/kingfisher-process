@@ -109,7 +109,7 @@ def get_or_create(model, data):
 
 def create_note(collection, code, note, **kwargs):
     if isinstance(note, list):
-        note = " ".join(note)
+        note = "\n".join(note)
     CollectionNote(collection=collection, code=code, note=note, **kwargs).save()
 
 
