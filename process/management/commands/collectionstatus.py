@@ -89,11 +89,7 @@ class Command(CollectionCommand):
             self.stdout.write(f"completable: {self.bool_to_str(completable(collection))}")
 
         # Notes
-        notes = (
-            collection.collectionnote_set.filter(code=CollectionNote.Level.ERROR)
-            .exclude(data__has_key="http_error")  # Exclude "Couldn't download {url}"
-            .all()
-        )
+        notes = collection.collectionnote_set.filter(code=CollectionNote.Level.ERROR).all()
         if notes:
             self.stdout.write("Error-level collection notes:")
             for note in notes:
