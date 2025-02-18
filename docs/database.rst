@@ -212,11 +212,6 @@ ERROR-level notes
      - Occurs when
      - Interpretation
      - ``data``
-   * - ``Couldn't download {url}``
-     - 📑
-     - Kingfisher Collect fails to retrieve a URL. (:ref:`cli-api_loader`) `#366 <https://github.com/open-contracting/kingfisher-process/issues/366>`__
-     - `Check for FileError items <https://kingfisher-collect.readthedocs.io/en/latest/logs.html#check-for-fileerror-items>`__.
-     - FileError item
    * - ``{filename} has disappeared, skipping``
      - 📑
      - :ref:`cli-file_worker` fails to load the file to the database.
