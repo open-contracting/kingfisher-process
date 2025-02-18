@@ -39,7 +39,7 @@ def callback(client_state, channel, method, properties, input_message):
         filename = os.path.join(settings.KINGFISHER_COLLECT_FILES_STORE, path)
         collection_file = create_collection_file(collection, filename=filename, url=url)
 
-        message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
-        publish(client_state, channel, message, routing_key)
+    message = {"collection_id": collection_id, "collection_file_id": collection_file.pk}
+    publish(client_state, channel, message, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
