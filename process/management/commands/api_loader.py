@@ -28,7 +28,7 @@ class Command(BaseCommand):
 def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     url = input_message["url"]
-    path = input_message.get("path")
+    path = input_message["path"]
 
     collection = Collection.objects.get(pk=collection_id)
     if collection.deleted_at:
