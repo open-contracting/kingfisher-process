@@ -71,6 +71,9 @@ def callback(client_state, channel, method, properties, input_message):
 
                 items = collection.release_set
                 publish_routing_key = "compiler_release"
+            case Format.compiled_release:
+                # Should only occur if setting the --compile option when using the load command with compiled releases.
+                return
 
         for item in items.values("ocid").distinct().iterator():
             create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
