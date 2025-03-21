@@ -17,10 +17,10 @@ class WipeTests(TransactionTestCase):
         self.assertEqual(str(e.exception), message)
 
     def test_wrong_args(self):
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(CommandError) as e:
             call_command("deletecollection", "text")
 
-        message = "Field 'id' expected a number but got 'text'."
+        message = "Error: argument collection_id: invalid int value: 'text'"
         self.assertEqual(str(e.exception), message)
 
     @patch("builtins.input", return_value="y")
