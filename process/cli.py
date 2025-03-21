@@ -9,7 +9,7 @@ from process.models import Collection
 class CollectionCommand(BaseCommand):
     def add_arguments(self, parser):
         """Add default arguments to the command."""
-        parser.add_argument("collection_id", help=_("the ID of the collection"))
+        parser.add_argument("collection_id", type=int, help=_("the ID of the collection"))
         self.add_collection_arguments(parser)
 
     def add_collection_arguments(self, parser):
