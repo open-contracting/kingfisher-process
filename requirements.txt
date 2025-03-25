@@ -57,7 +57,7 @@ et-xmlfile==1.1.0
     # via openpyxl
 flattentool==0.24.0
     # via libcove
-gunicorn==22.0.0
+gunicorn==23.0.0
     # via -r requirements_nongpl.txt
 idna==3.7
     # via
