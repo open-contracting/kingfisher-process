@@ -14,7 +14,7 @@ from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
 
 from process.exceptions import AlreadyExists, EmptyFormatError, InvalidFormError
-from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep
+from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
             nack(state, channel, method.delivery_tag, requeue=False)
         # This error should never occur under normal operations. However, such messages interrupt processing, so they
         # are nack'ed.
-        elif isinstance(exception, CollectionFile.DoesNotExist):
+        elif isinstance(exception, CollectionFile.DoesNotExist | Record.DoesNotExist):
             logger.exception("Unprocessable message %r, skipping", body)
             nack(state, channel, method.delivery_tag, requeue=False)
         else:

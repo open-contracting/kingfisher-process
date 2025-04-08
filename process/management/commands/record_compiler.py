@@ -58,7 +58,7 @@ def compile_record(collection, ocid):
     except CompiledRelease.DoesNotExist:
         pass
 
-    # https://github.com/django/django/blob/1d85b41/django/db/models/query.py#L613-L646
+    # Similar to Model.get() https://github.com/django/django/blob/5.2/django/db/models/query.py#L609-L642
     queryset = (
         Record.objects.select_related("data", "package_data")
         .filter(collection_id=collection.parent_id, ocid=ocid)
@@ -66,10 +66,12 @@ def compile_record(collection, ocid):
     )
 
     count = len(queryset)
+    if not count:
+        raise Record.DoesNotExist(f"{Record._meta.object_name} matching query does not exist.")
     if count > 1:
         create_note(collection, CollectionNote.Level.WARNING, f"OCID {ocid} has {count} duplicates.")
 
-    record = queryset.first()
+    record = queryset[0]
 
     releases = record.data.data.get("releases", [])
 
