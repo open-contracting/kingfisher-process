@@ -6,6 +6,7 @@ import warnings
 from contextlib import contextmanager
 from textwrap import fill
 
+import ijson
 import simplejson as json
 from django.conf import settings
 from django.db import IntegrityError, connections, transaction
@@ -130,6 +131,7 @@ def delete_step(*args, **kwargs):
         IntegrityError,
         # See the try/except block in the callback() function of the file_worker worker.
         EmptyFormatError,
+        ijson.common.IncompleteJSONError,
     ):
         _delete_step_and_finish(*args, **kwargs)
         raise
