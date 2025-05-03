@@ -116,7 +116,7 @@ def compilable(collection):
     # 3. Check whether compilation hasn't started. (2. then continues below, to put slower queries later.)
 
     compiled_collection = collection.get_compiled_collection()
-    if compiled_collection.compilation_started:
+    if compiled_collection and compiled_collection.compilation_started:
         logger.debug("Collection %s not compilable (already started)", collection)
         return False
 
