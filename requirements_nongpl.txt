@@ -18,7 +18,7 @@ charset-normalizer==2.0.8
     # via requests
 dj-database-url==2.0.0
     # via -r requirements_nongpl.in
-django==4.2.20
+django==4.2.21
     # via
     #   -r requirements_nongpl.in
     #   dj-database-url
@@ -33,7 +33,7 @@ djangorestframework==3.15.2
     #   drf-spectacular
 drf-spectacular==0.27.2
     # via -r requirements_nongpl.in
-gunicorn==23.0.0
+gunicorn[setproctitle]==23.0.0
     # via -r requirements_nongpl.in
 idna==3.7
     # via requests
@@ -58,7 +58,7 @@ ocdsextensionregistry==0.5.0
     # via
     #   -r requirements_nongpl.in
     #   ocdskit
-ocdskit==1.2.0
+ocdskit[perf]==1.2.0
     # via -r requirements_nongpl.in
 ocdsmerge==0.6.6
     # via
@@ -115,5 +115,5 @@ urllib3==2.2.2
     #   requests
     #   requests-cache
     #   sentry-sdk
-yapw==0.1.4
+yapw[perf]==0.1.4
     # via -r requirements_nongpl.in
