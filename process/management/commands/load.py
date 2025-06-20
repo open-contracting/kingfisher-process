@@ -139,14 +139,14 @@ class Command(BaseCommand):
 
             raise CommandError(error) from error
 
-        self.stderr.write(f"Processing path {options['PATH']}")
+        self.stderr.write(f"Processing files: {' '.join(options['PATH'])}")
 
         with get_publisher() as client:
             for path in walk(options["PATH"]):
                 # The transaction is inside the loop, since we can't rollback RabbitMQ messages, only PostgreSQL
                 # statements. This ensures that any published message is paired with a database commit.
                 with transaction.atomic():
-                    self.stderr.write(f"Storing file {path}")
+                    self.stderr.write(f"Storing file: {path}")
                     collection_file = create_collection_file(collection, filename=path)
 
                 message = {"collection_id": collection.pk, "collection_file_id": collection_file.pk}
