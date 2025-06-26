@@ -136,7 +136,7 @@ platformdirs==3.8.1
     # via
     #   -r requirements_nongpl.txt
     #   requests-cache
-psycopg2==2.9.6
+psycopg2==2.9.10
     # via -r requirements_nongpl.txt
 pycparser==2.22
     # via cffi

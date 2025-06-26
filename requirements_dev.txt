@@ -161,7 +161,7 @@ platformdirs==3.8.1
     # via
     #   -r requirements.txt
     #   requests-cache
-psycopg2==2.9.6
+psycopg2==2.9.10
     # via -r requirements.txt
 psycopg2-binary==2.9.6
     # via -r requirements_dev.in
