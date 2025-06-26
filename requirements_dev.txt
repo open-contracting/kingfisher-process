@@ -11,7 +11,7 @@ attrs==23.1.0
     #   jsonschema
     #   referencing
     #   requests-cache
-backports-datetime-fromisoformat==2.0.1
+backports-datetime-fromisoformat==2.0.3
     # via
     #   -r requirements.txt
     #   flattentool
@@ -67,7 +67,7 @@ djangorestframework==3.15.2
     #   drf-spectacular
 drf-spectacular==0.27.2
     # via -r requirements.txt
-et-xmlfile==1.1.0
+et-xmlfile==2.0.0
     # via
     #   -r requirements.txt
     #   openpyxl
@@ -148,7 +148,7 @@ packaging==24.0
     # via
     #   -r requirements.txt
     #   gunicorn
-persistent==5.1
+persistent==6.1.1
     # via
     #   -r requirements.txt
     #   btrees
@@ -165,7 +165,7 @@ psycopg2==2.9.6
     # via -r requirements.txt
 psycopg2-binary==2.9.6
     # via -r requirements_dev.in
-pycparser==2.21
+pycparser==2.22
     # via
     #   -r requirements.txt
     #   cffi
@@ -222,8 +222,9 @@ setuptools==80.9.0
     #   -r requirements.txt
     #   zc-lockfile
     #   zc-zlibstorage
-    #   zodbpickle
+    #   zope-deferredimport
     #   zope-interface
+    #   zope-proxy
 simplejson==3.17.2
     # via -r requirements.txt
 six==1.16.0
@@ -281,11 +282,15 @@ zodb==5.8.1
     #   -r requirements.txt
     #   flattentool
     #   zc-zlibstorage
-zodbpickle==3.1
+zodbpickle==4.2
     # via
     #   -r requirements.txt
     #   zodb
-zope-interface==6.1
+zope-deferredimport==5.0
+    # via
+    #   -r requirements.txt
+    #   persistent
+zope-interface==7.2
     # via
     #   -r requirements.txt
     #   btrees
@@ -293,3 +298,8 @@ zope-interface==6.1
     #   transaction
     #   zc-zlibstorage
     #   zodb
+    #   zope-proxy
+zope-proxy==6.1
+    # via
+    #   -r requirements.txt
+    #   zope-deferredimport
