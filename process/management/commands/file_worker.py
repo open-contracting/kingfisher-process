@@ -175,7 +175,7 @@ def process_file(collection_file) -> int | None:
 def _get_data_type(collection_file):
     collection = collection_file.collection
     if not collection.data_type:
-        detected_format, is_concatenated, is_array = detect_format(collection_file.filename)
+        detected_format, is_concatenated, is_array = detect_format(collection_file.filename, prefixes=("extensions",))
         data_type = {
             "format": detected_format,
             "concatenated": is_concatenated,
