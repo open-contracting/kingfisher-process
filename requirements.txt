@@ -108,7 +108,7 @@ ocdsextensionregistry==0.6.9
     #   ocdskit
 ocdskit==1.4.0
     # via -r requirements_nongpl.txt
-ocdsmerge==0.6.6
+ocdsmerge==0.8.0
     # via
     #   -r requirements_nongpl.txt
     #   ocdskit
