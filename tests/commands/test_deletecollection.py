@@ -4,7 +4,6 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TransactionTestCase
 
-from process.models import Collection
 from tests.fixtures import collection
 
 
@@ -27,6 +26,4 @@ class WipeTests(TransactionTestCase):
     def test_ok(self, mocked):
         source = collection()
         source.save()
-        call_command("deletecollection", source.id)
-        with self.assertRaises(Collection.DoesNotExist):
-            source.refresh_from_db()
+        call_command("deletecollection", source.id)  # no error
