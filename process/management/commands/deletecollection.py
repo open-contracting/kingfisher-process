@@ -2,7 +2,10 @@ from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
 from process.cli import CollectionCommand
+from process.util import get_publisher
 from process.util import wrap as w
+
+routing_key = "wiper"
 
 
 class Command(CollectionCommand):
@@ -20,7 +23,8 @@ class Command(CollectionCommand):
         if options["verbosity"] > 0:
             self.stderr.write("Working... ", ending="")
 
-        collection.delete()
+        with get_publisher() as client:
+            client.publish({"collection_id": collection.pk}, routing_key=routing_key)
 
         if options["verbosity"] > 0:
             self.stderr.write(self.style.SUCCESS("done"))
