@@ -28,7 +28,7 @@ class Command(BaseCommand):
                 AND NOT EXISTS (SELECT FROM compiled_release WHERE data_id = data.id)
             LIMIT 100000
             """,
-            "DELETE FROM data WHERE id IN %(ids)s",
+            "DELETE FROM data WHERE id IN %s",
         )
         package_data = (
             """
@@ -37,7 +37,7 @@ class Command(BaseCommand):
                 AND NOT EXISTS (SELECT FROM release WHERE package_data_id = package_data.id)
             LIMIT 100000
             """,
-            "DELETE FROM package_data WHERE id IN %(ids)s",
+            "DELETE FROM package_data WHERE id IN %s",
         )
 
         with connection.cursor() as cursor:
@@ -48,7 +48,7 @@ class Command(BaseCommand):
                         ids = tuple(row[0] for row in cursor.fetchall())
                         if not ids:
                             break
-                        cursor.execute(delete, ids=ids)
+                        cursor.execute(delete, [ids])
                         self.stderr.write(".", ending="")
 
         self.stderr.write(self.style.SUCCESS("done"))
