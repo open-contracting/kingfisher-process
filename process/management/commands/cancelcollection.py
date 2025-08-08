@@ -9,7 +9,7 @@ class Command(CollectionCommand):
     help = w(t("Cancel all processing of a collection"))
 
     def handle_collection(self, collection, *args, **options):
-        self.stderr.write("Working... ", ending="")
+        self.stderr.write(f"Working ({collection.pk})... ", ending="")
 
         cancel_collection(collection)
         if compiled_collection := collection.get_compiled_collection():

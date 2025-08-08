@@ -21,7 +21,7 @@ class Command(CollectionCommand):
                 return
 
         if options["verbosity"] > 0:
-            self.stderr.write("Working... ", ending="")
+            self.stderr.write(f"Working ({collection.pk})... ", ending="")
 
         with get_publisher() as client:
             client.publish({"collection_id": collection.pk}, routing_key=routing_key)

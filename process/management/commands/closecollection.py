@@ -21,7 +21,7 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        self.stderr.write("Working... ", ending="")
+        self.stderr.write(f"Working ({collection.pk})... ", ending="")
 
         upgraded_collection = collection.get_upgraded_collection()
 
