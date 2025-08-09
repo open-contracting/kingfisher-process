@@ -136,14 +136,14 @@ def delete_step(*args, **kwargs):
         UnknownFormatError,
         UnsupportedFormatError,
         ijson.common.IncompleteJSONError,
-    ):
-        _delete_step_and_finish(*args, **kwargs)
+    ) as exception:
+        _delete_step_and_finish(*args, **kwargs, exception=exception)
         raise
     else:
         _delete_step_and_finish(*args, **kwargs)
 
 
-def _delete_step_and_finish(name, finish=None, finish_args=(), **kwargs):
+def _delete_step_and_finish(name, finish=None, finish_args=(), exception=None, **kwargs):
     # kwargs can include collection_id, collection_file_id and ocid.
     processing_steps = ProcessingStep.objects.filter(name=name, **kwargs)
 
@@ -152,7 +152,7 @@ def _delete_step_and_finish(name, finish=None, finish_args=(), **kwargs):
         logger.warning("No such processing step found: %s: %s", name, kwargs)
 
     if finish:
-        finish(*finish_args)
+        finish(*finish_args, exception=exception)
 
 
 @contextmanager

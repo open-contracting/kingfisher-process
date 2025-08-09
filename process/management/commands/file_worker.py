@@ -53,10 +53,18 @@ class Command(BaseCommand):
         )
 
 
-def finish(collection_id, collection_file_id):
-    # If a duplicate message is received causing an IntegrityError, we still want to create the next step, in case it
-    # was not created the first time. delete_step() will delete any duplicate steps.
-    if settings.ENABLE_CHECKER:
+def finish(collection_id, collection_file_id, exception):
+    # If a duplicate message is received causing an IntegrityError or similar, we still want to create the next step,
+    # in case it was not created the first time. delete_step() will delete any duplicate steps.
+    if settings.ENABLE_CHECKER and not isinstance(
+        exception,
+        # See the try/except block in the callback() function of the file_worker worker.
+        EmptyFormatError
+        | FileNotFoundError
+        | UnknownFormatError
+        | UnsupportedFormatError
+        | ijson.common.IncompleteJSONError,
+    ):
         create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=collection_file_id)
 
 
