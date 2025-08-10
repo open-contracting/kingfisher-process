@@ -208,6 +208,7 @@ class CollectionFile(models.Model):
 
     filename = models.TextField(blank=True)
     url = models.TextField(blank=True)
+    compilation_started = models.BooleanField(default=False)  # unused for "release package" collections
 
     class Meta:
         db_table = "collection_file"

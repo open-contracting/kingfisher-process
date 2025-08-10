@@ -85,6 +85,18 @@ def callback(client_state, channel, method, properties, input_message):
             }
             publish(client_state, channel, message, publish_routing_key)
 
+        # For "record package" collections, track compilation per file, to avoid a race condition where:
+        #
+        # - compiler sets compilation_started on the collection (above).
+        # - file_worker deletes the last LOAD step and publishes a message, consumed by compiler and finisher.
+        # - finisher finds no processing steps and completes the *original* collection.
+        # - record_compiler deletes the last COMPILE step and publishes a message, consumed by finisher.
+        # - finisher finds no processing steps and completes the *compiled* collection. (!)
+        # - However, there are messages from file_worker in the queue, from which compiler will create COMPILE steps.
+        if collection_file and collection.data_type["format"] == Format.record_package:
+            collection_file.compilation_started = True
+            collection_file.save(update_fields=["compilation_started"])
+
 
 def compilable(collection):
     # 1. Check whether compilation *should* occur.

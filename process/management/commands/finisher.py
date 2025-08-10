@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models.functions import Now
 from django.utils.translation import gettext as t
+from ocdskit.util import Format
 from yapw.methods import ack, nack
 
 from process.models import Collection
@@ -103,19 +104,28 @@ def completable(collection):
 
     # The compiler worker changes `compilation_started` to `True`, then creates the processing steps. This check is
     # required, to avoid a false positive from the "steps remaining" check, below.
-    if collection.transform_type == Collection.Transform.COMPILE_RELEASES and not collection.compilation_started:
-        logger.debug("Collection %s not completable (compile steps not created)", collection)
-        return False
+    if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
+        if not collection.compilation_started:
+            logger.debug("Collection %s not completable (compile steps not created)", collection)
+            return False
 
-    # The close_collection endpoint, load command and closecollection command set `store_end_at` for the original and
-    # upgraded collections. (Upgrading is performed at the same time as loading.)
-    #
-    # The finisher worker sets `store_end_at` for the compiled collection, Loading for a "compile-releases" collection
-    # is synonymous with compiling, which is performed in the previous step.
-    if collection.store_end_at is None and (
-        collection.transform_type != Collection.Transform.COMPILE_RELEASES
-        or collection.get_root_parent().store_end_at is None
-    ):
+        original = collection.get_root_parent()
+
+        # The finisher worker sets `store_end_at` for the compiled collection, later, Loading for a "compile-releases"
+        # collection is synonymous with compiling, which is performed in the previous step.
+        if original.store_end_at is None:
+            logger.debug("Collection %s not completable (load incomplete for original collection)", collection)
+            return False
+
+        if (
+            original.data_type["format"] == Format.record_package
+            and original.collectionfile_set.filter(compilation_started=False).exists()
+        ):
+            logger.debug("Collection %s not completable (compile steps not created for collection file)", collection)
+            return False
+    # The close_collection endpoint, load command and closecollection command set `store_end_at` for the original
+    # and upgraded collections. (Upgrading is performed at the same time as loading.)
+    elif collection.store_end_at is None:
         logger.debug("Collection %s not completable (load incomplete)", collection)
         return False
 
