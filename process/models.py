@@ -154,7 +154,7 @@ class Collection(models.Model):
 
     def get_upgraded_collection(self) -> Self | None:
         """Return the upgraded collection or None."""
-        # This is a shortcut to avoid a query. It is based on the logic in clean_fields().
+        # This is a shortcut to avoid a query. Per clean_fields(), only the original collection can be upgraded.
         if self.transform_type:
             return None
         try:
