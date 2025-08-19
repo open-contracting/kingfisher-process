@@ -5,18 +5,12 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.translation import gettext as t
+from libcoveocds.common_checks import common_checks_ocds
+from libcoveocds.config import LibCoveOCDSConfig
+from libcoveocds.lib.api import context_api_transform
+from libcoveocds.schema import SchemaOCDS
 from ocdskit.util import Format
 from yapw.methods import ack, publish
-
-try:
-    from libcoveocds.common_checks import common_checks_ocds
-    from libcoveocds.config import LibCoveOCDSConfig
-    from libcoveocds.lib.api import context_api_transform
-    from libcoveocds.schema import SchemaOCDS
-
-    using_libcoveocds = True
-except ImportError:
-    using_libcoveocds = False
 
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
 from process.util import consume, decorator, delete_step, get_extensions
@@ -26,15 +20,14 @@ consume_routing_keys = ["file_worker", "addchecks"]
 routing_key = "checker"
 logger = logging.getLogger(__name__)
 
-if using_libcoveocds:
-    CONFIG = LibCoveOCDSConfig()
-    CONFIG.config["standard_zip"] = f"file://{settings.BASE_DIR / '1__1__5.zip'}"
-    # No requests are expected to be made by lib-cove, but just in case.
-    CONFIG.config["cache_all_requests"] = True
-    # Skip empty field checks, covered by Pelican.
-    CONFIG.config["additional_checks"] = "none"
-    CONFIG.config["skip_aggregates"] = True
-    CONFIG.config["context"] = "api"
+CONFIG = LibCoveOCDSConfig()
+CONFIG.config["standard_zip"] = f"file://{settings.BASE_DIR / '1__1__5.zip'}"
+# No requests are expected to be made by lib-cove, but just in case.
+CONFIG.config["cache_all_requests"] = True
+# Skip empty field checks, covered by Pelican.
+CONFIG.config["additional_checks"] = "none"
+CONFIG.config["skip_aggregates"] = True
+CONFIG.config["context"] = "api"
 
 
 class Command(BaseCommand):
@@ -43,8 +36,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not settings.ENABLE_CHECKER:
             raise CommandError("Checker is disabled. Set the ENABLE_CHECKER environment variable to enable.")
-        if not using_libcoveocds:
-            raise CommandError("Checker is unavailable. Install the libcoveocds Python package.")
 
         consume(
             on_message_callback=callback,

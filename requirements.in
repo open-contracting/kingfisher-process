@@ -1,2 +1,16 @@
--r requirements_nongpl.txt
+dj-database-url
+django-cors-headers
+django<5
+djangorestframework
+drf-spectacular
+gunicorn[setproctitle]
+ijson
 libcoveocds[perf]
+ocdsextensionregistry
+ocdskit[perf]
+ocdsmerge
+psycopg2
+requests
+sentry-sdk
+simplejson
+yapw[perf]

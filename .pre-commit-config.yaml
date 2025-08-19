@@ -13,14 +13,9 @@ repos:
     rev: 0.7.19
     hooks:
       - id: pip-compile
-        name: pip-compile requirements_nongpl.in
-        args: [requirements_nongpl.in, -o, requirements_nongpl.txt]
-        files: ^requirements_nongpl\.(in|txt)$
-      - id: pip-compile
         name: pip-compile requirements.in
         args: [requirements.in, -o, requirements.txt]
-        files: ^requirements(_nongpl)?\.(in|txt)$
       - id: pip-compile
         name: pip-compile requirements_dev.in
         args: [requirements_dev.in, -o, requirements_dev.txt]
-        files: ^requirements(_nongpl|_dev)?\.(in|txt)$
+        files: ^requirements(_dev)?\.(in|txt)$

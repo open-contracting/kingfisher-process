@@ -10,4 +10,3 @@ jobs:
     with:
       # libcoveocds is optional (try-except block).
       standard-maintenance-scripts-ignore: libcoveocds
-      standard-maintenance-scripts-files: requirements_nongpl.in
