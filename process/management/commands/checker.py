@@ -80,10 +80,8 @@ def _get_schema(items_key, extensions):
 def _check_collection_file(collection_file):
     logger.info("Collecting data to check for collection file %s", collection_file)
 
-    release_package = (
-        collection_file.collection.data_type
-        and collection_file.collection.data_type["format"] == Format.release_package
-    )
+    data_type = collection_file.collection.data_type
+    release_package = data_type and data_type["format"] == Format.release_package
 
     if release_package:
         items_key = "releases"

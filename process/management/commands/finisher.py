@@ -117,8 +117,11 @@ def completable(collection):
             logger.debug("Collection %s not completable (load incomplete for original collection)", collection)
             return False
 
+        data_type = original.data_type
+
         if (
-            original.data_type["format"] == Format.record_package
+            data_type
+            and data_type["format"] == Format.record_package
             and original.collectionfile_set.filter(compilation_started=False).exists()
         ):
             logger.debug("Collection %s not completable (compile steps not created for collection file)", collection)
