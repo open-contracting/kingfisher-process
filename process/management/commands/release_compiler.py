@@ -57,8 +57,10 @@ def compile_release(collection, ocid):
     except CompiledRelease.DoesNotExist:
         pass
 
-    releases = Release.objects.select_related("data", "package_data").filter(
-        collection_id=collection.parent_id, ocid=ocid
+    releases = (
+        Release.objects.select_related("data", "package_data")
+        .filter(collection_id=collection.parent_id, ocid=ocid)
+        .order_by("data__data__date")
     )
 
     if not releases.count():

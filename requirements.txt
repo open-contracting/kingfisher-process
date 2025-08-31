@@ -91,9 +91,9 @@ ocdsextensionregistry==0.6.9
 ocdskit==1.4.0
     # via -r requirements.in
 ocdsmerge==0.8.0
-    # via
-    #   -r requirements.in
-    #   ocdskit
+    # via ocdskit
+ocdsmerge-rs==0.1.0
+    # via -r requirements.in
 odfpy==1.4.1
     # via flattentool
 openpyxl==3.1.2
