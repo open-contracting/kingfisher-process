@@ -102,7 +102,7 @@ class Command(BaseCommand):
             if not settings.ENABLE_CHECKER and options["check"]:
                 self.stderr.write(self.style.ERROR("Checker is disabled in settings - see ENABLE_CHECKER value."))
 
-            collection, upgraded_collection, compiled_collection = create_collections(
+            collection, upgraded_collection, _compiled_collection = create_collections(
                 # Identification
                 options["source"],
                 data_version,

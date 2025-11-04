@@ -101,7 +101,7 @@ def get_or_create(model, data):
     try:
         # Another transaction is needed here, otherwise a parent transaction catches the integrity error.
         with transaction.atomic():
-            obj, created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
+            obj, _created = model.objects.get_or_create(hash_md5=hash_md5, defaults={"data": data})
     # If another transaction in another thread COMMITs the same data after the SELECT, but before the INSERT.
     except IntegrityError:
         obj = model.objects.get(hash_md5=hash_md5)
