@@ -62,7 +62,7 @@ def compile_record(collection, ocid):
     queryset = (
         Record.objects.select_related("data", "package_data")
         .filter(collection_id=collection.parent_id, ocid=ocid)
-        .order_by("data__data__date")
+        .order_by("id")  # unnecessary, but deterministic
     )
 
     count = len(queryset)
