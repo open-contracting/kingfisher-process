@@ -8,7 +8,7 @@ ijson
 libcoveocds[perf]
 ocdsextensionregistry
 ocdskit[perf]
-ocdsmerge-rs
+ocdsmerge
 psycopg2
 requests
 sentry-sdk
