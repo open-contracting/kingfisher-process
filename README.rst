@@ -6,5 +6,5 @@ Kingfisher Process stores and pre-processes OCDS data. An accompanying tool, `Ki
 
 .. |Build Status| image:: https://github.com/open-contracting/kingfisher-process/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/open-contracting/kingfisher-process/actions/workflows/ci.yml
-.. |Coverage Status| image:: https://coveralls.io/repos/github/open-contracting/kingfisher-process/badge.svg?branch=main
-   :target: https://coveralls.io/github/open-contracting/kingfisher-process?branch=main
+.. |Coverage Status| image:: https://codecov.io/github/open-contracting/kingfisher-process/graph/badge.svg
+   :target: https://codecov.io/github/open-contracting/kingfisher-process
