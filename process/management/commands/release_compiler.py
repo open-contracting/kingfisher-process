@@ -60,7 +60,7 @@ def compile_release(collection, ocid):
     releases = (
         Release.objects.select_related("data", "package_data")
         .filter(collection_id=collection.parent_id, ocid=ocid)
-        .values("data__data", "package_data__data")
+        .values_list("data__data", "package_data__data")
     )
 
     if not releases.count():
@@ -69,11 +69,10 @@ def compile_release(collection, ocid):
 
     data = []
     extensions = set()
-    for chunk in releases.iterator(chunk_size=100):  # default 2000
-        for release in chunk:
-            data.append(release["data__data"])
-            if release["package_data__data"]:
-                extensions.update(get_extensions(release["package_data__data"]))
+    for release, package in releases.iterator(chunk_size=100):  # default 2000
+        data.append(release)
+        if package:
+            extensions.update(get_extensions(package))
 
     # estonia_digiwhist publishes release packages containing a single release with a "compiled" tag, and it sometimes
     # publishes the same OCID with identical data in different packages with a different `publishedDate`. The releases
