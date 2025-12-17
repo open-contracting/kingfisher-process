@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd -r runner && useradd --no-log-init -r -g runner runner
 
 # Must match the settings.KINGFISHER_COLLECT_FILES_STORE default value.
-RUN mkdir -p /data && chown -R runner:runner /data
+RUN mkdir -p /data
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
