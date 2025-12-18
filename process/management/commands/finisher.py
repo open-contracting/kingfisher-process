@@ -48,29 +48,36 @@ def callback(client_state, channel, method, properties, input_message):
             ack(client_state, channel, method.delivery_tag)
             return
 
-        with transaction.atomic():
-            if completable(collection):
-                # Use optimistic locking to update the collections.
+        if completable(collection):
+            # COUNT first, before any UPDATE, to avoid locking rows in between UPDATEs.
+            counts = _count_releases_and_records(collection)
+            if upgraded_collection := collection.get_upgraded_collection():
+                upgraded_collection_counts = _count_releases_and_records(upgraded_collection)
+            else:
+                upgraded_collection_counts = {}
+
+            with transaction.atomic():
                 if collection.transform_type == Collection.Transform.COMPILE_RELEASES:
-                    updated = _set_complete_at(collection, store_end_at=Now())
+                    kwargs = {"store_end_at": Now()}
                 else:
-                    updated = _set_complete_at(collection)
+                    kwargs = {}
 
-                if updated and (upgraded_collection := collection.get_upgraded_collection()):
-                    _set_complete_at(upgraded_collection)
+                updated = _set_complete_at(collection, **counts, **kwargs)
+                if updated and upgraded_collection:
+                    _set_complete_at(upgraded_collection, **upgraded_collection_counts)
 
-            # If the collection isn't completable or completed, try again after a delay, to prevent churning.
-            elif not collection.completed_at:
-                # RabbitMQ won't deliver another message until ack'd, so blocking the thread with time.sleep() is
-                # effectively the same as not blocking the thread with client_state.connection.ioloop.call_later().
-                time.sleep(30)
+        # If the collection isn't completable or completed, try again after a delay, to prevent churning.
+        elif not collection.completed_at:
+            # RabbitMQ won't deliver another message until ack'd, so blocking the thread with time.sleep() is
+            # effectively the same as not blocking the thread with client_state.connection.ioloop.call_later().
+            time.sleep(30)
 
-                # Note: Need to monitor the queue, in case a message gets stuck.
-                # Log the collection for administrators to use in the cancelcollection command.
-                logger.info("Collection %s requeued", collection)
+            # Note: Need to monitor the queue, in case a message gets stuck.
+            # Log the collection for administrators to use in the cancelcollection command.
+            logger.info("Collection %s requeued", collection)
 
-                nack(client_state, channel, method.delivery_tag, requeue=True)
-                return
+            nack(client_state, channel, method.delivery_tag, requeue=True)
+            return
 
     # If no message has yet been requeued for the collection, track the collection and requeue the message.
     elif collection_id not in requeued:  # no lock at first, for performance
@@ -85,16 +92,20 @@ def callback(client_state, channel, method, properties, input_message):
     ack(client_state, channel, method.delivery_tag)
 
 
-def _set_complete_at(collection, **kwargs):
+def _count_releases_and_records(collection):
     # all() avoids cached calls in count().
     # https://docs.djangoproject.com/en/4.2/ref/models/querysets/#all
     # https://docs.djangoproject.com/en/4.2/ref/models/querysets/#count
-    count = {
+    return {
         "cached_releases_count": collection.release_set.all().count(),
         "cached_records_count": collection.record_set.all().count(),
         "cached_compiled_releases_count": collection.compiledrelease_set.all().count(),
     }
-    return Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now(), **count, **kwargs)
+
+
+def _set_complete_at(collection, **kwargs):
+    # Use optimistic locking to update the collections.
+    return Collection.objects.filter(pk=collection.pk, completed_at=None).update(completed_at=Now(), **kwargs)
 
 
 def completable(collection):
