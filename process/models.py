@@ -163,10 +163,12 @@ class Collection(models.Model):
             return None
 
     def get_compiled_collection(self) -> Self | None:
-        """Return the compiled collection or None."""
+        """Return the compiled collection or None, traversing the upgraded collection if needed."""
         try:
             return Collection.objects.get(transform_type=Collection.Transform.COMPILE_RELEASES, parent=self)
         except Collection.DoesNotExist:
+            if upgraded := self.get_upgraded_collection():
+                return upgraded.get_compiled_collection()
             return None
 
     def get_root_parent(self) -> Self:

@@ -126,6 +126,43 @@ class CollectionTests(TestCase):
         message = f"Parent collection {source.pk} is already transformed into {destination.pk}"
         self.assertEqual(e.exception.messages, [message])
 
+    def test_get_compiled_collection_none(self):
+        source = collection()
+        source.save()
+
+        self.assertIsNone(source.get_compiled_collection())
+
+    def test_get_compiled_collection_none_upgrade(self):
+        original = collection()
+        original.save()
+
+        upgraded = collection(parent=original, transform_type="upgrade-1-0-to-1-1")
+        upgraded.save()
+
+        self.assertIsNone(original.get_compiled_collection())
+
+    def test_get_compiled_collection(self):
+        source = collection()
+        source.save()
+
+        compiled = collection(parent=source, transform_type="compile-releases")
+        compiled.save()
+
+        self.assertEqual(source.get_compiled_collection(), compiled)
+
+    def test_get_compiled_collection_upgrade(self):
+        original = collection()
+        original.save()
+
+        upgraded = collection(parent=original, transform_type="upgrade-1-0-to-1-1")
+        upgraded.save()
+
+        compiled = collection(parent=upgraded, transform_type="compile-releases")
+        compiled.save()
+
+        self.assertEqual(original.get_compiled_collection(), compiled)
+        self.assertEqual(upgraded.get_compiled_collection(), compiled)
+
 
 class CollectionNoteTests(TestCase):
     def test_str(self):
