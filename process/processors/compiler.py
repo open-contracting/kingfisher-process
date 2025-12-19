@@ -38,9 +38,9 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
     try:
         with create_warnings_note(collection, ocdsmerge.exceptions.OCDSMergeWarning):
             return merger.create_compiled_release(releases)
-    except ocdsmerge.exceptions.OCDSMergeError:
+    except ocdsmerge.exceptions.OCDSMergeError as e:
         logger.exception("OCID %s can't be compiled, skipping", ocid)
-        create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} can't be compiled")
+        create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} can't be compiled", data=str(e))
 
 
 @functools.lru_cache
