@@ -13,7 +13,7 @@ from ocdskit.util import Format
 from yapw.methods import ack, publish
 
 from process.models import CollectionFile, ProcessingStep, Record, RecordCheck, Release, ReleaseCheck
-from process.util import consume, decorator, delete_step, get_extensions
+from process.util import consume, decorator, deleting_step, get_extensions
 from process.util import wrap as w
 
 consume_routing_keys = ["file_worker", "addchecks"]
@@ -57,7 +57,7 @@ def callback(client_state, channel, method, properties, input_message):
         ack(client_state, channel, method.delivery_tag)
         return
 
-    with delete_step(ProcessingStep.Name.CHECK, collection_file_id=collection_file_id), transaction.atomic():
+    with deleting_step(ProcessingStep.Name.CHECK, collection_file_id=collection_file_id), transaction.atomic():
         if "check" in collection_file.collection.steps:
             _check_collection_file(collection_file)
 

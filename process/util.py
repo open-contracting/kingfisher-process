@@ -120,7 +120,7 @@ def create_step(name, collection_id, **kwargs):
 
 
 @contextmanager
-def delete_step(*args, **kwargs):
+def deleting_step(*args, **kwargs):
     """Delete the named step and run any finish callback only if successful or if the error is expected."""
     try:
         yield
@@ -137,14 +137,14 @@ def delete_step(*args, **kwargs):
         UnsupportedFormatError,
         ijson.common.IncompleteJSONError,
     ) as exception:
-        _delete_step_and_finish(*args, **kwargs, exception=exception)
+        delete_step(*args, **kwargs, exception=exception)
         raise
     else:
-        _delete_step_and_finish(*args, **kwargs)
+        delete_step(*args, **kwargs)
 
 
-def _delete_step_and_finish(name, finish=None, finish_args=(), exception=None, **kwargs):
-    # kwargs can include collection_id, collection_file_id and ocid.
+def delete_step(name, finish=None, finish_args=(), exception=None, **kwargs):
+    # kwargs must include collection_id, collection_file_id and/or ocid.
     processing_steps = ProcessingStep.objects.filter(name=name, **kwargs)
 
     deleted, _ = processing_steps.delete()

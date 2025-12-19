@@ -9,7 +9,7 @@ from yapw.methods import ack, publish
 from process.exceptions import AlreadyExists
 from process.models import Collection, CollectionNote, CompiledRelease, ProcessingStep, Record
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
-from process.util import consume, create_note, decorator, delete_step
+from process.util import consume, create_note, decorator, deleting_step
 from process.util import wrap as w
 
 consume_routing_keys = ["compiler_record"]
@@ -36,7 +36,7 @@ def callback(client_state, channel, method, properties, input_message):
         return
 
     with (
-        delete_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
+        deleting_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
         transaction.atomic(),
     ):
         release = compile_record(compiled_collection, ocid)

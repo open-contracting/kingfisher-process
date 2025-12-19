@@ -26,7 +26,15 @@ from process.models import (
     Record,
     Release,
 )
-from process.util import consume, create_logger_note, create_note, create_step, decorator, delete_step, get_or_create
+from process.util import (
+    consume,
+    create_logger_note,
+    create_note,
+    create_step,
+    decorator,
+    deleting_step,
+    get_or_create,
+)
 from process.util import wrap as w
 
 consume_routing_keys = ["loader", "api_loader"]
@@ -55,7 +63,7 @@ class Command(BaseCommand):
 
 def finish(collection_id, collection_file_id, exception):
     # If a duplicate message is received causing an IntegrityError or similar, we still want to create the next step,
-    # in case it was not created the first time. delete_step() will delete any duplicate steps.
+    # in case it was not created the first time. deleting_step() will delete any duplicate steps.
     if settings.ENABLE_CHECKER and not isinstance(
         exception,
         # See the try/except block in the callback() function of the file_worker worker.
@@ -82,7 +90,7 @@ def callback(client_state, channel, method, properties, input_message):
         for attempt in range(1, MAX_ATTEMPTS + 1):
             try:
                 with (
-                    delete_step(
+                    deleting_step(
                         ProcessingStep.Name.LOAD,
                         collection_file_id=collection_file_id,
                         finish=finish,
@@ -105,7 +113,7 @@ def callback(client_state, channel, method, properties, input_message):
         publish(client_state, channel, message, routing_key)
 
         if upgraded_collection_file_id:
-            # The delete_step() context manager sets upgraded_collection_file_id only if successful, so we don't need
+            # The deleting_step() context manager sets upgraded_collection_file_id only if successful, so we don't need
             # to create this step in the finish() function.
             if settings.ENABLE_CHECKER:
                 create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=upgraded_collection_file_id)
