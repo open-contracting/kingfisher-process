@@ -60,6 +60,7 @@ def compile_release(collection, ocid):
     releases = (
         Release.objects.select_related("data", "package_data")
         .filter(collection_id=collection.parent_id, ocid=ocid)
+        .order_by("release_date")
         .values_list("data__data", "package_data__data")
     )
 

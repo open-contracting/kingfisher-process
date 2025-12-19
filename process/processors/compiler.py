@@ -1,11 +1,11 @@
 import functools
 import logging
 
-import ocdsmerge
-import ocdsmerge.exceptions
+import ocdsmerge_rs.exceptions
 from django.conf import settings
 from ocdsextensionregistry import ProfileBuilder
 from ocdsextensionregistry.exceptions import ExtensionWarning
+from ocdsmerge_rs import Merger
 
 from process.models import CollectionFile, CollectionNote, CompiledRelease, Data
 from process.util import create_note, create_warnings_note, get_or_create
@@ -36,9 +36,9 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         merger = _get_merger(frozenset(extensions))
 
     try:
-        with create_warnings_note(collection, ocdsmerge.exceptions.OCDSMergeWarning):
+        with create_warnings_note(collection, ocdsmerge_rs.exceptions.MergeWarning):
             return merger.create_compiled_release(releases)
-    except ocdsmerge.exceptions.OCDSMergeError as e:
+    except ocdsmerge_rs.exceptions.MergeError as e:
         logger.exception("OCID %s can't be compiled, skipping", ocid)
         create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} can't be compiled", data=str(e))
 
@@ -50,4 +50,4 @@ def _get_merger(extensions):
     # Security: Potential SSRF via extension URLs (within OCDS publication).
     builder = ProfileBuilder(tag, extensions, standard_base_url=url)
     patched_schema = builder.patched_release_schema()
-    return ocdsmerge.Merger(patched_schema)
+    return Merger(rules=Merger.get_rules(Merger.dereference(patched_schema)))

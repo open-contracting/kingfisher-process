@@ -1,4 +1,5 @@
 import logging
+from operator import itemgetter
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -97,6 +98,13 @@ def compile_record(collection, ocid):
         if undated:
             note = f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled."
             create_note(collection, CollectionNote.Level.WARNING, note)
+
+        try:
+            dated = sorted(dated, key=itemgetter("date"))
+        except (KeyError, TypeError) as e:
+            logger.exception("OCID %s has missing/invalid date, skipping", ocid)
+            create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} has missing/invalid date.", data=str(e))
+            return None
 
         extensions = set(record.package_data.data.get("extensions", []))
         if merged := compile_releases_by_ocdskit(collection, ocid, dated, extensions):
