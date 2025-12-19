@@ -121,20 +121,22 @@ def completable(collection):
             logger.debug("Collection %s not completable (compile steps not created)", collection)
             return False
 
-        original = collection.get_root_parent()
+        parent = collection.parent
 
-        # The finisher worker sets `store_end_at` for the compiled collection, later, Loading for a "compile-releases"
+        # The finisher worker sets `store_end_at` for the compiled collection, later. Loading for a "compile-releases"
         # collection is synonymous with compiling, which is performed in the previous step.
-        if original.store_end_at is None:
+        #
+        # `store_end_at` is set for the original and upgraded collections at the same time.
+        if parent.store_end_at is None:
             logger.debug("Collection %s not completable (load incomplete for original collection)", collection)
             return False
 
-        data_type = original.data_type
+        data_type = parent.data_type
 
         if (
             data_type
             and data_type["format"] == Format.record_package
-            and original.collectionfile_set.filter(compilation_started=False).exists()
+            and parent.collectionfile_set.filter(compilation_started=False).exists()
         ):
             logger.debug("Collection %s not completable (compile steps not created for collection file)", collection)
             return False

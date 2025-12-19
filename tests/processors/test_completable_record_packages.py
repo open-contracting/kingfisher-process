@@ -49,3 +49,55 @@ class CompletableRecordPackagesTests(TransactionTestCase):
         self.file2.save()
 
         self.assertTrue(completable(self.compiled_collection))
+
+
+class CompletableRecordPackagesWithUpgradeTests(TransactionTestCase):
+    def setUp(self):
+        data_type = {"format": "record package", "array": False, "concatenated": False}
+
+        self.original = Collection.objects.create(
+            source_id="test_upgrade_record_package",
+            data_version="2023-01-01T00:00:00Z",
+            data_type=data_type,
+            store_end_at=timezone.now(),
+            steps=["upgrade"],
+        )
+
+        self.upgraded = Collection.objects.create(
+            source_id="test_upgrade_record_package",
+            data_version="2023-01-01T00:00:00Z",
+            parent=self.original,
+            transform_type=Collection.Transform.UPGRADE_10_11,
+            data_type=data_type,
+            store_end_at=timezone.now(),
+            steps=["compile"],
+        )
+
+        self.compiled_collection = Collection.objects.create(
+            source_id="test_upgrade_record_package",
+            data_version="2023-01-01T00:00:00Z",
+            parent=self.upgraded,
+            transform_type=Collection.Transform.COMPILE_RELEASES,
+            compilation_started=True,
+            store_end_at=None,
+        )
+
+        CollectionFile.objects.create(collection=self.original, filename="original_file_1.json")
+        CollectionFile.objects.create(collection=self.original, filename="original_file_2.json")
+        self.upgraded_file_1 = CollectionFile.objects.create(collection=self.upgraded, filename="upgraded_file_1.json")
+        self.upgraded_file_2 = CollectionFile.objects.create(collection=self.upgraded, filename="upgraded_file_2.json")
+
+    def test_record_package_compilation_incomplete(self):
+        self.upgraded_file_1.compilation_started = True
+        self.upgraded_file_1.save()
+
+        self.assertFalse(completable(self.compiled_collection))
+
+    def test_record_package_compilation_complete(self):
+        self.upgraded_file_1.compilation_started = True
+        self.upgraded_file_1.save()
+
+        self.upgraded_file_2.compilation_started = True
+        self.upgraded_file_2.save()
+
+        self.assertTrue(completable(self.compiled_collection))

@@ -155,7 +155,6 @@ class Command(BaseCommand):
         if not options["keep_open"]:
             collection.store_end_at = Now()
             collection.save(update_fields=["store_end_at"])
-
             if upgraded_collection:
                 upgraded_collection.store_end_at = Now()
                 upgraded_collection.save(update_fields=["store_end_at"])
