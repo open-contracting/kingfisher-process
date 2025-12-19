@@ -49,8 +49,9 @@ def callback(client_state, channel, method, properties, input_message):
             return
 
         if completable(collection):
-            # COUNT first, before any UPDATE, to avoid locking rows in between UPDATEs.
+            # COUNT first, before any UPDATE, to avoid locking the collection row in between UPDATEs.
             counts = _count_releases_and_records(collection)
+            # If not for the lock, we'd COUNT only if `updated`, to save time on simultaneous messages.
             if upgraded_collection := collection.get_upgraded_collection():
                 upgraded_collection_counts = _count_releases_and_records(upgraded_collection)
             else:

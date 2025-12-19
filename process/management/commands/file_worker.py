@@ -32,6 +32,7 @@ from process.util import (
     create_note,
     create_step,
     decorator,
+    delete_step,
     deleting_step,
     get_or_create,
 )
@@ -64,15 +65,9 @@ class Command(BaseCommand):
 def finish(collection_id, collection_file_id, exception):
     # If a duplicate message is received causing an IntegrityError or similar, we still want to create the next step,
     # in case it was not created the first time. deleting_step() will delete any duplicate steps.
-    if settings.ENABLE_CHECKER and not isinstance(
-        exception,
-        # See the try/except block in the callback() function of the file_worker worker.
-        EmptyFormatError
-        | FileNotFoundError
-        | UnknownFormatError
-        | UnsupportedFormatError
-        | ijson.common.IncompleteJSONError,
-    ):
+    #
+    # See the try/except block in the callback() function of the file_worker worker.
+    if settings.ENABLE_CHECKER and not isinstance(exception, FileNotFoundError | ijson.common.IncompleteJSONError):
         create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=collection_file_id)
 
 
@@ -87,6 +82,25 @@ def callback(client_state, channel, method, properties, input_message):
         return
 
     try:
+        # Detect and save the data_type before the transaction, to avoid locking collection rows during process_file().
+        #
+        # NOTE: Kingfisher Process assumes a single format for all collection files. Unknown, unsupported, or empty
+        # formats are detected only for the first collection files processed.
+        try:
+            set_data_type(collection, collection_file)
+        except (UnknownFormatError, UnsupportedFormatError):  # UnknownFormatError is raised by detect_format()
+            logger.exception("Source %s yields an unknown or unsupported format, skipping", collection.source_id)
+            delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
+            create_note(collection, ERROR, f"Source {collection.source_id} yields unknown format", data=input_message)
+            nack(client_state, channel, method.delivery_tag, requeue=False)
+            return
+        except EmptyFormatError as e:
+            # Don't log a message, since sources with empty packages also have non-empty packages.
+            delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
+            create_note(collection, CollectionNote.Level.WARNING, str(e), data=input_message)
+            nack(client_state, channel, method.delivery_tag, requeue=False)
+            return
+
         for attempt in range(1, MAX_ATTEMPTS + 1):
             try:
                 with (
@@ -113,25 +127,17 @@ def callback(client_state, channel, method, properties, input_message):
         publish(client_state, channel, message, routing_key)
 
         if upgraded_collection_file_id:
-            # The deleting_step() context manager sets upgraded_collection_file_id only if successful, so we don't need
-            # to create this step in the finish() function.
+            # The deleting_step() context manager sets upgraded_collection_file_id only if successful, so we can create
+            # this step here instead of in the finish() function.
             if settings.ENABLE_CHECKER:
                 create_step(ProcessingStep.Name.CHECK, collection_id, collection_file_id=upgraded_collection_file_id)
 
             message = {"collection_id": collection_id, "collection_file_id": upgraded_collection_file_id}
             publish(client_state, channel, message, routing_key)
-    # "Expected" errors.
-    except EmptyFormatError as e:  # raised by process_file()
-        create_note(collection, CollectionNote.Level.WARNING, str(e), data=input_message)
-        nack(client_state, channel, method.delivery_tag, requeue=False)
     # Irrecoverable errors. Discard the message to allow other messages to be processed.
     except FileNotFoundError:  # raised by detect_format() or open()
         logger.exception("%s has disappeared, skipping", collection_file.filename)
         create_note(collection, ERROR, f"{collection_file.filename} has disappeared", data=input_message)
-        nack(client_state, channel, method.delivery_tag, requeue=False)
-    except (UnknownFormatError, UnsupportedFormatError):  # raised by detect_format() or process_file()
-        logger.exception("Source %s yields an unknown or unsupported format, skipping", collection.source_id)
-        create_note(collection, ERROR, f"Source {collection.source_id} yields unknown format", data=input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     except ijson.common.IncompleteJSONError:  # raised by ijson.parse()
         logger.exception("Source %s yields invalid JSON, skipping", collection.source_id)
@@ -151,20 +157,9 @@ def process_file(collection_file) -> int | None:
     :param collection_file: collection file for which should be releases checked
     :returns: upgraded collection file id or None (if there is no upgrade planned)
     """
-    data_type = _get_data_type(collection_file)
+    data_type = collection_file.collection.data_type
 
-    data_format = data_type["format"]
-
-    # https://github.com/open-contracting/kingfisher-collect/issues/1012
-    if data_format == Format.empty_package:
-        raise EmptyFormatError(f"Empty format '{data_format}' for file {collection_file}.")
-    if data_format not in SUPPORTED_FORMATS:
-        raise UnsupportedFormatError(
-            f"Unsupported format '{data_format}' for file {collection_file}. "
-            f"Must be one of: {', '.join(sorted(SUPPORTED_FORMATS))}."
-        )
-
-    if data_format == Format.compiled_release:
+    if data_type["format"] == Format.compiled_release:
         package = None
     else:
         package = _read_package_data_from_file(collection_file.filename, data_type)
@@ -188,12 +183,21 @@ def process_file(collection_file) -> int | None:
     return None
 
 
-def _get_data_type(collection_file):
-    collection = collection_file.collection
+def set_data_type(collection, collection_file):
     if not collection.data_type:
         detected_format, is_concatenated, is_array = detect_format(
             collection_file.filename, additional_prefixes=("extensions",)
         )
+
+        # https://github.com/open-contracting/kingfisher-collect/issues/1012
+        if detected_format == Format.empty_package:
+            raise EmptyFormatError(f"Empty format '{detected_format}' for file {collection_file}.")
+        if detected_format not in SUPPORTED_FORMATS:
+            raise UnsupportedFormatError(
+                f"Unsupported format '{detected_format}' for file {collection_file}. "
+                f"Must be one of: {', '.join(sorted(SUPPORTED_FORMATS))}."
+            )
+
         data_type = {
             "format": detected_format,
             "concatenated": is_concatenated,
@@ -206,8 +210,6 @@ def _get_data_type(collection_file):
         if upgraded_collection := collection.get_upgraded_collection():
             upgraded_collection.data_type = data_type
             upgraded_collection.save(update_fields=["data_type"])
-
-    return collection.data_type
 
 
 class ControlCodesFilter:

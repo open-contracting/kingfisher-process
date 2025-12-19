@@ -10,12 +10,11 @@ import ijson
 import simplejson as json
 from django.conf import settings
 from django.db import IntegrityError, connections, transaction
-from ocdskit.exceptions import UnknownFormatError
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
 
-from process.exceptions import AlreadyExists, EmptyFormatError, InvalidFormError, UnsupportedFormatError
+from process.exceptions import AlreadyExists, InvalidFormError
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record
 
 logger = logging.getLogger(__name__)
@@ -131,10 +130,7 @@ def deleting_step(*args, **kwargs):
         InvalidFormError,
         IntegrityError,
         # See the try/except block in the callback() function of the file_worker worker.
-        EmptyFormatError,
         FileNotFoundError,
-        UnknownFormatError,
-        UnsupportedFormatError,
         ijson.common.IncompleteJSONError,
     ) as exception:
         delete_step(*args, **kwargs, exception=exception)
