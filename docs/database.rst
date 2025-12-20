@@ -212,17 +212,17 @@ ERROR-level notes
      - Occurs when
      - Interpretation
      - ``data``
-   * - ``{filename} has disappeared, skipping``
+   * - ``{filename} has disappeared``
      - 📑
      - :ref:`cli-file_worker` fails to load the file to the database.
      - A user deleted the file before it was loaded.
      - RabbitMQ message
-   * - ``Source {source_id} yields an unknown or unsupported format, skipping``
+   * - ``Source {source_id} yields an unknown or unsupported format``
      - 📑
      - :ref:`cli-file_worker` fails to load the file to the database.
      - The data source doesn't conform to OCDS, or the spider has a bug to fix.
      - RabbitMQ message
-   * - ``Source {source_id} yields invalid JSON, skipping``
+   * - ``Source {source_id} yields invalid JSON``
      - 📑
      - :ref:`cli-file_worker` fails to load the file to the database.
      - Set a ``validate_json = True`` class attribute on the spider.

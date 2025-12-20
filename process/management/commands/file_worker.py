@@ -88,16 +88,26 @@ def callback(client_state, channel, method, properties, input_message):
         # formats are detected only for the first collection files processed.
         try:
             set_data_type(collection, collection_file)
-        except (UnknownFormatError, UnsupportedFormatError):  # UnknownFormatError is raised by detect_format()
+        except (UnknownFormatError, UnsupportedFormatError) as e:  # UnknownFormatError is raised by detect_format()
             logger.exception("Source %s yields an unknown or unsupported format, skipping", collection.source_id)
             delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
-            create_note(collection, ERROR, f"Source {collection.source_id} yields unknown format", data=input_message)
+            create_note(
+                collection,
+                CollectionNote.Level.ERROR,
+                f"Source {collection.source_id} yields an unknown or unsupported format",
+                data={"type": type(e).__name__, **input_message},
+            )
             nack(client_state, channel, method.delivery_tag, requeue=False)
             return
         except EmptyFormatError as e:
             # Don't log a message, since sources with empty packages also have non-empty packages.
             delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
-            create_note(collection, CollectionNote.Level.WARNING, str(e), data=input_message)
+            create_note(
+                collection,
+                CollectionNote.Level.WARNING,
+                str(e),
+                data={"type": type(e).__name__, **input_message},
+            )
             nack(client_state, channel, method.delivery_tag, requeue=False)
             return
 
