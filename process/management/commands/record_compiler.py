@@ -70,7 +70,12 @@ def compile_record(collection, ocid):
     if not count:
         raise Record.DoesNotExist(f"{Record._meta.object_name} matching query does not exist.")
     if count > 1:
-        create_note(collection, CollectionNote.Level.WARNING, f"OCID {ocid} has {count} duplicates.")
+        create_note(
+            collection,
+            CollectionNote.Level.WARNING,
+            f"OCID {ocid} occurs {count} times.",
+            data={"type": "DuplicateOCIDWarning"},
+        )
 
     record = queryset[0]
 

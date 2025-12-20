@@ -188,7 +188,7 @@ WARNING-level notes
      - An array contains objects with the same ID.
 
        Potential data loss, if the duplicates differ.
-   * - ``OCID {ocid} has ## duplicates.``
+   * - ``OCID {ocid} occurs ## times.``
      - 🗜
      - :ref:`cli-record_compiler` finds many records with the same OCID.
      - Only one record is compiled for each OCID.
