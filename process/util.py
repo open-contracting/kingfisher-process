@@ -2,7 +2,6 @@ import hashlib
 import io
 import logging
 import os
-import warnings
 from contextlib import contextmanager
 from textwrap import fill
 
@@ -149,22 +148,6 @@ def delete_step(name, finish=None, finish_args=(), exception=None, **kwargs):
 
     if finish:
         finish(*finish_args, exception=exception)
-
-
-@contextmanager
-def create_warnings_note(collection, category):
-    with warnings.catch_warnings(record=True, action="always", category=category) as wlist:
-        yield
-
-    note = []
-    for w in wlist:
-        if issubclass(w.category, category):
-            note.append(str(w.message))
-        else:
-            warnings.warn_explicit(w.message, w.category, w.filename, w.lineno, source=w.source)
-
-    if note:
-        create_note(collection, CollectionNote.Level.WARNING, note)
 
 
 @contextmanager

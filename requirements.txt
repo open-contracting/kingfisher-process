@@ -92,7 +92,7 @@ ocdskit==1.4.0
     # via -r requirements.in
 ocdsmerge==0.8.0
     # via ocdskit
-ocdsmerge-rs==0.1.1
+ocdsmerge-rs==0.1.2
     # via -r requirements.in
 odfpy==1.4.1
     # via flattentool
