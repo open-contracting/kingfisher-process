@@ -43,7 +43,11 @@ def callback(client_state, channel, method, properties, input_message):
 
     # Run queries only for redelivered messages.
     if method.redelivered:
-        collection = Collection.objects.get(pk=collection_id)
+        try:
+            collection = Collection.objects.get(pk=collection_id)
+        except Collection.DoesNotExist:
+            ack(client_state, channel, method.delivery_tag)
+            return
         if collection.deleted_at:
             ack(client_state, channel, method.delivery_tag)
             return
