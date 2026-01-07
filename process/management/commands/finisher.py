@@ -48,6 +48,7 @@ def callback(client_state, channel, method, properties, input_message):
         except Collection.DoesNotExist:
             ack(client_state, channel, method.delivery_tag)
             return
+
         if collection.deleted_at:
             ack(client_state, channel, method.delivery_tag)
             return

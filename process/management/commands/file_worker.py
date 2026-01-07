@@ -75,7 +75,12 @@ def callback(client_state, channel, method, properties, input_message):
     collection_id = input_message["collection_id"]
     collection_file_id = input_message["collection_file_id"]
 
-    collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+    try:
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+    except CollectionFile.DoesNotExist:
+        ack(client_state, channel, method.delivery_tag)
+        return
+
     collection = collection_file.collection
     if collection.deleted_at:
         ack(client_state, channel, method.delivery_tag)
