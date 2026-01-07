@@ -50,6 +50,8 @@ def callback(client_state, channel, method, properties, input_message):
     # test the "format" to decide the logic, not to decide whether to proceed.
     if compilable(collection):
         compiled_collection = collection.get_compiled_collection()
+        if compiled_collection is None:
+            return
 
         # Use optimistic locking to update the collection. (Here, it's the return value that's important.)
         updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
