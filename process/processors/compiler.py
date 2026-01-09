@@ -13,6 +13,7 @@ from process.models import CollectionFile, CollectionNote, CompiledRelease, Data
 from process.util import create_note, get_or_create
 
 logger = logging.getLogger(__name__)
+WARNING = CollectionNote.Level.WARNING
 
 
 def save_compiled_release(merged, collection, ocid):
@@ -38,25 +39,11 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         merger = _get_merger(frozenset(extensions))
 
     for w in filter_warnings(wlist, ExtensionWarning):
-        create_note(collection, CollectionNote.Level.WARNING, str(w.message), data={"type": w.category.__name__})
+        create_note(collection, WARNING, str(w.message), data={"type": w.category.__name__})
 
     try:
         with warnings.catch_warnings(record=True, action="always", category=MergeWarning) as wlist:
             merged = merger.create_compiled_release(releases)
-
-        notes = []
-        paths = Counter()
-        for w in filter_warnings(wlist, DuplicateIdValueWarning):  # DuplicateIdValueWarning is the only MergeWarning
-            notes.append(str(w.message))
-            paths[w.message.path] += 1
-
-        if notes:
-            create_note(
-                collection,
-                CollectionNote.Level.WARNING,
-                notes,
-                data={"type": "DuplicateIdValueWarning", "paths": dict(paths)},
-            )
     except MergeError as e:
         logger.exception("OCID %s can't be compiled, skipping", ocid)
         create_note(
@@ -66,6 +53,20 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
             data={"type": type(e).__name__, "message": str(e), **vars(e)},
         )
     else:
+        for w in filter_warnings(wlist, MergeWarning):
+            if not isinstance(w.message, DuplicateIdValueWarning):
+                create_note(collection, WARNING, str(w.message), data={"type": w.category.__name__})
+
+        # Aggregate DuplicateIdValueWarning, because it can be issued many times.
+        notes = []
+        paths = Counter()
+        for w in filter_warnings(wlist, DuplicateIdValueWarning):
+            notes.append(str(w.message))
+            paths[w.message.path] += 1
+
+        if notes:
+            create_note(collection, WARNING, notes, data={"type": "DuplicateIdValueWarning", "paths": dict(paths)})
+
         return merged
 
 

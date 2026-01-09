@@ -134,7 +134,7 @@ ocdsmerge==0.8.0
     # via
     #   -r requirements.txt
     #   ocdskit
-ocdsmerge-rs==0.1.2
+ocdsmerge-rs==0.1.3
     # via -r requirements.txt
 odfpy==1.4.1
     # via
