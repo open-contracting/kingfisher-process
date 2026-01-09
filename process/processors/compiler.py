@@ -42,7 +42,7 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
 
     try:
         with warnings.catch_warnings(record=True, action="always", category=MergeWarning) as wlist:
-            return merger.create_compiled_release(releases)
+            merged = merger.create_compiled_release(releases)
 
         notes = []
         paths = Counter()
@@ -65,6 +65,8 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
             f"OCID {ocid} can't be compiled",
             data={"type": type(e).__name__, "message": str(e), **vars(e)},
         )
+    else:
+        return merged
 
 
 @functools.lru_cache
