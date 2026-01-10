@@ -53,16 +53,15 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
             data={"type": type(e).__name__, "message": str(e), **vars(e)},
         )
     else:
-        for w in filter_warnings(wlist, MergeWarning):
-            if not isinstance(w.message, DuplicateIdValueWarning):
-                create_note(collection, WARNING, str(w.message), data={"type": w.category.__name__})
-
-        # Aggregate DuplicateIdValueWarning, because it can be issued many times.
         notes = []
         paths = Counter()
-        for w in filter_warnings(wlist, DuplicateIdValueWarning):
-            notes.append(str(w.message))
-            paths[w.message.path] += 1
+        for w in filter_warnings(wlist, MergeWarning):
+            if isinstance(w.message, DuplicateIdValueWarning):
+                # Aggregate DuplicateIdValueWarning, because it can be issued many times.
+                notes.append(str(w.message))
+                paths[w.message.path] += 1
+            else:
+                create_note(collection, WARNING, str(w.message), data={"type": w.category.__name__})
 
         if notes:
             create_note(collection, WARNING, notes, data={"type": "DuplicateIdValueWarning", "paths": dict(paths)})
