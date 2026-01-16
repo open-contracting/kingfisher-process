@@ -61,7 +61,7 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
                 notes.append(str(w.message))
                 paths[w.message.path] += 1
             else:
-                create_note(collection, WARNING, str(w.message), data={"type": w.category.__name__})
+                create_note(collection, WARNING, str(w.message), data={"type": w.category.__name__, **vars(w.message)})
 
         if notes:
             create_note(collection, WARNING, notes, data={"type": "DuplicateIdValueWarning", "paths": dict(paths)})

@@ -57,7 +57,7 @@ class CompilerTests(TestCase):
                 (
                     CollectionNote.Level.WARNING,
                     "Release at index 1 has the same date '2020-01-01T00:00:00Z' as the previous release",
-                    {"type": "RepeatedDateValueWarning"},
+                    {"type": "RepeatedDateValueWarning", "date": "2020-01-01T00:00:00Z", "index": 1},
                 ),
                 (
                     CollectionNote.Level.WARNING,
