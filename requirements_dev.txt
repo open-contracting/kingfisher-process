@@ -75,7 +75,7 @@ flattentool==0.24.0
     # via
     #   -r requirements.txt
     #   libcove
-gunicorn[setproctitle]==23.0.0
+gunicorn==23.0.0
     # via -r requirements.txt
 idna==3.7
     # via
@@ -117,7 +117,7 @@ libcove==0.32.0
     # via
     #   -r requirements.txt
     #   libcoveocds
-libcoveocds[perf]==0.17.0
+libcoveocds==0.17.0
     # via -r requirements.txt
 lxml==6.0.0
     # via
@@ -128,7 +128,7 @@ ocdsextensionregistry==0.6.9
     #   -r requirements.txt
     #   libcoveocds
     #   ocdskit
-ocdskit[perf]==1.4.0
+ocdskit==1.4.0
     # via -r requirements.txt
 ocdsmerge==0.8.0
     # via
@@ -144,12 +144,8 @@ openpyxl==3.1.2
     # via
     #   -r requirements.txt
     #   flattentool
-orjson==3.9.15
-    # via
-    #   -r requirements.txt
-    #   libcoveocds
-    #   ocdskit
-    #   yapw
+orjson==3.11.5
+    # via -r requirements.txt
 packaging==24.0
     # via
     #   -r requirements.txt
@@ -222,9 +218,15 @@ schema==0.7.5
 sentry-sdk==2.8.0
     # via -r requirements.txt
 setproctitle==1.2.2
+    # via -r requirements.txt
+setuptools==80.10.2
     # via
     #   -r requirements.txt
-    #   gunicorn
+    #   zc-lockfile
+    #   zc-zlibstorage
+    #   zope-deferredimport
+    #   zope-interface
+    #   zope-proxy
 simplejson==3.17.2
     # via -r requirements.txt
 six==1.16.0
@@ -263,7 +265,7 @@ xmltodict==0.13.0
     # via
     #   -r requirements.txt
     #   flattentool
-yapw[perf]==0.1.4
+yapw==0.1.4
     # via -r requirements.txt
 zc-lockfile==3.0.post1
     # via
