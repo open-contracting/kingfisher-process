@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import OperationalError, transaction
 from django.utils.translation import gettext as t
-from ijson.common import ObjectBuilder
+from ijson import ObjectBuilder
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import Format, detect_format
