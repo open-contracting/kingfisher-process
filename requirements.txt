@@ -98,7 +98,7 @@ odfpy==1.4.1
     # via flattentool
 openpyxl==3.1.2
     # via flattentool
-orjson==3.11.5
+orjson==3.11.6
     # via
     #   libcoveocds
     #   ocdskit

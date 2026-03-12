@@ -144,7 +144,7 @@ openpyxl==3.1.2
     # via
     #   -r requirements.txt
     #   flattentool
-orjson==3.11.5
+orjson==3.11.6
     # via
     #   -r requirements.txt
     #   libcoveocds
