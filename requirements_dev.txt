@@ -190,7 +190,7 @@ referencing==0.34.0
     #   jsonschema-specifications
     #   libcove
     #   libcoveocds
-requests==2.32.4
+requests==2.33.0
     # via
     #   -r requirements.txt
     #   libcove
