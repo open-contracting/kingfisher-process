@@ -94,6 +94,8 @@ WSGI_APPLICATION = "core.wsgi.application"
 DATABASES = {
     "default": dj_database_url.config(default="postgresql:///kingfisher_process?application_name=kingfisher_process"),
 }
+# https://docs.djangoproject.com/en/5.2/ref/databases/#server-side-parameters-binding
+DATABASES["default"].setdefault("OPTIONS", {})["server_side_binding"] = True
 
 
 # Password validation
