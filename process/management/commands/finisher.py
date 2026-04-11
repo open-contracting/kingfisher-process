@@ -99,8 +99,8 @@ def callback(client_state, channel, method, properties, input_message):
 
 def _count_releases_and_records(collection):
     # all() avoids cached calls in count().
-    # https://docs.djangoproject.com/en/4.2/ref/models/querysets/#all
-    # https://docs.djangoproject.com/en/4.2/ref/models/querysets/#count
+    # https://docs.djangoproject.com/en/5.2/ref/models/querysets/#all
+    # https://docs.djangoproject.com/en/5.2/ref/models/querysets/#count
     return {
         "cached_releases_count": collection.release_set.all().count(),
         "cached_records_count": collection.record_set.all().count(),

@@ -85,8 +85,8 @@ Kingfisher Process works concurrently. As such, it is important to understand `T
       if not updated:
           return
 
--  `Specify which fields to save <https://docs.djangoproject.com/en/4.2/ref/models/instances/#ref-models-update-fields>`__ on a ``Collection`` instance
--  `Lock rows using SELECT ... FOR UPDATE <https://docs.djangoproject.com/en/4.2/ref/models/querysets/#select-for-update>`__ on the ``collection`` table
+-  `Specify which fields to save <https://docs.djangoproject.com/en/5.2/ref/models/instances/#ref-models-update-fields>`__ on a ``Collection`` instance
+-  `Lock rows using SELECT ... FOR UPDATE <https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update>`__ on the ``collection`` table
 
 .. _integration-patterns:
 
@@ -117,7 +117,7 @@ You can compare ``models.py`` to the output of:
 
 .. seealso::
 
-   -  `Integrating Django with a legacy database <https://docs.djangoproject.com/en/4.2/howto/legacy-databases/>`__
+   -  `Integrating Django with a legacy database <https://docs.djangoproject.com/en/5.2/howto/legacy-databases/>`__
 
 .. note::
 

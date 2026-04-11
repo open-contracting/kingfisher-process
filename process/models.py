@@ -12,7 +12,7 @@ from simplejson import JSONEncoder
 # We don't use `unique=True` or `db_index=True`, because they create an additional index for the text fields `hash_md5`
 # and `ocid`. Instead, we set `Meta.constraints` and `Meta.indexes`.
 #
-# https://docs.djangoproject.com/en/4.2/ref/databases/#indexes-for-varchar-and-text-columns
+# https://docs.djangoproject.com/en/5.2/ref/databases/#indexes-for-varchar-and-text-columns
 #
 # We don't use default index names (including for foreign key fields) or `%(class)s` in unique constraint names -
 # we are explicit, instead - so that the names are identical to those created by SQLAlchemy in an earlier version.
@@ -106,7 +106,7 @@ class Collection(models.Model):
             Default(source_id=self.source_id, data_version=self.data_version, id=self.pk)
         )
 
-    # https://docs.djangoproject.com/en/4.2/ref/forms/validation/#raising-validationerror
+    # https://docs.djangoproject.com/en/5.2/ref/forms/validation/#raising-validationerror
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
 

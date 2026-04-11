@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 LEVELS = CollectionNote.Level.values
 
 
-# https://docs.djangoproject.com/en/4.2/topics/db/sql/#executing-custom-sql-directly
+# https://docs.djangoproject.com/en/5.2/topics/db/sql/#executing-custom-sql-directly
 def dictfetchone(cursor):
     if row := cursor.fetchone():
         columns = [col[0] for col in cursor.description]
