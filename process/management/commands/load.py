@@ -9,6 +9,7 @@ from django.db.models.functions import Now
 from django.utils.translation import gettext as t
 from django.utils.translation import gettext_lazy as _
 
+from process.exceptions import InvalidFormError
 from process.models import Collection
 from process.processors.loader import create_collection_file, create_collections, file_or_directory
 from process.scrapyd import configured
@@ -115,8 +116,8 @@ class Command(BaseCommand):
                 note=options["note"],
                 force=options["force"],
             )
-        except ValueError as error:
-            if str(error) == _("A matching collection already exists."):
+        except InvalidFormError as e:
+            if any(error.code == "unique_collection" for error_list in e.errors.values() for error in error_list):
                 data = {
                     "source_id": options["source"],
                     "data_version": data_version,
@@ -135,9 +136,9 @@ class Command(BaseCommand):
                         "A matching open collection %(id)s already exists. "
                         "Delete this collection, or change the --source or --time options."
                     )
-                raise CommandError(message % {"id": collection.pk}) from error
+                raise CommandError(message % {"id": collection.pk}) from e
 
-            raise CommandError(error) from error
+            raise CommandError(e) from e
 
         self.stderr.write(f"Processing files: {' '.join(options['PATH'])}")
 

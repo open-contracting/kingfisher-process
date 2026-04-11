@@ -94,9 +94,8 @@ class Collection(models.Model):
                 name="unique_collection_identifiers",
                 fields=["source_id", "data_version", "sample"],
                 condition=models.Q(transform_type=""),
-                # Django 5 introduces violation_error_code, which can simplify the comparison in load.py.
-                # https://docs.djangoproject.com/en/dev/ref/models/constraints/#id1
                 violation_error_message=_("A matching collection already exists."),
+                violation_error_code="unique_collection",
             ),
             models.UniqueConstraint(name="unique_upgraded_compiled_collection", fields=["parent", "transform_type"]),
         ]

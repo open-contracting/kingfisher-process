@@ -36,7 +36,7 @@ def create_collection_file(collection, filename=None, url=None) -> CollectionFil
         create_step(ProcessingStep.Name.LOAD, collection.pk, collection_file=collection_file)
         return collection_file
 
-    raise InvalidFormError(form.error_messages)
+    raise InvalidFormError(form)
 
 
 def create_collections(
@@ -120,7 +120,7 @@ def _create_collection(data, note, **kwargs):
             _save_note(collection, note)
         return collection
 
-    raise ValueError(form.error_messages)
+    raise InvalidFormError(form)
 
 
 def _save_note(collection, note):
@@ -129,4 +129,4 @@ def _save_note(collection, note):
     if form.is_valid():
         return form.save()
 
-    raise ValueError(form.error_messages)
+    raise InvalidFormError(form)
