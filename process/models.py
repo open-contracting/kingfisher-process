@@ -69,7 +69,7 @@ class Collection(models.Model):
         db_index=False,
         db_column="transform_from_collection_id",
     )
-    transform_type = models.TextField(blank=True, choices=Transform.choices)
+    transform_type = models.TextField(blank=True, choices=Transform)
     scrapyd_job = models.TextField(blank=True)
 
     # Calculated fields
@@ -190,7 +190,7 @@ class CollectionNote(models.Model):
     note = models.TextField()
     data = models.JSONField(encoder=JSONEncoder, blank=True, default=dict)
     stored_at = models.DateTimeField(auto_now_add=True)
-    code = models.TextField(blank=True, choices=Level.choices)
+    code = models.TextField(blank=True, choices=Level)
 
     class Meta:
         db_table = "collection_note"
@@ -240,7 +240,7 @@ class ProcessingStep(models.Model):
 
     collection_file = models.ForeignKey(CollectionFile, on_delete=models.CASCADE, null=True, db_index=True)
     ocid = models.TextField(blank=True)
-    name = models.TextField(choices=Name.choices)
+    name = models.TextField(choices=Name)
 
     class Meta:
         db_table = "processing_step"
