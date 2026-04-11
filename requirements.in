@@ -1,6 +1,6 @@
 dj-database-url
 django-cors-headers
-django<5
+django<5.3
 djangorestframework
 drf-spectacular
 gunicorn[setproctitle]
@@ -9,7 +9,7 @@ libcoveocds[perf]
 ocdsextensionregistry
 ocdskit[perf]
 ocdsmerge-rs
-psycopg2
+psycopg
 requests
 sentry-sdk
 simplejson

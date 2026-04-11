@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.utils.translation import gettext as t
-from psycopg2 import sql
+from psycopg import sql
 from yapw.methods import ack
 
 from process.models import Collection
