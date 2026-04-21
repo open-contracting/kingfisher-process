@@ -119,7 +119,7 @@ libcove==0.32.0
     #   libcoveocds
 libcoveocds[perf]==0.17.0
     # via -r requirements.txt
-lxml==6.0.0
+lxml==6.1.0
     # via
     #   -r requirements.txt
     #   flattentool
