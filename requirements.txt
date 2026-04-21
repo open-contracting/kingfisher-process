@@ -81,7 +81,7 @@ libcove==0.32.0
     # via libcoveocds
 libcoveocds[perf]==0.17.0
     # via -r requirements.in
-lxml==6.0.0
+lxml==6.1.0
     # via flattentool
 ocdsextensionregistry==0.6.9
     # via
