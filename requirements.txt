@@ -51,7 +51,7 @@ flattentool==0.24.0
     # via libcove
 gunicorn[setproctitle]==23.0.0
     # via -r requirements.in
-idna==3.7
+idna==3.15
     # via requests
 ijson==3.2.3
     # via
