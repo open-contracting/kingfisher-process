@@ -37,6 +37,10 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "furo"
 html_static_path = ["_static"]
+# Édouard Traviès, "Types du règne animal: Buffon en estampes" (Paris, 1864).
+# Digitized by the Biodiversity Heritage Library (https://doi.org/10.5962/bhl.title.64231),
+# courtesy of Smithsonian Libraries and Archives. Public domain.
+html_logo = "_static/logo.png"
 html_additional_pages = {
     "reference/redoc": "redoc.html",
     "reference/swagger-ui": "swagger-ui.html",
