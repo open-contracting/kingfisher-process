@@ -20,35 +20,40 @@ class Command(BaseCommand):
 
         self.stderr.write("Working... ", ending="")
 
-        data = (
-            """
-            SELECT id FROM data WHERE
-                NOT EXISTS (SELECT FROM record WHERE data_id = data.id)
-                AND NOT EXISTS (SELECT FROM release WHERE data_id = data.id)
-                AND NOT EXISTS (SELECT FROM compiled_release WHERE data_id = data.id)
-            LIMIT 100000
-            """,
-            "DELETE FROM data WHERE id IN %s",
-        )
-        package_data = (
-            """
-            SELECT id FROM package_data WHERE
-                NOT EXISTS (SELECT FROM record WHERE package_data_id = package_data.id)
-                AND NOT EXISTS (SELECT FROM release WHERE package_data_id = package_data.id)
-            LIMIT 100000
-            """,
-            "DELETE FROM package_data WHERE id IN %s",
-        )
-
         with connection.cursor() as cursor:
-            for select, delete in (data, package_data):
+            # Delete the rows in batches, to bound the size of each transaction.
+            for query in (
+                """
+                WITH batch AS (
+                    SELECT id FROM data
+                    WHERE id > %s
+                        AND NOT EXISTS (SELECT FROM record WHERE data_id = data.id)
+                        AND NOT EXISTS (SELECT FROM release WHERE data_id = data.id)
+                        AND NOT EXISTS (SELECT FROM compiled_release WHERE data_id = data.id)
+                    ORDER BY id LIMIT 100000
+                ),
+                deleted AS (DELETE FROM data WHERE id IN (SELECT id FROM batch))
+                SELECT max(id) FROM batch
+                """,
+                """
+                WITH batch AS (
+                    SELECT id FROM package_data
+                    WHERE id > %s
+                        AND NOT EXISTS (SELECT FROM record WHERE package_data_id = package_data.id)
+                        AND NOT EXISTS (SELECT FROM release WHERE package_data_id = package_data.id)
+                    ORDER BY id LIMIT 100000
+                ),
+                deleted AS (DELETE FROM package_data WHERE id IN (SELECT id FROM batch))
+                SELECT max(id) FROM batch
+                """,
+            ):
+                last_id = 0
                 while True:
                     with transaction.atomic():
-                        cursor.execute(select)
-                        ids = tuple(row[0] for row in cursor.fetchall())
-                        if not ids:
+                        cursor.execute(query, [last_id])
+                        last_id = cursor.fetchone()[0]
+                        if last_id is None:
                             break
-                        cursor.execute(delete, [ids])
                         self.stderr.write(".", ending="")
 
         self.stderr.write(self.style.SUCCESS("done"))
