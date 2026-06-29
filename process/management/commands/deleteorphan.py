@@ -7,7 +7,7 @@ from process.util import wrap as w
 
 
 class Command(BaseCommand):
-    help = w(t("Delete rows from the data and package_data tables that relate to no collections"))
+    help = w(t("Delete rows in the package_data and data tables that relate to no collections"))
 
     def add_arguments(self, parser):
         parser.add_argument("-f", "--force", action="store_true", help=_("delete the rows without prompting"))

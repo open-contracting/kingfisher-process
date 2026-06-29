@@ -92,6 +92,9 @@ def decorator(decode, callback, state, channel, method, properties, body):
 
 def get_or_create(model, data):
     """Get or create a Data or PackageData instance."""
+    if not settings.DEDUPLICATE_DATA:
+        return model.objects.create(hash_md5="", data=data)
+
     hash_md5 = hashlib.md5(  # noqa: S324 # non-cryptographic
         json.dumps(data, separators=(",", ":"), sort_keys=True, use_decimal=True).encode("utf-8")
     ).hexdigest()
