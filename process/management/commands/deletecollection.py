@@ -9,7 +9,12 @@ routing_key = "wiper"
 
 
 class Command(CollectionCommand):
-    help = w(t("Delete a collection and its ancestors. Rows in the package_data and data tables are not deleted."))
+    help = w(
+        t(
+            "Delete a collection and its ancestors. Rows in the package_data and data tables are deleted only if "
+            "DEDUPLICATE_DATA is disabled; otherwise, use the deleteorphan command to delete them."
+        )
+    )
 
     def add_collection_arguments(self, parser):
         parser.add_argument("-f", "--force", action="store_true", help=_("delete the collection(s) without prompting"))

@@ -17,7 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = w(t("Delete collections and their ancestors. Rows in the package_data and data tables are not deleted."))
+    help = w(
+        t(
+            "Delete collections and their ancestors. Rows in the package_data and data tables are deleted only if "
+            "DEDUPLICATE_DATA is disabled; otherwise, use the deleteorphan command to delete them."
+        )
+    )
 
     def handle(self, *args, **options):
         consume(
@@ -44,6 +49,24 @@ def delete_collection(collection_id):
 
     # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
     with connection.cursor() as cursor:
+        # Temp tables are per-session, and concurrent messages run on separate connections.
+        if not settings.DEDUPLICATE_DATA:
+            cursor.execute("DROP TABLE IF EXISTS wiper_data_ids")
+            cursor.execute(
+                "CREATE TEMP TABLE wiper_data_ids AS "
+                "SELECT data_id AS id FROM release WHERE collection_id = %(id)s "
+                "UNION SELECT data_id FROM record WHERE collection_id = %(id)s "
+                "UNION SELECT data_id FROM compiled_release WHERE collection_id = %(id)s",
+                {"id": collection_id},
+            )
+            cursor.execute("DROP TABLE IF EXISTS wiper_package_data_ids")
+            cursor.execute(
+                "CREATE TEMP TABLE wiper_package_data_ids AS "
+                "SELECT package_data_id AS id FROM release WHERE collection_id = %(id)s "
+                "UNION SELECT package_data_id FROM record WHERE collection_id = %(id)s",
+                {"id": collection_id},
+            )
+
         for table, related in tables:
             if related:
                 cursor.execute(
@@ -61,6 +84,10 @@ def delete_collection(collection_id):
                     sql.SQL("DELETE FROM {table} WHERE collection_id = %s").format(table=sql.Identifier(table)),
                     [collection_id],
                 )
+
+        if not settings.DEDUPLICATE_DATA:
+            cursor.execute("DELETE FROM data WHERE id IN (SELECT id FROM wiper_data_ids)")
+            cursor.execute("DELETE FROM package_data WHERE id IN (SELECT id FROM wiper_package_data_ids)")
 
     Collection.objects.filter(pk=collection_id).delete()
 

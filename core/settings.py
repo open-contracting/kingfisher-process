@@ -260,3 +260,6 @@ KINGFISHER_COLLECT_FILES_STORE = os.getenv(
 )
 
 ENABLE_CHECKER = "ENABLE_CHECKER" in os.environ
+
+# Whether to deduplicate rows in the `package_data` and `data` tables.
+DEDUPLICATE_DATA = os.getenv("DEDUPLICATE_DATA", "True") == "True"

@@ -79,7 +79,9 @@ deletecollection
 
 Delete a collection and its ancestors.
 
-Rows in the ``package_data`` and ``data`` tables are not deleted. Use :ref:`cli-deleteorphan` instead.
+.. note::
+
+   Rows in the ``package_data`` and ``data`` tables are deleted only if the ``DEDUPLICATE_DATA`` :ref:`environment variable<environment-variables>` is disabled; otherwise, use the :ref:`cli-deleteorphan` command to delete them.
 
 .. code-block:: bash
 
@@ -99,7 +101,7 @@ Get the status of a root collection and its children.
 deleteorphan
 ~~~~~~~~~~~~
 
-Delete rows from the data and package_data tables that relate to no collections.
+Delete rows in the ``package_data`` and ``data`` tables that relate to no collections.
 
 .. code-block:: bash
 
@@ -212,7 +214,9 @@ wiper
 
 Delete collections and their ancestors.
 
-Rows in the ``package_data`` and ``data`` tables are not deleted.
+.. note::
+
+   Rows in the ``package_data`` and ``data`` tables are deleted only if the ``DEDUPLICATE_DATA`` :ref:`environment variable<environment-variables>` is disabled; otherwise, use the :ref:`cli-deleteorphan` command to delete them.
 
 .. code-block:: bash
 

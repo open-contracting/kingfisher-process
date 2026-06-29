@@ -36,6 +36,8 @@ KINGFISHER_COLLECT_FILES_STORE
   The directory from which to **read** the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher Process share a filesystem, this will be the same value for both services.
 ENABLE_CHECKER
   Whether to enable the ``checker`` worker
+DEDUPLICATE_DATA
+  Whether to deduplicate rows in the ``package_data`` and ``data`` tables (default ``True``)
 
 It is recommended to set ``REQUESTS_POOL_MAXSIZE`` to ``20``, to set the maximum number of connections to save in the `connection pool <https://urllib3.readthedocs.io/en/latest/advanced-usage.html#customizing-pool-behavior>`__ used by the `ocdsextensionregistry <https://ocdsextensionregistry.readthedocs.io/en/latest/changelog.html>`__ package. This is the same value as the `prefetch_count <https://www.rabbitmq.com/docs/consumer-prefetch>`__ used by RabbitMQ consumers.
 

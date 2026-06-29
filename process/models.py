@@ -262,8 +262,10 @@ class Data(models.Model):
     class Meta:
         db_table = "data"
         constraints = [
-            # Used by process.util.get_or_create().
-            models.UniqueConstraint(name="unique_data_hash_md5", fields=["hash_md5"]),
+            # Used by process.util.get_or_create(). The constraint is partial for the `DEDUPLICATE_DATA = False` case.
+            models.UniqueConstraint(
+                name="unique_data_hash_md5", fields=["hash_md5"], condition=~models.Q(hash_md5="")
+            ),
         ]
 
     def __str__(self):
@@ -279,8 +281,10 @@ class PackageData(models.Model):
     class Meta:
         db_table = "package_data"
         constraints = [
-            # Used by process.util.get_or_create().
-            models.UniqueConstraint(name="unique_package_data_hash_md5", fields=["hash_md5"]),
+            # Used by process.util.get_or_create(). The constraint is partial for the `DEDUPLICATE_DATA = False` case.
+            models.UniqueConstraint(
+                name="unique_package_data_hash_md5", fields=["hash_md5"], condition=~models.Q(hash_md5="")
+            ),
         ]
 
     def __str__(self):
