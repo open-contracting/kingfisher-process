@@ -4,6 +4,11 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    # Building the partial unique index with CREATE UNIQUE INDEX CONCURRENTLY avoids holding an ACCESS EXCLUSIVE lock
+    # for the duration of the build. This requires the migration to not run in a transaction. If the build fails (for
+    # example, on a duplicate value), it leaves an INVALID index, which must be dropped manually before re-running.
+    atomic = False
+
     dependencies = [
         ("process", "0046_alter_collection_unique_collection_identifiers"),
     ]
@@ -17,18 +22,46 @@ class Migration(migrations.Migration):
             model_name="packagedata",
             name="unique_package_data_hash_md5",
         ),
-        migrations.AddConstraint(
-            model_name="data",
-            constraint=models.UniqueConstraint(
-                condition=models.Q(("hash_md5", ""), _negated=True), fields=("hash_md5",), name="unique_data_hash_md5"
-            ),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddConstraint(
+                    model_name="data",
+                    constraint=models.UniqueConstraint(
+                        condition=models.Q(("hash_md5", ""), _negated=True),
+                        fields=("hash_md5",),
+                        name="unique_data_hash_md5",
+                    ),
+                ),
+            ],
+            database_operations=[
+                migrations.RunSQL(
+                    sql="""
+                    CREATE UNIQUE INDEX CONCURRENTLY "unique_data_hash_md5"
+                    ON "data" ("hash_md5") WHERE NOT (hash_md5 = '')
+                    """,
+                    reverse_sql='DROP INDEX CONCURRENTLY IF EXISTS "unique_data_hash_md5"',
+                ),
+            ],
         ),
-        migrations.AddConstraint(
-            model_name="packagedata",
-            constraint=models.UniqueConstraint(
-                condition=models.Q(("hash_md5", ""), _negated=True),
-                fields=("hash_md5",),
-                name="unique_package_data_hash_md5",
-            ),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddConstraint(
+                    model_name="packagedata",
+                    constraint=models.UniqueConstraint(
+                        condition=models.Q(("hash_md5", ""), _negated=True),
+                        fields=("hash_md5",),
+                        name="unique_package_data_hash_md5",
+                    ),
+                ),
+            ],
+            database_operations=[
+                migrations.RunSQL(
+                    sql="""
+                    CREATE UNIQUE INDEX CONCURRENTLY "unique_package_data_hash_md5"
+                    ON "package_data" ("hash_md5") WHERE NOT (hash_md5 = '')
+                    """,
+                    reverse_sql='DROP INDEX CONCURRENTLY IF EXISTS "unique_package_data_hash_md5"',
+                ),
+            ],
         ),
     ]
