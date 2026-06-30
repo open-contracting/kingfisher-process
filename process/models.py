@@ -307,8 +307,8 @@ class Release(models.Model):
     class Meta:
         db_table = "release"
         indexes = [
-            # Used by process.management.commands.release_compiler.compile_release().
-            models.Index(fields=["collection", "ocid"]),
+            # Used by process.processors.compiler.compile_release_batch().
+            models.Index(fields=["collection", "ocid", "release_date"]),
             # ForeignKey with db_index=False.
             models.Index(name="release_collection_id_idx", fields=["collection"]),
             models.Index(name="release_collection_file_id_idx", fields=["collection_file"]),
@@ -367,7 +367,7 @@ class CompiledRelease(models.Model):
     class Meta:
         db_table = "compiled_release"
         indexes = [
-            # Used by compile_record() and compile_release().
+            # Used by compile_record() and compile_release_batch().
             models.Index(fields=["collection", "ocid"]),
             # ForeignKey with db_index=False.
             models.Index(name="compiled_release_collection_id_idx", fields=["collection"]),
