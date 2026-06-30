@@ -1,48 +1,47 @@
-from unittest.mock import patch
-
 from django.test import TransactionTestCase
 
-from process.exceptions import AlreadyExists
-from process.management.commands.release_compiler import compile_release
 from process.models import Collection, CollectionNote, CompiledRelease
+from process.processors.compiler import compile_release_batch
 
 
-class CompileReleaseTests(TransactionTestCase):
+class CompileReleaseBatchTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
-    @patch("process.management.commands.release_compiler.create_note")
-    def test_nonexistent_input(self, create_note):
+    def test_no_releases(self):
         collection = Collection.objects.get(pk=3)
+        ocid = "nonexistent"
 
-        release = compile_release(collection, "nonexistent")
+        result = compile_release_batch(collection, [ocid])
 
-        self.assertIsNone(release)
-        create_note.assert_called_once_with(
-            Collection.objects.get(pk=3),
-            CollectionNote.Level.ERROR,
-            "OCID nonexistent has 0 releases.",
+        self.assertEqual(result, [])
+        self.assertEqual(CompiledRelease.objects.filter(collection=collection, ocid=ocid).count(), 0)
+        self.assertTrue(
+            CollectionNote.objects.filter(
+                collection=collection, code=CollectionNote.Level.ERROR, note="OCID nonexistent has 0 releases."
+            ).exists()
         )
 
     def test_already_compiled(self):
         collection = Collection.objects.get(pk=3)
+        ocid = "ocds-px0z7d-17998-18005-1"
 
-        with self.assertRaises(AlreadyExists) as e:
-            compile_release(collection, "ocds-px0z7d-17998-18005-1")
+        with self.assertLogs("process.processors.compiler", level="ERROR") as cm:
+            result = compile_release_batch(collection, [ocid])
 
+        self.assertEqual(result, [])
+        self.assertEqual(CompiledRelease.objects.filter(collection=collection, ocid=ocid).count(), 1)
         self.assertEqual(
-            str(e.exception),
-            "Compiled release ocds-px0z7d-17998-18005-1 (id: 45) already exists in collection "
-            "portugal_releases:2020-12-29 09:22:08 (id: 3)",
+            cm.records[0].getMessage(), f"Compiled release {ocid} already exists in collection {collection}"
         )
 
     def test_happy_day(self):
         collection = Collection.objects.get(pk=3)
         ocid = "ocds-px0z7d-5052-5001-1"
-        compiled_release = CompiledRelease.objects.get(collection_id=3, ocid=ocid)
-        compiled_release.collection_file.delete()
+        CompiledRelease.objects.get(collection=collection, ocid=ocid).collection_file.delete()
 
-        release = compile_release(collection, ocid)
+        result = compile_release_batch(collection, [ocid])
 
-        self.assertEqual(release.ocid, ocid)
-        self.assertEqual(release.collection.id, 3)
-        self.assertEqual(release.collection_file.filename, f"{ocid}.json")
+        compiled_release = CompiledRelease.objects.get(collection=collection, ocid=ocid)
+
+        self.assertEqual(result, [ocid])
+        self.assertEqual(compiled_release.collection_file.filename, f"{ocid}.json")

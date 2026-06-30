@@ -1,3 +1,4 @@
+import functools
 import logging
 
 from django.conf import settings
@@ -77,15 +78,26 @@ def callback(client_state, channel, method, properties, input_message):
                 # Should only occur if setting the --compile option when using the load command with compiled releases.
                 return
 
-        for item in items.values("ocid").distinct().iterator():
-            create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=item["ocid"])
+        publish_compile = functools.partial(
+            _publish, client_state, channel, collection, compiled_collection, publish_routing_key
+        )
 
-            message = {
-                "collection_id": collection.pk,
-                "compiled_collection_id": compiled_collection.pk,
-                "ocid": item["ocid"],
-            }
-            publish(client_state, channel, message, publish_routing_key)
+        release_ocid_batch = []
+        for item in items.values("ocid").distinct().iterator():
+            ocid = item["ocid"]
+            create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=ocid)
+
+            if publish_routing_key == "compiler_record":
+                publish_compile(ocid=ocid)
+            else:
+                # Batch OCIDs when compiling releases.
+                release_ocid_batch.append(ocid)
+                if len(release_ocid_batch) >= settings.COMPILE_BATCH_SIZE:
+                    publish_compile(ocids=release_ocid_batch)
+                    release_ocid_batch = []
+
+        if release_ocid_batch:
+            publish_compile(ocids=release_ocid_batch)
 
         # For "record package" collections, track compilation per file, to avoid a race condition where:
         #
@@ -98,6 +110,11 @@ def callback(client_state, channel, method, properties, input_message):
         if collection_file and collection.data_type["format"] == Format.record_package:
             collection_file.compilation_started = True
             collection_file.save(update_fields=["compilation_started"])
+
+
+def _publish(client_state, channel, collection, compiled_collection, routing_key, **payload):
+    message = {"collection_id": collection.pk, "compiled_collection_id": compiled_collection.pk, **payload}
+    publish(client_state, channel, message, routing_key)
 
 
 def compilable(collection):
