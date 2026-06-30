@@ -40,14 +40,9 @@ def callback(client_state, channel, method, properties, input_message):
         deleting_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
         transaction.atomic(),
     ):
-        release = compile_record(compiled_collection, ocid)
+        compile_record(compiled_collection, ocid)
 
-    message = {
-        "collection_id": compiled_collection_id,
-        "compiled_release_id": release.pk if release else None,
-        "ocid": ocid,
-    }
-    publish(client_state, channel, message, routing_key)
+    publish(client_state, channel, {"collection_id": compiled_collection_id}, routing_key)
 
     ack(client_state, channel, method.delivery_tag)
 
