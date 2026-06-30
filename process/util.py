@@ -91,7 +91,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
 
 
 def get_or_create(model, data):
-    """Get or create a Data or PackageData instance."""
+    """Get or create a PackageData or Data instance."""
     if not settings.DEDUPLICATE_DATA:
         return model.objects.create(hash_md5="", data=data)
 

@@ -237,9 +237,6 @@ REST_FRAMEWORK = {
 
 # Project configuration
 
-# The version of OCDS with which to initialize the ProfileBuilder.
-COMPILER_OCDS_VERSION = "1__1__5"
-
 # The connection string for RabbitMQ.
 RABBIT_URL = os.getenv("RABBIT_URL", "amqp://127.0.0.1")
 # The name of the RabbitMQ exchange. Follow the pattern `{project}_{service}_{environment}`.
@@ -259,7 +256,14 @@ KINGFISHER_COLLECT_FILES_STORE = os.getenv(
     "KINGFISHER_COLLECT_FILES_STORE", "/data" if production else BASE_DIR / "data"
 )
 
-ENABLE_CHECKER = "ENABLE_CHECKER" in os.environ
-
 # Whether to deduplicate rows in the `package_data` and `data` tables.
 DEDUPLICATE_DATA = os.getenv("DEDUPLICATE_DATA", "True") == "True"
+
+# The number of rows to insert per statement, when DEDUPLICATE_DATA is disabled.
+BULK_CREATE_BATCH_SIZE = int(os.getenv("BULK_CREATE_BATCH_SIZE", "1000"))
+
+# The version of OCDS with which to initialize the ProfileBuilder.
+COMPILER_OCDS_VERSION = "1__1__5"
+
+# Whether to enable the `checker` worker.
+ENABLE_CHECKER = "ENABLE_CHECKER" in os.environ

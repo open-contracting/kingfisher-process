@@ -2,9 +2,9 @@ import logging
 import random
 import time
 from collections import OrderedDict
+from itertools import islice
 
 import ijson
-import simplejson as json
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import OperationalError, transaction
@@ -305,46 +305,67 @@ def _read_data_from_file(filename, data_type):
 
 
 def _store_data(collection_file, package, releases_or_records, data_type, *, upgrade=False):
-    for release_or_record in releases_or_records:
+    collection = collection_file.collection
+    package_data = get_or_create(PackageData, package) if package is not None else None
+
+    # With deduplication, each Data row is looked up or created individually (batch size 1).
+    batch_size = 1 if settings.DEDUPLICATE_DATA else settings.BULK_CREATE_BATCH_SIZE
+
+    while batched_releases_or_records := list(islice(releases_or_records, batch_size)):
         if upgrade:
-            with create_logger_note(collection_file.collection, "ocdskit"):
-                # upgrade_10_11() requires an OrderedDict. simplejson is used for native decimal support.
-                # This requirement can be removed: https://github.com/open-contracting/ocdskit/issues/164
-                release_or_record = upgrade_10_11(
-                    json.loads(json.dumps(release_or_record, use_decimal=True), object_pairs_hook=OrderedDict)
-                )
+            upgraded_releases_or_records = []
+            for release_or_record in batched_releases_or_records:
+                with create_logger_note(collection, "ocdskit"):
+                    upgraded_releases_or_records.append(upgrade_10_11(release_or_record, reorder=False))
+            batched_releases_or_records = upgraded_releases_or_records
 
-        data = get_or_create(Data, release_or_record)
+        if settings.DEDUPLICATE_DATA:
+            data_objects = [get_or_create(Data, data) for data in batched_releases_or_records]
+        else:
+            data_objects = [Data(hash_md5="", data=data) for data in batched_releases_or_records]
+            Data.objects.bulk_create(data_objects)
 
-        # The ocid is required to find all the releases relating to the same record, during compilation.
-        if "ocid" not in release_or_record:
-            logger.error("Skipped release or record without ocid: %s", release_or_record)
-            continue
+        rows = []
+        for release_or_record, data in zip(batched_releases_or_records, data_objects, strict=True):
+            # The ocid is required to find all the releases relating to the same record, during compilation.
+            if "ocid" not in release_or_record:
+                logger.error("Skipped release or record without ocid: %s", release_or_record)
+                continue
 
-        match data_type["format"]:
-            case Format.record_package:
-                Record(
-                    collection=collection_file.collection,
-                    collection_file=collection_file,
-                    package_data=get_or_create(PackageData, package),
-                    data=data,
-                    ocid=release_or_record["ocid"],
-                ).save()
-            case Format.release_package:
-                Release(
-                    collection=collection_file.collection,
-                    collection_file=collection_file,
-                    package_data=get_or_create(PackageData, package),
-                    data=data,
-                    ocid=release_or_record["ocid"],
-                    release_id=release_or_record.get("id") or "",
-                    release_date=release_or_record.get("date") or "",
-                ).save()
-            case Format.compiled_release:
-                CompiledRelease(
-                    collection=collection_file.collection,
-                    collection_file=collection_file,
-                    data=data,
-                    ocid=release_or_record["ocid"],
-                    release_date=release_or_record.get("date") or "",
-                ).save()
+            match data_type["format"]:
+                case Format.record_package:
+                    rows.append(
+                        Record(
+                            collection=collection,
+                            collection_file=collection_file,
+                            package_data=package_data,
+                            data=data,
+                            ocid=release_or_record["ocid"],
+                        )
+                    )
+                case Format.release_package:
+                    rows.append(
+                        Release(
+                            collection=collection,
+                            collection_file=collection_file,
+                            package_data=package_data,
+                            data=data,
+                            ocid=release_or_record["ocid"],
+                            release_id=release_or_record.get("id") or "",
+                            release_date=release_or_record.get("date") or "",
+                        )
+                    )
+                case Format.compiled_release:
+                    rows.append(
+                        CompiledRelease(
+                            collection=collection,
+                            collection_file=collection_file,
+                            data=data,
+                            ocid=release_or_record["ocid"],
+                            release_date=release_or_record.get("date") or "",
+                        )
+                    )
+
+        if rows:
+            # A collection has a single format.
+            type(rows[0]).objects.bulk_create(rows)

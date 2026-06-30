@@ -1,0 +1,11 @@
+[
+    {
+        "version": "1.1",
+        "uri": "http://example.com/record",
+        "publisher": {"name": "Example"},
+        "records": [
+            {"ocid": "ocds-aaa111", "compiledRelease": {"ocid": "ocds-aaa111", "tag": ["compiled"]}},
+            {"ocid": "ocds-bbb222", "compiledRelease": {"ocid": "ocds-bbb222", "tag": ["compiled"]}}
+        ]
+    }
+]

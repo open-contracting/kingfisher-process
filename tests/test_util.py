@@ -24,9 +24,10 @@ class UtilTests(SimpleTestCase):
         create_note.assert_called_once_with(
             "collection",
             CollectionNote.Level.WARNING,
-            'party in "supplier" role differs from party in ["tenderer"] roles:\n{"name": "Acme Inc.", "identifier": '
-            '{"id": 1}, "additionalIdentifiers": [{"id": "a"}], "id": "3c9756cf8983b14066a034079aa7aae4"}\n{"id": '
-            '"3c9756cf8983b14066a034079aa7aae4", "name": "Acme Inc.", "identifier": {"id": 1}}\n',
+            'party in "supplier" role differs from party in ["tenderer"] roles:\n'
+            '{"id": "3c9756cf8983b14066a034079aa7aae4", "name": "Acme Inc.", "identifier": {"id": 1}, '
+            '"additionalIdentifiers": [{"id": "a"}]}\n'
+            '{"id": "3c9756cf8983b14066a034079aa7aae4", "name": "Acme Inc.", "identifier": {"id": 1}}\n',
         )
 
     @patch("process.util.create_note")
