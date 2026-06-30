@@ -326,22 +326,22 @@ def _store_data(collection_file, package, releases_or_records, data_type, *, upg
     # With deduplication, each Data row is looked up or created individually (batch size 1).
     batch_size = 1 if settings.DEDUPLICATE_DATA else settings.BULK_CREATE_BATCH_SIZE
 
-    while batched_releases_or_records := list(islice(releases_or_records, batch_size)):
+    while release_or_record_batch := list(islice(releases_or_records, batch_size)):
         if upgrade:
             upgraded_releases_or_records = []
-            for release_or_record in batched_releases_or_records:
+            for release_or_record in release_or_record_batch:
                 with create_logger_note(collection, "ocdskit"):
                     upgraded_releases_or_records.append(upgrade_10_11(release_or_record, reorder=False))
-            batched_releases_or_records = upgraded_releases_or_records
+            release_or_record_batch = upgraded_releases_or_records
 
         if settings.DEDUPLICATE_DATA:
-            data_objects = [get_or_create(Data, data) for data in batched_releases_or_records]
+            data_objects = [get_or_create(Data, data) for data in release_or_record_batch]
         else:
-            data_objects = [Data(hash_md5="", data=data) for data in batched_releases_or_records]
+            data_objects = [Data(hash_md5="", data=data) for data in release_or_record_batch]
             Data.objects.bulk_create(data_objects)
 
         rows = []
-        for release_or_record, data in zip(batched_releases_or_records, data_objects, strict=True):
+        for release_or_record, data in zip(release_or_record_batch, data_objects, strict=True):
             # The ocid is required to find all the releases relating to the same record, during compilation.
             if "ocid" not in release_or_record:
                 logger.error("Skipped release or record without ocid: %s", release_or_record)
