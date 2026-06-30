@@ -34,10 +34,16 @@ SCRAPYD_PROJECT
   The project within Scrapyd
 KINGFISHER_COLLECT_FILES_STORE
   The directory from which to **read** the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher Process share a filesystem, this will be the same value for both services.
-ENABLE_CHECKER
-  Whether to enable the ``checker`` worker
 DEDUPLICATE_DATA
   Whether to deduplicate rows in the ``package_data`` and ``data`` tables (default ``True``)
+BULK_CREATE_BATCH_SIZE
+  The number of rows to insert per statement, when ``DEDUPLICATE_DATA`` is disabled (default 1000)
+COMPILE_BATCH_SIZE
+  The number of OCIDs to compile at once (default 100)
+COMPILER_OCDS_VERSION
+  The version of OCDS with which to initialize the `ProfileBuilder <https://ocdsextensionregistry.readthedocs.io/en/latest/api/profile_builder.html>`__
+ENABLE_CHECKER
+  Whether to enable the ``checker`` worker
 
 It is recommended to set ``REQUESTS_POOL_MAXSIZE`` to ``20``, to set the maximum number of connections to save in the `connection pool <https://urllib3.readthedocs.io/en/latest/advanced-usage.html#customizing-pool-behavior>`__ used by the `ocdsextensionregistry <https://ocdsextensionregistry.readthedocs.io/en/latest/changelog.html>`__ package. This is the same value as the `prefetch_count <https://www.rabbitmq.com/docs/consumer-prefetch>`__ used by RabbitMQ consumers.
 
@@ -104,17 +110,17 @@ In each :doc:`worker and command<../cli>`, the queue name and the routing key of
      - -  ``file_worker``
        -  ``collection_closed``
      - -  ``compiler_record`` for **each** OCID among records in the collection file
-       -  ``compiler_release`` for **each** OCID among releases in the entire collection
+       -  ``compiler_release`` for **each batch of** OCIDs among releases in the entire collection
      - -  For release packages, do nothing if a ``LOAD`` remains
        -  Create ``COMPILE`` for **each** OCID
    * - ``record_compiler`` worker
      - ``compiler_record``
-     - ``record_compiler`` for the OCID
+     - ``record_compiler`` for the collection
      - Delete ``COMPILE`` for the OCID
    * - ``release_compiler`` worker
      - ``compiler_release``
-     - ``release_compiler`` for the OCID
-     - Delete ``COMPILE`` for the OCID
+     - ``release_compiler`` for the collection
+     - Delete ``COMPILE`` for **each** OCID
    * - ``finisher`` worker
      - -  ``file_worker``
        -  ``checker``
