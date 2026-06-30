@@ -262,6 +262,9 @@ DEDUPLICATE_DATA = os.getenv("DEDUPLICATE_DATA", "True") == "True"
 # The number of rows to insert per statement, when DEDUPLICATE_DATA is disabled.
 BULK_CREATE_BATCH_SIZE = int(os.getenv("BULK_CREATE_BATCH_SIZE", "1000"))
 
+# The number of OCIDs to compile at once.
+COMPILE_BATCH_SIZE = int(os.getenv("COMPILE_BATCH_SIZE", "100"))
+
 # The version of OCDS with which to initialize the ProfileBuilder.
 COMPILER_OCDS_VERSION = "1__1__5"
 
