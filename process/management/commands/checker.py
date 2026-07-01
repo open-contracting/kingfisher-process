@@ -81,9 +81,9 @@ def _check_collection_file(collection_file):
     logger.info("Collecting data to check for collection file %s", collection_file)
 
     data_type = collection_file.collection.data_type
-    release_package = data_type and data_type["format"] == Format.release_package
+    is_release_package = data_type and data_type["format"] == Format.release_package
 
-    if release_package:
+    if is_release_package:
         items_key = "releases"
         model = Release
         related_name = "releasecheck"
@@ -124,7 +124,7 @@ def _check_collection_file(collection_file):
         if schema.json_deref_error:
             cove_output["json_deref_error"] = schema.json_deref_error
 
-        check = ReleaseCheck(release=item) if release_package else RecordCheck(record=item)
+        check = ReleaseCheck(release=item) if is_release_package else RecordCheck(record=item)
         check.cove_output = cove_output
         check.save()
 

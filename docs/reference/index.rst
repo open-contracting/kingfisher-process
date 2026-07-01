@@ -128,7 +128,7 @@ In each :doc:`worker and command<../cli>`, the queue name and the routing key of
        -  ``release_compiler``
        -  ``collection_closed``
      - N/A
-     - Do nothing if a step remains
+     - Do nothing if a processing step remains
    * - ``wiper`` worker
      - ``wiper``
      - N/A

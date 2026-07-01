@@ -43,8 +43,10 @@ def callback(client_state, channel, method, properties, input_message):
     if collection.deleted_at:
         return
 
+    data_type = collection.data_type
+
     # No action is performed for "collection_closed" messages for "record package" collections.
-    if collection.data_type and collection.data_type["format"] == Format.record_package and not collection_file:
+    if data_type and data_type["format"] == Format.record_package and not collection_file:
         return
 
     # There is already a guard in the file_worker worker's process_file() function to halt on non-packages, so we only
@@ -63,7 +65,9 @@ def callback(client_state, channel, method, properties, input_message):
         if _collection_is_empty(collection):
             return
 
-        match collection.data_type["format"]:
+        data_format = data_type["format"]
+
+        match data_format:
             case Format.record_package:
                 items = Record.objects.filter(collection_file=collection_file)
                 publish_routing_key = "compiler_record"
@@ -82,22 +86,22 @@ def callback(client_state, channel, method, properties, input_message):
             _publish, client_state, channel, collection, compiled_collection, publish_routing_key
         )
 
-        release_ocid_batch = []
+        batch = []
         for item in items.values("ocid").distinct().iterator():
             ocid = item["ocid"]
             create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=ocid)
 
-            if publish_routing_key == "compiler_record":
-                publish_compile(ocid=ocid)
+            if data_format == Format.release_package:
+                # Batch OCIDs for a "release package" collection.
+                batch.append(ocid)
+                if len(batch) >= settings.COMPILE_BATCH_SIZE:
+                    publish_compile(ocids=batch)
+                    batch = []
             else:
-                # Batch OCIDs when compiling releases.
-                release_ocid_batch.append(ocid)
-                if len(release_ocid_batch) >= settings.COMPILE_BATCH_SIZE:
-                    publish_compile(ocids=release_ocid_batch)
-                    release_ocid_batch = []
+                publish_compile(ocid=ocid)
 
-        if release_ocid_batch:
-            publish_compile(ocids=release_ocid_batch)
+        if batch:
+            publish_compile(ocids=batch)
 
         # For "record package" collections, track compilation per file, to avoid a race condition where:
         #
@@ -107,7 +111,7 @@ def callback(client_state, channel, method, properties, input_message):
         # - record_compiler deletes the last COMPILE step and publishes a message, consumed by finisher.
         # - finisher finds no processing steps and completes the *compiled* collection. (!)
         # - However, there are messages from file_worker in the queue, from which compiler will create COMPILE steps.
-        if collection_file and collection.data_type["format"] == Format.record_package:
+        if collection_file and data_format == Format.record_package:
             collection_file.compilation_started = True
             collection_file.save(update_fields=["compilation_started"])
 

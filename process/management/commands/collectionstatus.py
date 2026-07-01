@@ -17,7 +17,7 @@ class Command(CollectionCommand):
             "Get the status of a root collection and its children\n\n"
             "The output includes:\n\n"
             "steps:                 The steps that were run\n"
-            "data_type:             A description of the data format\n"
+            "format:                A description of the data format\n"
             "store_end_at:          The time at which the collection ended\n"
             "completed_at:          The time at which the processing finished\n"
             "expected_files_count:  The number of files expected from Kingfisher Collect\n"
@@ -59,19 +59,20 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        if collection.data_type:
-            data_type = collection.data_type["format"]
-            if collection.data_type["array"]:
-                data_type = f"a JSON array of {data_type}s"
+        data_type = collection.data_type
+        if data_type:
+            data_format = data_type["format"]
+            if data_type["array"]:
+                data_format = f"a JSON array of {data_format}s"
 
-            if collection.data_type["concatenated"]:
-                data_type = f"concatenated JSON, starting with {data_type}"
+            if data_type["concatenated"]:
+                data_format = f"concatenated JSON, starting with {data_format}"
         else:
-            data_type = self.style.WARNING("to be determined")
+            data_format = self.style.WARNING("to be determined")
 
         # Fields
         self.stdout.write(f"steps: {', '.join(collection.steps)}")
-        self.stdout.write(f"data_type: {data_type}")
+        self.stdout.write(f"format: {data_format}")
         self.stdout.write(f"store_end_at: {self.warn_none(collection.store_end_at)}")
         self.stdout.write(f"completed_at: {self.warn_none(collection.completed_at)}")
         self.stdout.write(f"expected_files_count: {collection.expected_files_count}")
