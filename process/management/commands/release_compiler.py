@@ -25,8 +25,7 @@ class Command(BaseCommand):
 
 
 def callback(client_state, channel, method, properties, input_message):
-    # TEMPORARY: Accept either a batch of OCIDs (new format) or a single OCID (old format).
-    ocids = input_message.get("ocids") or [input_message["ocid"]]
+    ocids = input_message["ocids"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
     compiled_collection = Collection.objects.get(pk=compiled_collection_id)
