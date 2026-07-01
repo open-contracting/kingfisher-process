@@ -1,10 +1,23 @@
+from unittest.mock import MagicMock, patch
+
+from django.db import OperationalError
 from django.test import TransactionTestCase, override_settings
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.util import Format
+from psycopg.errors import ProgramLimitExceeded
 
 from process.exceptions import EmptyFormatError, UnsupportedFormatError
-from process.management.commands.file_worker import process_file, set_data_type
-from process.models import CollectionFile, CompiledRelease, Data, PackageData, Record, Release
+from process.management.commands.file_worker import callback, process_file, set_data_type
+from process.models import (
+    CollectionFile,
+    CollectionNote,
+    CompiledRelease,
+    Data,
+    PackageData,
+    ProcessingStep,
+    Record,
+    Release,
+)
 from tests.fixtures import collection
 
 
@@ -164,3 +177,43 @@ class ProcessFileWithoutDeduplicationTests(TransactionTestCase):
         self.assertEqual(PackageData.objects.count(), 0)
         self.assertEqual(Data.objects.count(), 2)
         self.assertEqual(set(compiled_releases.values_list("ocid", flat=True)), {"ocds-aaa111", "ocds-bbb222"})
+
+
+class CallbackTests(TransactionTestCase):
+    fixtures = ["tests/fixtures/complete_db.json"]
+
+    @patch("process.management.commands.file_worker.publish")
+    @patch("process.management.commands.file_worker.nack")
+    @patch("process.management.commands.file_worker.ack")
+    @patch("process.management.commands.file_worker.process_file")
+    def test_skips_file_too_large(self, process_file, ack, nack, publish):
+        collection_file = CollectionFile.objects.select_related("collection").get(pk=1)
+        ProcessingStep.objects.create(
+            name=ProcessingStep.Name.LOAD, collection=collection_file.collection, collection_file=collection_file
+        )
+
+        # The wrapped error PostgreSQL raises for a jsonb value that is too large to store.
+        error = OperationalError("total size of jsonb array elements exceeds the maximum of 268435455 bytes")
+        error.__cause__ = ProgramLimitExceeded()
+        process_file.side_effect = error
+
+        client_state = MagicMock()
+        channel = MagicMock()
+        method = MagicMock(delivery_tag=1)
+        input_message = {"collection_id": collection_file.collection_id, "collection_file_id": collection_file.pk}
+
+        # The callback returns instead of raising, so the worker keeps running.
+        callback(client_state, channel, method, MagicMock(), input_message)
+
+        nack.assert_called_once_with(client_state, channel, 1, requeue=False)
+        ack.assert_not_called()
+        self.assertFalse(
+            ProcessingStep.objects.filter(name=ProcessingStep.Name.LOAD, collection_file=collection_file).exists()
+        )
+        self.assertTrue(
+            CollectionNote.objects.filter(
+                collection=collection_file.collection,
+                code=CollectionNote.Level.ERROR,
+                note=f"{collection_file.filename} is too large to store",
+            ).exists()
+        )

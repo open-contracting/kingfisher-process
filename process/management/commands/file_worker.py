@@ -13,6 +13,7 @@ from ijson import ObjectBuilder
 from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import Format, detect_format
+from psycopg.errors import ProgramLimitExceeded
 from yapw.methods import ack, nack, publish
 
 from process.exceptions import EmptyFormatError, UnsupportedFormatError
@@ -98,7 +99,7 @@ def callback(client_state, channel, method, properties, input_message):
             delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
             create_note(
                 collection,
-                CollectionNote.Level.ERROR,
+                ERROR,
                 f"Source {collection.source_id} yields an unknown or unsupported format",
                 data={"type": type(e).__name__, **input_message},
             )
@@ -128,11 +129,25 @@ def callback(client_state, channel, method, properties, input_message):
                     transaction.atomic(),
                 ):
                     upgraded_collection_file_id = process_file(collection_file)
-            # If another transaction in another thread INSERTs the same data, concurrently.
             except OperationalError as e:
+                # Data that exceeds a PostgreSQL size limit can never be stored, so skip the file.
+                if isinstance(e.__cause__, ProgramLimitExceeded):
+                    logger.exception("%s is too large to store, skipping", collection_file.filename)
+                    delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
+                    create_note(
+                        collection,
+                        ERROR,
+                        f"{collection_file.filename} is too large to store",
+                        data={"type": type(e).__name__, "message": str(e), **input_message},
+                    )
+                    nack(client_state, channel, method.delivery_tag, requeue=False)
+                    return
+
+                # If another transaction in another thread INSERTs the same data, concurrently.
                 logger.warning("Deadlock on %s %s (%d/%d)\n%s", collection, collection_file, attempt, MAX_ATTEMPTS, e)
                 if attempt == MAX_ATTEMPTS:
                     raise
+
                 # Make the threads retry at different times, to avoid repeating the deadlock.
                 time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
             else:
