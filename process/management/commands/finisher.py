@@ -135,15 +135,22 @@ def completable(collection):
             logger.debug("Collection %s not completable (load incomplete for original collection)", collection)
             return False
 
-        data_type = parent.data_type
-
-        if (
-            data_type
-            and data_type["format"] == Format.record_package
-            and parent.collectionfile_set.filter(compilation_started=False).exists()
-        ):
-            logger.debug("Collection %s not completable (compile steps not created for collection file)", collection)
-            return False
+        if data_type := parent.data_type:
+            match data_type["format"]:
+                case Format.record_package:
+                    # A COMPILE step is created per collection file, as each is processed.
+                    if parent.collectionfile_set.filter(compilation_started=False).exists():
+                        logger.debug(
+                            "Collection %s not completable (compile steps not created for all files)", collection
+                        )
+                        return False
+                case Format.release_package:
+                    # All COMPILE steps are created together at once. `compilation_enqueued` marks that complete.
+                    if not collection.compilation_enqueued:
+                        logger.debug(
+                            "Collection %s not completable (compile steps not created for all OCIDs)", collection
+                        )
+                        return False
     # The close_collection endpoint, load command and closecollection command set `store_end_at` for the original
     # and upgraded collections. (Upgrading is performed at the same time as loading.)
     elif collection.store_end_at is None:

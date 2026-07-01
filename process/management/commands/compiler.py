@@ -103,6 +103,10 @@ def callback(client_state, channel, method, properties, input_message):
         if batch:
             publish_compile(ocids=batch)
 
+        # This ensures the finisher only completes a "release package" collection after creating all processing steps.
+        if data_format == Format.release_package:
+            Collection.objects.filter(pk=compiled_collection.pk).update(compilation_enqueued=True)
+
         # For "record package" collections, track compilation per file, to avoid a race condition where:
         #
         # - compiler sets compilation_started on the collection (above).

@@ -24,7 +24,8 @@ class Command(CollectionCommand):
             "collection_files:      The number of related rows in the collection_file table\n"
             "processing_steps:      The number of individual processing steps remaining\n\n"
             "And if the original collection has a compiled collection:\n\n"
-            "compilation_started:   Whether the compile step started\n"
+            "compilation_started:   Whether the collection's compile step started\n"
+            "compilation_enqueued:  Whether all COMPILE processing steps were created\n"
             "completable:           Whether the collection can be marked as completed"
         )
     )
@@ -101,6 +102,7 @@ class Command(CollectionCommand):
 
             # Fields
             self.stdout.write(f"compilation_started: {compiled_collection.compilation_started}")
+            self.stdout.write(f"compilation_enqueued: {compiled_collection.compilation_enqueued}")
             self.stdout.write(f"store_end_at: {self.warn_none(compiled_collection.store_end_at)}")
             self.stdout.write(f"completed_at: {self.warn_none(compiled_collection.completed_at)}")
 

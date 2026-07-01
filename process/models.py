@@ -59,6 +59,7 @@ class Collection(models.Model):
     # Internal state
     data_type = models.JSONField(blank=True, default=dict)
     compilation_started = models.BooleanField(default=False)
+    compilation_enqueued = models.BooleanField(default=False)
 
     # Provenance
     parent = models.ForeignKey(

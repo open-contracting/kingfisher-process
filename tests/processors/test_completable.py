@@ -43,6 +43,17 @@ class CompletableTests(TransactionTestCase):
         collection.transform_type = Collection.Transform.COMPILE_RELEASES
         collection.store_end_at = None
         collection.compilation_started = True
+        collection.compilation_enqueued = True
         collection.save()
 
         self.assertEqual(completable(collection), True)
+
+    def test_compilation_not_enqueued(self):
+        collection = Collection.objects.get(pk=2)
+        collection.transform_type = Collection.Transform.COMPILE_RELEASES
+        collection.store_end_at = None
+        collection.compilation_started = True
+        collection.compilation_enqueued = False
+        collection.save()
+
+        self.assertEqual(completable(collection), False)
