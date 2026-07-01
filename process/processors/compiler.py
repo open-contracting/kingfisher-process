@@ -23,10 +23,12 @@ def compile_release_batch(collection, ocids):
     Compile the OCIDs in bulk.
 
     Idempotent under duplicate message delivery, provided this is called within a transaction that also deletes the
-    COMPILE steps, so that the compiled release insertions and processing step deletions commit together. Two messages
-    never carry partially overlapping OCIDs: the compiler command sets compilation_started with an optimistic lock and
-    publishes each collection's OCIDs once, partitioned into disjoint batches. So the only duplicate is a redelivery of
-    the same message:
+    COMPILE steps, so that the compiled release insertions and processing step deletions commit together.
+
+    Two messages never partially overlap on OCIDs: the compiler command sets compilation_started with an optimistic
+    lock and publishes each collection's OCIDs once, partitioned into disjoint batches.
+
+    So, the only duplicate is a redelivery of the same message, in which case:
 
     - A sequential redelivery is a no-op: already-compiled OCIDs are filtered out below, before any insert.
     - A concurrent redelivery is safe: CollectionFile's unique (collection, filename) constraint lets only one of the
@@ -37,7 +39,6 @@ def compile_release_batch(collection, ocids):
     :param ocids: the OCIDs to compile
     :returns: the OCIDs that were compiled
     """
-    # Skip OCIDs that are already compiled (idempotent under redelivery; see the docstring).
     already_exists = set(
         CompiledRelease.objects.filter(collection=collection, ocid__in=ocids).values_list("ocid", flat=True)
     )
