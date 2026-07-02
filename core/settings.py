@@ -270,3 +270,7 @@ COMPILER_OCDS_VERSION = "1__1__5"
 
 # Whether to enable the `checker` worker.
 ENABLE_CHECKER = "ENABLE_CHECKER" in os.environ
+
+# 3 hours in milliseconds.
+# https://www.rabbitmq.com/consumers.html
+LONG_CONSUMER_TIMEOUT = 3 * 60 * 60 * 1000

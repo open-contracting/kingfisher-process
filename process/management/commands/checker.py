@@ -42,9 +42,7 @@ class Command(BaseCommand):
             queue=routing_key,
             routing_keys=consume_routing_keys,
             decorator=decorator,
-            # 3 hours in milliseconds.
-            # https://www.rabbitmq.com/consumers.html
-            arguments={"x-consumer-timeout": 3 * 60 * 60 * 1000},
+            arguments={"x-consumer-timeout": settings.LONG_CONSUMER_TIMEOUT},
         )
 
 
