@@ -36,6 +36,10 @@ KINGFISHER_COLLECT_FILES_STORE
   The directory from which to **read** the files written by Kingfisher Collect. If Kingfisher Collect and Kingfisher Process share a filesystem, this will be the same value for both services.
 DEDUPLICATE_DATA
   Whether to deduplicate rows in the ``package_data`` and ``data`` tables (default ``True``)
+
+  .. attention::
+
+     If a database contains data, changing this to ``False`` causes the ``wiper`` worker to violate a foreign key when deleting a preexisting collection if any row is still referenced by another collection.
 BULK_CREATE_BATCH_SIZE
   The number of rows to insert per statement, when ``DEDUPLICATE_DATA`` is disabled (default 1000)
 COMPILE_BATCH_SIZE
