@@ -36,77 +36,83 @@ def callback(client_state, channel, method, properties, input_message):
         collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
         collection = collection_file.collection
 
-    # Acknowledge early when using the Splitter pattern.
-    ack(client_state, channel, method.delivery_tag)
-
-    # No action is performed if the collection is cancelled or deleted.
-    if collection.deleted_at:
-        return
-
     data_type = collection.data_type
 
-    # No action is performed for "collection_closed" messages for "record package" collections.
-    if data_type and data_type["format"] == Format.record_package and not collection_file:
+    # Acknowledge and return if there's no action to perform.
+    if (
+        # The collection is cancelled or deleted.
+        collection.deleted_at
+        # A "collection_closed" message for a "record package" collection.
+        or (data_type and data_type["format"] == Format.record_package and not collection_file)
+        # The collection isn't compilable.
+        or not compilable(collection)
+    ):
+        ack(client_state, channel, method.delivery_tag)
         return
 
-    # There is already a guard in the file_worker worker's process_file() function to halt on non-packages, so we only
-    # test the "format" to decide the logic, not to decide whether to proceed.
-    if compilable(collection):
-        compiled_collection = collection.get_compiled_collection()
-        if compiled_collection is None:
-            return
+    compiled_collection = collection.get_compiled_collection()  # PERF: Already called in compilable()
 
-        # Use optimistic locking to update the collection. (Here, it's the return value that's important.)
-        updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
-            compilation_started=True
-        )
+    # Acknowledge and return if there is no compiled collection.
+    if compiled_collection is None:
+        ack(client_state, channel, method.delivery_tag)
+        return
 
-        # Return if the collection expected no files.
-        if _collection_is_empty(collection):
-            return
+    # Claim the collection with optimistic locking, to prevent concurrent processing.
+    updated = Collection.objects.filter(pk=compiled_collection.pk, compilation_started=False).update(
+        compilation_started=True
+    )
 
-        data_format = data_type["format"]
+    # Acknowledge and return if the collection expected no files.
+    if _collection_is_empty(collection):  # PERF: Already called in compilable()
+        ack(client_state, channel, method.delivery_tag)
+        return
 
-        match data_format:
-            case Format.record_package:
-                items = Record.objects.filter(collection_file=collection_file)
-                publish_routing_key = "compiler_record"
-            case Format.release_package:
-                # Return if another compiler worker received a message for the same compilable collection.
-                if not updated:
-                    return
+    data_format = data_type["format"]
 
-                items = collection.release_set
-                publish_routing_key = "compiler_release"
-            case Format.compiled_release:
-                # Should only occur if setting the --compile option when using the load command with compiled releases.
+    match data_format:
+        case Format.record_package:
+            items = Record.objects.filter(collection_file=collection_file)
+            publish_routing_key = "compiler_record"
+        case Format.release_package:
+            # If another message already claimed this collection, and this message is not its redelivery.
+            if not updated and not method.redelivered:
+                ack(client_state, channel, method.delivery_tag)
                 return
 
-        publish_compile = functools.partial(
-            _publish, client_state, channel, collection, compiled_collection, publish_routing_key
-        )
+            # In case this callback is interrupted and the message is redelivered, this together with order_by()
+            # guarantees identical batches. See compile_release_batch() for details.
+            items = collection.release_set
+            publish_routing_key = "compiler_release"
+        case Format.compiled_release:
+            # Should only occur if setting the --compile option when using the load command with compiled releases.
+            ack(client_state, channel, method.delivery_tag)
+            return
 
-        batch = []
-        for item in items.values("ocid").distinct().iterator():
-            ocid = item["ocid"]
-            create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=ocid)
+    publish_compile = functools.partial(
+        _publish, client_state, channel, collection, compiled_collection, publish_routing_key
+    )
 
-            if data_format == Format.release_package:
-                # Batch OCIDs for a "release package" collection.
-                batch.append(ocid)
-                if len(batch) >= settings.COMPILE_BATCH_SIZE:
-                    publish_compile(ocids=batch)
-                    batch = []
-            else:
-                publish_compile(ocid=ocid)
+    batch = []
+    for ocid in items.values_list("ocid", flat=True).distinct().order_by("ocid").iterator():
+        create_step(ProcessingStep.Name.COMPILE, compiled_collection.pk, ocid=ocid)
 
-        if batch:
-            publish_compile(ocids=batch)
-
-        # This ensures the finisher only completes a "release package" collection after creating all processing steps.
         if data_format == Format.release_package:
-            Collection.objects.filter(pk=compiled_collection.pk).update(compilation_enqueued=True)
+            # Batch OCIDs for a "release package" collection.
+            batch.append(ocid)
+            if len(batch) >= settings.COMPILE_BATCH_SIZE:
+                publish_compile(ocids=batch)
+                batch = []
+        else:
+            publish_compile(ocid=ocid)
 
+    if batch:
+        publish_compile(ocids=batch)
+
+    if data_format == Format.release_package:
+        # Without this, if the release_compiler worker processes all existing steps while new steps are being created,
+        # then the finisher worker can complete the collection prematurely.
+        Collection.objects.filter(pk=compiled_collection.pk).update(compilation_enqueued=True)
+    elif collection_file:  # data_format is Format.record_package, since Format.compiled_release returns early
         # For "record package" collections, track compilation per file, to avoid a race condition where:
         #
         # - compiler sets compilation_started on the collection (above).
@@ -115,9 +121,11 @@ def callback(client_state, channel, method, properties, input_message):
         # - record_compiler deletes the last COMPILE step and publishes a message, consumed by finisher.
         # - finisher finds no processing steps and completes the *compiled* collection. (!)
         # - However, there are messages from file_worker in the queue, from which compiler will create COMPILE steps.
-        if collection_file and data_format == Format.record_package:
-            collection_file.compilation_started = True
-            collection_file.save(update_fields=["compilation_started"])
+        collection_file.compilation_started = True
+        collection_file.save(update_fields=["compilation_started"])
+
+    # Acknowledge only after all steps and messages are created, to not leave any OCIDs permanently uncompiled.
+    ack(client_state, channel, method.delivery_tag)
 
 
 def _publish(client_state, channel, collection, compiled_collection, routing_key, **payload):
@@ -138,7 +146,7 @@ def compilable(collection):
     if _collection_is_empty(collection):
         return True
 
-    # This can occur if the close_collection endpoint is called before the file_worker worker can process any messages.
+    # This can occur if the close endpoint is called before the file_worker worker can process any messages.
     if not collection.data_type:
         logger.debug("Collection %s not compilable (data_type not set)", collection)
         return False
@@ -155,8 +163,8 @@ def compilable(collection):
     # 3. Check whether compilation hasn't started. (2. then continues below, to put slower queries later.)
 
     compiled_collection = collection.get_compiled_collection()
-    if compiled_collection and compiled_collection.compilation_started:
-        logger.debug("Collection %s not compilable (already started)", collection)
+    if compiled_collection and compiled_collection.compilation_enqueued:
+        logger.debug("Collection %s not compilable (compile steps already created)", collection)
         return False
 
     has_load_steps_remaining = (
