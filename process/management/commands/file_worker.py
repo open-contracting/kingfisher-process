@@ -83,6 +83,12 @@ def callback(client_state, channel, method, properties, input_message):
         ack(client_state, channel, method.delivery_tag)
         return
 
+    def skip(level, note, data):
+        """Delete the LOAD step, note why the collection file was skipped, and discard the message."""
+        delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
+        create_note(collection, level, note, data=data)
+        nack(client_state, channel, method.delivery_tag, requeue=False)
+
     try:
         # Detect and save the data_type before the transaction, to avoid locking collection rows during process_file().
         #
@@ -92,25 +98,15 @@ def callback(client_state, channel, method, properties, input_message):
             set_data_type(collection, collection_file)
         except (UnknownFormatError, UnsupportedFormatError) as e:  # UnknownFormatError is raised by detect_format()
             logger.exception("Source %s yields an unknown or unsupported format, skipping", collection.source_id)
-            delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
-            create_note(
-                collection,
+            skip(
                 Level.ERROR,
                 f"Source {collection.source_id} yields an unknown or unsupported format",
-                data={"type": type(e).__name__, **input_message},
+                {"type": type(e).__name__, **input_message},
             )
-            nack(client_state, channel, method.delivery_tag, requeue=False)
             return
         except EmptyFormatError as e:
             # Don't log a message, since sources with empty packages also have non-empty packages.
-            delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
-            create_note(
-                collection,
-                CollectionNote.Level.WARNING,
-                str(e),
-                data={"type": type(e).__name__, **input_message},
-            )
-            nack(client_state, channel, method.delivery_tag, requeue=False)
+            skip(Level.WARNING, str(e), {"type": type(e).__name__, **input_message})
             return
 
         try:
@@ -128,14 +124,11 @@ def callback(client_state, channel, method, properties, input_message):
             # Data that exceeds a PostgreSQL size limit can never be stored, so skip the file.
             if isinstance(e.__cause__, ProgramLimitExceeded):
                 logger.exception("%s is too large to store, skipping", collection_file.filename)
-                delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
-                create_note(
-                    collection,
+                skip(
                     Level.ERROR,
                     f"{collection_file.filename} is too large to store",
-                    data={"type": type(e).__name__, "message": str(e), **input_message},
+                    {"type": type(e).__name__, "message": str(e), **input_message},
                 )
-                nack(client_state, channel, method.delivery_tag, requeue=False)
                 return
 
             # A deadlock can occur when another thread concurrently INSERTs the same deduplicated data. The transaction
