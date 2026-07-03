@@ -60,8 +60,7 @@ class Command(CollectionCommand):
                 % collection.__dict__
             )
 
-        data_type = collection.data_type
-        if data_type:
+        if data_type := collection.data_type:
             data_format = data_type["format"]
             if data_type["array"]:
                 data_format = f"a JSON array of {data_format}s"
