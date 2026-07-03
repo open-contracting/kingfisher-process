@@ -145,6 +145,8 @@ def callback(client_state, channel, method, properties, input_message):
                 # If another transaction in another thread INSERTs the same data, concurrently.
                 logger.warning("Deadlock on %s %s (%d/%d)\n%s", collection, collection_file, attempt, MAX_ATTEMPTS, e)
                 if attempt == MAX_ATTEMPTS:
+                    # The transaction is rolled back and the LOAD step preserved, so the errback() function in the
+                    # decorator() function can requeue the message to retry it later, instead of shutting down.
                     raise
 
                 # Make the threads retry at different times, to avoid repeating the deadlock.

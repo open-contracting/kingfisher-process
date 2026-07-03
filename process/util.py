@@ -8,7 +8,7 @@ from textwrap import fill
 import ijson
 import simplejson as json
 from django.conf import settings
-from django.db import IntegrityError, connections, transaction
+from django.db import IntegrityError, OperationalError, connections, transaction
 from psycopg import errors
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
@@ -75,9 +75,18 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # A foreign-key violation is not a duplicate-message symptom: a package_data or data row is still referenced
         # (e.g. by another collection's release), which indicates an error in logic rather than a redelivered message.
+        #
+        # A deadlock is transient: it occurs when concurrent transactions INSERT the same deduplicated data into the
+        # unique index on the data or package_data table in a different order. Requeue the message to retry it later,
+        # rather than shutting down the worker. The file_worker worker retries in-process first (see its MAX_ATTEMPTS
+        # loop) and reaches here only if every attempt deadlocks; the compiler workers have no in-process retry and
+        # rely on this requeue.
         if isinstance(exception, IntegrityError) and isinstance(exception.__cause__, errors.ForeignKeyViolation):
             logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
             add_callback_threadsafe(state.connection, state.interrupt)
+        elif isinstance(exception, OperationalError) and isinstance(exception.__cause__, errors.DeadlockDetected):
+            logger.exception("Deadlock when consuming %r, requeuing", body)
+            nack(state, channel, method.delivery_tag, requeue=True)
         elif isinstance(exception, AlreadyExists | InvalidFormError | IntegrityError | Collection.DoesNotExist):
             logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
