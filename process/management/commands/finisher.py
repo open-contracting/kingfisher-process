@@ -3,7 +3,7 @@ import threading
 import time
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models.functions import Now
 from django.utils.translation import gettext as t
 from ocdskit.util import Format
@@ -73,6 +73,9 @@ def callback(client_state, channel, method, properties, input_message):
 
         # If the collection isn't completable or completed, try again after a delay, to prevent churning.
         elif not collection.completed_at:
+            # Release the thread's database connection before sleeping.
+            connection.close()
+
             # RabbitMQ won't deliver another message until ack'd, so blocking the thread with time.sleep() is
             # effectively the same as not blocking the thread with client_state.connection.ioloop.call_later().
             time.sleep(30)
@@ -93,6 +96,11 @@ def callback(client_state, channel, method, properties, input_message):
                 requeued.add(collection_id)
                 nack(client_state, channel, method.delivery_tag, requeue=True)
                 return
+
+    # Prune any duplicates.
+    if method.redelivered:
+        with lock:
+            requeued.discard(collection_id)
 
     ack(client_state, channel, method.delivery_tag)
 
