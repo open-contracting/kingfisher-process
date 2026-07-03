@@ -87,11 +87,11 @@ In each :doc:`worker and command<../cli>`, the queue name and the routing key of
      - N/A
      - ``collection_closed`` for the original and derived collections
      - N/A
-   * - ``close_collection`` API
+   * - ``POST /api/collections/{id}/close/``
      - N/A
      - ``collection_closed`` for the original and derived collections
      - N/A
-   * - ``wipe_collection`` API
+   * - ``DELETE /api/collections/{id}/``
      - N/A
      - ``wiper`` for the collection
      - N/A
