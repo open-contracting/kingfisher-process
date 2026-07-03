@@ -15,6 +15,7 @@ from process.models import CollectionFile, CollectionNote, CompiledRelease, Data
 from process.util import create_note, get_extensions, get_or_create
 
 logger = logging.getLogger(__name__)
+ERROR = CollectionNote.Level.ERROR
 WARNING = CollectionNote.Level.WARNING
 
 
@@ -59,11 +60,11 @@ def compile_release_batch(collection, ocids):
     )
 
     # The rows are ordered by OCID, so merge each OCID's releases as its rows stream in, to hold only one OCID's
-    # releases in memory at a time. Some OCIDs have thousands of releases (#460).
+    # releases in memory at a time. (Some OCIDs have thousands of releases.)
     merged_batch = []
-    seen_ocids = set()
+    ocids_seen = set()
     for ocid, group in itertools.groupby(rows.iterator(), key=itemgetter(0)):
-        seen_ocids.add(ocid)
+        ocids_seen.add(ocid)
         releases = []
         extensions = set()
         for _, release, package in group:
@@ -75,8 +76,8 @@ def compile_release_batch(collection, ocids):
 
     # OCIDs with no releases do not appear in the query results.
     for ocid in ocids:
-        if ocid not in seen_ocids:
-            create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} has 0 releases.")
+        if ocid not in ocids_seen:
+            create_note(collection, ERROR, f"OCID {ocid} has 0 releases.")
 
     if merged_batch:
         save_compiled_releases(collection, merged_batch)
@@ -146,7 +147,7 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         logger.exception("OCID %s can't be compiled, skipping", ocid)
         create_note(
             collection,
-            CollectionNote.Level.ERROR,
+            ERROR,
             f"OCID {ocid} can't be compiled",
             data={"type": type(e).__name__, "message": str(e), **vars(e)},
         )

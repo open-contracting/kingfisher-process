@@ -43,8 +43,9 @@ consume_routing_keys = ["loader", "api_loader"]
 routing_key = "file_worker"
 logger = logging.getLogger(__name__)
 
+Level = CollectionNote.Level
+
 SUPPORTED_FORMATS = {Format.release_package, Format.record_package, Format.compiled_release}
-ERROR = CollectionNote.Level.ERROR
 MAX_ATTEMPTS = 5
 
 
@@ -97,7 +98,7 @@ def callback(client_state, channel, method, properties, input_message):
             delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
             create_note(
                 collection,
-                ERROR,
+                Level.ERROR,
                 f"Source {collection.source_id} yields an unknown or unsupported format",
                 data={"type": type(e).__name__, **input_message},
             )
@@ -134,7 +135,7 @@ def callback(client_state, channel, method, properties, input_message):
                     delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
                     create_note(
                         collection,
-                        ERROR,
+                        Level.ERROR,
                         f"{collection_file.filename} is too large to store",
                         data={"type": type(e).__name__, "message": str(e), **input_message},
                     )
@@ -165,11 +166,11 @@ def callback(client_state, channel, method, properties, input_message):
     # Irrecoverable errors. Discard the message to allow other messages to be processed.
     except FileNotFoundError:  # raised by detect_format() or open()
         logger.exception("%s has disappeared, skipping", collection_file.filename)
-        create_note(collection, ERROR, f"{collection_file.filename} has disappeared", data=input_message)
+        create_note(collection, Level.ERROR, f"{collection_file.filename} has disappeared", data=input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     except ijson.common.IncompleteJSONError:  # raised by ijson.parse()
         logger.exception("Source %s yields invalid JSON, skipping", collection.source_id)
-        create_note(collection, ERROR, f"Source {collection.source_id} yields invalid JSON", data=input_message)
+        create_note(collection, Level.ERROR, f"Source {collection.source_id} yields invalid JSON", data=input_message)
         nack(client_state, channel, method.delivery_tag, requeue=False)
     else:
         ack(client_state, channel, method.delivery_tag)

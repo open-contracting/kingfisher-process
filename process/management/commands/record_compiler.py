@@ -17,6 +17,8 @@ consume_routing_keys = ["compiler_record"]
 routing_key = "record_compiler"
 logger = logging.getLogger(__name__)
 
+Level = CollectionNote.Level
+
 
 class Command(BaseCommand):
     help = w(t("Create compiled releases from records"))
@@ -67,7 +69,7 @@ def compile_record(collection, ocid):
     if count > 1:
         create_note(
             collection,
-            CollectionNote.Level.WARNING,
+            Level.WARNING,
             f"OCID {ocid} occurs {count} times.",
             data={"type": "DuplicateOCIDWarning"},
         )
@@ -97,18 +99,19 @@ def compile_record(collection, ocid):
     if dated and not linked:
         if undated:
             note = f"OCID {ocid} has {undated} undated releases. The {len(dated)} dated releases have been compiled."
-            create_note(collection, CollectionNote.Level.WARNING, note)
+            create_note(collection, Level.WARNING, note)
 
         try:
             dated = sorted(dated, key=itemgetter("date"))
         except (KeyError, TypeError) as e:
             logger.exception("OCID %s has missing/invalid date, skipping", ocid)
-            create_note(collection, CollectionNote.Level.ERROR, f"OCID {ocid} has missing/invalid date.", data=str(e))
-            return None
+            create_note(collection, Level.ERROR, f"OCID {ocid} has missing/invalid date.", data=str(e))
+            return
 
         extensions = set(record.package_data.data.get("extensions", []))
         if merged := compile_releases_by_ocdskit(collection, ocid, dated, extensions):
-            return save_compiled_release(merged, collection, ocid)
+            save_compiled_release(merged, collection, ocid)
+            return
 
     notes = []
     if linked:
@@ -121,23 +124,21 @@ def compile_record(collection, ocid):
         notes.append(f"OCID {ocid} has 0 releases.")
 
     if compiled_release := record.data.data.get("compiledRelease", []):
+        # Use INFO level if all releases are dated and linked.
+        level = Level.INFO if linked == len(dated) == len(releases) > 0 else Level.WARNING
         notes.append("Its compiledRelease was used.")
-        create_note(
-            collection,
-            # Use INFO level if all releases are dated and linked.
-            CollectionNote.Level.INFO if linked == len(dated) == len(releases) > 0 else CollectionNote.Level.WARNING,
-            notes,
-        )
-        return save_compiled_release(compiled_release, collection, ocid)
+        create_note(collection, level, notes)
+        save_compiled_release(compiled_release, collection, ocid)
+        return
 
     if tagged:
         if len(tagged) > 1:
             notes.append("Its first release tagged 'compiled' was used.")
         else:
             notes.append("Its only release tagged 'compiled' was used.")
-        create_note(collection, CollectionNote.Level.WARNING, notes)
-        return save_compiled_release(tagged[0], collection, ocid)
+        create_note(collection, Level.WARNING, notes)
+        save_compiled_release(tagged[0], collection, ocid)
+        return
 
     notes.append("It has no compiledRelease and no releases tagged 'compiled'. It was not compiled.")
-    create_note(collection, CollectionNote.Level.ERROR, notes)
-    return None
+    create_note(collection, Level.ERROR, notes)
