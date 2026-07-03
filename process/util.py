@@ -9,6 +9,7 @@ import ijson
 import simplejson as json
 from django.conf import settings
 from django.db import IntegrityError, connections, transaction
+from psycopg import errors
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
@@ -71,7 +72,13 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # Collection.DoesNotExist should only occur in the wiper worker due to a duplicate message. It can also occur
         # in the finisher worker if the worker was stopped, and the wiper ran before the finisher.
-        if isinstance(exception, AlreadyExists | InvalidFormError | IntegrityError | Collection.DoesNotExist):
+        #
+        # A foreign-key violation is not a duplicate-message symptom: a package_data or data row is still referenced
+        # (e.g. by another collection's release), which indicates an error in logic rather than a redelivered message.
+        if isinstance(exception, IntegrityError) and isinstance(exception.__cause__, errors.ForeignKeyViolation):
+            logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
+            add_callback_threadsafe(state.connection, state.interrupt)
+        elif isinstance(exception, AlreadyExists | InvalidFormError | IntegrityError | Collection.DoesNotExist):
             logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
         # This error should never occur under normal operations. However, such messages interrupt processing, so they

@@ -1,12 +1,14 @@
 import json
 from collections import OrderedDict
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+from django.db import IntegrityError
 from django.test import SimpleTestCase, TestCase, override_settings
 from ocdskit.upgrade import upgrade_10_11
+from psycopg import errors
 
 from process.models import CollectionNote, Data
-from process.util import create_logger_note, get_or_create
+from process.util import create_logger_note, decorator, get_or_create
 
 
 class UtilTests(SimpleTestCase):
@@ -36,6 +38,38 @@ class UtilTests(SimpleTestCase):
             upgrade_10_11({})
 
         create_note.assert_not_called()
+
+
+class ErrbackTests(SimpleTestCase):
+    def run_errback(self, exception):
+        def callback(*args):
+            raise exception
+
+        state, channel, method, properties = Mock(), Mock(), Mock(), Mock()
+        decorator(lambda *args: {}, callback, state, channel, method, properties, b"{}")
+        return state, channel, method
+
+    @patch("process.util.nack")
+    @patch("process.util.add_callback_threadsafe")
+    def test_foreign_key_violation_shuts_down(self, add_callback_threadsafe, nack):
+        exception = IntegrityError("still referenced")
+        exception.__cause__ = errors.ForeignKeyViolation("still referenced")
+
+        state, _, _ = self.run_errback(exception)
+
+        add_callback_threadsafe.assert_called_once_with(state.connection, state.interrupt)
+        nack.assert_not_called()
+
+    @patch("process.util.nack")
+    @patch("process.util.add_callback_threadsafe")
+    def test_other_integrity_error_nacks(self, add_callback_threadsafe, nack):
+        exception = IntegrityError("duplicate key")
+        exception.__cause__ = errors.UniqueViolation("duplicate key")
+
+        state, channel, method = self.run_errback(exception)
+
+        add_callback_threadsafe.assert_not_called()
+        nack.assert_called_once_with(state, channel, method.delivery_tag, requeue=False)
 
 
 @override_settings(DEDUPLICATE_DATA=True)
