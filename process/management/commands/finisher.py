@@ -158,14 +158,14 @@ def completable(collection):
                             actual_files_count,
                         )
                         return False
-                    # A COMPILE step is created per collection file, as each is processed.
+                    # Check that a COMPILE step was created for all collection files.
                     if parent.collectionfile_set.filter(compilation_started=False).exists():
                         logger.debug(
                             "Collection %s not completable (compile steps not created for all files)", collection
                         )
                         return False
                 case Format.release_package:
-                    # All COMPILE steps are created together at once. `compilation_enqueued` marks that complete.
+                    # Check that all COMPILE steps were created for the "release package" collection.
                     if not collection.compilation_enqueued:
                         logger.debug(
                             "Collection %s not completable (compile steps not created for all OCIDs)", collection

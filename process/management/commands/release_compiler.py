@@ -33,6 +33,11 @@ def callback(client_state, channel, method, properties, input_message):
         ack(client_state, channel, method.delivery_tag)
         return
 
+    # Create the compiled releases and delete the COMPILE steps in the same transaction. On IntegrityError, the
+    # transaction rolls back. Since the compiler worker guarantees identical batches across redelivered messages,
+    # the committing transaction deletes those same steps. No steps are orphaned.
+    #
+    # Batch-work prevents a deleting_step()-like approach, without extra complexity.
     with transaction.atomic():
         compile_release_batch(compiled_collection, ocids)
         ProcessingStep.objects.filter(

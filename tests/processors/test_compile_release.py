@@ -25,13 +25,14 @@ class CompileReleaseBatchTests(TransactionTestCase):
         collection = Collection.objects.get(pk=3)
         ocid = "ocds-px0z7d-17998-18005-1"
 
-        with self.assertLogs("process.processors.compiler", level="ERROR") as cm:
+        with self.assertLogs("process.processors.compiler", level="WARNING") as cm:
             result = compile_release_batch(collection, [ocid])
 
         self.assertEqual(result, [])
         self.assertEqual(CompiledRelease.objects.filter(collection=collection, ocid=ocid).count(), 1)
-        self.assertEqual(
-            cm.records[0].getMessage(), f"Compiled release {ocid} already exists in collection {collection}"
+        self.assertIn(
+            f"Compiled releases already exist in collection {collection}: {ocid}",
+            [record.getMessage() for record in cm.records],
         )
 
     def test_happy_day(self):

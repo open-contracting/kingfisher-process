@@ -23,33 +23,33 @@ def compile_release_batch(collection, ocids):
     """
     Compile the OCIDs in bulk.
 
-    Idempotent under duplicate message delivery, provided this is called within a transaction that also deletes the
-    COMPILE steps, so that the compiled release insertions and processing step deletions commit together.
+    A batch (from a compiler_release message) is never compiled twice, because the compiler worker that publishes it
+    and the release_compiler worker that consumes it are both idempotent:
 
-    Two messages never partially overlap on OCIDs: the compiler command sets compilation_started with an optimistic
-    lock and publishes each collection's OCIDs once, partitioned into disjoint batches.
+    - The compiler worker publishes all of a collection's OCIDs in batches, ordered by ocid. On a redelivered message,
+      it re-publishes identical batches.
+    - The release_compiler worker creates the compiled releases (here) and deletes the COMPILE steps for a given batch
+      in the same transaction.
 
-    So, the only duplicate is a redelivery of the same message, in which case:
+    A duplicate batch from a redelivered message is handled below and in the release_compiler worker as follows:
 
-    - A sequential redelivery is a no-op: already-compiled OCIDs are filtered out below, before any insert.
-    - A concurrent redelivery is safe: CollectionFile's unique (collection, filename) constraint lets only one of the
-      two transactions commit; the other raises IntegrityError, rolls back entirely (creating nothing), and is nack'ed
-      without requeue. The committed transaction deletes every COMPILE step, and the collection still completes.
+    - Delivered sequentially, this function returns early.
+    - Delivered concurrently, only one transaction commits: CollectionFile's unique `(collection, filename)` constraint
+      (exercised in save_compiled_releases) makes the other transaction raise IntegrityError and roll back.
 
     :param collection: the compiled collection
     :param ocids: the OCIDs to compile
     :returns: the OCIDs that were compiled
     """
-    already_exists = set(
-        CompiledRelease.objects.filter(collection=collection, ocid__in=ocids).values_list("ocid", flat=True)
-    )
-    does_not_exist = []
-    for ocid in ocids:
-        if ocid in already_exists:
-            logger.error("Compiled release %s already exists in collection %s", ocid, collection)
-        else:
-            does_not_exist.append(ocid)
-    ocids = does_not_exist
+    # Handle sequential duplicate messages by returning early.
+    existing = set(collection.compiledrelease_set.filter(ocid__in=ocids).values_list("ocid", flat=True))
+    if existing:
+        # The compiler worker re-publishes all OCIDs on a duplicate message, so the OCIDs can already be compiled.
+        # Log once per batch to avoid flooding the log if all OCIDs were republished.
+        logger.warning("Compiled releases already exist in collection %s: %s", collection, ", ".join(sorted(existing)))
+    ocids = [ocid for ocid in ocids if ocid not in existing]
+    # `if not ocids` means unmergeable OCIDs (0 releases or raised MergeError) are re-attempted on a duplicate message.
+    # `if existing` would skip them, but relies on an invariant that a batch is never partially compiled.
     if not ocids:
         return []
 
