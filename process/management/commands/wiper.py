@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection
+from django.db import connection, transaction
 from django.utils.translation import gettext as t
 from psycopg import sql
 from yapw.methods import ack
@@ -47,49 +47,56 @@ def delete_collection(collection_id):
             *tables,
         ]
 
-    # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
-    with connection.cursor() as cursor:
-        # Temp tables are per-session, and concurrent messages run on separate connections.
-        if not settings.DEDUPLICATE_DATA:
-            cursor.execute("DROP TABLE IF EXISTS wiper_data_ids")
-            cursor.execute(
-                "CREATE TEMP TABLE wiper_data_ids AS "
-                "SELECT data_id AS id FROM release WHERE collection_id = %(id)s "
-                "UNION SELECT data_id FROM record WHERE collection_id = %(id)s "
-                "UNION SELECT data_id FROM compiled_release WHERE collection_id = %(id)s",
-                {"id": collection_id},
-            )
-            cursor.execute("DROP TABLE IF EXISTS wiper_package_data_ids")
-            cursor.execute(
-                "CREATE TEMP TABLE wiper_package_data_ids AS "
-                "SELECT package_data_id AS id FROM release WHERE collection_id = %(id)s "
-                "UNION SELECT package_data_id FROM record WHERE collection_id = %(id)s",
-                {"id": collection_id},
-            )
-
-        for table, related in tables:
-            if related:
+    # Wrap the deletion in a transaction, so that a deadlock (e.g. concurrent wipers deleting shared package_data
+    # rows) rolls back the entire deletion. The errback() function in the decorator() function then requeues the
+    # message for a clean retry. Without this, the DELETEs would be autocommitted individually, leaving the collection
+    # partially wiped: on retry, the data and package_data ids are re-derived from the already-deleted release and
+    # record rows, so those rows would never be deleted (orphaned).
+    with transaction.atomic():
+        # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
+        with connection.cursor() as cursor:
+            # Temp tables are per-session, and concurrent messages run on separate connections.
+            if not settings.DEDUPLICATE_DATA:
+                cursor.execute("DROP TABLE IF EXISTS wiper_data_ids")
                 cursor.execute(
-                    sql.SQL(
-                        "DELETE FROM {table} WHERE {related_id} IN (SELECT id FROM {related} WHERE collection_id = %s)"
-                    ).format(
-                        table=sql.Identifier(table),
-                        related=sql.Identifier(related),
-                        related_id=sql.Identifier(f"{related}_id"),
-                    ),
-                    [collection_id],
+                    "CREATE TEMP TABLE wiper_data_ids AS "
+                    "SELECT data_id AS id FROM release WHERE collection_id = %(id)s "
+                    "UNION SELECT data_id FROM record WHERE collection_id = %(id)s "
+                    "UNION SELECT data_id FROM compiled_release WHERE collection_id = %(id)s",
+                    {"id": collection_id},
                 )
-            else:
+                cursor.execute("DROP TABLE IF EXISTS wiper_package_data_ids")
                 cursor.execute(
-                    sql.SQL("DELETE FROM {table} WHERE collection_id = %s").format(table=sql.Identifier(table)),
-                    [collection_id],
+                    "CREATE TEMP TABLE wiper_package_data_ids AS "
+                    "SELECT package_data_id AS id FROM release WHERE collection_id = %(id)s "
+                    "UNION SELECT package_data_id FROM record WHERE collection_id = %(id)s",
+                    {"id": collection_id},
                 )
 
-        if not settings.DEDUPLICATE_DATA:
-            cursor.execute("DELETE FROM data WHERE id IN (SELECT id FROM wiper_data_ids)")
-            cursor.execute("DELETE FROM package_data WHERE id IN (SELECT id FROM wiper_package_data_ids)")
+            for table, related in tables:
+                if related:
+                    cursor.execute(
+                        sql.SQL(
+                            "DELETE FROM {table} WHERE {related_id} IN "
+                            "(SELECT id FROM {related} WHERE collection_id = %s)"
+                        ).format(
+                            table=sql.Identifier(table),
+                            related=sql.Identifier(related),
+                            related_id=sql.Identifier(f"{related}_id"),
+                        ),
+                        [collection_id],
+                    )
+                else:
+                    cursor.execute(
+                        sql.SQL("DELETE FROM {table} WHERE collection_id = %s").format(table=sql.Identifier(table)),
+                        [collection_id],
+                    )
 
-    Collection.objects.filter(pk=collection_id).delete()
+            if not settings.DEDUPLICATE_DATA:
+                cursor.execute("DELETE FROM data WHERE id IN (SELECT id FROM wiper_data_ids)")
+                cursor.execute("DELETE FROM package_data WHERE id IN (SELECT id FROM wiper_package_data_ids)")
+
+        Collection.objects.filter(pk=collection_id).delete()
 
 
 def callback(client_state, channel, method, properties, input_message):

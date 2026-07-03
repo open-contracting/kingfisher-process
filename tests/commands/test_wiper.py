@@ -1,3 +1,6 @@
+from unittest.mock import patch
+
+from django.db import OperationalError
 from django.test import TransactionTestCase, override_settings
 
 from process.management.commands.wiper import delete_collection
@@ -51,6 +54,23 @@ class WiperTests(TransactionTestCase):
         self.assertEqual(CompiledRelease.objects.count(), 0)
         self.assertEqual(Data.objects.count(), 0)
         self.assertEqual(PackageData.objects.count(), 0)
+
+    @override_settings(DEDUPLICATE_DATA=False)
+    def test_rolls_back_on_error(self):
+        source = self.build_collection()
+
+        # Simulate a deadlock (or any failure) after the raw-SQL DELETEs. The deletion must roll back entirely, so that
+        # a requeued retry can re-derive the data and package_data ids and delete them, instead of orphaning them.
+        with patch("process.management.commands.wiper.Collection.objects") as manager:
+            manager.filter.return_value.delete.side_effect = OperationalError("deadlock detected")
+            with self.assertRaises(OperationalError):
+                delete_collection(source.id)
+
+        self.assertEqual(Collection.objects.count(), 1)
+        self.assertEqual(Release.objects.count(), 1)
+        self.assertEqual(CompiledRelease.objects.count(), 1)
+        self.assertEqual(Data.objects.count(), 2)
+        self.assertEqual(PackageData.objects.count(), 1)
 
     @override_settings(DEDUPLICATE_DATA=True)
     def test_keeps_data_if_deduplicate(self):
