@@ -50,6 +50,19 @@ class CompletableRecordPackagesTests(TransactionTestCase):
 
         self.assertTrue(completable(self.compiled_collection))
 
+    def test_record_package_expected_files_not_created(self):
+        """Test that "record package" collections are not completable if expected files aren't all created yet."""
+        self.file1.compilation_started = True
+        self.file1.save()
+
+        self.file2.compilation_started = True
+        self.file2.save()
+
+        self.parent_collection.expected_files_count = 3
+        self.parent_collection.save()
+
+        self.assertFalse(completable(self.compiled_collection))
+
 
 class CompletableRecordPackagesWithUpgradeTests(TransactionTestCase):
     def setUp(self):

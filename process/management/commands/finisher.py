@@ -146,6 +146,18 @@ def completable(collection):
         if data_type := parent.data_type:
             match data_type["format"]:
                 case Format.record_package:
+                    # Records are compiled eagerly, so the check that compilable() applies to "release package"
+                    # collections must be applied here to "record package" collections.
+                    actual_files_count = parent.collectionfile_set.count()
+                    if parent.expected_files_count and parent.expected_files_count > actual_files_count:
+                        logger.debug(
+                            "Collection %s not completable. There may be queued messages for the remaining files - "
+                            "expected files count %s, real files count %s",
+                            collection,
+                            parent.expected_files_count,
+                            actual_files_count,
+                        )
+                        return False
                     # A COMPILE step is created per collection file, as each is processed.
                     if parent.collectionfile_set.filter(compilation_started=False).exists():
                         logger.debug(
@@ -173,8 +185,8 @@ def completable(collection):
         actual_files_count = collection.collectionfile_set.count()
         if collection.expected_files_count > actual_files_count:
             logger.debug(
-                "Collection %s not completable. There are (probably) some unprocessed messages in the queue with the "
-                "new items - expected files count %s, real files count %s",
+                "Collection %s not completable. There may be queued messages for the remaining files - "
+                "expected files count %s, real files count %s",
                 collection,
                 collection.expected_files_count,
                 actual_files_count,

@@ -170,8 +170,8 @@ def compilable(collection):
     actual_files_count = collection.collectionfile_set.count()
     if collection.expected_files_count and collection.expected_files_count > actual_files_count:
         logger.debug(
-            "Collection %s not compilable. There are (probably) some unprocessed messages in the queue with the "
-            "new items - expected files count %s, real files count %s",
+            "Collection %s not compilable. There may be queued messages for the remaining files - "
+            "expected files count %s, real files count %s",
             collection,
             collection.expected_files_count,
             actual_files_count,
