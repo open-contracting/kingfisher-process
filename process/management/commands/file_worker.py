@@ -1,6 +1,4 @@
 import logging
-import random
-import time
 from collections import OrderedDict
 from itertools import islice
 
@@ -46,7 +44,6 @@ logger = logging.getLogger(__name__)
 Level = CollectionNote.Level
 
 SUPPORTED_FORMATS = {Format.release_package, Format.record_package, Format.compiled_release}
-MAX_ATTEMPTS = 5
 
 
 class Command(BaseCommand):
@@ -116,43 +113,35 @@ def callback(client_state, channel, method, properties, input_message):
             nack(client_state, channel, method.delivery_tag, requeue=False)
             return
 
-        for attempt in range(1, MAX_ATTEMPTS + 1):
-            try:
-                with (
-                    deleting_step(
-                        ProcessingStep.Name.LOAD,
-                        collection_file_id=collection_file_id,
-                        finish=finish,
-                        finish_args=(collection_id, collection_file_id),
-                    ),
-                    transaction.atomic(),
-                ):
-                    upgraded_collection_file_id = process_file(collection_file)
-            except OperationalError as e:
-                # Data that exceeds a PostgreSQL size limit can never be stored, so skip the file.
-                if isinstance(e.__cause__, ProgramLimitExceeded):
-                    logger.exception("%s is too large to store, skipping", collection_file.filename)
-                    delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
-                    create_note(
-                        collection,
-                        Level.ERROR,
-                        f"{collection_file.filename} is too large to store",
-                        data={"type": type(e).__name__, "message": str(e), **input_message},
-                    )
-                    nack(client_state, channel, method.delivery_tag, requeue=False)
-                    return
+        try:
+            with (
+                deleting_step(
+                    ProcessingStep.Name.LOAD,
+                    collection_file_id=collection_file_id,
+                    finish=finish,
+                    finish_args=(collection_id, collection_file_id),
+                ),
+                transaction.atomic(),
+            ):
+                upgraded_collection_file_id = process_file(collection_file)
+        except OperationalError as e:
+            # Data that exceeds a PostgreSQL size limit can never be stored, so skip the file.
+            if isinstance(e.__cause__, ProgramLimitExceeded):
+                logger.exception("%s is too large to store, skipping", collection_file.filename)
+                delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
+                create_note(
+                    collection,
+                    Level.ERROR,
+                    f"{collection_file.filename} is too large to store",
+                    data={"type": type(e).__name__, "message": str(e), **input_message},
+                )
+                nack(client_state, channel, method.delivery_tag, requeue=False)
+                return
 
-                # If another transaction in another thread INSERTs the same data, concurrently.
-                logger.warning("Deadlock on %s %s (%d/%d)\n%s", collection, collection_file, attempt, MAX_ATTEMPTS, e)
-                if attempt == MAX_ATTEMPTS:
-                    # The transaction is rolled back and the LOAD step preserved, so the errback() function in the
-                    # decorator() function can requeue the message to retry it later, instead of shutting down.
-                    raise
-
-                # Make the threads retry at different times, to avoid repeating the deadlock.
-                time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
-            else:
-                break
+            # A deadlock can occur when another thread concurrently INSERTs the same deduplicated data. The transaction
+            # is rolled back and the LOAD step is preserved, so the errback() function in the decorator() function can
+            # requeue the message to retry it later, instead of shutting down.
+            raise
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
         publish(client_state, channel, message, routing_key)
