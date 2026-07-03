@@ -182,10 +182,12 @@ def compilable(collection):
 
 
 def _collection_is_empty(collection):
-    # Note: expected_files_count is None if the close_collection endpoint hasn't been called (e.g. using load command).
+    # Note: expected_files_count is None if the close endpoint hasn't been called (e.g. using load command).
     is_empty = collection.expected_files_count == 0
-    if is_empty:
-        count = collection.collectionfile_set.count()
-        if count:
-            raise AssertionError(f"{count} is not 0")
+
+    if is_empty and (count := collection.collectionfile_set.count()):
+        # Only reachable if the close request incorrectly omits the file count (which then gets set to 0).
+        logger.error("Collection %s expected 0 files but has %s files, compiling", collection, count)
+        return False
+
     return is_empty

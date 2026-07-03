@@ -2,7 +2,7 @@ import logging
 
 from django.test import TransactionTestCase
 
-from process.management.commands.compiler import compilable
+from process.management.commands.compiler import _collection_is_empty, compilable
 from process.models import Collection, CollectionFile, ProcessingStep
 
 logging.getLogger("process.management.commands.compiler").setLevel(logging.INFO)
@@ -34,3 +34,12 @@ class CompilableTests(TransactionTestCase):
         collection.store_end_at = None
         collection.save()
         self.assertEqual(compilable(collection), False)
+
+    def test_collection_is_empty_inconsistent(self):
+        collection = Collection.objects.create(source_id="inconsistent", data_version="2023-01-01T00:00:00Z")
+        collection.expected_files_count = 0
+        collection.save()
+        CollectionFile.objects.create(collection=collection, filename="data.json")
+
+        with self.assertLogs("process.management.commands.compiler", level="ERROR"):
+            self.assertEqual(_collection_is_empty(collection), False)
