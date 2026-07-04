@@ -47,11 +47,6 @@ def delete_collection(collection_id):
             *tables,
         ]
 
-    # Wrap the deletion in a transaction, so that a deadlock (e.g. concurrent wipers deleting shared package_data
-    # rows) rolls back the entire deletion. The errback() function in the decorator() function then requeues the
-    # message for a clean retry. Without this, the DELETEs would be autocommitted individually, leaving the collection
-    # partially wiped: on retry, the data and package_data ids are re-derived from the already-deleted release and
-    # record rows, so those rows would never be deleted (orphaned).
     with transaction.atomic():
         # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
         with connection.cursor() as cursor:

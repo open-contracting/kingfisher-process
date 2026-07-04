@@ -63,14 +63,14 @@ class ErrbackTests(SimpleTestCase):
     @patch("process.util.time.sleep")
     @patch("process.util.nack")
     @patch("process.util.add_callback_threadsafe")
-    def test_deadlock_requeues(self, add_callback_threadsafe, nack, sleep):
+    def test_deadlock_operational_error_requeues(self, add_callback_threadsafe, nack, sleep):
         exception = OperationalError("deadlock detected")
         exception.__cause__ = errors.DeadlockDetected("deadlock detected")
 
         state, channel, method = self.run_errback(exception)
 
-        add_callback_threadsafe.assert_not_called()
         sleep.assert_called_once()
+        add_callback_threadsafe.assert_not_called()
         nack.assert_called_once_with(state, channel, method.delivery_tag, requeue=True)
 
     @patch("process.util.nack")

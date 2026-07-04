@@ -131,9 +131,8 @@ def callback(client_state, channel, method, properties, input_message):
                 )
                 return
 
-            # A deadlock can occur when another thread concurrently INSERTs the same deduplicated data. The transaction
-            # is rolled back and the LOAD step is preserved, so the errback() function in the decorator() function can
-            # requeue the message to retry it later, instead of shutting down.
+            # A deadlock can occur when another thread concurrently INSERTs the same data. The transaction is rolled
+            # back, so the errback() function in the decorator() function can requeue the message to retry it later.
             raise
 
         message = {"collection_id": collection_id, "collection_file_id": collection_file_id}
