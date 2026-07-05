@@ -64,11 +64,20 @@ def decorator(decode, callback, state, channel, method, properties, body):
     """
 
     def errback(exception):
-        # A foreign-key violation can occur when a package_data or data row is still referenced (e.g. by another
+        # A foreign-key violation on a collection reference occurs when a collection is deleted (by the wiper) while
+        # another worker is compiling releases into it or storing files for it: the concurrent transaction commits
+        # rows referencing the now-deleted collection, so the foreign key fails at COMMIT. The message is obsolete, so
+        # skip it, like Collection.DoesNotExist below. (The constraint name is locale-independent, unlike the detail.)
+        #
+        # Any other foreign-key violation means a package_data or data row is still referenced (e.g. by another
         # collection's release), which indicates an error in logic or configuration (e.g. toggling DEDUPLICATE_DATA).
         if isinstance(exception, IntegrityError) and isinstance(exception.__cause__, errors.ForeignKeyViolation):
-            logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
-            add_callback_threadsafe(state.connection, state.interrupt)
+            if "collection_id" in (exception.__cause__.diag.constraint_name or ""):
+                logger.exception("Collection deleted while consuming %r, skipping", body)
+                nack(state, channel, method.delivery_tag, requeue=False)
+            else:
+                logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
+                add_callback_threadsafe(state.connection, state.interrupt)
         # A deadlock can occur when concurrent transactions INSERT or DELETE the same rows in a different order.
         # Requeue the message to retry it. The callback must leave no partial state on a rolled-back transaction
         # (see e.g. file_worker and wiper). Sleep first, so that the transaction that won the deadlock can commit,

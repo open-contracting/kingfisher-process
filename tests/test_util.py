@@ -1,6 +1,6 @@
 import json
 from collections import OrderedDict
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, PropertyMock, patch
 
 from django.db import IntegrityError, OperationalError
 from django.test import SimpleTestCase, TestCase, override_settings
@@ -51,14 +51,31 @@ class ErrbackTests(SimpleTestCase):
 
     @patch("process.util.nack")
     @patch("process.util.add_callback_threadsafe")
-    def test_foreign_key_violation_shuts_down(self, add_callback_threadsafe, nack):
+    def test_data_foreign_key_violation_shuts_down(self, add_callback_threadsafe, nack):
+        cause = errors.ForeignKeyViolation("still referenced")
         exception = IntegrityError("still referenced")
-        exception.__cause__ = errors.ForeignKeyViolation("still referenced")
+        exception.__cause__ = cause
 
-        state, _, _ = self.run_errback(exception)
+        diag = Mock(constraint_name="compiled_release_data_id_1a2b3c4d_fk")
+        with patch.object(type(cause), "diag", new_callable=PropertyMock, return_value=diag):
+            state, _, _ = self.run_errback(exception)
 
         add_callback_threadsafe.assert_called_once_with(state.connection, state.interrupt)
         nack.assert_not_called()
+
+    @patch("process.util.nack")
+    @patch("process.util.add_callback_threadsafe")
+    def test_collection_foreign_key_violation_skips(self, add_callback_threadsafe, nack):
+        cause = errors.ForeignKeyViolation("collection deleted")
+        exception = IntegrityError("collection deleted")
+        exception.__cause__ = cause
+
+        diag = Mock(constraint_name="collection_note_collection_id_b446d931_fk")
+        with patch.object(type(cause), "diag", new_callable=PropertyMock, return_value=diag):
+            state, channel, method = self.run_errback(exception)
+
+        add_callback_threadsafe.assert_not_called()
+        nack.assert_called_once_with(state, channel, method.delivery_tag, requeue=False)
 
     @patch("process.util.time.sleep")
     @patch("process.util.nack")
