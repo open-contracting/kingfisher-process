@@ -7,8 +7,7 @@ from django.utils.translation import gettext as t
 from ocdskit.util import is_linked_release
 from yapw.methods import ack, publish
 
-from process.exceptions import AlreadyExists
-from process.models import Collection, CollectionNote, CompiledRelease, ProcessingStep, Record
+from process.models import Collection, CollectionNote, ProcessingStep, Record
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
 from process.util import consume, create_note, decorator, deleting_step
 from process.util import wrap as w
@@ -50,11 +49,9 @@ def callback(client_state, channel, method, properties, input_message):
 
 
 def compile_record(collection, ocid):
-    try:
-        compiled_release = collection.compiledrelease_set.get(ocid=ocid)
-        raise AlreadyExists(f"Compiled release {compiled_release} already exists in collection {collection}")
-    except CompiledRelease.DoesNotExist:
-        pass
+    # A "record package" collection can contain multiple records with the same OCID (e.g. `count > 1` below).
+    if collection.compiledrelease_set.filter(ocid=ocid).exists():
+        return
 
     # Similar to Model.get() https://github.com/django/django/blob/5.2/django/db/models/query.py#L609-L642
     queryset = (
@@ -68,10 +65,7 @@ def compile_record(collection, ocid):
         raise Record.DoesNotExist(f"{Record._meta.object_name} matching query does not exist.")
     if count > 1:
         create_note(
-            collection,
-            Level.WARNING,
-            f"OCID {ocid} occurs {count} times.",
-            data={"type": "DuplicateOCIDWarning"},
+            collection, Level.WARNING, f"OCID {ocid} occurs {count} times.", data={"type": "DuplicateOCIDWarning"}
         )
 
     record = queryset[0]

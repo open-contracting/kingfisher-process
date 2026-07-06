@@ -16,7 +16,7 @@ from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
 from yapw.methods import add_callback_threadsafe, nack
 
-from process.exceptions import AlreadyExists, InvalidFormError
+from process.exceptions import InvalidFormError
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record
 
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # Collection.DoesNotExist should only occur in the wiper worker due to a duplicate message. It can also occur
         # in the finisher worker if the worker was stopped, and the wiper ran before the finisher.
-        elif isinstance(exception, AlreadyExists | InvalidFormError | IntegrityError | Collection.DoesNotExist):
+        elif isinstance(exception, InvalidFormError | IntegrityError | Collection.DoesNotExist):
             logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
         # These errors should never occur under normal operations. However, such messages interrupt processing, so they
@@ -144,7 +144,6 @@ def deleting_step(*args, **kwargs):
     # Delete the step so that the collection is completable, only if the error was expected.
     except (
         # See the errback() function in the decorator() function.
-        AlreadyExists,
         InvalidFormError,
         IntegrityError,
         # See the try/except block in the callback() function of the file_worker worker.
