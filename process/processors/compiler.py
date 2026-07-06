@@ -144,7 +144,6 @@ def compile_releases_by_ocdskit(collection, ocid, releases, extensions):
         with warnings.catch_warnings(record=True, action="always", category=MergeWarning) as wlist:
             merged = merger.create_compiled_release(releases)
     except MergeError as e:
-        logger.exception("OCID %s can't be compiled, skipping", ocid)
         create_note(
             collection,
             ERROR,
