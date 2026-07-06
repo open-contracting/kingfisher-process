@@ -64,19 +64,19 @@ def decorator(decode, callback, state, channel, method, properties, body):
     """
 
     def errback(exception):
-        # A foreign-key violation can occur when a package_data or data row is still referenced (e.g. by another
-        # collection's release), which indicates an error in logic or configuration (e.g. toggling DEDUPLICATE_DATA).
-        if isinstance(exception, IntegrityError) and isinstance(exception.__cause__, errors.ForeignKeyViolation):
-            logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
-            add_callback_threadsafe(state.connection, state.interrupt)
         # A deadlock can occur when concurrent transactions INSERT or DELETE the same rows in a different order.
         # Requeue the message to retry it. The callback must leave no partial state on a rolled-back transaction
         # (see e.g. file_worker and wiper). Sleep first, so that the transaction that won the deadlock can commit,
         # and so that concurrent threads retry at different times, to avoid repeating the deadlock.
-        elif isinstance(exception, OperationalError) and isinstance(exception.__cause__, errors.DeadlockDetected):
+        if isinstance(exception, OperationalError) and isinstance(exception.__cause__, errors.DeadlockDetected):
             logger.exception("Deadlock when consuming %r, requeuing", body)
             time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
             nack(state, channel, method.delivery_tag, requeue=True)
+        # A foreign-key violation can occur when a package_data or data row is still referenced (e.g. by another
+        # collection's release), which indicates an error in logic or configuration (e.g. toggling DEDUPLICATE_DATA).
+        elif isinstance(exception, IntegrityError) and isinstance(exception.__cause__, errors.ForeignKeyViolation):
+            logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)
+            add_callback_threadsafe(state.connection, state.interrupt)
         # These errors should only occur if the RabbitMQ and/or PostgreSQL connection is lost. It's not possible to
         # have a transaction that spans both systems, so it's possible to insert a row then fail to ack a message.
         #
@@ -90,7 +90,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
         elif isinstance(exception, AlreadyExists | InvalidFormError | IntegrityError | Collection.DoesNotExist):
             logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)
             nack(state, channel, method.delivery_tag, requeue=False)
-        # This error should never occur under normal operations. However, such messages interrupt processing, so they
+        # These errors should never occur under normal operations. However, such messages interrupt processing, so they
         # are discarded.
         elif isinstance(exception, CollectionFile.DoesNotExist | Record.DoesNotExist):
             logger.exception("Unprocessable message %r, skipping", body)
