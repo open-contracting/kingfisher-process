@@ -118,9 +118,9 @@ class CollectionViewTests(APITestCase):
         self.assertJSONEqual(
             response.content,
             {
-                "INFO": [["adsfsdfsdsadf", {}]],
+                "INFO": [["A message", {}]],
                 "ERROR": [],
-                "WARNING": [["adsfsdfsdsadf", {}]],
+                "WARNING": [["A warning", {}]],
             },
         )
 
@@ -131,7 +131,7 @@ class CollectionViewTests(APITestCase):
             response.content,
             {
                 "ERROR": [],
-                "WARNING": [["adsfsdfsdsadf", {}]],
+                "WARNING": [["A warning", {}]],
             },
         )
 
