@@ -28,7 +28,7 @@ def callback(client_state, channel, method, properties, input_message):
     ocids = input_message["ocids"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    # The compiled collection can be deleted (canceled, or hard-deleted by the wiper) while its messages are queued.
+    # The compiled collection can be fully deleted while its messages are queued.
     compiled_collection = Collection.objects.filter(pk=compiled_collection_id).first()
     if compiled_collection is None or compiled_collection.deleted_at:
         ack(client_state, channel, method.delivery_tag)
