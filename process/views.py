@@ -4,9 +4,10 @@ import logging
 from django.conf import settings
 from django.db import connection, transaction
 from django.db.models.functions import Now
-from django.http.response import Http404
+from django.http.response import Http404, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from ocdskit.util import iterencode
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -265,20 +266,27 @@ class CollectionViewSet(viewsets.ViewSet):
         if root_collection.transform_type:
             return Response("The collection must be a root collection", status=status.HTTP_400_BAD_REQUEST)
 
-        levels = [level for level in LEVELS if level in set(self.request.query_params.getlist("level", LEVELS))]
+        request_levels = set(self.request.query_params.getlist("level", LEVELS))
+        levels = [level for level in LEVELS if level in request_levels]
 
-        notes = {level: [] for level in levels}
-        for note in CollectionNote.objects.filter(
-            collection__in=(
+        collections = [
+            collection
+            for collection in (
                 root_collection,
                 root_collection.get_upgraded_collection(),
                 root_collection.get_compiled_collection(),
-            ),
-            code__in=levels,
-        ):
-            notes[note.code].append([note.note, note.data])
+            )
+            if collection is not None
+        ]
 
-        return Response(notes)
+        notes = {
+            level: CollectionNote.objects.filter(collection__in=collections, code=level)
+            .values_list("note", "data")
+            .iterator()
+            for level in levels
+        }
+
+        return StreamingHttpResponse(iterencode(notes), content_type="application/json")
 
     @extend_schema(responses=TreeSerializer(many=True))
     @action(detail=True)

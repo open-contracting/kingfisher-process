@@ -116,11 +116,11 @@ class CollectionViewTests(APITestCase):
         response = self.client.get(f"{base_url}/1/notes/?format=json")
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(
-            response.content,
+            b"".join(response.streaming_content),
             {
-                "INFO": [["adsfsdfsdsadf", {}]],
+                "INFO": [["A message", {}]],
                 "ERROR": [],
-                "WARNING": [["adsfsdfsdsadf", {}]],
+                "WARNING": [["A warning", {}]],
             },
         )
 
@@ -128,10 +128,10 @@ class CollectionViewTests(APITestCase):
         response = self.client.get(f"{base_url}/1/notes/?format=json&level=WARNING&level=ERROR")
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(
-            response.content,
+            b"".join(response.streaming_content),
             {
                 "ERROR": [],
-                "WARNING": [["adsfsdfsdsadf", {}]],
+                "WARNING": [["A warning", {}]],
             },
         )
 

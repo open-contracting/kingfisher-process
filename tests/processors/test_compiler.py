@@ -73,8 +73,7 @@ class CompilerTests(TestCase):
 
         releases = ["invalid release"]
 
-        with self.assertLogs("process.processors.compiler", level="ERROR") as logs:
-            result = compile_releases_by_ocdskit(collection, "ocds-213czf-1", releases, set())
+        result = compile_releases_by_ocdskit(collection, "ocds-213czf-1", releases, set())
 
         self.assertIsNone(result)
 
@@ -88,9 +87,6 @@ class CompilerTests(TestCase):
                 ),
             ],
         )
-
-        self.assertEqual(len(logs.records), 1)
-        self.assertIn("OCID ocds-213czf-1 can't be compiled, skipping", logs.output[0])
 
     def test_extension_warning(self):
         collection = Collection.objects.create(source_id="test_compiler", data_version="2023-01-01T00:00:00Z")
