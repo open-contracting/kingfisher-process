@@ -1,7 +1,7 @@
 import argparse
 import copy
 import logging
-import os
+from pathlib import Path
 
 from django.utils.translation import gettext as t
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def file_or_directory(path):
     """Check whether the path exists. Raise an exception if not."""
-    if not os.path.exists(path):
+    if not Path(path).exists():
         raise argparse.ArgumentTypeError(t("No such file or directory %(path)r") % {"path": path})
     return path
 

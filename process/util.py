@@ -5,6 +5,7 @@ import os
 import random
 import time
 from contextlib import contextmanager
+from pathlib import Path
 from textwrap import fill
 
 import ijson
@@ -32,13 +33,14 @@ def wrap(string):
 
 def walk(paths):
     for path in paths:
-        if os.path.isfile(path):
-            yield path
+        entry = Path(path)
+        if entry.is_file():
+            yield entry
         else:
-            for root, _, files in os.walk(path):
+            for root, _, files in os.walk(entry):
                 for name in files:
                     if not name.startswith("."):
-                        yield os.path.join(root, name)
+                        yield Path(root) / name
 
 
 @contextmanager

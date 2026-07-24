@@ -1,5 +1,5 @@
 import logging
-import os.path
+from pathlib import Path
 from unittest.mock import patch
 
 from django.core.management import call_command
@@ -13,7 +13,7 @@ logging.getLogger("process.management.commands.load").setLevel(logging.INFO)
 
 
 def path(filename):
-    return os.path.join("tests", "fixtures", filename)
+    return str(Path("tests", "fixtures", filename))
 
 
 class LoadTests(TransactionTestCase):

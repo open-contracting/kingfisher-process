@@ -1,4 +1,3 @@
-import os
 import time
 from argparse import RawDescriptionHelpFormatter
 
@@ -86,7 +85,7 @@ class Command(BaseCommand):
             )
 
         # create proper data_version
-        mtimes = [os.path.getmtime(path) for path in walk(options["PATH"])]
+        mtimes = [path.stat().st_mtime for path in walk(options["PATH"])]
         if not mtimes:
             raise CommandError(_("No files found"))
 

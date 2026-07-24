@@ -1,6 +1,7 @@
 import logging
 from collections import OrderedDict
 from itertools import islice
+from pathlib import Path
 
 import ijson
 from django.conf import settings
@@ -256,7 +257,7 @@ def _read_package_data_from_file(filename, data_type):
     package_key = "item" if data_type["array"] else ""
     data_key = _get_data_key(data_type).removesuffix(".item")
 
-    with open(filename, "rb") as f:
+    with Path(filename).open("rb") as f:
         build = False
         builder = ObjectBuilder()
 
@@ -281,7 +282,7 @@ def _read_package_data_from_file(filename, data_type):
 def _read_data_from_file(filename, data_type):
     data_key = _get_data_key(data_type)
 
-    with open(filename, "rb") as f:
+    with Path(filename).open("rb") as f:
         build = False
         builder = ObjectBuilder()
 
