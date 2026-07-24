@@ -61,8 +61,10 @@ class CompilerTests(TestCase):
                 ),
                 (
                     CollectionNote.Level.WARNING,
-                    "Multiple objects have the `id` value 'ORG-001' in the `parties` array\n"
-                    "Multiple objects have the `id` value '1' in the `awards` array",
+                    (
+                        "Multiple objects have the `id` value 'ORG-001' in the `parties` array\n"
+                        "Multiple objects have the `id` value '1' in the `awards` array"
+                    ),
                     {"type": "DuplicateIdValueWarning", "paths": {"parties": 1, "awards": 1}},
                 ),
             ],
@@ -112,9 +114,11 @@ class CompilerTests(TestCase):
             [
                 (
                     CollectionNote.Level.WARNING,
-                    "https://raw.githubusercontent.com/open-contracting/ocds_nonexistent_extension/master/: "
-                    "requests.exceptions.HTTPError: 404 Client Error: Not Found for url: "
-                    "https://github.com/open-contracting/ocds_nonexistent_extension/archive/master.zip",
+                    (
+                        "https://raw.githubusercontent.com/open-contracting/ocds_nonexistent_extension/master/: "
+                        "requests.exceptions.HTTPError: 404 Client Error: Not Found for url: "
+                        "https://github.com/open-contracting/ocds_nonexistent_extension/archive/master.zip"
+                    ),
                     {"type": "ExtensionWarning"},
                 ),
             ],
