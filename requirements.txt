@@ -262,6 +262,7 @@ typing-extensions==4.7.0
     # via
     #   -r requirements_base.txt
     #   dj-database-url
+    #   psycopg
 uritemplate==4.1.1
     # via
     #   -r requirements_base.txt

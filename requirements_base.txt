@@ -179,7 +179,9 @@ sqlparse==0.5.4
 transaction==4.0
     # via zodb
 typing-extensions==4.7.0
-    # via dj-database-url
+    # via
+    #   dj-database-url
+    #   psycopg
 uritemplate==4.1.1
     # via drf-spectacular
 url-normalize==1.4.3
