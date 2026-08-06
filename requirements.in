@@ -1,16 +1,2 @@
-dj-database-url
-django-cors-headers
-django<5.3
-djangorestframework
-drf-spectacular
-gunicorn[setproctitle]
-ijson
-libcoveocds[perf]
-ocdsextensionregistry
-ocdskit[perf]
-ocdsmerge-rs
-psycopg
-requests
-sentry-sdk
-simplejson
-yapw[perf]
+-r requirements_base.txt
+psycopg[c]
