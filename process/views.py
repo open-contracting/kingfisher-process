@@ -236,14 +236,7 @@ class CollectionViewSet(viewsets.ViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter(
-                name="level",
-                location=OpenApiParameter.QUERY,
-                description="Filter by message severity",
-                enum=LEVELS,
-                explode=True,
-                many=True,
-            ),
+            OpenApiParameter("level", description="Filter by message severity", enum=LEVELS, explode=True, many=True),
         ],
         responses={
             200: {
