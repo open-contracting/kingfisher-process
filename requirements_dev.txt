@@ -60,7 +60,7 @@ defusedxml==0.7.1
     #   odfpy
 dj-database-url==2.0.0
     # via -r requirements.txt
-django==5.2.15
+django==5.2.16
     # via
     #   -r requirements.txt
     #   dj-database-url
