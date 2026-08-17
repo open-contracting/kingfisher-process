@@ -250,7 +250,7 @@ six==1.16.0
     #   rfc3339-validator
     #   url-normalize
     #   zodb
-sqlparse==0.6.0
+sqlparse==0.5.4
     # via
     #   -r requirements_base.txt
     #   django
