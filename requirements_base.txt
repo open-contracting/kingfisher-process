@@ -160,7 +160,7 @@ sentry-sdk==2.8.0
     # via -r requirements_base.in
 setproctitle==1.3.7
     # via gunicorn
-setuptools==83.0.0
+setuptools==84.0.0
     # via
     #   zc-lockfile
     #   zc-zlibstorage
@@ -174,7 +174,7 @@ six==1.16.0
     #   rfc3339-validator
     #   url-normalize
     #   zodb
-sqlparse==0.5.4
+sqlparse==0.5.5
     # via django
 transaction==4.0
     # via zodb
