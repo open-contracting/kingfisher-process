@@ -65,27 +65,27 @@ def decorator(decode, callback, state, channel, method, properties, body):
     exceptions, assume that the same message was delivered twice, log an error, and nack the message.
     """
 
-    def errback(exception):
+    def errback(exc):
         # A deadlock can occur when concurrent transactions INSERT or DELETE the same rows in a different order.
         # Requeue the message to retry it. The callback must leave no partial state on a rolled-back transaction
         # (see e.g. file_worker and wiper). Sleep first, so that the transaction that won the deadlock can commit,
         # and so that concurrent threads retry at different times, to avoid repeating the deadlock.
-        if isinstance(exception, OperationalError) and isinstance(exception.__cause__, errors.DeadlockDetected):
-            logger.exception("Deadlock when consuming %r, requeuing", body)  # noqa: LOG004
+        if isinstance(exc, OperationalError) and isinstance(exc.__cause__, errors.DeadlockDetected):
+            logger.error("Deadlock when consuming %r, requeuing message", body, exc_info=exc)
             time.sleep(random.randint(1, 5))  # noqa: S311 # non-cryptographic
             nack(state, channel, method.delivery_tag, requeue=True)
-        elif isinstance(exception, IntegrityError) and isinstance(exception.__cause__, errors.ForeignKeyViolation):
+        elif isinstance(exc, IntegrityError) and isinstance(exc.__cause__, errors.ForeignKeyViolation):
             # A foreign-key violation on a collection reference occurs when a collection is deleted (by the wiper)
             # while another worker is compiling releases into it or storing files for it: the concurrent transaction
             # commits rows referencing the now-deleted collection, so the foreign key fails at COMMIT. The message is
             # obsolete, so skip it, like Collection.DoesNotExist below.
-            if "collection_id" in (exception.__cause__.diag.constraint_name or ""):
-                logger.exception("Collection deleted while consuming %r, skipping", body)  # noqa: LOG004
+            if "collection_id" in (exc.__cause__.diag.constraint_name or ""):
+                logger.error("Collection deleted while consuming %r, discarding message", body, exc_info=exc)
                 nack(state, channel, method.delivery_tag, requeue=False)
             # Any other foreign-key violation means a package_data or data row is still referenced (e.g. by another
             # collection's release). It indicates an error in logic or configuration (like toggling DEDUPLICATE_DATA).
             else:
-                logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)  # noqa: LOG004
+                logger.error("Unhandled exception when consuming %r, shutting down gracefully", body, exc_info=exc)
                 add_callback_threadsafe(state.connection, state.interrupt)
         # These errors should only occur if the RabbitMQ and/or PostgreSQL connection is lost. It's not possible to
         # have a transaction that spans both systems, so it's possible to insert a row then fail to ack a message.
@@ -97,16 +97,16 @@ def decorator(decode, callback, state, channel, method, properties, body):
         #
         # Collection.DoesNotExist should only occur in the wiper worker due to a duplicate message. It can also occur
         # in the finisher worker if the worker was stopped, and the wiper ran before the finisher.
-        elif isinstance(exception, InvalidFormError | IntegrityError | Collection.DoesNotExist):
-            logger.exception("%s maybe caused by duplicate message %r, skipping", type(exception).__name__, body)  # noqa: LOG004
+        elif isinstance(exc, InvalidFormError | IntegrityError | Collection.DoesNotExist):
+            logger.error("%s maybe caused by duplicate message %r, discarding", type(exc).__name__, body, exc_info=exc)
             nack(state, channel, method.delivery_tag, requeue=False)
         # These errors should never occur under normal operations. However, such messages interrupt processing, so they
         # are discarded.
-        elif isinstance(exception, CollectionFile.DoesNotExist | Record.DoesNotExist):
-            logger.exception("Unprocessable message %r, skipping", body)  # noqa: LOG004
+        elif isinstance(exc, CollectionFile.DoesNotExist | Record.DoesNotExist):
+            logger.error("Unprocessable message %r, discarding message", body, exc_info=exc)
             nack(state, channel, method.delivery_tag, requeue=False)
         else:
-            logger.exception("Unhandled exception when consuming %r, shutting down gracefully", body)  # noqa: LOG004
+            logger.error("Unhandled exception when consuming %r, shutting down gracefully", body, exc_info=exc)
             add_callback_threadsafe(state.connection, state.interrupt)
 
     def finalback():

@@ -46,7 +46,12 @@ class ErrbackTests(SimpleTestCase):
             raise exception
 
         state, channel, method, properties = Mock(), Mock(), Mock(), Mock()
-        decorator(lambda *args: {}, callback, state, channel, method, properties, b"{}")
+        with self.assertLogs("process.util", level="ERROR") as cm:
+            decorator(lambda *args: {}, callback, state, channel, method, properties, b"{}")
+
+        # The traceback must reach Sentry.
+        self.assertIs(cm.records[0].exc_info[0], type(exception))
+
         return state, channel, method
 
     @patch("process.util.nack")
