@@ -174,7 +174,7 @@ six==1.16.0
     #   rfc3339-validator
     #   url-normalize
     #   zodb
-sqlparse==0.5.5
+sqlparse==0.6.0
     # via django
 transaction==4.0
     # via zodb
