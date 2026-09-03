@@ -183,10 +183,9 @@ class CallbackTests(TransactionTestCase):
     fixtures = ["tests/fixtures/complete_db.json"]
 
     @patch("process.management.commands.file_worker.publish")
-    @patch("process.management.commands.file_worker.nack")
     @patch("process.management.commands.file_worker.ack")
     @patch("process.management.commands.file_worker.process_file")
-    def test_skips_file_too_large(self, process_file, ack, nack, publish):
+    def test_skips_file_too_large(self, process_file, ack, publish):
         collection_file = CollectionFile.objects.select_related("collection").get(pk=1)
         ProcessingStep.objects.create(
             name=ProcessingStep.Name.LOAD, collection=collection_file.collection, collection_file=collection_file
@@ -205,8 +204,7 @@ class CallbackTests(TransactionTestCase):
         # The callback returns instead of raising, so the worker keeps running.
         callback(client_state, channel, method, MagicMock(), input_message)
 
-        nack.assert_called_once_with(client_state, channel, 1, requeue=False)
-        ack.assert_not_called()
+        ack.assert_called_once_with(client_state, channel, 1)
         self.assertFalse(
             ProcessingStep.objects.filter(name=ProcessingStep.Name.LOAD, collection_file=collection_file).exists()
         )

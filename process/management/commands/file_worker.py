@@ -13,7 +13,7 @@ from ocdskit.exceptions import UnknownFormatError
 from ocdskit.upgrade import upgrade_10_11
 from ocdskit.util import Format, detect_format
 from psycopg.errors import ProgramLimitExceeded
-from yapw.methods import ack, nack, publish
+from yapw.methods import ack, publish
 
 from process.exceptions import EmptyFormatError, UnsupportedFormatError
 from process.models import (
@@ -87,7 +87,7 @@ def callback(client_state, channel, method, properties, input_message):
         """Delete the LOAD step, note why the collection file was skipped, and discard the message."""
         delete_step(ProcessingStep.Name.LOAD, collection_file_id=collection_file_id)
         create_note(collection, level, note, data=data)
-        nack(client_state, channel, method.delivery_tag, requeue=False)
+        ack(client_state, channel, method.delivery_tag)  # ack: administrators review collection notes
 
     try:
         # Detect and save the data_type before the transaction, to avoid locking collection rows during process_file().
@@ -150,11 +150,11 @@ def callback(client_state, channel, method, properties, input_message):
     except FileNotFoundError:  # raised by detect_format() or open()
         logger.exception("%s has disappeared, skipping", collection_file.filename)
         create_note(collection, Level.ERROR, f"{collection_file.filename} has disappeared", data=input_message)
-        nack(client_state, channel, method.delivery_tag, requeue=False)
+        ack(client_state, channel, method.delivery_tag)  # ack: administrators review collection notes
     except ijson.common.IncompleteJSONError:  # raised by ijson.parse()
         logger.exception("Source %s yields invalid JSON, skipping", collection.source_id)
         create_note(collection, Level.ERROR, f"Source {collection.source_id} yields invalid JSON", data=input_message)
-        nack(client_state, channel, method.delivery_tag, requeue=False)
+        ack(client_state, channel, method.delivery_tag)  # ack: administrators review collection notes
     else:
         ack(client_state, channel, method.delivery_tag)
 

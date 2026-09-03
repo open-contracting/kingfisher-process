@@ -15,7 +15,7 @@ from django.db import IntegrityError, OperationalError, connections, transaction
 from psycopg import errors
 from yapw.clients import AsyncConsumer, Blocking
 from yapw.decorators import decorate
-from yapw.methods import add_callback_threadsafe, nack
+from yapw.methods import ack, add_callback_threadsafe, nack
 
 from process.exceptions import InvalidFormError
 from process.models import Collection, CollectionFile, CollectionNote, ProcessingStep, Record
@@ -62,7 +62,8 @@ def decorator(decode, callback, state, channel, method, properties, body):
     Close the database connections opened by the callback, before returning.
 
     If the callback raises an exception, shut down the client in the main thread, without acknowledgment. For some
-    exceptions, assume that the same message was delivered twice, log an error, and nack the message.
+    exceptions, assume that the same message was delivered twice, log an error, and ack the message. Nack without
+    requeuing if the message requires review (e.g. unexpected messages), for any future dead-letter exchange.
     """
 
     def errback(exc):
@@ -81,7 +82,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
             # below. (Note: Workers that call lock_collection() ack such messages earlier.)
             if "collection_id" in (exc.__cause__.diag.constraint_name or ""):
                 logger.error("Collection deleted while consuming %r, discarding message", body, exc_info=exc)
-                nack(state, channel, method.delivery_tag, requeue=False)
+                ack(state, channel, method.delivery_tag)
             # Any other foreign-key violation means a package_data or data row is still referenced (e.g. by another
             # collection's release). It indicates an error in logic or configuration (like toggling DEDUPLICATE_DATA).
             else:
@@ -99,7 +100,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
         # in the finisher worker if the worker was stopped, and the wiper ran before the finisher.
         elif isinstance(exc, InvalidFormError | IntegrityError | Collection.DoesNotExist):
             logger.error("%s maybe caused by duplicate message %r, discarding", type(exc).__name__, body, exc_info=exc)
-            nack(state, channel, method.delivery_tag, requeue=False)
+            ack(state, channel, method.delivery_tag)
         # These errors should never occur under normal operations. However, such messages interrupt processing, so they
         # are discarded.
         elif isinstance(exc, CollectionFile.DoesNotExist | Record.DoesNotExist):

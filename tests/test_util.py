@@ -7,7 +7,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from ocdskit.upgrade import upgrade_10_11
 from psycopg import errors
 
-from process.models import CollectionNote, Data
+from process.models import CollectionNote, Data, Record
 from process.util import create_logger_note, decorator, get_or_create
 
 
@@ -68,9 +68,9 @@ class ErrbackTests(SimpleTestCase):
         add_callback_threadsafe.assert_called_once_with(state.connection, state.interrupt)
         nack.assert_not_called()
 
-    @patch("process.util.nack")
+    @patch("process.util.ack")
     @patch("process.util.add_callback_threadsafe")
-    def test_collection_foreign_key_violation_skips(self, add_callback_threadsafe, nack):
+    def test_collection_foreign_key_violation_skips(self, add_callback_threadsafe, ack):
         cause = errors.ForeignKeyViolation("collection deleted")
         exception = IntegrityError("collection deleted")
         exception.__cause__ = cause
@@ -80,7 +80,7 @@ class ErrbackTests(SimpleTestCase):
             state, channel, method = self.run_errback(exception)
 
         add_callback_threadsafe.assert_not_called()
-        nack.assert_called_once_with(state, channel, method.delivery_tag, requeue=False)
+        ack.assert_called_once_with(state, channel, method.delivery_tag)
 
     @patch("process.util.time.sleep")
     @patch("process.util.nack")
@@ -105,13 +105,21 @@ class ErrbackTests(SimpleTestCase):
         add_callback_threadsafe.assert_called_once_with(state.connection, state.interrupt)
         nack.assert_not_called()
 
-    @patch("process.util.nack")
+    @patch("process.util.ack")
     @patch("process.util.add_callback_threadsafe")
-    def test_other_integrity_error_nacks(self, add_callback_threadsafe, nack):
+    def test_other_integrity_error_acks(self, add_callback_threadsafe, ack):
         exception = IntegrityError("duplicate key")
         exception.__cause__ = errors.UniqueViolation("duplicate key")
 
         state, channel, method = self.run_errback(exception)
+
+        add_callback_threadsafe.assert_not_called()
+        ack.assert_called_once_with(state, channel, method.delivery_tag)
+
+    @patch("process.util.nack")
+    @patch("process.util.add_callback_threadsafe")
+    def test_unprocessable_message_nacks(self, add_callback_threadsafe, nack):
+        state, channel, method = self.run_errback(Record.DoesNotExist("no such record"))
 
         add_callback_threadsafe.assert_not_called()
         nack.assert_called_once_with(state, channel, method.delivery_tag, requeue=False)
