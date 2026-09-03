@@ -9,7 +9,7 @@ from yapw.methods import ack, publish
 
 from process.models import Collection, CollectionNote, ProcessingStep, Record
 from process.processors.compiler import compile_releases_by_ocdskit, save_compiled_release
-from process.util import consume, create_note, decorator, deleting_step
+from process.util import consume, create_note, decorator, deleting_step, lock_collection
 from process.util import wrap as w
 
 consume_routing_keys = ["compiler_record"]
@@ -32,7 +32,7 @@ def callback(client_state, channel, method, properties, input_message):
     ocid = input_message["ocid"]
     compiled_collection_id = input_message["compiled_collection_id"]
 
-    # The compiled collection can be fully deleted while its messages are queued.
+    # The compiled collection can be cancelled or fully deleted while its messages are queued.
     compiled_collection = Collection.objects.filter(pk=compiled_collection_id).first()
     if compiled_collection is None or compiled_collection.deleted_at:
         ack(client_state, channel, method.delivery_tag)
@@ -42,7 +42,9 @@ def callback(client_state, channel, method, properties, input_message):
         deleting_step(ProcessingStep.Name.COMPILE, collection_id=compiled_collection_id, ocid=ocid),
         transaction.atomic(),
     ):
-        compile_record(compiled_collection, ocid)
+        # If the wiper worker deleted the collection first, there is nothing to compile.
+        if compiled_collection := lock_collection(compiled_collection_id):
+            compile_record(compiled_collection, ocid)
 
     publish(client_state, channel, {"collection_id": compiled_collection_id}, routing_key)
 

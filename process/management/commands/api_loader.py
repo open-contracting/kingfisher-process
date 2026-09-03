@@ -6,9 +6,8 @@ from django.db import transaction
 from django.utils.translation import gettext as t
 from yapw.methods import ack, publish
 
-from process.models import Collection
 from process.processors.loader import create_collection_file
-from process.util import consume, decorator
+from process.util import consume, decorator, lock_collection
 from process.util import wrap as w
 
 # Other applications use this routing key.
@@ -30,16 +29,13 @@ def callback(client_state, channel, method, properties, input_message):
     url = input_message["url"]
     path = input_message["path"]
 
-    try:
-        collection = Collection.objects.get(pk=collection_id)
-    except Collection.DoesNotExist:
-        ack(client_state, channel, method.delivery_tag)
-        return
-    if collection.deleted_at:
-        ack(client_state, channel, method.delivery_tag)
-        return
-
     with transaction.atomic():
+        # The collection can be cancelled or fully deleted while its messages are queued.
+        collection = lock_collection(collection_id)
+        if collection is None or collection.deleted_at:
+            ack(client_state, channel, method.delivery_tag)
+            return
+
         filename = Path(settings.KINGFISHER_COLLECT_FILES_STORE) / path
         collection_file = create_collection_file(collection, filename=filename, url=url)
 

@@ -31,22 +31,20 @@ class ReleaseCompilerCallbackTests(TransactionTestCase):
 
     @patch("process.management.commands.release_compiler.publish")
     @patch("process.management.commands.release_compiler.ack")
-    def test_acks_when_collection_missing(self, ack, publish):
-        # The compiled collection was hard-deleted (e.g. by the wiper) while its messages were queued.
+    def test_acks_when_collection_deleted(self, ack, publish):
         client_state, channel = MagicMock(), MagicMock()
-
-        self._callback(client_state, channel, self.compiled.pk + 1000)
+        self._callback(client_state, channel, self.compiled.pk + 1000)  # as if fully deleted
 
         ack.assert_called_once_with(client_state, channel, 1)
         publish.assert_not_called()
 
     @patch("process.management.commands.release_compiler.publish")
     @patch("process.management.commands.release_compiler.ack")
-    def test_acks_when_collection_deleted(self, ack, publish):
+    def test_acks_when_collection_cancelled(self, ack, publish):
         self.compiled.deleted_at = timezone.now()
         self.compiled.save()
-        client_state, channel = MagicMock(), MagicMock()
 
+        client_state, channel = MagicMock(), MagicMock()
         self._callback(client_state, channel, self.compiled.pk)
 
         ack.assert_called_once_with(client_state, channel, 1)

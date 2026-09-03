@@ -76,9 +76,9 @@ def decorator(decode, callback, state, channel, method, properties, body):
             nack(state, channel, method.delivery_tag, requeue=True)
         elif isinstance(exc, IntegrityError) and isinstance(exc.__cause__, errors.ForeignKeyViolation):
             # A foreign-key violation on a collection reference occurs when a collection is deleted (by the wiper)
-            # while another worker is compiling releases into it or storing files for it: the concurrent transaction
-            # commits rows referencing the now-deleted collection, so the foreign key fails at COMMIT. The message is
-            # obsolete, so skip it, like Collection.DoesNotExist below.
+            # while another worker is writing rows that reference it: the concurrent transaction commits those rows,
+            # so the foreign key fails at COMMIT. The message is obsolete, so skip it, like Collection.DoesNotExist
+            # below. (Note: Workers that call lock_collection() ack such messages earlier.)
             if "collection_id" in (exc.__cause__.diag.constraint_name or ""):
                 logger.error("Collection deleted while consuming %r, discarding message", body, exc_info=exc)
                 nack(state, channel, method.delivery_tag, requeue=False)
@@ -136,6 +136,23 @@ def get_or_create(model, data):
     return obj
 
 
+def lock_collection(collection_id):
+    """
+    Lock the collection row with KEY SHARE, and return the collection, or ``None`` if it is deleted.
+
+    Call this within a transaction that writes rows referencing the collection. KEY SHARE conflicts only with
+    the wiper worker's FOR UPDATE; as such, other concurrent workers don't block each other.
+
+    A worker can call this only if a single transaction encloses all its writes, and if it can abandon that
+    transaction on a ``None`` return value. Workers that can't call this:
+
+    - ``compiler`` creates each step in autocommit mode, interleaved with publishing messages.
+    - ``file_worker`` can't abandon its transaction: deleting_step() would create a CHECK step for the collection.
+    """
+    collections = Collection.objects.raw("SELECT * FROM collection WHERE id = %s FOR KEY SHARE", [collection_id])
+    return next(iter(collections), None)
+
+
 def create_note(collection, code, note, **kwargs):
     if isinstance(note, list):
         note = "\n".join(note)
@@ -171,7 +188,7 @@ def delete_step(name, finish=None, finish_args=(), exception=None, **kwargs):
     processing_steps = ProcessingStep.objects.filter(name=name, **kwargs)
 
     deleted, _ = processing_steps.delete()
-    if not deleted:
+    if not deleted:  # expected if the wiper worker deleted the collection and its steps
         logger.warning("No such processing step found: %s: %s", name, kwargs)
 
     if finish:

@@ -50,6 +50,10 @@ def delete_collection(collection_id):
     with transaction.atomic():
         # Note: This would skip and pre_delete and post_delete signals (none at time of writing).
         with connection.cursor() as cursor:
+            # Lock the collection row before deleting its referencing rows, so that a worker either commits its rows
+            # before this transaction deletes them, or waits and then observes the deleted collection.
+            cursor.execute("SELECT id FROM collection WHERE id = %s FOR UPDATE", [collection_id])
+
             # Temp tables are per-session, and concurrent messages run on separate connections.
             if not settings.DEDUPLICATE_DATA:
                 cursor.execute("DROP TABLE IF EXISTS wiper_data_ids")
