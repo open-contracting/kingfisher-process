@@ -60,6 +60,30 @@ class CompilerCallbackTests(TransactionTestCase):
 
     @patch("process.management.commands.compiler.publish")
     @patch("process.management.commands.compiler.ack")
+    def test_acks_when_collection_deleted(self, ack, publish):
+        client_state, channel = MagicMock(), MagicMock()
+        method = self._method(redelivered=False)
+        message = {"collection_id": self.parent.pk + 1000}  # as if fully deleted
+
+        callback(client_state, channel, method, MagicMock(), message)
+
+        ack.assert_called_once_with(client_state, channel, 1)
+        publish.assert_not_called()
+
+    @patch("process.management.commands.compiler.publish")
+    @patch("process.management.commands.compiler.ack")
+    def test_acks_when_collection_file_deleted(self, ack, publish):
+        client_state, channel = MagicMock(), MagicMock()
+        method = MagicMock(routing_key=f"{settings.RABBIT_EXCHANGE_NAME}_file_worker", delivery_tag=1)
+        message = {"collection_id": self.parent.pk, "collection_file_id": 10000}
+
+        callback(client_state, channel, method, MagicMock(), message)
+
+        ack.assert_called_once_with(client_state, channel, 1)
+        publish.assert_not_called()
+
+    @patch("process.management.commands.compiler.publish")
+    @patch("process.management.commands.compiler.ack")
     def test_happy_day(self, ack, publish):
         self._call(redelivered=False)
 

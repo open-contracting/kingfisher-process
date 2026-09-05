@@ -88,6 +88,11 @@ def decorator(decode, callback, state, channel, method, properties, body):
             else:
                 logger.error("Unhandled exception when consuming %r, shutting down gracefully", body, exc_info=exc)
                 add_callback_threadsafe(state.connection, state.interrupt)
+        # The wiper worker can delete a collection between a worker reading it and reading its parent collection,
+        # in compilable() and completable().
+        elif isinstance(exc, Collection.DoesNotExist):
+            logger.error("Collection deleted while consuming %r, discarding message", body, exc_info=exc)
+            ack(state, channel, method.delivery_tag)
         # These errors should only occur if the RabbitMQ and/or PostgreSQL connection is lost. It's not possible to
         # have a transaction that spans both systems, so it's possible to insert a row then fail to ack a message.
         #
@@ -95,10 +100,7 @@ def decorator(decode, callback, state, channel, method, properties, body):
         # and not by an error in logic. Their number should not exceed the prefetch count.
         #
         # InvalidFormError is included, as it may be for a "unique_together" error, which is an integrity error.
-        #
-        # Collection.DoesNotExist should only occur in the wiper worker due to a duplicate message. It can also occur
-        # in the finisher worker if the worker was stopped, and the wiper ran before the finisher.
-        elif isinstance(exc, InvalidFormError | IntegrityError | Collection.DoesNotExist):
+        elif isinstance(exc, InvalidFormError | IntegrityError):
             logger.error("%s maybe caused by duplicate message %r, discarding", type(exc).__name__, body, exc_info=exc)
             ack(state, channel, method.delivery_tag)
         # These errors should never occur under normal operations. However, such messages interrupt processing, so they

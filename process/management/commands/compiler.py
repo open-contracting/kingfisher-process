@@ -30,10 +30,18 @@ def callback(client_state, channel, method, properties, input_message):
     collection_file_id = input_message.get("collection_file_id")  # None if collection_closed
 
     if method.routing_key == f"{settings.RABBIT_EXCHANGE_NAME}_collection_closed":
-        collection = Collection.objects.get(pk=collection_id)
+        try:
+            collection = Collection.objects.get(pk=collection_id)
+        except Collection.DoesNotExist:
+            ack(client_state, channel, method.delivery_tag)
+            return
         collection_file = None
     else:
-        collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+        try:
+            collection_file = CollectionFile.objects.select_related("collection").get(pk=collection_file_id)
+        except CollectionFile.DoesNotExist:
+            ack(client_state, channel, method.delivery_tag)
+            return
         collection = collection_file.collection
 
     data_type = collection.data_type
