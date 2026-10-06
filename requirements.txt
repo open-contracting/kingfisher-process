@@ -178,8 +178,8 @@ platformdirs==3.8.1
     #   requests-cache
 psycopg==3.3.3
     # via
-    #   -r requirements.in
     #   -r requirements_base.txt
+    #   -r requirements.in
 psycopg-c==3.3.3
     # via psycopg
 pycparser==2.22
@@ -271,7 +271,7 @@ url-normalize==1.4.3
     # via
     #   -r requirements_base.txt
     #   requests-cache
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   -r requirements_base.txt
     #   requests
