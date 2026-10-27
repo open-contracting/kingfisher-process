@@ -16,7 +16,7 @@ btrees==5.1
     # via zodb
 cattrs==23.1.2
     # via requests-cache
-certifi==2024.7.4
+certifi==2026.10.18
     # via
     #   requests
     #   sentry-sdk
