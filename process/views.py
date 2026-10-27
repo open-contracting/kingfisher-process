@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import logging
 
 from django.conf import settings
@@ -194,7 +194,7 @@ class CollectionViewSet(viewsets.ViewSet):
                     AND release_date > '1970-01-01'
                     AND release_date <= %(today)s
                 """,
-                {"collection_id": pk, "today": str(datetime.datetime.now(tz=datetime.UTC).date())},
+                {"collection_id": pk, "today": str(dt.datetime.now(tz=dt.UTC).date())},
             )
 
             metadata.update(dictfetchone(cursor))
