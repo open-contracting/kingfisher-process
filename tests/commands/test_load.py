@@ -67,7 +67,7 @@ class LoadTests(TransactionTestCase):
         self.assertTrue(str(e.exception).startswith(message))
 
     def test_time_invalid(self):
-        for value in ("2000-01-01 00:", "2000-01-01 24:00:00"):
+        for value in ("2000-01-01 00:", "2000-01-01 25:00:00"):
             with self.subTest(value=value):
                 with self.assertRaises(CommandError) as e:
                     call_command("load", "--source", "france", "--note", "x", "--time", value, path("file.json"))

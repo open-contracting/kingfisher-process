@@ -4,7 +4,8 @@ asgiref==3.11.1
     # via
     #   -r requirements_base.txt
     #   django
-attrs==23.1.0
+    #   django-cors-headers
+attrs==26.1.0
     # via
     #   -r requirements_base.txt
     #   cattrs
@@ -23,7 +24,7 @@ btrees==6.5
     # via
     #   -r requirements_base.txt
     #   zodb
-cattrs==23.1.2
+cattrs==26.2.1
     # via
     #   -r requirements_base.txt
     #   requests-cache
@@ -65,7 +66,7 @@ django==5.2.17
     #   django-cors-headers
     #   djangorestframework
     #   drf-spectacular
-django-cors-headers==4.1.0
+django-cors-headers==4.9.0
     # via -r requirements_base.txt
 djangorestframework==3.18.2
     # via
@@ -256,9 +257,10 @@ transaction==4.0
     # via
     #   -r requirements_base.txt
     #   zodb
-typing-extensions==4.7.0
+typing-extensions==4.16.0
     # via
     #   -r requirements_base.txt
+    #   cattrs
     #   dj-database-url
 uritemplate==4.1.1
     # via
