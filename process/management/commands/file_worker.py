@@ -308,7 +308,7 @@ def _store_data(collection_file, package, releases_or_records, data_type, *, upg
     # With deduplication, each Data row is looked up or created individually (batch size 1).
     batch_size = 1 if settings.DEDUPLICATE_DATA else settings.BULK_CREATE_BATCH_SIZE
 
-    for release_or_record_batch in batched(releases_or_records, batch_size):
+    for release_or_record_batch in batched(releases_or_records, batch_size, strict=False):
         if upgrade:
             upgraded_releases_or_records = []
             for release_or_record in release_or_record_batch:
