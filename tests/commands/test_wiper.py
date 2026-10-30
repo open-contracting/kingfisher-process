@@ -14,11 +14,13 @@ from process.models import (
     Data,
     PackageData,
     Release,
+    ReleaseCheck,
 )
 from process.util import lock_collection
 from tests.fixtures import collection
 
 
+@override_settings(ENABLE_CHECKER=True)
 class WiperTests(TransactionTestCase):
     def build_collection(self):
         source = collection()
@@ -31,13 +33,14 @@ class WiperTests(TransactionTestCase):
         compiled_data = Data.objects.create(hash_md5="", data={"ocid": "ocds-1", "tag": ["compiled"]})
         package_data = PackageData.objects.create(hash_md5="", data={"version": "1.1"})
 
-        Release.objects.create(
+        release = Release.objects.create(
             collection=source,
             collection_file=collection_file,
             ocid="ocds-1",
             data=release_data,
             package_data=package_data,
         )
+        ReleaseCheck.objects.create(release=release, cove_output={})
         CompiledRelease.objects.create(
             collection=source,
             collection_file=collection_file,
@@ -55,6 +58,7 @@ class WiperTests(TransactionTestCase):
 
         self.assertEqual(Collection.objects.count(), 0)
         self.assertEqual(Release.objects.count(), 0)
+        self.assertEqual(ReleaseCheck.objects.count(), 0)
         self.assertEqual(CompiledRelease.objects.count(), 0)
         self.assertEqual(Data.objects.count(), 0)
         self.assertEqual(PackageData.objects.count(), 0)
@@ -67,6 +71,7 @@ class WiperTests(TransactionTestCase):
 
         self.assertEqual(Collection.objects.count(), 0)
         self.assertEqual(Release.objects.count(), 0)
+        self.assertEqual(ReleaseCheck.objects.count(), 0)
         self.assertEqual(CompiledRelease.objects.count(), 0)
         self.assertEqual(Data.objects.count(), 2)
         self.assertEqual(PackageData.objects.count(), 1)
@@ -84,6 +89,7 @@ class WiperTests(TransactionTestCase):
 
         self.assertEqual(Collection.objects.count(), 1)
         self.assertEqual(Release.objects.count(), 1)
+        self.assertEqual(ReleaseCheck.objects.count(), 1)
         self.assertEqual(CompiledRelease.objects.count(), 1)
         self.assertEqual(Data.objects.count(), 2)
         self.assertEqual(PackageData.objects.count(), 1)

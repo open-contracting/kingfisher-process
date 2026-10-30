@@ -4,7 +4,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils.translation import gettext as t
-from psycopg import sql
 from yapw.methods import ack
 
 from process.models import Collection
@@ -74,22 +73,13 @@ def delete_collection(collection_id):
 
             for table, related in tables:
                 if related:
+                    related_id = f"{related}_id"
                     cursor.execute(
-                        sql.SQL(
-                            "DELETE FROM {table} WHERE {related_id} IN "
-                            "(SELECT id FROM {related} WHERE collection_id = %s)"
-                        ).format(
-                            table=sql.Identifier(table),
-                            related=sql.Identifier(related),
-                            related_id=sql.Identifier(f"{related}_id"),
-                        ),
-                        [collection_id],
+                        t"DELETE FROM {table:i} WHERE {related_id:i} IN "
+                        t"(SELECT id FROM {related:i} WHERE collection_id = {collection_id})"
                     )
                 else:
-                    cursor.execute(
-                        sql.SQL("DELETE FROM {table} WHERE collection_id = %s").format(table=sql.Identifier(table)),
-                        [collection_id],
-                    )
+                    cursor.execute(t"DELETE FROM {table:i} WHERE collection_id = {collection_id}")
 
             if not settings.DEDUPLICATE_DATA:
                 cursor.execute("DELETE FROM data WHERE id IN (SELECT id FROM wiper_data_ids)")
