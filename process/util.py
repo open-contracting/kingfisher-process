@@ -1,7 +1,6 @@
 import hashlib
 import io
 import logging
-import os
 import random
 import time
 from contextlib import contextmanager
@@ -37,10 +36,10 @@ def walk(paths):
         if entry.is_file():
             yield entry
         else:
-            for root, _, files in os.walk(entry):
+            for root, _, files in entry.walk():
                 for name in files:
                     if not name.startswith("."):
-                        yield Path(root) / name
+                        yield root / name
 
 
 @contextmanager
