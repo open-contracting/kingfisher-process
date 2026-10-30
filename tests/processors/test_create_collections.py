@@ -39,7 +39,7 @@ class CreateCollectionsTests(TransactionTestCase):
                 # Other
                 note="testing note",
             )
-        self.assertTrue(str(e.exception).startswith("A matching collection already exists."))
+        self.assertStartsWith(str(e.exception), "A matching collection already exists.")
 
     def test_happy_day(self):
         collection, upgraded_collection, compiled_collection = create_collections(

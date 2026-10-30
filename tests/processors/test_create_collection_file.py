@@ -18,7 +18,7 @@ class CreateCollectionFileTests(TransactionTestCase):
         with self.assertRaises(InvalidFormError) as e:
             create_collection_file(collection, "/path")
             create_collection_file(collection, "/path")
-        self.assertTrue(str(e.exception).startswith("Collection 1 already contains file '/path'"))
+        self.assertStartsWith(str(e.exception), "Collection 1 already contains file '/path'")
 
     def test_happy_day(self):
         collection = Collection.objects.get(pk=2)

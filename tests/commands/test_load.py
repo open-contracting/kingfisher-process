@@ -64,10 +64,10 @@ class LoadTests(TransactionTestCase):
             call_command("load", "--source", "france", "--note", "x", "--time", "3000-01-01 00:00", path("file.json"))
 
         message = "'3000-01-01 00:00' is greater than the earliest file modification time: '20"
-        self.assertTrue(str(e.exception).startswith(message))
+        self.assertStartsWith(str(e.exception), message)
 
     def test_time_invalid(self):
-        for value in ("2000-01-01 00:", "2000-01-01 24:00:00"):
+        for value in ("2000-01-01 00:", "2000-01-01 25:00:00"):
             with self.subTest(value=value):
                 with self.assertRaises(CommandError) as e:
                     call_command("load", "--source", "france", "--note", "x", "--time", value, path("file.json"))
