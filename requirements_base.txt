@@ -191,7 +191,7 @@ urllib3==2.8.0
     #   sentry-sdk
 xmltodict==0.13.0
     # via flattentool
-yapw==0.1.4
+yapw==0.3.0
     # via -r requirements_base.in
 zc-lockfile==4.0
     # via zodb

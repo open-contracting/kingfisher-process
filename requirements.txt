@@ -278,7 +278,7 @@ xmltodict==0.13.0
     # via
     #   -r requirements_base.txt
     #   flattentool
-yapw==0.1.4
+yapw==0.3.0
     # via -r requirements_base.txt
 zc-lockfile==4.0
     # via
