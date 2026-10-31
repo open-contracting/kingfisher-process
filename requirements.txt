@@ -115,7 +115,7 @@ jsonref==1.1.0
     #   ocdsextensionregistry
     #   ocdskit
     #   ocdsmerge
-jsonschema==4.21.1
+jsonschema==4.26.0
     # via
     #   -r requirements_base.txt
     #   drf-spectacular
@@ -196,7 +196,7 @@ pyyaml==6.0.3
     # via
     #   -r requirements_base.txt
     #   drf-spectacular
-referencing==0.34.0
+referencing==0.37.0
     # via
     #   -r requirements_base.txt
     #   jsonschema
@@ -241,19 +241,17 @@ setuptools==84.2.1
     #   -r requirements_base.txt
     #   zc-lockfile
     #   zc-zlibstorage
-    #   zope-deferredimport
 simplejson==4.2.0
     # via -r requirements_base.txt
 six==1.16.0
     # via
     #   -r requirements_base.txt
     #   rfc3339-validator
-    #   zodb
 sqlparse==0.6.0
     # via
     #   -r requirements_base.txt
     #   django
-transaction==4.0
+transaction==5.1
     # via
     #   -r requirements_base.txt
     #   zodb
@@ -282,7 +280,7 @@ xmltodict==0.13.0
     #   flattentool
 yapw==0.1.4
     # via -r requirements_base.txt
-zc-lockfile==3.0.post1
+zc-lockfile==4.0
     # via
     #   -r requirements_base.txt
     #   zodb
@@ -290,11 +288,11 @@ zc-zlibstorage==1.2.0
     # via
     #   -r requirements_base.txt
     #   flattentool
-zconfig==4.0
+zconfig==4.3
     # via
     #   -r requirements_base.txt
     #   zodb
-zodb==5.8.1
+zodb==6.4
     # via
     #   -r requirements_base.txt
     #   flattentool
@@ -303,7 +301,7 @@ zodbpickle==4.5
     # via
     #   -r requirements_base.txt
     #   zodb
-zope-deferredimport==5.0
+zope-deferredimport==6.1.1
     # via
     #   -r requirements_base.txt
     #   persistent
