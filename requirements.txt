@@ -232,7 +232,7 @@ schema==0.7.5
     # via
     #   -r requirements_base.txt
     #   flattentool
-sentry-sdk==2.8.0
+sentry-sdk==2.73.0
     # via -r requirements_base.txt
 setproctitle==1.3.7
     # via -r requirements_base.txt
